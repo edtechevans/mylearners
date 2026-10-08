@@ -20,6 +20,28 @@ jobs:
           node-version: 22
       - name: Validate synthetic dataset
         run: node --test tests/*.test.mjs
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Playwright browser test harness
+        run: python -m pip install playwright==1.57.0
+      - name: Ten simulated classroom teacher journeys, navigation and responsive QA
+        run: |
+          set -euo pipefail
+          python -m http.server 8765 --bind 127.0.0.1 >/tmp/mylearners-e2e-server.log 2>&1 &
+          site_pid=$!
+          trap 'kill "$site_pid" 2>/dev/null || true' EXIT
+          sleep 2
+          export MYLEARNERS_URL=http://127.0.0.1:8765
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          python tests/e2e/teacher_journeys.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: teacher-usability-e2e-report
+          path: qa-artifacts/
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Browser rendering smoke check
         shell: bash
         continue-on-error: true
