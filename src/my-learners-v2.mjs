@@ -14,16 +14,35 @@ import {icon,esc,initials,prettyDate} from './v2-ui.mjs';
 export const APP_VERSION='2.0-demo';
 export const data=applyFacultyDemo(generateDemoData());
 export const pulse=buildPulseData(data);
-const storage=globalThis.localStorage;
+const storage=(()=>{try{return globalThis.localStorage}catch{return null}})();
+const navStorage=(()=>{try{return globalThis.sessionStorage}catch{return null}})();
+const NAV_KEY='aisg-v2-navigation-context';
+function readNavigation(){try{return JSON.parse(navStorage?.getItem(NAV_KEY)||'null')||{}}catch{return {}}}
+const navDraft=readNavigation();
+function preserveNavigation(){
+ try{navStorage?.setItem(NAV_KEY,JSON.stringify({teacherId:state.teacherId,
+  classId:state.classId,rosterFilter:state.rosterFilter,classMode:state.classMode,
+  rosterQuery:state.rosterQuery,learnerQuery:state.learnerQuery,
+  studentClassFilter:state.studentClassFilter,subject:state.subject,
+  actionFilter:state.actionFilter,returnContext:state.returnContext,
+  classOrigin:state.classOrigin,actionOrigin:state.actionOrigin}))}catch{}
+}
 function getSaved(key){try{return storage?.getItem(key)}catch{return null}}
 function setSaved(key,value){try{storage?.setItem(key,value)}catch{}}
 const activeId=getSaved('aisg-v2-faculty');
 const firstFaculty=data.teachers.find(t=>t.id===activeId)?.id||DEFAULT_TEACHER_ID;
+const savedView=navDraft.teacherId===firstFaculty?navDraft:{};
+const validOrigin=x=>x&&x.teacherId===firstFaculty&&typeof x.hash==='string'&&x.hash.startsWith('#/');
 export const state={
- teacherId:firstFaculty,classId:getSaved('aisg-v2-class')||'',
- route:'today',rosterFilter:'all',classMode:'roster',studentQuery:'',
- studentClassFilter:'all',studentTab:'overview',subject:'Mathematics',
- actionFilter:'all',actionModal:false,editingActionId:'',
+ teacherId:firstFaculty,classId:savedView.classId||getSaved('aisg-v2-class')||'',
+ route:'today',rosterFilter:savedView.rosterFilter||'all',classMode:savedView.classMode||'roster',
+ rosterQuery:savedView.rosterQuery||'',learnerQuery:savedView.learnerQuery||'',
+ studentClassFilter:savedView.studentClassFilter||'all',studentTab:'overview',subject:savedView.subject||'Mathematics',
+ actionFilter:savedView.actionFilter||'all',actionModal:false,editingActionId:'',
+ returnContext:validOrigin(savedView.returnContext)?savedView.returnContext:null,
+ classOrigin:validOrigin(savedView.classOrigin)?savedView.classOrigin:null,
+ actionOrigin:validOrigin(savedView.actionOrigin)?savedView.actionOrigin:null,
+ toast:'',dialogOpener:null,pendingFocus:'',
  modalClassId:'',modalStudentId:'',modalTitle:'',modalStrategy:'',modalEvidence:'',modalDue:'2026-10-12',
  formError:'',insightId:'',mobile:false
 };
@@ -68,7 +87,8 @@ function personaOptions(selected){
 function route(){
  const p=String(globalThis.location?.hash||'').replace(/^#\/?/,'');
  const seg=p.split('/');
- if(seg[0]==='student'&&seg[1])return {page:'student',id:seg[1]};
+ if(seg[0]==='student'&&seg[1])return {page:'student',id:seg[1],tab:['overview','learning','map','attendance','support'].includes(seg[2])?seg[2]:'overview'};
+ if(seg[0]==='class')return {page:'class',id:seg[1]||''};
  if(tabs.some(x=>x.id===seg[0]))return {page:seg[0],id:''};
  return {page:'today',id:''};
 }
@@ -86,7 +106,9 @@ function topbar(p,ctx){
  const label=p.page==='student'?'Learner profile':tabs.find(t=>t.id===p.page)?.label||'Today';
  return '<header class="v2-topbar"><div class="v2-top-left"><button class="v2-mobile-menu" data-menu="1" aria-label="Toggle navigation">'+icon('menu',19)+'</button>'+
  '<span class="v2-breadcrumb">AISG <span>›</span> <strong>'+esc(label)+'</strong></span></div>'+
- '<div class="v2-top-actions"><label class="v2-global-search">'+icon('search',16)+'<input id="v2-global-search" placeholder="Find a learner..." aria-label="Find a learner"/></label>'+
+ '<div class="v2-top-actions"><form id="v2-global-search-form" class="v2-global-search" role="search"><input id="v2-global-search" name="query" placeholder="Find a learner..." aria-label="Find a learner by name or ID"/>'+
+ '<button type="submit" aria-label="Search learners">'+icon('search',17)+'</button></form>'+
+ '<button class="v2-compact-search" type="button" data-search-route="1" aria-label="Find a learner">'+icon('search',19)+'</button>'+
  '<span class="v2-faculty-avatar">'+esc(initials(ctx.teacher.name))+'</span>'+
  '<label class="v2-persona-label"><span class="v2-visually-hidden">Demonstration teacher</span><select id="v2-faculty" aria-label="Select AISG faculty demonstration persona">'+personaOptions(ctx.teacher.id)+'</select></label>'+
  '<span class="v2-demo-tag">DEMO</span></div></header>';
@@ -111,39 +133,89 @@ export function render(){
  let caret=null;
  try{caret=previously?.selectionStart}catch{}
  const p=route();state.route=p.page;
+ if(p.page==='student')state.studentTab=p.tab;
+ if(p.page==='class'&&p.id&&classes().some(c=>c.id===p.id))state.classId=p.id;
+ const focusSel=previously?.getAttribute?.('data-group-student')?
+  '[data-group-student="'+previously.getAttribute('data-group-student')+'"]':
+  previously?.getAttribute?.('data-roster-filter')?'[data-roster-filter="'+previously.getAttribute('data-roster-filter')+'"]':
+  previously?.getAttribute?.('data-student-tab')?'[data-student-tab="'+previously.getAttribute('data-student-tab')+'"]':
+  previously?.getAttribute?.('data-class-mode')?'[data-class-mode="'+previously.getAttribute('data-class-mode')+'"]':null;
+ const focusedModalName=previously?.closest?.('.v2-modal')?.contains(previously)?previously.getAttribute('name'):null;
  const ctx=context();
  const body=actualPage(p,ctx);
- app.innerHTML='<div class="v2-app"><div class="v2-brand-stripe"></div>'+
+ app.innerHTML='<div class="v2-app"><div class="v2-brand-stripe"></div><button type="button" class="v2-skip-link" data-skip-main="1">Skip to main content</button>'+
  (state.mobile?'<div class="v2-mobile-shade" data-menu="1"></div>':'')+
- sidebar(p,ctx)+'<div class="v2-workspace">'+topbar(p,ctx)+
- '<main class="v2-main" id="main-content">'+body+foot()+'</main></div>'+
- renderInsightDrawer(ctx)+renderActionModal(ctx)+'</div>';
+ sidebar(p,ctx)+'<div class="v2-workspace"'+(state.actionModal||state.editingActionId||state.insightId?' inert aria-hidden="true"':'')+'>'+topbar(p,ctx)+
+ '<main class="v2-main" id="main-content" tabindex="-1">'+body+foot()+'</main></div>'+
+ renderInsightDrawer(ctx)+renderActionModal(ctx)+
+ (state.toast?'<div class="v2-toast" role="status">'+icon('check',16)+' '+esc(state.toast)+' <button data-dismiss-toast="1" aria-label="Dismiss notification">'+icon('close',14)+'</button></div>':'')+'</div>';
+ globalThis.document?.body?.classList?.toggle?.('v2-dialog-open',Boolean(state.actionModal||state.editingActionId||state.insightId));
+ preserveNavigation();
  if(active==='v2-roster-search'||active==='v2-learner-search'){
   const restored=globalThis.document.getElementById(active);
   if(restored){restored.focus();if(typeof caret==='number'&&restored.setSelectionRange)restored.setSelectionRange(caret,caret)}
  }
+ const activeDialog=app.querySelector?.('.v2-modal, .v2-drawer');
+ if(activeDialog){
+  const target=(focusedModalName&&activeDialog.querySelector('[name="'+focusedModalName+'"]'))||
+   activeDialog.querySelector('.v2-form-error')||activeDialog.querySelector('input:not([type=hidden]), textarea, select, button');
+  target?.focus?.();
+ }else if(state.pendingFocus){app.querySelector?.(state.pendingFocus)?.focus?.();state.pendingFocus='';}
+ else if(focusSel)app.querySelector?.(focusSel)?.focus?.();
 }
-function go(page,id=''){
+function rememberOrigin(){
+ const p=route();
+ state.returnContext={teacherId:state.teacherId,page:p.page,hash:globalThis.location.hash||'#/today',
+  classId:state.classId,classMode:state.classMode,rosterFilter:state.rosterFilter,
+  rosterQuery:state.rosterQuery,learnerQuery:state.learnerQuery,
+  studentClassFilter:state.studentClassFilter,subject:state.subject,
+  scrollY:globalThis.window?.scrollY||0};
+ preserveNavigation();
+}
+function restoreContext(origin){
+ if(!origin||origin.teacherId!==state.teacherId)return false;
+ for(const k of ['classId','classMode','rosterFilter','rosterQuery','learnerQuery','studentClassFilter','subject'])
+  if(origin[k]!==undefined)state[k]=origin[k];
+ const dest=origin.hash||'#/learners';
+ state.toast='Returned to your previous view';
+ if(globalThis.location.hash===dest)render();else globalThis.location.hash=dest;
+ if(origin.scrollY>0&&globalThis.window?.requestAnimationFrame)
+  globalThis.window.requestAnimationFrame(()=>globalThis.window.scrollTo?.(0,origin.scrollY));
+ preserveNavigation();
+ return true;
+}
+function returnToOrigin(kind){
+ const origin=kind==='class'?state.classOrigin:kind==='actions'?state.actionOrigin:state.returnContext;
+ if(!restoreContext(origin))go(kind==='class'?'growth':kind==='actions'?'class':'learners',kind==='actions'?currentClass()?.id:'');
+}
+function dismissToast(){state.toast='';render()}
+function go(page,id='',tab=''){
  state.insightId='';state.mobile=false;
- const hash='#/'+page+(id?'/'+id:'');
+ const hash='#/'+page+(id?'/'+id:'')+(page==='student'&&tab&&tab!=='overview'?'/'+tab:'');
  if(globalThis.location.hash===hash)render();else globalThis.location.hash=hash;
  try{globalThis.window.scrollTo({top:0,behavior:'instant'})}catch{}
 }
 function setCurrentClass(id){
  if(!classes().some(c=>c.id===id))return;
- state.classId=id;setSaved('aisg-v2-class',id);state.classMode='roster';state.rosterFilter='all';state.studentQuery='';
+ if(state.classId!==id){state.classMode='roster';state.rosterFilter='all';state.rosterQuery=''}
+ state.classId=id;setSaved('aisg-v2-class',id);preserveNavigation();
 }
 function openCreate(trigger){
  const id=trigger?.dataset?.createAction;
  const s=trigger?.dataset?.actionStudent||'';
+ state.dialogOpener=globalThis.document?.activeElement?.getAttribute?.('data-create-action')||'';
+ if(route().page!=='actions'){state.actionOrigin={teacherId:state.teacherId,page:route().page,hash:globalThis.location.hash||'#/today',classId:state.classId}}
  state.actionModal=true;state.editingActionId='';state.modalClassId=id||currentClass()?.id||'';
  state.modalStudentId=s;state.modalTitle='';state.modalEvidence=trigger?.dataset?.actionEvidence||'Teacher reflection · demo';
  state.modalStrategy='';state.modalDue='2026-10-12';state.formError='';render();
 }
 function closeModal(){
  state.actionModal=false;state.editingActionId='';state.formError='';render();
+ const trigger=state.dialogOpener?app?.querySelector?.('[data-create-action="'+state.dialogOpener+'"]'):null;
+ (trigger||app?.querySelector?.('[data-nav="actions"]'))?.focus?.();
 }
 function openInsight(id){state.insightId=id;state.actionModal=false;render()}
+function closeInsight(){const prev=state.insightId;state.insightId='';render();app?.querySelector?.('[data-insight="'+prev+'"]')?.focus?.()}
 function actionFromInsight(id){
  const insight=context().insights.find(x=>x.id===id);if(!insight)return;
  state.insightId='';state.editingActionId='';state.actionModal=true;
