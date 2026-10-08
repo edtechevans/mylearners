@@ -59,7 +59,7 @@ test('Action modal opens from class and records an evidence-backed instructional
  listeners['app-submit']({target:fakeForm,preventDefault(){}});
  changeRoute('#/actions');
  assert.match(app.innerHTML,/Revisit fractions/);
- assert.match(app.innerHTML,/In progress/);
+ assert.match(app.innerHTML,/Notice &amp; respond/);
 });
 test('teacher switching changes fictional assigned scope and denies unrelated learner profile',()=>{
  listeners['app-change']({target:{id:'v2-faculty',value:appModule.data.teachers.find(t=>t.name==='Karen Robb').id}});
