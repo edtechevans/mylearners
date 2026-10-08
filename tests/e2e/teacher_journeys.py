@@ -185,27 +185,3 @@ def main():
    return int(summary['journeysPassed']!=10 or summary['responsivePagesPassed']!=len(sizes) or not all(keys.get(k) for k in ['keyboardTabs','browserHistory','contextReturn','keyboardNavigation']))
   finally:browser.close()
 if __name__=='__main__':raise SystemExit(main())
-))
- context.close()
- return {'keyboardTabs':True,'browserHistory':True,'contextReturn':True,'keyboardNavigation':True}
-def main():
- chrome=os.environ.get('CHROME_BIN') or shutil.which('google-chrome') or shutil.which('chromium') or '/usr/bin/chromium'
- with sync_playwright() as pw:
-  browser=pw.chromium.launch(headless=True,executable_path=chrome,args=['--no-sandbox','--disable-dev-shm-usage'])
-  try:
-   journeys=[]
-   for i,person in enumerate(PEOPLE,1):
-    result=journey(browser,i,person);journeys.append(result)
-    print(('PASS' if result['status']=='passed' else 'FAIL'),result['name'],result.get('error','')[:140],flush=True)
-   sizes=responsive(browser)
-   try: keys=keyboard(browser)
-   except Exception as ex: keys={'error':str(ex),'keyboardTabs':False,'browserHistory':False,'contextReturn':False,'keyboardNavigation':False}
-   summary={'journeysPassed':sum(j['status']=='passed' for j in journeys),'journeysTotal':len(journeys),
-    'responsivePagesPassed':sum(v['status']=='passed' for v in sizes),'responsivePagesTotal':len(sizes),
-    'keyboard':keys}
-   (OUT/'ux-journeys.json').write_text(json.dumps({'method':'simulated personas in Chromium, not human teacher research',
-     'baseUrl':BASE,'summary':summary,'journeys':journeys,'responsive':sizes},indent=2))
-   print('SUMMARY',json.dumps(summary),flush=True)
-   return int(summary['journeysPassed']!=10 or summary['responsivePagesPassed']!=len(sizes) or not all(keys.get(k) for k in ['keyboardTabs','browserHistory','contextReturn','keyboardNavigation']))
-  finally:browser.close()
-if __name__=='__main__':raise SystemExit(main())
