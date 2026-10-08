@@ -149,7 +149,8 @@ def journey(browser,index,item):
     page.locator('[data-menu]').first.click()
     expect(page.locator('.v2-sidebar.open')).to_be_visible()
    page.locator('.v2-nav [data-nav="today"]').click()
-   expect(page).to_have_url(re.compile(r'#/today  check(not errors, 'Browser JavaScript errors: '+str(errors))
+   check(page.url.endswith("#/today"), "Mobile journey did not return to Today")
+  check(not errors, "Browser JavaScript errors: "+str(errors))
   row={'name':name,'persona':person,'class':cid,'status':'passed',
        'automationElapsedSeconds':round(time.monotonic()-start,2)}
  except Exception as exc:
