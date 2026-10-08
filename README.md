@@ -1,98 +1,75 @@
-# AISG | My Learners
+# AISG | My Learners 2.0 — The Learning Pulse
 
 **Know the Learner. Understand the Evidence. Respond with Purpose.**
 
-A polished, client-side demonstration of a teacher-centred student learning dashboard for the American International School of Guangzhou (AISG). The application uses a supplied AISG logo and provides fictional, coherent learning data and locally generated illustrated portraits.
+[**Open the live GitHub Pages demonstration**](https://edtechevans.github.io/mylearners/)
 
-> **DEMO ONLY — NO REAL STUDENT INFORMATION.** The 1,200 student profiles, all teacher-to-class assignments, attendance records, portraits, assessment outcomes and MAP results are entirely synthetic. Faculty **names and working PLC groupings** are sourced from AISG My Observations, not invented. No PowerSchool, ManageBac, NWEA or student-support integration is live.
+My Learners is a teacher-first, PK3–Grade 12 demonstration dashboard. It organises recent classroom evidence around the **next lesson** and helps teachers move naturally through **Notice → Respond → Revisit**. It is built to inform a teacher's daily decisions, not to become another data warehouse.
 
-## Try the demo
+> **PUBLIC DEMONSTRATION ONLY.** All 1,200 student identities, photos, learner records, timetable slots, class assignments, grades, attendance, assessment data, MAP results, student voice, classroom support and follow-ups are **fictional**. The 115 faculty names and their 20 working PLC groupings are imported from the public 2026–27 AISG My Observations working roster. **No actual teacher–student, teaching-group or student performance information is implied.** Never enter real student details into the demo.
 
-- Open the published GitHub Pages deployment (when Pages is enabled).
-- Select one of 115 real faculty names, grouped by Elementary and Secondary, in the top-right demo persona selector. Their assigned student cohorts are entirely fictional.
-- Open **My Classes** and select an assigned class.
-- Search by fictional name or DEMO ID.
-- Open a learner profile and explore MAP Growth, academic learning, attendance and classroom guidance.
-- Navigate using the URL hash, which supports GitHub Pages browser refresh/deep linking without server routing.
+## What's included in the redesigned experience
 
-## Demo coverage
-
-| Dimension | Coverage |
+| Area | Daily teaching purpose |
 | --- | --- |
-| Grades | PK3, PK4, K, Grades 1–12 (15 grade levels) |
-| Homerooms | 4 per grade (60 total) |
-| Learners | 20 per homeroom (1,200 total) |
-| Faculty personas | 115 distinct actual names from My Observations (2026–27 working PLC list) |
-| PLC groupings | 20 grade-level/subject/support groups; names deduplicated |
-| Teacher-to-class assignments | Fully fictional, PLC-informed demo teaching cohorts |
-| Student portraits | 1,200 deterministic illustrations produced locally (not photographic images of real people) |
-| MAP | Simulated records in Grades 3–10; observed growth and growth versus projection are primary, RIT achievement is supporting detail |
-| Attendance | Simulated daily school-day records; summary rates calculated from events |
-| Academic assessments | Division-appropriate mock outcomes, status and feedback metadata |
-| Classroom supports | Mock action-focused guidance; no clinical or safeguarding information |
+| **Today's Learning Pulse** | Fictional next lesson, timetable, daily attendance, new formative evidence, submission follow-up, teaching opportunities, and evidence-linked suggestions |
+| **Class Pulse** | 20-student learning matrix, attendance, classroom evidence, assignments, MAP growth context, approved-style guidance, editable temporary groups and privacy-safe aggregated student voice |
+| **My Learners** | Teacher-scoped search, fictional illustrated learner portraits and a connected evidence timeline |
+| **Growth & Evidence** | MAP **observed growth versus illustrative projected growth** before achievement, class/cohort comparisons, small denominators, clear missing records, programme-sensitive alternatives when MAP isn't assessed |
+| **My Actions** | Create, review and complete short Notice → Respond → Revisit instructional follow-ups, with teacher-owned browser-only demo persistence |
 
-## Development
+### The everyday journey
+1. Select a **real-named AISG faculty demo persona** (their demo classes are invented).
+2. Open **Today** to find a fictional next lesson and signals relevant to that teaching group.
+3. Open **Class Pulse** to investigate individual evidence and temporary, teacher-editable group suggestions.
+4. Follow a learner to their recent evidence, attendance, MAP history or classroom guidance.
+5. Capture a brief instructional response in **My Actions**; choose a follow-up date and record what happened.
+6. Visit **Growth & Evidence** to consider longitudinal progress alongside more recent learning evidence.
 
-This project intentionally requires **no package manager or external JavaScript dependencies**. It is a static ES-module application that can deploy directly to GitHub Pages.
+Every insight is generated by **transparent deterministic rules** with an explicit fictional evidence source, not by a live AI service, predictive risk model or clinical system.
 
+## Dataset and data safety
+- **15 grades:** PK3, PK4, Kindergarten and Grades 1–12.
+- **60 demo homerooms / cohorts**: four per grade and 20 invented learners in each.
+- **1,200 distinct synthetic learners** with locally generated illustrated portraits.
+- **115 public faculty names** from 20 working PLCs; all teacher-class links are demonstrative.
+- **Simulated MAP** for Grades 3–10 with illustrative growth projections; no NWEA official norms.
+- **Simulated classroom tasks and attendance** for an explicitly labelled demo day, **8 October 2026**.
+- **Aggregated fictional student voice** only when a class has at least 10 responses.
+- **Locally persistent personal demo action notes and group edits** stored in the browser for the selected persona. These are not secure records or appropriate for actual student information.
+- No live API keys, PowerSchool, ManageBac, medical, safeguarding, counselling or CPOMS integrations.
+
+## Implementation
+
+The demo is a dependency-free static ES-module application, suitable for GitHub Pages with synthetic information only.
+
+### Local development
 ```bash
 python3 -m http.server 8000
-# open http://localhost:8000/
-```
-
-Run the built-in data validation suite:
-
-```bash
+# Visit http://localhost:8000/
 node --test tests/*.test.mjs
 ```
 
-## Architecture
+### Key modules
+- **src/my-learners-v2.mjs:** routing, teacher persona state, interaction handlers, local actions.
+- **src/v2-pages.mjs:** Today, Class Pulse, Learners, Growth & Evidence, student and action views.
+- **src/my-learners-v2.css:** responsive AISG design system and accessible interface.
+- **src/v2-ui.mjs:** reusable dashboard primitives.
+- **src/pulse-data.mjs:** deterministic daily teaching evidence and class insights.
+- **src/pulse-actions.mjs:** local-only teacher follow-ups and temporary group edits.
+- **src/data.mjs:** schoolwide student, assessment, attendance and MAP demo fixture.
+- **src/map-growth.mjs / src/map-growth-ui.mjs:** valid test comparisons and growth-first reporting.
+- **src/staff.mjs / src/faculty-demo.mjs:** working faculty names with fictional persona assignments.
+- **src/integration-contracts.mjs:** disabled live connector contracts and public-demo guardrails.
+- **docs/production-readiness.md:** phases, source permissions, secure backend strategy, privacy/legal gates and usability targets.
+- **tests:** data correctness, scope, UI, MAP calculations, timetable, groups and action workflows.
 
-- `index.html`: entry point
-- `src/styles.css`: AISG-inspired responsive design system
-- `src/data.mjs`: deterministic generated synthetic datasets and calculations
-- `src/staff.mjs`: names and PLC groupings from My Observations working roster, without observation details
-- `src/faculty-demo.mjs`: visibly fictional mapping between names and generated demo classes
-- `src/map-growth.mjs`: growth calculations from comparable mock MAP windows
-- `src/map-growth-ui.mjs`: growth-focused cards, bars and expandable RIT supporting evidence
-- `src/portraits.mjs`: local fictional illustrated portrait generator
-- `src/app.js`: accessible navigation and UI rendering
-- `assets/aisg-logo.webp`: optimised supplied AISG logo reference
-- `assets/favicon.svg`: AISG-style square-letter favicon
-- `.github/workflows/pages.yml`: validate and deploy on pushes to main
+### Previous version
+The previous first-generation static interface is retained in **src/app.js** for reference but is no longer the site entry point.
 
-The data layer is intentionally isolated so that a future implementation may replace demo generators with approved, authorised backend data services. Note that the current client-side persona switcher **does not provide security**.
+## Non-negotiable production requirements
+GitHub Pages cannot restrict access to student information. A real rollout needs AISG-approved SSO, secure hosting, server-side teacher-to-student authorisation, proper student data processing agreements, encrypted storage, role-limited classroom support guidance, source timestamps, retention rules and access auditing. These are **documented integration contracts, not live features**.
 
-## Governance before use with real student records
+Only school-governed systems should receive identifiable learner data, with particular consideration for safeguarding and applicable PRC personal-information obligations. For the separate public Observations repository, leadership should review the existing publication of staff observation records.
 
-A future live school deployment **must not use public GitHub Pages to serve identifiable records**. Confirm school-approved data residency, applicable PRC obligations and student-data contracts; use AISG staff SSO, backend-enforced student-level permissions, audit logging, encrypted databases and separately governed support guidance. Keep actual medical, counselling and safeguarding records in their source systems.
-
-**MAP disclaimer:** Observed growth means the change in RIT points between two valid comparable assessments. The demo foregrounds observed versus projected growth, with a historical chart of growth intervals and RIT history available in a secondary expandable section. All fictional percentiles and growth projections are illustrative and are **not official NWEA norms or predictions**. Do not treat simulated scores as actual assessments.
-
-**Portraits:** The demo generates locally rendered illustrated synthetic faces from deterministic seeds. They are not actual photos of students. A future visual iteration could substitute properly licensed, age-appropriate synthetic photographic portraits.
-
-## Accessibility and QA
-
-- Responsive layout, accessible controls, focus indicators, keyboard-interactive navigation, explicit empty states.
-- Tested for desktop and mobile Chrome rendering, as available.
-- Headless unit checks validate grade/class/student counts, unique IDs, attendance derivation, grade-specific academics and MAP eligibility.
-
-## Product scope
-
-MVP includes teacher-specific class rosters, learner demographics, mock MAP achievement/growth, recent assessment snapshot, attendance/punctuality and approved classroom guidance examples. Survey responses, predictive scores, raw medical records, counselling notes and safeguarding incidents are intentionally excluded.
-
-School branding is reproduced with the provided logo for a fictional-data demonstrator, not as an endorsement of a public student-information service.
-
-## Faculty names from My Observations (demo only)
-
-The faculty selector is populated from the **2026–27 working PLC roster** in the [AISG Observations source](https://github.com/edtechevans/observations). The local `src/staff.mjs` snapshot contains **115 distinct names grouped across 20 PLCs**. Names are present in more than one PLC where the working directory lists multiple appointments; the dropdown deduplicates those names. **No observations, comments, feedback, ratings, student relationships, email addresses or other records are imported.**
-
-The working PLC data is not the authoritative AISG HR or timetable directory and may contain aliases or stale spellings. The demonstration assigns fictional classes to real names solely to illustrate the intended user experience. No real teacher–student relationship is represented. A production rollout will require a verified official roster and backend-enforced access rules.
-
-## MAP growth-first decisions
-
-- On the overview, show the percentage of **comparable Fall 2026 subject results** where observed growth meets or exceeds illustrative projected growth. The numerator and denominator are visible; missing tests and students without a valid prior comparison are excluded.
-- On class rosters, show **Mathematics observed growth in RIT points versus projected growth**, not the latest score alone.
-- On learner profiles, foreground **observed growth**, **illustrative projection** and the **difference**, with a view of changes across historical test intervals.
-- Put current RIT achievement, percentile and historical RIT plot in a collapsed supporting-evidence panel.
-- Clearly mark all growth data as synthetic and avoid interpreting growth comparisons as student ability labels.
+**Aim:** the quality measure is not the number of charts. It is whether teachers can understand their next class, interpret trustworthy evidence and act on it with less friction.
