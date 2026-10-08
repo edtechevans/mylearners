@@ -346,6 +346,7 @@ function formValue(form,name){
  return el?.value??'';
 }
 function submitHandler(event){
+ if(event.defaultPrevented)return;
  if(event.target?.id==='v2-global-search-form'){
   event.preventDefault();state.learnerQuery=formValue(event.target,'query').trim();
   state.studentClassFilter='all';go('learners');return;
@@ -374,14 +375,11 @@ function submitHandler(event){
   try{
    const form=event.target;
    const requested=formValue(form,'status');
-   const formFields=(()=>{try{return Object.fromEntries(new FormData(form))}catch{return {}}})();
-   console.info('[AISG-UX-QA] REVIEW SUBMIT',JSON.stringify({requested,formFields,teacherId:teacher().id}));
    const saved=updateAction(teacher(),data.classes,formValue(form,'id'),{
     strategy:formValue(form,'strategy'),status:requested,
     outcome:formValue(form,'outcome'),due:formValue(form,'due')
    });
    const verified=loadActions(teacher(),data.classes).find(a=>a.id===saved.id);
-   console.info('[AISG-UX-QA] REVIEW RESULT',JSON.stringify({savedStatus:saved.status,verifiedStatus:verified?.status,requested,teacherId:teacher().id}));
    if(!verified||verified.status!==requested)throw Error('The follow-up did not persist in this browser. Please retry.');
    state.actionModal=false;state.editingActionId='';state.formError='';
    state.toast='Follow-up '+(requested==='completed'?'reviewed':requested==='revisit'?'ready to revisit':'updated');
@@ -395,6 +393,9 @@ export function wire(){
  app.addEventListener('change',changeHandler);
  app.addEventListener('input',inputHandler);
  app.addEventListener('submit',submitHandler);
+ // Capture forms at document level as well: modal form DOM can be reparented by the browser.
+ // event.defaultPrevented above avoids handling the same submission twice.
+ globalThis.document?.addEventListener?.('submit',submitHandler,true);
  globalThis.window?.addEventListener?.('hashchange',()=>{state.mobile=false;render()});
  globalThis.window?.addEventListener?.('keydown',keyHandler);
  render();
