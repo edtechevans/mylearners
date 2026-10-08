@@ -100,6 +100,7 @@ export function renderClass(ctx){
  const cp=pulseForClass(ctx.data,ctx.pulse,c);
  const items=classInsights(cp);const rows=rosterRows(ctx,cp);
  const mode=ctx.state.classMode;
+ const filter=ctx.state.rosterFilter;
  const filterNames={all:'All learners',revisit:'Revisit / practise',missing:'Submission follow-up',extend:'Ready to extend',support:'Support guidance',attendance:'Attendance changes'};
  return sectionTitle('CLASSROOM VIEW','Class Pulse','Recent classroom evidence, temporary groups and learning opportunities.')+
  '<div class="v2-class-toolbar"><div><label for="v2-class-select">TEACHING GROUP</label><select id="v2-class-select">'+ctx.classes.map(x=>'<option value="'+esc(x.id)+'" '+(x.id===c.id?'selected':'')+'>'+esc(x.name)+' · '+esc(x.section)+'</option>').join('')+'</select></div>'+
