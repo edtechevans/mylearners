@@ -183,10 +183,10 @@ export function renderLearners(ctx){
  '<option value="'+esc(c.id)+'" '+(filteredClass===c.id?'selected':'')+'>'+esc(c.name)+'</option>').join('')+'</select></label>'+
  '<span class="v2-result-note">'+learners.length+' fictional learners</span></div>'+
  (learners.length?'<div class="v2-learners-grid">'+learners.slice(0,160).map(s=>{
-   const sig=ctx.pulse.byStudent[s.id],today=pulseForClass(ctx.data,ctx.pulse,ctx.data.classIndex.get(s.classId)).rows.find(r=>r.student.id===s.id);
+   const today=pulseForClass(ctx.data,ctx.pulse,ctx.data.classIndex.get(s.classId)).rows.find(r=>r.student.id===s.id);
    return '<button class="v2-learner-card" data-open-student="'+esc(s.id)+'">'+studentImg(s,'large')+
    '<span class="v2-learner-card-text"><strong>'+shortName(s)+'</strong><small>'+esc(shortGrade(s.grade))+' · '+esc(s.classId)+'</small>'+
-   '<span class="v2-learner-meta">'+stageBadge(today?.attendance.status||'not-recorded')+' <span class="v2-light-small">· '+esc(SKILL_STATES[sig.formative.level].short)+'</span></span></span>'+icon('chevron',17)+'</button>';
+   '<span class="v2-learner-meta">'+stageBadge(today?.attendance.status||'not-recorded')+' <span class="v2-light-small">· '+esc(s.primaryLanguage)+'</span></span></span>'+icon('chevron',17)+'</button>';
  }).join('')+'</div>':emptyState('No learners found','Try a different name or class.'))+
  '<p class="v2-caption">This is a demonstration roster. Teacher-class assignments are invented, even though faculty names are real.</p>';
 }
@@ -207,7 +207,7 @@ export function renderGrowth(ctx){
  const rate=comparable?Math.round(100*met/comparable):null;
  const avg=comparable?Math.round(10*groups.reduce((a,x)=>a+x.avg*x.comparable,0)/comparable)/10:null;
  const noMap=groups.every(g=>g.comparable===0);
- return sectionTitle('LONGITUDINAL EVIDENCE','Growth & Evidence','MAP growth where valid, alongside more recent classroom learning evidence.')+
+ return sectionTitle('MAP ASSESSMENT','MAP Growth','Explore student growth over time, with achievement and RIT as supporting context.')+
  '<div class="v2-growth-banner"><div><span class="v2-eyebrow">MAP GROWTH PHILOSOPHY</span><h3>Progress before position.</h3><p>See observed change between valid testing windows, consider the projection, and return to classroom evidence for what to do next.</p></div>'+
  '<span class="v2-banner-icon">'+icon('trending',36)+'</span></div>'+
  '<div class="v2-class-toolbar"><label>MAP SUBJECT <select id="v2-subject-select">'+['Mathematics','Reading','Language Usage'].map(x=>'<option '+(x===subject?'selected':'')+'>'+esc(x)+'</option>').join('')+'</select></label>'+
@@ -215,7 +215,7 @@ export function renderGrowth(ctx){
  (noMap?'<section class="v2-card v2-card-roomy"><h2>Learning evidence that fits the age and programme</h2>'+
  '<p>Comparable MAP Growth results are not available for your current fictional groups. This is appropriate for PK–Grade 2 and Grades 11–12 in this demonstration. Use recent classroom assessments, descriptive evidence, developmental records or programme criteria instead.</p>'+
  '<div class="v2-evidence-shift">'+icon('book',24)+' Meaningful progress evidence differs between early years, elementary, MYP and DP.</div>'+
- '<button class="v2-button secondary" data-nav="class">Open formative Class Pulse '+icon('arrow',15)+'</button></section>':
+ '<button class="v2-button secondary" data-nav="class">View My Classes '+icon('arrow',15)+'</button></section>':
  '<div class="v2-stats-grid">'+
  stat('Met / exceeded projection',rate===null?'—':rate+'%',met+' of '+comparable+' comparable subject results','teal')+
  stat('Average observed growth',avg===null?'—':growthFormat(avg)+' pts','Comparably assessed learners only','blue')+
@@ -233,13 +233,13 @@ export function renderGrowth(ctx){
  '<p><strong>What it cannot establish:</strong> a cause, a fixed learner label, or whether one strategy produced the change.</p>'+
  '<p><strong>What to explore next:</strong> recent formative evidence, student experience and teaching context.</p></div></section>'+
  '<section class="v2-card v2-card-roomy"><span class="v2-eyebrow">INSTRUCTIONAL QUESTION</span><h2>From MAP to daily teaching</h2><p>Which recent classroom evidence might help explain the pattern—and what more do you need to know?</p>'+
- '<button class="v2-button ghost full" data-nav="class">Review Class Pulse '+icon('arrow',14)+'</button></section></aside></div>')+
+ '<button class="v2-button ghost full" data-nav="class">View class roster '+icon('arrow',14)+'</button></section></aside></div>')+
  '<section class="v2-card v2-card-roomy v2-growth-students"><div class="v2-card-head"><div><span class="v2-eyebrow">STUDENT EVIDENCE</span><h2>Explore individual MAP growth</h2></div></div>'+
  renderGrowthStudentTable(ctx,subject)+'</section>';
 }
 function renderGrowthStudentTable(ctx,subject){
  const students=ctx.students.filter(s=>gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10);
- if(!students.length)return emptyState('Not assessed in these grades','Use the Class Pulse for current learning evidence.');
+ if(!students.length)return emptyState('Not assessed in these grades','Use My Classes for current academic evidence.');
  return '<div class="v2-table-scroll"><table class="v2-table"><thead><tr><th>Learner</th><th>Group</th><th>Observed growth</th><th>Illustrative projection</th><th>Current test</th><th></th></tr></thead><tbody>'+
  students.slice(0,100).map(s=>{
   const g=latestMapGrowth(ctx.data.map[s.id],subject);
@@ -274,30 +274,34 @@ export function renderStudent(ctx,studentId){
  const status=ctx.data.attendance[s.id].at(-1);
  const attendance=attendanceTrend(ctx.data,s);
  const g=latestMapGrowth(ctx.data.map[s.id]||[],'Mathematics');
- const currentActions=ctx.actions.filter(a=>a.studentId===s.id||a.classId===s.classId&&a.studentId==='');
  const section=ctx.state.studentTab;
  let body='';
  if(section==='overview')body=
  '<div class="v2-stats-grid">'+stat('Today’s attendance',status?.status==='absent'?'Absent':status?.status==='late'?'Late':'Present','8 Oct · fictional','blue')+
  stat('Latest formative evidence',SKILL_STATES[daily.formative.level].short,smallDate(daily.formative.recorded)+' · skill check','teal')+
  stat('MAP Mathematics growth',g.status==='comparable'?growthFormat(g.actual)+' pts':'N/A',g.status==='comparable'?'vs '+growthFormat(g.projected)+' projected':'No comparable result','neutral')+
- stat('Learning follow-ups',currentActions.filter(a=>a.status!=='completed').length,'Teacher-owned demo actions','amber')+'</div>'+
+ stat('Classroom guidance',(ctx.data.support[s.id]||[]).length,'Essential strategies on file','amber')+'</div>'+
  '<div class="v2-main-grid"><section class="v2-card v2-card-roomy"><div class="v2-card-head"><div><span class="v2-eyebrow">CONNECTED EVIDENCE</span><h2>Recent learning timeline</h2><p>See what changed, and open the underlying category for context.</p></div></div>'+
  '<div class="v2-timeline">'+events.map(ev=>'<div class="v2-timeline-item"><span class="v2-timeline-dot"></span><div><small>'+esc(prettyDate(ev.date))+' · '+esc(ev.kind.toUpperCase())+'</small><h3>'+esc(ev.title)+'</h3><p>'+esc(ev.description)+'</p><span class="v2-mini-source">'+esc(ev.source)+'</span></div></div>').join('')+'</div></section>'+
  '<aside class="v2-right-stack"><section class="v2-card v2-card-roomy"><span class="v2-eyebrow">KNOW THE LEARNER</span><h2>Profile context</h2>'+
  '<div class="v2-info-pairs"><div><span>Grade</span><strong>'+esc(shortGrade(s.grade))+'</strong></div><div><span>Homeroom</span><strong>'+esc(s.homeroom)+'</strong></div>'+
  '<div><span>Campus</span><strong>'+esc(s.campus)+'</strong></div><div><span>Home language</span><strong>'+esc(s.primaryLanguage)+'</strong></div>'+
  '<div><span>Years at AISG</span><strong>'+esc(s.yearsAtAISG)+'</strong></div></div></section>'+
- '<section class="v2-card v2-card-roomy"><span class="v2-eyebrow">YOUR NEXT MOVE</span><h2>Respond with purpose</h2><p>Current evidence suggests: '+esc(daily.classroomNext)+'. Use your judgement and other observations before deciding.</p>'+
- actionBtn(s.classId,'Record teaching response',s.id,'Demo formative check · 7 Oct 2026')+'</section></aside></div>';
+ '<section class="v2-card v2-card-roomy"><span class="v2-eyebrow">ACADEMIC SNAPSHOT</span><h2>Recent assessment</h2>'+
+ ((ctx.data.assessments[s.id]||[]).find(a=>a.status==='Published')?
+   '<p><strong>'+esc(ctx.data.assessments[s.id].find(a=>a.status==='Published').subject)+'</strong> · '+
+    esc(ctx.data.assessments[s.id].find(a=>a.status==='Published').title)+'</p>'+
+   '<p class="launch-profile-outcome">Outcome: '+esc(ctx.data.assessments[s.id].find(a=>a.status==='Published').outcome)+'</p>':
+   '<p>No published assessment is available in this demonstration.</p>')+
+ '<button class="v2-button ghost full" data-student-tab="learning">View academic results '+icon('arrow',15)+'</button></section></aside></div>';
  else if(section==='learning'){
   const latest=ctx.data.assessments[s.id].slice(0,7);
   body='<div class="v2-main-grid"><section class="v2-card v2-card-roomy"><span class="v2-eyebrow">RECENT CLASSROOM LEARNING</span><h2>Current formative check</h2>'+
   '<div class="v2-learning-highlight"><span class="v2-learning-chip level-'+daily.formative.level+'">'+esc(SKILL_STATES[daily.formative.level].label)+'</span>'+
-  '<h3>'+esc(daily.skill)+'</h3><p>Recorded on '+smallDate(daily.formative.recorded)+'. Suggested next move: '+esc(daily.classroomNext)+'.</p></div>'+
+  '<h3>'+esc(daily.skill)+'</h3><p>Recorded on '+smallDate(daily.formative.recorded)+'. Recent classroom evidence, for teacher interpretation.</p></div>'+
   '<h3 class="v2-subtitle">Recent assignments and published results</h3><div class="v2-table-scroll"><table class="v2-table"><thead><tr><th>Assessment</th><th>Subject</th><th>When</th><th>Status</th><th>Outcome</th></tr></thead><tbody>'+
   latest.map(a=>'<tr><td>'+esc(a.title)+'</td><td>'+esc(a.subject)+'</td><td>'+esc(a.date)+'</td><td>'+stageBadge(a.status.toLowerCase())+'</td><td>'+esc(a.status==='Published'?a.outcome:'Not available')+'</td></tr>').join('')+
-  '</tbody></table></div></section><aside class="v2-right-stack"><section class="v2-card v2-card-roomy"><span class="v2-eyebrow">SUBMISSION PULSE</span><h2>Recent learning evidence</h2>'+
+  '</tbody></table></div></section><aside class="v2-right-stack"><section class="v2-card v2-card-roomy"><span class="v2-eyebrow">RECENT SUBMISSION</span><h2>Recent learning evidence</h2>'+
   '<p><strong>'+esc(daily.task.status)+'</strong> · '+esc(daily.task.title)+'</p><p class="v2-caption">Source: fictional ManageBac-like learning records. Outcomes reflect MYP/DP/elementary approaches rather than forced percentage grades.</p></section></aside></div>';
  }else if(section==='map')body=renderGrowthProfile(ctx.data.map[s.id]||[],ctx.state.subject,ritHistoryChart);
  else if(section==='attendance'){
@@ -324,14 +328,14 @@ export function renderStudent(ctx,studentId){
   '</section></aside></div>';
  }
  const origin=ctx.state.returnContext?.teacherId===ctx.teacher.id?ctx.state.returnContext:null;
- const returnLabel=origin?.page==='class'?'Back to '+(ctx.data.classIndex.get(origin.classId)?.name||'Class Pulse'):
+ const returnLabel=origin?.page==='class'?'Back to '+(ctx.data.classIndex.get(origin.classId)?.name||'My Classes'):
   origin?.page==='growth'?'Back to Growth & Evidence':origin?.page==='today'?'Back to Today':
   origin?.page==='actions'?'Back to My Actions':'Back to My Learners';
  return '<button class="v2-back" data-return-profile="1">'+icon('back',15)+' '+esc(returnLabel)+'</button>'+
  '<div class="v2-profile-hero">'+studentImg(s,'large')+'<div><span class="v2-eyebrow">FICTIONAL LEARNER PROFILE</span><h1>'+esc(s.name)+'</h1>'+
  '<p>'+esc(shortGrade(s.grade))+' · '+esc(s.classId)+' · '+esc(s.campus)+' Campus · '+esc(s.id)+'</p>'+
  '<div class="v2-tagline"><span>'+esc(s.primaryLanguage)+'</span><span>'+esc(s.yearsAtAISG)+' years at AISG</span></div></div>'+
- '<div class="v2-profile-action">'+actionBtn(s.classId,'New follow-up',s.id,'Teacher observation · fictional profile')+'</div></div>'+
+ '</div>'+
  renderStudentNav(ctx,s)+'<div id="v2-student-panel" role="tabpanel" aria-labelledby="v2-tab-'+esc(section)+'" tabindex="0">'+body+'</div>'+
  '<p class="v2-caption">All learner identities, grades, academic records, survey information, attendance and support guidance are synthetic.</p>';
 }
