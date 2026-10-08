@@ -24,7 +24,7 @@ export const state={
  route:'today',rosterFilter:'all',classMode:'roster',studentQuery:'',
  studentClassFilter:'all',studentTab:'overview',subject:'Mathematics',
  actionFilter:'all',actionModal:false,editingActionId:'',
- modalClassId:'',modalStudentId:'',modalTitle:'',modalStrategy:'',modalEvidence:'',
+ modalClassId:'',modalStudentId:'',modalTitle:'',modalStrategy:'',modalEvidence:'',modalDue:'2026-10-12',
  formError:'',insightId:'',mobile:false
 };
 const app=globalThis.document?.getElementById('app');
@@ -138,7 +138,7 @@ function openCreate(trigger){
  const s=trigger?.dataset?.actionStudent||'';
  state.actionModal=true;state.editingActionId='';state.modalClassId=id||currentClass()?.id||'';
  state.modalStudentId=s;state.modalTitle='';state.modalEvidence=trigger?.dataset?.actionEvidence||'Teacher reflection · demo';
- state.modalStrategy='';state.formError='';render();
+ state.modalStrategy='';state.modalDue='2026-10-12';state.formError='';render();
 }
 function closeModal(){
  state.actionModal=false;state.editingActionId='';state.formError='';render();
@@ -150,7 +150,7 @@ function actionFromInsight(id){
  state.modalClassId=insight.classId;state.modalStudentId='';
  state.modalTitle=insight.title;state.modalEvidence=insight.source;
  state.modalStrategy='Investigate the evidence with learners and try a purposeful adjustment in the next lesson.';
- state.formError='';render();
+ state.modalDue='2026-10-12';state.formError='';render();
 }
 function clickHandler(event){
  const target=event.target;if(!target||typeof target.closest!=='function')return;
@@ -193,6 +193,16 @@ function changeHandler(event){
  }
  if(target.id==='v2-learner-class'){
   state.studentClassFilter=target.value;render();return;
+ }
+ if(target.name==='classId'&&target.closest?.('#v2-create-form')){
+  const form=target.closest('form');
+  state.modalClassId=target.value;
+  state.modalStudentId='';
+  state.modalTitle=form?.elements?.namedItem?.('title')?.value||state.modalTitle;
+  state.modalStrategy=form?.elements?.namedItem?.('strategy')?.value||state.modalStrategy;
+  state.modalEvidence=form?.elements?.namedItem?.('evidence')?.value||state.modalEvidence;
+  state.modalDue=form?.elements?.namedItem?.('due')?.value||state.modalDue;
+  render();return;
  }
  if(target.id==='v2-subject-select'){
   state.subject=target.value;render();return;
