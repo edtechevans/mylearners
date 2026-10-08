@@ -132,9 +132,11 @@ def journey(browser,index,item):
      form=page.locator('#v2-review-form')
      form.locator('[name="outcome"]').fill('Reviewed evidence after the lesson.')
      form.locator('[name="status"]').select_option('completed')
-     print('ACTION REVIEW INPUT:',form.locator('[name="status"]').input_value(),form.locator('[name="id"]').input_value(),flush=True)
+     print('ACTION REVIEW INPUT:',form.locator('[name="status"]').input_value(),form.locator('[name="id"]').input_value(),
+       form.evaluate('(f)=>({nameStatus:f.elements.namedItem("status")?.value,submittedStatus:new FormData(f).get("status"),all:[...new FormData(f)]})'),flush=True)
      form.locator('[type="submit"]').click()
-     print('ACTION REVIEW RESULT:',page.locator('.v2-action-card',has_text='Teacher follow-up '+cid).inner_text()[:280],flush=True)
+     print('ACTION REVIEW RESULT:',page.locator('.v2-action-card',has_text='Teacher follow-up '+cid).inner_text()[:280],
+       'ERRORS:',page.locator('.v2-form-error').all_inner_texts(),flush=True)
      print('ACTION LOCAL STORAGE:',page.evaluate('Object.entries(localStorage).filter(([k])=>k.includes("aisg-mylearners-v2-actions")).map(([k,v])=>[k,v.slice(0,480)])'),flush=True)
      expect(page.locator('.v2-action-card',has_text='Teacher follow-up '+cid)).to_contain_text('Reviewed')
      page.locator('.v2-action-card',has_text='Teacher follow-up '+cid).locator('[data-open-class]').click()
