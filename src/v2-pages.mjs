@@ -42,7 +42,7 @@ export function renderToday(ctx){
  '<div class="v2-hero-actions"><button class="v2-button light" data-open-class="'+esc(next.id)+'">'+icon('layers',16)+' Open Class Pulse '+icon('arrow',14)+'</button>'+
  actionBtn(next.id,'Plan teaching response','','Demo recent formative evidence')+'</div></div>'+
  '<div class="v2-hero-context"><div><span>RECENT LEARNING EVIDENCE</span><strong>'+openCount+' / '+cp.rows.length+'</strong><small>Worth exploring for additional teaching support</small></div>'+
- '<div><span>FOLLOW-UP ACTIONS</span><strong>'+counts.open+counts.revisit+'</strong><small>Your locally saved demonstration actions</small></div></div></div>'+
+ '<div><span>FOLLOW-UP ACTIONS</span><strong>'+(counts.open+counts.revisit)+'</strong><small>Your locally saved demonstration actions</small></div></div></div>'+
  '<div class="v2-stats-grid">'+
  stat('Attendance today',cp.attendance.present+cp.attendance.late+' / '+cp.rows.length,'Present or late in selected class','blue')+
  stat('Responses to check',cp.missing+cp.pending,'Missing or awaiting submission','amber')+
@@ -103,7 +103,7 @@ export function renderClass(ctx){
  const filter=ctx.state.rosterFilter;
  const filterNames={all:'All learners',revisit:'Revisit / practise',missing:'Submission follow-up',extend:'Ready to extend',support:'Support guidance',attendance:'Attendance changes'};
  return sectionTitle('CLASSROOM VIEW','Class Pulse','Recent classroom evidence, temporary groups and learning opportunities.')+
- '<div class="v2-class-toolbar"><div><label for="v2-class-select">TEACHING GROUP</label><select id="v2-class-select">'+ctx.classes.map(x=>'<option value="'+esc(x.id)+'" '+(x.id===c.id?'selected':'')+'>'+esc(x.name)+' · '+esc(x.section)+'</option>').join('')+'</select></div>'+
+ '<div class="v2-class-toolbar"><div><label for="v2-class-select">TEACHING GROUP</label><select id="v2-class-select">'+ctx.classes.map(x=>'<option value="'+esc(x.id)+'" '+(x.id===c.id?'selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select></div>'+
  '<div class="v2-toolbar-actions">'+actionBtn(c.id)+
  '<button class="v2-button ghost" data-nav="growth">'+icon('chart',16)+' Growth & Evidence</button></div></div>'+
  '<div class="v2-stats-grid">'+
