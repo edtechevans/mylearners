@@ -461,3 +461,6 @@ body.v2-dialog-open{overflow:hidden}
  .v2-toast{right:12px;bottom:12px}
 }
 @media(min-width:1280px){.v2-global-search input{width:194px}}
+
+/* Toast notices must never cover actions in a modal on narrow screens. */
+body.v2-dialog-open .v2-toast{display:none!important}
