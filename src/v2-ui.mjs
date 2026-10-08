@@ -49,7 +49,7 @@ export const shortGrade=g=>g.startsWith('G')?'Grade '+g.slice(1):g==='K'?'Kinder
 export function stageBadge(status){
  const labels={present:'Present',absent:'Absent',late:'Late',missing:'Missing',submitted:'Submitted',pending:'Pending',
    revisit:'Revisit',developing:'Developing',secure:'Secure',extend:'Extend',
-   open:'In progress',completed:'Reviewed'};
+   open:'In progress',completed:'Reviewed','awaiting-submission':'Awaiting submission','not-recorded':'Not recorded'};
  const key=String(status||'').toLowerCase().replaceAll(' ','-');
  return '<span class="v2-status '+esc(key)+'">'+esc(labels[key]||status||'Not recorded')+'</span>';
 }
