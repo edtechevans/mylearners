@@ -148,7 +148,7 @@ export function render(){
  sidebar(p,ctx)+'<div class="v2-workspace"'+(state.actionModal||state.editingActionId||state.insightId?' inert aria-hidden="true"':'')+'>'+topbar(p,ctx)+
  '<main class="v2-main" id="main-content" tabindex="-1">'+body+foot()+'</main></div>'+
  renderInsightDrawer(ctx)+renderActionModal(ctx)+
- (state.toast?'<div class="v2-toast" role="status">'+icon('check',16)+' '+esc(state.toast)+' <button data-dismiss-toast="1" aria-label="Dismiss notification">'+icon('close',14)+'</button></div>':'')+'</div>';
+ (state.toast&&!state.actionModal&&!state.editingActionId&&!state.insightId?'<div class="v2-toast" role="status">'+icon('check',16)+' '+esc(state.toast)+' <button data-dismiss-toast="1" aria-label="Dismiss notification">'+icon('close',14)+'</button></div>':'')+'</div>';
  globalThis.document?.body?.classList?.toggle?.('v2-dialog-open',Boolean(state.actionModal||state.editingActionId||state.insightId));
  preserveNavigation();
  if(active==='v2-roster-search'||active==='v2-learner-search'){
