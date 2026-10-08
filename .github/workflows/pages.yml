@@ -20,6 +20,35 @@ jobs:
           node-version: 22
       - name: Validate synthetic dataset
         run: node --test tests/*.test.mjs
+      - name: Browser rendering smoke check
+        shell: bash
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/aisg-mylearners-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          sleep 2
+          browser="$(command -v google-chrome || command -v chromium || true)"
+          if [[ -z "$browser" ]]; then
+            echo "No system Chromium available: browser QA skipped (Node tests still required)"
+            exit 0
+          fi
+          mkdir -p .qa
+          for page in today class learners growth actions student/DEMO-0721; do
+            name="${page//\//-}"
+            echo "Checking page: $page"
+            timeout 35s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --hide-scrollbars --window-size=1440,950 --virtual-time-budget=2500 --screenshot=".qa/$name.png" --dump-dom "http://127.0.0.1:8765/#/$page" >".qa/$name.html" 2>/tmp/aisg-mylearners-browser.log
+            grep -q 'class="v2-app"' ".qa/$name.html"
+          done
+          echo "All six pages rendered in headless browser"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mylearners-v2-visual-qa
+          path: .qa/*.png
+          if-no-files-found: ignore
+          retention-days: 7
   deploy:
     needs: validate
     runs-on: ubuntu-latest
