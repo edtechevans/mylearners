@@ -373,11 +373,16 @@ function submitHandler(event){
   event.preventDefault();
   try{
    const form=event.target;
-   updateAction(teacher(),data.classes,formValue(form,'id'),{
-    strategy:formValue(form,'strategy'),status:formValue(form,'status'),
+   const requested=formValue(form,'status');
+   const saved=updateAction(teacher(),data.classes,formValue(form,'id'),{
+    strategy:formValue(form,'strategy'),status:requested,
     outcome:formValue(form,'outcome'),due:formValue(form,'due')
    });
-   state.actionModal=false;state.editingActionId='';state.formError='';go('actions');
+   const verified=loadActions(teacher(),data.classes).find(a=>a.id===saved.id);
+   if(!verified||verified.status!==requested)throw Error('The follow-up did not persist in this browser. Please retry.');
+   state.actionModal=false;state.editingActionId='';state.formError='';
+   state.toast='Follow-up '+(requested==='completed'?'reviewed':requested==='revisit'?'ready to revisit':'updated');
+   go('actions');
   }catch(error){state.formError=error.message||'Unable to review';render()}
  }
 }
