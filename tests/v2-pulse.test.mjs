@@ -65,6 +65,7 @@ test('daily home, class pulse and learning evidence pages render useful informat
  assert.match(today,/PREPARE FOR YOUR NEXT LESSON/);
  assert.match(today,/Signals for your next lesson/);
  assert.match(today,/Notice → Respond → Revisit/);
+ assert.match(today,/FOLLOW-UP ACTIONS<\/span><strong>2<\/strong>/);
  assert.doesNotMatch(today,/http:\/\/localhost/);
  const cls=renderClass(ctx());
  assert.match(cls,/Class Pulse/);
