@@ -70,7 +70,7 @@ def journey(browser,index,item):
   load(page)
   persona(page,person)
   if kind=='growth':
-   page.locator('[data-nav="growth"]').click()
+   page.locator('.v2-nav [data-nav="growth"]').click()
    expect(page.locator('.v2-growth-banner')).to_be_visible()
    page.locator('[data-open-class="'+cid+'"]').first.click()
    expect(page.locator('[data-return-class]')).to_contain_text('Growth & Evidence')
@@ -90,7 +90,7 @@ def journey(browser,index,item):
     page.locator('[data-roster-filter="revisit"]').click()
     before=page.locator('tbody tr').count()
    if kind=='groups':
-    page.locator('[data-class-mode="groups"]').click()
+    page.locator('.v2-tabs [data-class-mode="groups"]').click()
     chooser=page.locator('[data-group-student]').first
     student=chooser.get_attribute('data-group-student')
     old=chooser.input_value();new='extend' if old!='extend' else 'secure'
@@ -101,7 +101,7 @@ def journey(browser,index,item):
     page.once('dialog',lambda dlg:dlg.accept())
     page.locator('[data-reset-groups]').click()
     expect(page.locator('[data-group-student="'+student+'"]').first).to_have_value(old)
-    page.locator('[data-class-mode="roster"]').click()
+    page.locator('.v2-tabs [data-class-mode="roster"]').click()
    if kind=='evidence':
     page.locator('[data-insight]').first.click()
     expect(page.get_by_role('dialog')).to_contain_text('DECISION RULE')
@@ -132,7 +132,10 @@ def journey(browser,index,item):
      form=page.locator('#v2-review-form')
      form.locator('[name="outcome"]').fill('Reviewed evidence after the lesson.')
      form.locator('[name="status"]').select_option('completed')
+     print('ACTION REVIEW INPUT:',form.locator('[name="status"]').input_value(),form.locator('[name="id"]').input_value(),flush=True)
      form.locator('[type="submit"]').click()
+     print('ACTION REVIEW RESULT:',page.locator('.v2-action-card',has_text='Teacher follow-up '+cid).inner_text()[:280],flush=True)
+     print('ACTION LOCAL STORAGE:',page.evaluate('Object.entries(localStorage).filter(([k])=>k.includes("aisg-mylearners-v2-actions")).map(([k,v])=>[k,v.slice(0,480)])'),flush=True)
      expect(page.locator('.v2-action-card',has_text='Teacher follow-up '+cid)).to_contain_text('Reviewed')
      page.locator('.v2-action-card',has_text='Teacher follow-up '+cid).locator('[data-open-class]').click()
     else:
