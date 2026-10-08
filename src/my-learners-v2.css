@@ -383,3 +383,37 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
  .v2-footer{flex-direction:column}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+
+
+/* Post-launch visual QA: prioritize readable evidence and a full-width class matrix. */
+.v2-section-head p{font-size:13px;color:#506b81}
+.v2-card-head p{font-size:12px;color:#587185}
+.v2-card p{font-size:12px;color:#526e82}
+.v2-signal h3{font-size:13px}
+.v2-signal p{font-size:12px;color:#526b80}
+.v2-signal-label{font-size:10px;color:#617d94}
+.v2-stat-foot{font-size:11px;color:#617b90}
+.v2-sched-desc small{font-size:11px;color:#627e92}
+.v2-table th{font-size:10px;color:#557085}
+.v2-table td{font-size:11px}
+.v2-row-sub{font-size:10px;color:#657d90}
+.v2-filter-chip{font-size:10px}
+.v2-evidence-line{font-size:11px;color:#546f84}
+.v2-caption{font-size:11px!important;color:#647f91!important}
+.v2-voice-denominator{font-size:11px!important;color:#5b768b!important}
+.v2-info-pairs span{font-size:11px;color:#647e92}
+.v2-timeline-item small{font-size:10px;color:#678298}
+.v2-mini-source{font-size:10px;color:#668195}
+.v2-side-demo p{font-size:11px;color:#567189}
+.v2-progress{background:#e7eef3}
+@media(min-width:1120px){
+ .v2-class-grid{display:grid;grid-template-columns:minmax(0,1fr)}
+ .v2-class-side{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;gap:16px}
+ .v2-class-side>section:last-child{grid-column:auto}
+ .v2-table{min-width:900px}
+}
+@media(max-width:620px){
+ .v2-evidence-line{font-size:10px}
+ .v2-card p{font-size:12px}
+ .v2-table th{font-size:10px}
+}
