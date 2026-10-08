@@ -65,6 +65,7 @@ def journey(browser,index,item):
  name,person,cid,kind=item
  context=browser.new_context(viewport={'width':390 if kind=='dp' else 1440,'height':844 if kind=='dp' else 900},locale='en-GB')
  page=context.new_page();errors=[];page.on('pageerror',lambda err:errors.append(str(err)))
+ page.on('console',lambda msg: print('BROWSER-CONSOLE',name,msg.text[:900],flush=True) if '[AISG-UX-QA]' in msg.text else None)
  start=time.monotonic()
  try:
   load(page)
@@ -135,6 +136,7 @@ def journey(browser,index,item):
      print('ACTION REVIEW INPUT:',form.locator('[name="status"]').input_value(),form.locator('[name="id"]').input_value(),
        form.evaluate('(f)=>({nameStatus:f.elements.namedItem("status")?.value,submittedStatus:new FormData(f).get("status"),all:[...new FormData(f)]})'),flush=True)
      form.locator('[type="submit"]').click()
+     print('ACTION REVIEW URL:',page.url,'FORM EXISTS:',page.locator('#v2-review-form').count(),'TOAST:',page.locator('.v2-toast').all_inner_texts(),flush=True)
      print('ACTION REVIEW RESULT:',page.locator('.v2-action-card',has_text='Teacher follow-up '+cid).inner_text()[:280],
        'ERRORS:',page.locator('.v2-form-error').all_inner_texts(),flush=True)
      print('ACTION LOCAL STORAGE:',page.evaluate('Object.entries(localStorage).filter(([k])=>k.includes("aisg-mylearners-v2-actions")).map(([k,v])=>[k,v.slice(0,480)])'),flush=True)
@@ -143,8 +145,74 @@ def journey(browser,index,item):
     else:
      page.locator('[data-return-actions]').click()
     expect(page).to_have_url(re.compile('#/class/'+re.escape(cid)+'$'))
-   page.locator('[data-nav="today"]').click()
-   expect(page).to_have_url(re.compile('#/today$'))
+   if kind=='dp':
+    page.locator('[data-menu]').first.click()
+    expect(page.locator('.v2-sidebar.open')).to_be_visible()
+   page.locator('.v2-nav [data-nav="today"]').click()
+   expect(page).to_have_url(re.compile('#/today
+  check(not errors, 'Browser JavaScript errors: '+str(errors))
+  row={'name':name,'persona':person,'class':cid,'status':'passed',
+       'automationElapsedSeconds':round(time.monotonic()-start,2)}
+ except Exception as exc:
+  filename='failure-'+str(index).zfill(2)+'.png'
+  try:page.screenshot(path=str(OUT/'screenshots'/filename),full_page=True)
+  except Exception:pass
+  row={'name':name,'persona':person,'class':cid,'status':'failed',
+       'error':str(exc)[:1200],'trace':traceback.format_exc()[-1800:],
+       'automationElapsedSeconds':round(time.monotonic()-start,2)}
+ finally:context.close()
+ return row
+def responsive(browser):
+ report=[]
+ for w,h in [(1920,1080),(1440,900),(1280,800),(1024,768),(768,1024),(390,844),(360,800)]:
+  ctx=browser.new_context(viewport={'width':w,'height':h});page=ctx.new_page()
+  for route in ['today','class','learners','growth','actions','student/DEMO-0721']:
+   load(page,route)
+   v=page.evaluate('''() => ({overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+        h1:document.querySelectorAll("main h1").length,
+        logo:!!document.querySelector("img[alt*='American International School']")})''')
+   good=v['overflow']<=2 and v['h1']>=1 and v['logo']
+   report.append({'viewport':f'{w}x{h}','route':route,'status':'passed' if good else 'failed',**v})
+   if w in (1440,390) and route in ('today','class','growth','actions','student/DEMO-0721'):
+    page.screenshot(path=str(OUT/'screenshots'/f'{w}-{route.replace("/","-")}.png'),full_page=True)
+  ctx.close()
+ return report
+def keyboard(browser):
+ ctx=browser.new_context(viewport={'width':1440,'height':900});page=ctx.new_page();load(page)
+ page.locator('.v2-day-hero [data-create-action]').click()
+ focused=page.evaluate('document.querySelector(".v2-modal")?.contains(document.activeElement)')
+ page.keyboard.press('Escape');expect(page.locator('.v2-modal')).to_have_count(0)
+ page.locator('[data-open-class="G7-A"]').first.click()
+ open_student(page)
+ page.locator('[data-student-tab="overview"]').focus()
+ page.keyboard.press('ArrowRight')
+ check(page.url.endswith('/learning'),'Profile tabs not keyboard-accessible')
+ page.go_back();expect(page).to_have_url(re.compile('#/student/DEMO-\d{4}$'))
+ ctx.close()
+ return {'modalFocus':bool(focused),'escapeClosed':True,'keyboardTabs':True,'historyBack':True}
+def main():
+ chrome=os.environ.get('CHROME_BIN') or shutil.which('google-chrome') or shutil.which('chromium') or '/usr/bin/chromium'
+ with sync_playwright() as pw:
+  browser=pw.chromium.launch(headless=True,executable_path=chrome,args=['--no-sandbox','--disable-dev-shm-usage'])
+  try:
+   for n,item in enumerate(PERSONAS,1):
+    x=journey(browser,n,item);RESULTS.append(x)
+    print(('PASS' if x['status']=='passed' else 'FAIL'),x['name'],x.get('error','')[:160],flush=True)
+   sizes=responsive(browser)
+   try: keys=keyboard(browser)
+   except Exception as exc: keys={'error':str(exc),'modalFocus':False,'keyboardTabs':False,'historyBack':False}
+   summary={'journeysPassed':sum(x['status']=='passed' for x in RESULTS),
+            'journeysTotal':len(PERSONAS),
+            'viewportPagesPassed':sum(x['status']=='passed' for x in sizes),
+            'viewportPagesTotal':len(sizes),'keyboard':keys}
+   output={'method':'Playwright automated simulated personas, not actual teacher participants',
+            'baseUrl':BASE,'summary':summary,'journeys':RESULTS,'responsive':sizes}
+   (OUT/'ux-journeys.json').write_text(json.dumps(output,indent=2,ensure_ascii=False))
+   print('SUMMARY',json.dumps(summary),flush=True)
+   return int(summary['journeysPassed']!=10 or summary['viewportPagesPassed']!=len(sizes) or not all(keys.get(k) for k in ['modalFocus','keyboardTabs','historyBack']))
+  finally:browser.close()
+if __name__=='__main__':raise SystemExit(main())
+))
   check(not errors, 'Browser JavaScript errors: '+str(errors))
   row={'name':name,'persona':person,'class':cid,'status':'passed',
        'automationElapsedSeconds':round(time.monotonic()-start,2)}
