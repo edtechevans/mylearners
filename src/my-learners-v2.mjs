@@ -374,11 +374,14 @@ function submitHandler(event){
   try{
    const form=event.target;
    const requested=formValue(form,'status');
+   const formFields=(()=>{try{return Object.fromEntries(new FormData(form))}catch{return {}}})();
+   console.info('[AISG-UX-QA] REVIEW SUBMIT',JSON.stringify({requested,formFields,teacherId:teacher().id}));
    const saved=updateAction(teacher(),data.classes,formValue(form,'id'),{
     strategy:formValue(form,'strategy'),status:requested,
     outcome:formValue(form,'outcome'),due:formValue(form,'due')
    });
    const verified=loadActions(teacher(),data.classes).find(a=>a.id===saved.id);
+   console.info('[AISG-UX-QA] REVIEW RESULT',JSON.stringify({savedStatus:saved.status,verifiedStatus:verified?.status,requested,teacherId:teacher().id}));
    if(!verified||verified.status!==requested)throw Error('The follow-up did not persist in this browser. Please retry.');
    state.actionModal=false;state.editingActionId='';state.formError='';
    state.toast='Follow-up '+(requested==='completed'?'reviewed':requested==='revisit'?'ready to revisit':'updated');
