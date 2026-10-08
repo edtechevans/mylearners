@@ -160,8 +160,8 @@ def keyboard(browser):
  expect(page).to_have_url(re.compile('#/student/'+sid+'$'))
  page.locator('[data-return-profile]').click()
  expect(page).to_have_url(re.compile('#/class/G7-A$'))
- page.locator('.v2-nav [data-nav="home"]').press('Enter')
- expect(page).to_have_url(re.compile('#/home
+ page.locator('.v2-nav [data-nav="learners"]').press('Enter')
+ expect(page).to_have_url(re.compile('#/learners$'))
  context.close()
  return {'keyboardTabs':True,'browserHistory':True,'contextReturn':True,'keyboardNavigation':True}
 def main():
