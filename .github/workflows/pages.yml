@@ -38,10 +38,15 @@ jobs:
           for page in today class learners growth actions student/DEMO-0721; do
             name="${page//\//-}"
             echo "Checking page: $page"
-            timeout 35s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --hide-scrollbars --window-size=1440,950 --virtual-time-budget=2500 --screenshot=".qa/$name.png" --dump-dom "http://127.0.0.1:8765/#/$page" >".qa/$name.html" 2>/tmp/aisg-mylearners-browser.log
+            timeout 35s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --hide-scrollbars --window-size=1440,950 --virtual-time-budget=2500 --dump-dom "http://127.0.0.1:8765/#/$page" >".qa/$name.html" 2>/tmp/aisg-mylearners-browser.log
             grep -q 'class="v2-app"' ".qa/$name.html"
           done
-          echo "All six pages rendered in headless browser"
+          for page in today class student/DEMO-0721; do
+            name="${page//\//-}"
+            timeout 35s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --hide-scrollbars --window-size=1440,950 --virtual-time-budget=2500 --screenshot="$PWD/.qa/$name.png" "http://127.0.0.1:8765/#/$page" >/dev/null 2>/tmp/aisg-mylearners-screenshot.log
+            test -s ".qa/$name.png"
+          done
+          echo "All six pages rendered; three desktop screenshots captured"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
