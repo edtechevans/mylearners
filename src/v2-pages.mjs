@@ -234,7 +234,7 @@ export function renderGrowth(ctx){
  '<section class="v2-card v2-card-roomy"><span class="v2-eyebrow">INSTRUCTIONAL QUESTION</span><h2>From MAP to daily teaching</h2><p>Which recent classroom evidence might help explain the pattern—and what more do you need to know?</p>'+
  '<button class="v2-button ghost full" data-nav="classes">Review Class Pulse '+icon('arrow',14)+'</button></section></aside></div>')+
  '<section class="v2-card v2-card-roomy v2-growth-students"><div class="v2-card-head"><div><span class="v2-eyebrow">STUDENT EVIDENCE</span><h2>Explore individual MAP growth</h2></div></div>'+
- renderGrowthStudentTable(ctx,subject)+'</section>');
+ renderGrowthStudentTable(ctx,subject)+'</section>';
 }
 function renderGrowthStudentTable(ctx,subject){
  const students=ctx.students.filter(s=>gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10);
