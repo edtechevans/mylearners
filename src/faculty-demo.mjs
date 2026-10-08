@@ -57,14 +57,19 @@ export function applyFacultyDemo(data){
  // Give each additional specialist/subject faculty member a few SIMULATED
  // cohorts for demonstration, without asserting an actual AISG timetable.
  for(const t of teachers){
-  if(t.classIds.length)continue;
-  const ownDivision=data.classes.filter(c=>c.division===t.division);
-  const n=t.division==='Secondary'?3:2;
-  const selected=new Set();
-  for(let j=0;j<n;j++){
-   let k=(hash('fictional-'+t.id+'-'+j)+j*17)%ownDivision.length;
-   while(selected.has(k))k=(k+1)%ownDivision.length;
-   selected.add(k);t.classIds.push(ownDivision[k].id);
+  // Every secondary demo persona has several subject-appropriate cohorts,
+  // including teachers who already lead one fictional homeroom/section.
+  const target=t.division==='Secondary'?4:t.classIds.length?1:2;
+  if(t.classIds.length>=target)continue;
+  const preferredSection=Object.entries(secondaryGroup).find(([,plc])=>t.plcs.includes(plc))?.[0];
+  let eligible=data.classes.filter(c=>c.division===t.division &&
+    (t.division!=='Secondary'||!preferredSection||c.section===preferredSection));
+  if(eligible.length<target)eligible=data.classes.filter(c=>c.division===t.division);
+  const chosen=new Set(t.classIds);
+  for(let j=0;t.classIds.length<target&&j<eligible.length*2;j++){
+   let k=(hash('fictional-'+t.id+'-'+j)+j*17)%eligible.length;
+   while(chosen.has(eligible[k].id))k=(k+1)%eligible.length;
+   chosen.add(eligible[k].id);t.classIds.push(eligible[k].id);
   }
  }
  for(const t of teachers)t.classIds.sort((a,b)=>{
