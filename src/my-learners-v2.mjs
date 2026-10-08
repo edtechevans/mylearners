@@ -347,11 +347,13 @@ function formValue(form,name){
 }
 function submitHandler(event){
  if(event.defaultPrevented)return;
- if(event.target?.id==='v2-global-search-form'){
+ // HTML forms with a child named 'id' may shadow form.id. Read the actual attribute.
+ const submittedFormId=event.target?.getAttribute?.('id')??event.target?.id;
+ if(submittedFormId==='v2-global-search-form'){
   event.preventDefault();state.learnerQuery=formValue(event.target,'query').trim();
   state.studentClassFilter='all';go('learners');return;
  }
- if(event.target?.id==='v2-create-form'){
+ if(submittedFormId==='v2-create-form'){
   event.preventDefault();
   try{
    const form=event.target;
@@ -370,7 +372,7 @@ function submitHandler(event){
   }
   return;
  }
- if(event.target?.id==='v2-review-form'){
+ if(submittedFormId==='v2-review-form'){
   event.preventDefault();
   try{
    const form=event.target;
