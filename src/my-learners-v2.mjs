@@ -227,13 +227,30 @@ function actionFromInsight(id){
 function clickHandler(event){
  const target=event.target;if(!target||typeof target.closest!=='function')return;
  let el;
+ if((el=target.closest('[data-skip-main]'))){app?.querySelector?.('#main-content')?.focus?.();return}
  if((el=target.closest('[data-menu]'))){state.mobile=!state.mobile;render();return}
  if((el=target.closest('[data-close-modal]'))){closeModal();return}
- if((el=target.closest('[data-close-insight]'))){state.insightId='';render();return}
- if((el=target.closest('[data-nav]'))){state.studentQuery='';state.studentTab='overview';go(el.dataset.nav);return}
- if((el=target.closest('[data-open-class]'))){setCurrentClass(el.dataset.openClass);go('class');return}
- if((el=target.closest('[data-open-student]'))){state.studentTab=el.dataset.targetTab||'overview';go('student',el.dataset.openStudent);return}
- if((el=target.closest('[data-student-tab]'))){state.studentTab=el.dataset.studentTab;render();return}
+ if((el=target.closest('[data-close-insight]'))){closeInsight();return}
+ if((el=target.closest('[data-dismiss-toast]'))){dismissToast();return}
+ if((el=target.closest('[data-return-profile]'))){returnToOrigin('profile');return}
+ if((el=target.closest('[data-return-class]'))){returnToOrigin('class');return}
+ if((el=target.closest('[data-return-actions]'))){returnToOrigin('actions');return}
+ if((el=target.closest('[data-search-route]'))){state.learnerQuery='';go('learners');globalThis.window?.requestAnimationFrame?.(()=>app?.querySelector?.('#v2-learner-search')?.focus?.());return}
+ if((el=target.closest('[data-nav]'))){
+  const dest=el.dataset.nav==='classes'?'class':el.dataset.nav;
+  if(dest==='class')state.classOrigin=null;
+  go(dest,dest==='class'?currentClass()?.id:'');return
+ }
+ if((el=target.closest('[data-open-class]'))){
+  const from=route();
+  if(['growth','today','actions'].includes(from.page))state.classOrigin={teacherId:state.teacherId,page:from.page,hash:globalThis.location.hash||'#/today',classId:state.classId};
+  setCurrentClass(el.dataset.openClass);go('class',el.dataset.openClass);return
+ }
+ if((el=target.closest('[data-open-student]'))){
+  rememberOrigin();state.studentTab=el.dataset.targetTab||'overview';
+  go('student',el.dataset.openStudent,state.studentTab);return
+ }
+ if((el=target.closest('[data-student-tab]'))){state.studentTab=el.dataset.studentTab;state.pendingFocus='[data-student-tab="'+state.studentTab+'"]';go('student',route().id,state.studentTab);return}
  if((el=target.closest('[data-subject]'))){state.subject=el.dataset.subject;render();return}
  if((el=target.closest('[data-class-mode]'))){state.classMode=el.dataset.classMode;render();return}
  if((el=target.closest('[data-roster-filter]'))){state.rosterFilter=el.dataset.rosterFilter;render();return}
@@ -249,7 +266,9 @@ function clickHandler(event){
   removeAction(teacher(),data.classes,el.dataset.deleteAction);render();return
  }
  if((el=target.closest('[data-reset-groups]'))){
-  const cid=el.dataset.resetGroups;saveGroupOverrides(teacher().id,cid,{});render();return
+  if(typeof globalThis.window?.confirm==='function'&&!globalThis.window.confirm('Reset your demo grouping adjustments for this class?'))return;
+  const cid=el.dataset.resetGroups;saveGroupOverrides(teacher().id,cid,{});
+  state.toast='Group suggestions reset';render();return
  }
 }
 function changeHandler(event){
@@ -258,10 +277,12 @@ function changeHandler(event){
   if(!data.teachers.some(t=>t.id===target.value))return;
   state.teacherId=target.value;setSaved('aisg-v2-faculty',target.value);
   state.classId='';setSaved('aisg-v2-class','');state.studentClassFilter='all';
-  state.studentQuery='';state.classMode='roster';state.insightId='';state.studentTab='overview';go('today');return;
+  state.rosterQuery='';state.learnerQuery='';state.classMode='roster';state.insightId='';state.studentTab='overview';
+  state.returnContext=null;state.classOrigin=null;state.actionOrigin=null;state.toast='Teacher demonstration switched';
+  go('today');return;
  }
  if(target.id==='v2-class-select'){
-  setCurrentClass(target.value);render();return;
+  setCurrentClass(target.value);go('class',target.value);return;
  }
  if(target.id==='v2-learner-class'){
   state.studentClassFilter=target.value;render();return;
@@ -284,23 +305,40 @@ function changeHandler(event){
   const c=data.classIndex.get(classId);
   if(!c||!teacher().classIds.includes(classId)||!c.studentIds.includes(studentId))return;
   const previous=readGroupOverrides(teacher().id,classId);
-  previous[studentId]=target.value;saveGroupOverrides(teacher().id,classId,previous);render();return;
+  previous[studentId]=target.value;saveGroupOverrides(teacher().id,classId,previous);
+  state.toast='Group updated and saved in this browser';render();return;
  }
 }
 function inputHandler(event){
  const target=event.target;
- if(['v2-roster-search','v2-learner-search'].includes(target.id)){
-  state.studentQuery=target.value;render();return;
- }
+ if(target.id==='v2-roster-search'){state.rosterQuery=target.value;render();return}
+ if(target.id==='v2-learner-search'){state.learnerQuery=target.value;render();return}
 }
 function keyHandler(event){
+ if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)&&event.target?.dataset?.studentTab){
+  const keys=['overview','learning','map','attendance','support'];
+  const index=keys.indexOf(event.target.dataset.studentTab);
+  const next=event.key==='Home'?0:event.key==='End'?keys.length-1:(index+(event.key==='ArrowRight'?1:keys.length-1))%keys.length;
+  event.preventDefault();state.studentTab=keys[next];state.pendingFocus='[data-student-tab="'+keys[next]+'"]';go('student',route().id,state.studentTab);return
+ }
+ if(event.key==='Tab'&&(state.actionModal||state.editingActionId||state.insightId)){
+  const dialog=app?.querySelector?.('.v2-modal,.v2-drawer');
+  const enabled=[...(dialog?.querySelectorAll('button:not([disabled]),input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex="0"]')||[])]
+   .filter(el=>el.getBoundingClientRect().width>0);
+  if(enabled.length){
+   const first=enabled[0],last=enabled.at(-1);
+   if(event.shiftKey&&globalThis.document.activeElement===first){event.preventDefault();last.focus()}
+   else if(!event.shiftKey&&globalThis.document.activeElement===last){event.preventDefault();first.focus()}
+  }
+ }
  if(event.key==='Escape'){
   if(state.actionModal||state.editingActionId)closeModal();
-  else if(state.insightId){state.insightId='';render();}
+  else if(state.insightId){closeInsight();}
   else if(state.mobile){state.mobile=false;render()}
  }
- if(event.key==='Enter'&&event.target.id==='v2-global-search'){
-  state.studentQuery=event.target.value;state.studentClassFilter='all';go('learners');
+ if(event.key==='/'&&['BODY','MAIN'].includes(event.target?.tagName)&&!event.ctrlKey&&!event.metaKey){
+  const search=app?.querySelector?.('#v2-global-search')||app?.querySelector?.('#v2-learner-search');
+  if(search){event.preventDefault();search.focus()}
  }
 }
 function formValue(form,name){
@@ -308,6 +346,10 @@ function formValue(form,name){
  return el?.value??'';
 }
 function submitHandler(event){
+ if(event.target?.id==='v2-global-search-form'){
+  event.preventDefault();state.learnerQuery=formValue(event.target,'query').trim();
+  state.studentClassFilter='all';go('learners');return;
+ }
  if(event.target?.id==='v2-create-form'){
   event.preventDefault();
   try{
@@ -319,7 +361,12 @@ function submitHandler(event){
     due:formValue(form,'due'),evidence:formValue(form,'evidence')
    });
    state.actionModal=false;state.editingActionId='';state.formError='';go('actions');
-  }catch(error){state.formError=error.message||'Unable to save this demo action';render()}
+  }catch(error){
+   const form=event.target;
+   for(const [field,key] of [['classId','modalClassId'],['studentId','modalStudentId'],['title','modalTitle'],
+    ['strategy','modalStrategy'],['evidence','modalEvidence'],['due','modalDue']])state[key]=formValue(form,field);
+   state.formError=error.message||'Unable to save this demo action';render()
+  }
   return;
  }
  if(event.target?.id==='v2-review-form'){
