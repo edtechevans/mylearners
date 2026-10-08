@@ -417,3 +417,47 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
  .v2-card p{font-size:12px}
  .v2-table th{font-size:10px}
 }
+
+/* Teacher UX audit: accessible search, legible controls and safe keyboard navigation. */
+.v2-section-head h1{font:800 clamp(24px,2.75vw,33px)/1.18 Manrope,'DM Sans',sans-serif;letter-spacing:-.047em;color:#10334f;margin:5px 0 6px}
+.v2-skip-link{position:fixed;left:12px;top:-90px;z-index:120;background:#073761;color:#fff;border:2px solid #fff;padding:12px 16px;border-radius:9px;font-size:14px;font-weight:800}
+.v2-skip-link:focus{top:9px}
+#main-content:focus{outline:none}
+.v2-global-search{display:flex;align-items:center;gap:6px;min-width:180px;background:#f4f7fa;border:1px solid #dbe5ee;border-radius:10px;padding:0 5px 0 12px;color:#3a657f;height:42px}
+.v2-global-search input{min-width:0;width:175px;border:0;outline:none;background:transparent;color:#173f5c;font-size:12px}
+.v2-global-search:focus-within{outline:3px solid #86b9dc;outline-offset:2px}
+.v2-global-search button{background:transparent;border:0;color:#275e83;width:34px;height:34px;display:grid;place-items:center;border-radius:8px}
+.v2-global-search button:hover{background:#deebf4}
+.v2-compact-search{display:none;border:1px solid #d6e3ee;color:#275e83;background:#f2f7fb;border-radius:8px;width:38px;height:38px;align-items:center;justify-content:center}
+.v2-compact-search:hover{background:#e4eff6}
+.v2-roster-search input{min-height:30px}
+.v2-table .v2-text-link,.v2-inline{min-height:26px}
+.v2-filter-chip{min-height:35px}
+.v2-profile-tabs button{min-height:45px}
+.v2-back{min-height:36px}
+.v2-action-foot>div{flex-wrap:wrap;gap:10px}
+.v2-toast{position:fixed;right:24px;bottom:24px;z-index:110;max-width:min(440px,calc(100vw - 32px));background:#073761;color:#fff;display:flex;align-items:center;gap:10px;border:1px solid #225777;border-radius:12px;box-shadow:0 10px 25px rgba(8,32,52,.23);padding:12px 14px;font-size:12px;font-weight:750;line-height:1.4}
+.v2-toast button{margin-left:auto;display:grid;place-items:center;background:transparent;border:0;color:#fff;width:30px;height:30px}
+body.v2-dialog-open{overflow:hidden}
+.v2-modal:focus,.v2-drawer:focus{outline:none}
+.v2-modal input:focus,.v2-modal select:focus,.v2-modal textarea:focus{outline:3px solid #91c2df;outline-offset:1px}
+.v2-modal label{font-size:11px;color:#445e73}
+.v2-modal-intro{font-size:12px;color:#516f85}
+.v2-form-error{font-size:12px}
+.v2-drawer-evidence span{font-size:10px;color:#627f92}
+.v2-day-hero .v2-button{min-height:41px}
+@media(max-width:1050px){
+ .v2-global-search{display:none}
+ .v2-compact-search{display:flex}
+}
+@media(max-width:620px){
+ .v2-top-actions{gap:5px}
+ .v2-persona-label select{width:min(137px,34vw);max-width:34vw}
+ .v2-compact-search{width:34px;height:34px}
+ .v2-demo-tag{padding:7px 5px;font-size:8px}
+ .v2-breadcrumb{max-width:94px;overflow:hidden;text-overflow:ellipsis}
+ .v2-class-filters{gap:8px}
+ .v2-filter-chip{min-height:40px}
+ .v2-toast{right:12px;bottom:12px}
+}
+@media(min-width:1280px){.v2-global-search input{width:194px}}
