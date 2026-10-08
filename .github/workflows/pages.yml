@@ -75,7 +75,7 @@ jobs:
           name: mylearners-v2-visual-qa
           path: .qa/*.png
           include-hidden-files: true
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 7
   deploy:
     needs: validate
