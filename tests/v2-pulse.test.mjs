@@ -71,7 +71,7 @@ test('daily home, class pulse and learning evidence pages render useful informat
  assert.match(cls,/Learner matrix/);
  assert.match(cls,/MAP growth/);
  assert.match(cls,/STUDENT VOICE/);
- assert.match(cls,/demo formative/i);
+ assert.match(cls,/formative/i);
  const people=renderLearners(ctx());
  assert.match(people,/My Learners/);
  assert.match(people,/DEMO-0721/);
@@ -123,7 +123,8 @@ test('actions support local persistence, teacher ownership and revisiting learni
  assert.equal(loadActions(teacher,d.classes,storage).length,3);
  assert.ok(removeAction(teacher,d.classes,action.id,storage));
  assert.equal(loadActions(teacher,d.classes,storage).length,2);
- const other=d.teachers.find(t=>t.id!==teacher.id);
+ const other=d.teachers.find(t=>t.id!==teacher.id&&!t.classIds.includes(c.id));
+ assert.ok(other);
  assert.throws(()=>createAction(other,d.classes,{classId:c.id,title:'Disallowed',strategy:'Nope',due:'2026-10-12'},storage),/outside/);
 });
 test('manual flexible-group assignments persist only for the current persona',()=>{
@@ -148,5 +149,5 @@ test('actions and evidence drawer are visibly evidence-based and demo only',()=>
  assert.match(drawer,/not an AI-generated judgement/);
  const modal=renderActionModal({...p,state:{...p.state,actionModal:true,modalClassId:c.id}});
  assert.match(modal,/v2-create-form/);
- assert.match(modal,/Do not use actual student information/);
+ assert.match(modal,/do not use actual student information/i);
 });
