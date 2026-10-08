@@ -23,7 +23,7 @@ const actionBtn=(c,text='Record response',studentId='',evidence='Teacher reflect
 export function renderToday(ctx){
  const {data,pulse,teacher,classes,actions}=ctx;
  const schedule=teacherSchedule(data,teacher);
- const next=ctx.currentClass||schedule.nextLesson||classes[0];
+ const next=schedule.nextLesson||ctx.currentClass||classes[0];
  if(!next)return emptyState('No demo classes','Select another demonstration teacher.');
  const cp=pulseForClass(data,pulse,next);
  const insights=classInsights(cp);
@@ -392,7 +392,7 @@ export function renderActionModal(ctx){
  '<label>WHAT HAVE YOU NOTICED?<input maxlength="130" name="title" placeholder="A learning question or pattern..." value="'+esc(ctx.state.modalTitle||'')+'" required/></label>'+
  '<label>WHAT MIGHT YOU TRY?<textarea name="strategy" rows="4" maxlength="500" placeholder="One purposeful instructional adjustment..." required>'+esc(ctx.state.modalStrategy||'')+'</textarea></label>'+
  '<label>RELATED EVIDENCE<input maxlength="180" name="evidence" value="'+esc(ctx.state.modalEvidence||'Teacher observation · fictional demo')+'"/></label>'+
- '<div class="v2-form-row"><label>REVISIT DATE<input type="date" name="due" required value="2026-10-12"/></label>'+
+ '<div class="v2-form-row"><label>REVISIT DATE<input type="date" name="due" required value="'+esc(ctx.state.modalDue||'2026-10-12')+'"/></label>'+
  '<label>LEARNER (OPTIONAL)<select name="studentId"><option value="">Whole class / teaching group</option>'+
  ctx.students.filter(s=>s.classId===selected).map(s=>
  '<option value="'+esc(s.id)+'" '+(ctx.state.modalStudentId===s.id?'selected':'')+'>'+esc(s.name)+'</option>').join('')+'</select></label></div>'+
