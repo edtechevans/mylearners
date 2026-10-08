@@ -57,7 +57,7 @@ export function stat(label,value,detail,kind='neutral'){
  return '<article class="v2-stat '+esc(kind)+'"><span class="v2-stat-label">'+esc(label)+'</span><strong>'+esc(value)+'</strong><span class="v2-stat-foot">'+esc(detail)+'</span></article>';
 }
 export const sectionTitle=(kicker,title,desc='',other='')=>
- '<div class="v2-section-head"><div><span class="v2-kicker">'+esc(kicker)+'</span><h2>'+esc(title)+'</h2>'+
+ '<div class="v2-section-head"><div><span class="v2-kicker">'+esc(kicker)+'</span><h1>'+esc(title)+'</h1>'+
  (desc?'<p>'+esc(desc)+'</p>':'')+'</div>'+other+'</div>';
 export const provenance=label=>'<span class="v2-provenance">'+icon('info',12)+' '+esc(label)+'</span>';
 export const emptyState=(title,copy)=>'<div class="v2-empty">'+icon('info',26)+'<strong>'+esc(title)+'</strong><p>'+esc(copy)+'</p></div>';
