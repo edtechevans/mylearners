@@ -8,6 +8,8 @@ export const ACTION_STATUSES=['open','revisit','completed'];
 export const ACTION_STAGE_LABELS={open:'Notice & respond',revisit:'Ready to revisit',completed:'Reviewed'};
 const ACTION_KEY='aisg-mylearners-v2-actions-';
 const GROUP_KEY='aisg-mylearners-v2-groups-';
+function demoStorage(){try{return globalThis.localStorage}catch{return null}}
+export const storageAvailable=()=>{try{const x=globalThis.localStorage;const k='aisg-storage-test';x.setItem(k,'1');x.removeItem(k);return true}catch{return false}};
 const clean=(x,max=240)=>String(x??'').trim().slice(0,max);
 function safeRead(storage,key){try{const x=storage?.getItem(key);return x?JSON.parse(x):null}catch{return null}}
 function safeWrite(storage,key,value){try{storage?.setItem(key,JSON.stringify(value));return true}catch{return false}}
@@ -31,19 +33,21 @@ function initialActions(teacher,classes){
 function validAction(a,teacherId){
  return a&&typeof a==='object'&&a.teacherId===teacherId&&typeof a.title==='string'&&typeof a.id==='string'&&ACTION_STATUSES.includes(a.status);
 }
-export function loadActions(teacher,classes,storage=globalThis.localStorage){
+export function loadActions(teacher,classes,storage=demoStorage()){
  const saved=safeRead(storage,keyFor(teacher.id));
  if(Array.isArray(saved))return saved.filter(a=>validAction(a,teacher.id)).slice(0,250);
  return initialActions(teacher,classes);
 }
-export function writeActions(teacher,rows,storage=globalThis.localStorage){
+export function writeActions(teacher,rows,storage=demoStorage()){
  const valid=rows.filter(x=>validAction(x,teacher.id)).slice(0,250);
  safeWrite(storage,keyFor(teacher.id),valid);
  return valid;
 }
-export function createAction(teacher,classes,draft,storage=globalThis.localStorage){
+export function createAction(teacher,classes,draft,storage=demoStorage()){
  const allowed=new Set(teacher.classIds);
  if(!allowed.has(draft.classId))throw Error('Class is outside fictional teacher scope');
+ const group=classes.find(c=>c.id===draft.classId);
+ if(draft.studentId&&!group?.studentIds?.includes(draft.studentId))throw Error('Learner is outside this fictional teaching group');
  const title=clean(draft.title,130),strategy=clean(draft.strategy,500);
  if(!title||!strategy)throw Error('Give the response a title and a brief instructional action');
  if(!/^\d{4}-\d{2}-\d{2}$/.test(String(draft.due||'')))throw Error('Select a valid follow-up date');
@@ -56,7 +60,7 @@ export function createAction(teacher,classes,draft,storage=globalThis.localStora
  writeActions(teacher,[item,...previous],storage);
  return item;
 }
-export function updateAction(teacher,classes,id,changes,storage=globalThis.localStorage){
+export function updateAction(teacher,classes,id,changes,storage=demoStorage()){
  const previous=loadActions(teacher,classes,storage);
  const index=previous.findIndex(x=>x.id===id);
  if(index<0)throw Error('Action not found for this teacher');
@@ -68,7 +72,7 @@ export function updateAction(teacher,classes,id,changes,storage=globalThis.local
  if('due' in changes&&/^\d{4}-\d{2}-\d{2}$/.test(String(changes.due)))next.due=changes.due;
  previous[index]=next;writeActions(teacher,previous,storage);return next;
 }
-export function removeAction(teacher,classes,id,storage=globalThis.localStorage){
+export function removeAction(teacher,classes,id,storage=demoStorage()){
  const previous=loadActions(teacher,classes,storage);
  const filtered=previous.filter(x=>x.id!==id);
  writeActions(teacher,filtered,storage);return filtered.length<previous.length;
@@ -79,16 +83,16 @@ export function actionCounts(rows){
    completed:rows.filter(a=>a.status==='completed').length,
    total:rows.length};
 }
-export function saveGroupOverrides(teacherId,classId,assignments,storage=globalThis.localStorage){
+export function saveGroupOverrides(teacherId,classId,assignments,storage=demoStorage()){
  const cleanMap=Object.fromEntries(Object.entries(assignments||{}).filter(([student,group])=>
    /^DEMO-\d{4}$/.test(student)&&['revisit','developing','secure','extend'].includes(group)));
  safeWrite(storage,GROUP_KEY+teacherId+'-'+classId,cleanMap);return cleanMap;
 }
-export function readGroupOverrides(teacherId,classId,storage=globalThis.localStorage){
+export function readGroupOverrides(teacherId,classId,storage=demoStorage()){
  const x=safeRead(storage,GROUP_KEY+teacherId+'-'+classId);
  return x&&typeof x==='object'&&!Array.isArray(x)?x:{};
 }
-export function resetPersonaDemo(teacher,storage=globalThis.localStorage){
+export function resetPersonaDemo(teacher,storage=demoStorage()){
  try{
   storage?.removeItem(keyFor(teacher.id));
   for(const c of teacher.classIds)storage?.removeItem(GROUP_KEY+teacher.id+'-'+c);
