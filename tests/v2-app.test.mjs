@@ -42,6 +42,7 @@ test('Growth and Evidence page leads with growth and other stages of learning',(
  assert.match(app.innerHTML,/Growth by teaching group/);
  changeRoute('#/student/DEMO-0721');
  listeners['app-click']({target:selectTarget('[data-student-tab]',{studentTab:'map'})});
+ listeners['window-hashchange']();
  assert.match(app.innerHTML,/Observed MAP growth/);
  assert.match(app.innerHTML,/Explore underlying RIT achievement/);
  listeners['app-click']({target:selectTarget('[data-subject]',{subject:'Reading'})});
