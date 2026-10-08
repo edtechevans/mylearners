@@ -162,6 +162,7 @@ function clickHandler(event){
  if((el=target.closest('[data-open-class]'))){setCurrentClass(el.dataset.openClass);go('class');return}
  if((el=target.closest('[data-open-student]'))){state.studentTab=el.dataset.targetTab||'overview';go('student',el.dataset.openStudent);return}
  if((el=target.closest('[data-student-tab]'))){state.studentTab=el.dataset.studentTab;render();return}
+ if((el=target.closest('[data-subject]'))){state.subject=el.dataset.subject;render();return}
  if((el=target.closest('[data-class-mode]'))){state.classMode=el.dataset.classMode;render();return}
  if((el=target.closest('[data-roster-filter]'))){state.rosterFilter=el.dataset.rosterFilter;render();return}
  if((el=target.closest('[data-action-filter]'))){state.actionFilter=el.dataset.actionFilter;render();return}
