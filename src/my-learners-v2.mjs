@@ -79,7 +79,7 @@ function sidebar(p,ctx){
  '<button class="v2-nav-item '+(p.page===t.id?'active':'')+'" data-nav="'+t.id+'" aria-current="'+(p.page===t.id?'page':'false')+'">'+icon(t.icon,18)+'<span>'+t.label+'</span>'+
  (t.id==='actions'&&ctx.actions.filter(a=>a.status==='revisit').length?'<span class="v2-nav-counter">'+ctx.actions.filter(a=>a.status==='revisit').length+'</span>':'')+'</button>').join('')+'</nav>'+
  '<div class="v2-side-bottom"><div class="v2-side-demo"><span class="v2-demo-mark">'+icon('shield',16)+' DEMONSTRATION</span>'+
- '<p>Actual AISG faculty names, fictional student data, fictional assignments. No live school system is connected.</p></div>'+
+ '<p>Real AISG faculty names; all demo class assignments and student records are fictional. No live school system is connected.</p></div>'+
  '<div class="v2-small-footer">My Learners · Version 2.0<br/>Understanding → action → learning</div></div></aside>';
 }
 function topbar(p,ctx){
