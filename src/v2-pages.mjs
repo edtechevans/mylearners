@@ -84,7 +84,7 @@ function renderGrowthMini(ctx,c){
 function selectedClass(ctx){return ctx.currentClass||ctx.classes[0]}
 function studentStateLabel(level){return SKILL_STATES[level]?.label||'Evidence pending'}
 function rosterRows(ctx,cp){
- const q=ctx.state.studentQuery.trim().toLowerCase();
+ const q=(ctx.state.rosterQuery||'').trim().toLowerCase();
  const filter=ctx.state.rosterFilter;
  let rows=cp.rows.filter(r=>!q||r.student.name.toLowerCase().includes(q)||r.student.id.toLowerCase().includes(q));
  rows=rows.filter(r=>filter==='all'
@@ -102,7 +102,8 @@ export function renderClass(ctx){
  const mode=ctx.state.classMode;
  const filter=ctx.state.rosterFilter;
  const filterNames={all:'All learners',revisit:'Revisit / practise',missing:'Submission follow-up',extend:'Ready to extend',support:'Support guidance',attendance:'Attendance changes'};
- return sectionTitle('CLASSROOM VIEW','Class Pulse','Recent classroom evidence, temporary groups and learning opportunities.')+
+ return (ctx.state.classOrigin?.teacherId===ctx.teacher.id&&ctx.state.classOrigin.page!=='class'?'<button class="v2-back" data-return-class="1">'+icon('back',15)+' Back to '+esc(ctx.state.classOrigin.page==='growth'?'Growth & Evidence':ctx.state.classOrigin.page==='actions'?'My Actions':'Today')+'</button>':'')+
+ sectionTitle('CLASSROOM VIEW','Class Pulse','Recent classroom evidence, temporary groups and learning opportunities.')+
  '<div class="v2-class-toolbar"><div><label for="v2-class-select">TEACHING GROUP</label><select id="v2-class-select">'+ctx.classes.map(x=>'<option value="'+esc(x.id)+'" '+(x.id===c.id?'selected':'')+'>'+esc(x.name)+'</option>').join('')+'</select></div>'+
  '<div class="v2-toolbar-actions">'+actionBtn(c.id)+
  '<button class="v2-button ghost" data-nav="growth">'+icon('chart',16)+' Growth & Evidence</button></div></div>'+
@@ -116,9 +117,9 @@ export function renderClass(ctx){
  '<button class="'+(mode==='groups'?'active':'')+'" data-class-mode="groups" role="tab" aria-selected="'+(mode==='groups')+'">'+icon('users',16)+' Flexible groups</button></div>'+
  (mode==='groups'?renderGroups(ctx,cp):
  '<div class="v2-class-filters"><div class="v2-filter-options">'+Object.entries(filterNames).map(([key,label])=>
- '<button type="button" class="v2-filter-chip '+(filter===key?'active':'')+'" data-roster-filter="'+esc(key)+'">'+esc(label)+'</button>').join('')+'</div>'+
- '<label class="v2-roster-search">'+icon('search',15)+' <input id="v2-roster-search" value="'+esc(ctx.state.studentQuery)+'" placeholder="Search learners..." aria-label="Find a learner"/></label></div>'+
- '<div class="v2-table-scroll"><table class="v2-table"><thead><tr><th>Learner</th><th>Today</th><th>Recent learning</th><th>Submission</th><th>MAP growth</th><th>Support</th><th></th></tr></thead><tbody>'+
+ '<button type="button" class="v2-filter-chip '+(filter===key?'active':'')+'" data-roster-filter="'+esc(key)+'" aria-pressed="'+(filter===key)+'">'+esc(label)+'</button>').join('')+'</div>'+
+ '<label class="v2-roster-search">'+icon('search',15)+' <input id="v2-roster-search" value="'+esc(ctx.state.rosterQuery)+'" placeholder="Search learners..." aria-label="Find a learner"/></label></div>'+
+ '<div class="v2-table-scroll"><table class="v2-table"><caption class="v2-visually-hidden">Learner evidence for the selected class, including attendance, submissions and MAP growth</caption><thead><tr><th scope="col">Learner</th><th>Today</th><th>Recent learning</th><th>Submission</th><th>MAP growth</th><th>Support</th><th></th></tr></thead><tbody>'+
  rows.map(r=>'<tr><td><button class="v2-student-name" data-open-student="'+esc(r.student.id)+'">'+studentImg(r.student)+
  '<span><strong>'+shortName(r.student)+'</strong><small>'+esc(r.student.id)+'</small></span></button></td>'+
  '<td>'+stageBadge(r.attendance.status)+'</td>'+
@@ -172,12 +173,12 @@ function renderGroups(ctx,cp){
  actionBtn(cp.c.id,'Record group teaching plan','','Demo formative checks · 7 Oct 2026')+'</div>';
 }
 export function renderLearners(ctx){
- const q=ctx.state.studentQuery.trim().toLowerCase();
+ const q=(ctx.state.learnerQuery||'').trim().toLowerCase();
  let learners=ctx.students.filter(s=>!q||s.name.toLowerCase().includes(q)||s.id.toLowerCase().includes(q)||s.grade.toLowerCase().includes(q));
  const filteredClass=ctx.state.studentClassFilter;
  if(filteredClass!=='all')learners=learners.filter(s=>s.classId===filteredClass);
  return sectionTitle('YOUR STUDENTS','My Learners','Every profile brings recent evidence, longitudinal growth and classroom support into context.')+
- '<div class="v2-class-toolbar"><label class="v2-wide-field">FIND A LEARNER <input id="v2-learner-search" placeholder="Search name, ID or grade..." value="'+esc(ctx.state.studentQuery)+'"/></label>'+
+ '<div class="v2-class-toolbar"><label class="v2-wide-field">FIND A LEARNER <input id="v2-learner-search" placeholder="Search name, ID or grade..." value="'+esc(ctx.state.learnerQuery)+'"/></label>'+
  '<label>CLASS <select id="v2-learner-class"><option value="all">All assigned classes</option>'+ctx.classes.map(c=>
  '<option value="'+esc(c.id)+'" '+(filteredClass===c.id?'selected':'')+'>'+esc(c.name)+'</option>').join('')+'</select></label>'+
  '<span class="v2-result-note">'+learners.length+' fictional learners</span></div>'+
@@ -214,7 +215,7 @@ export function renderGrowth(ctx){
  (noMap?'<section class="v2-card v2-card-roomy"><h2>Learning evidence that fits the age and programme</h2>'+
  '<p>Comparable MAP Growth results are not available for your current fictional groups. This is appropriate for PK–Grade 2 and Grades 11–12 in this demonstration. Use recent classroom assessments, descriptive evidence, developmental records or programme criteria instead.</p>'+
  '<div class="v2-evidence-shift">'+icon('book',24)+' Meaningful progress evidence differs between early years, elementary, MYP and DP.</div>'+
- '<button class="v2-button secondary" data-nav="classes">Open formative Class Pulse '+icon('arrow',15)+'</button></section>':
+ '<button class="v2-button secondary" data-nav="class">Open formative Class Pulse '+icon('arrow',15)+'</button></section>':
  '<div class="v2-stats-grid">'+
  stat('Met / exceeded projection',rate===null?'—':rate+'%',met+' of '+comparable+' comparable subject results','teal')+
  stat('Average observed growth',avg===null?'—':growthFormat(avg)+' pts','Comparably assessed learners only','blue')+
@@ -232,7 +233,7 @@ export function renderGrowth(ctx){
  '<p><strong>What it cannot establish:</strong> a cause, a fixed learner label, or whether one strategy produced the change.</p>'+
  '<p><strong>What to explore next:</strong> recent formative evidence, student experience and teaching context.</p></div></section>'+
  '<section class="v2-card v2-card-roomy"><span class="v2-eyebrow">INSTRUCTIONAL QUESTION</span><h2>From MAP to daily teaching</h2><p>Which recent classroom evidence might help explain the pattern—and what more do you need to know?</p>'+
- '<button class="v2-button ghost full" data-nav="classes">Review Class Pulse '+icon('arrow',14)+'</button></section></aside></div>')+
+ '<button class="v2-button ghost full" data-nav="class">Review Class Pulse '+icon('arrow',14)+'</button></section></aside></div>')+
  '<section class="v2-card v2-card-roomy v2-growth-students"><div class="v2-card-head"><div><span class="v2-eyebrow">STUDENT EVIDENCE</span><h2>Explore individual MAP growth</h2></div></div>'+
  renderGrowthStudentTable(ctx,subject)+'</section>';
 }
@@ -263,7 +264,7 @@ function ritHistoryChart(rows){
 function renderStudentNav(ctx,s){
  const items=[['overview','Overview'],['learning','Recent learning'],['map','MAP Growth'],['attendance','Attendance'],['support','Classroom guidance']];
  return '<div class="v2-profile-tabs" role="tablist" aria-label="Learner information">'+items.map(([key,label])=>
- '<button role="tab" aria-selected="'+(ctx.state.studentTab===key)+'" class="'+(ctx.state.studentTab===key?'active':'')+'" data-student-tab="'+key+'">'+label+'</button>').join('')+'</div>';
+ '<button role="tab" aria-selected="'+(ctx.state.studentTab===key)+'" class="'+(ctx.state.studentTab===key?'active':'')+'" id="v2-tab-'+key+'" aria-controls="v2-student-panel" data-student-tab="'+key+'" tabindex="'+(ctx.state.studentTab===key?'0':'-1')+'">'+label+'</button>').join('')+'</div>';
 }
 export function renderStudent(ctx,studentId){
  const s=ctx.students.find(x=>x.id===studentId);
@@ -322,19 +323,24 @@ export function renderStudent(ctx,studentId){
   '<p>Only essential classroom guidance should appear in a production system. Genuine health or student-support records require school-approved source permissions and audited backend access.</p>'+
   '</section></aside></div>';
  }
- return '<button class="v2-back" data-nav="learners">'+icon('back',15)+' Back to My Learners</button>'+
+ const origin=ctx.state.returnContext?.teacherId===ctx.teacher.id?ctx.state.returnContext:null;
+ const returnLabel=origin?.page==='class'?'Back to '+(ctx.data.classIndex.get(origin.classId)?.name||'Class Pulse'):
+  origin?.page==='growth'?'Back to Growth & Evidence':origin?.page==='today'?'Back to Today':
+  origin?.page==='actions'?'Back to My Actions':'Back to My Learners';
+ return '<button class="v2-back" data-return-profile="1">'+icon('back',15)+' '+esc(returnLabel)+'</button>'+
  '<div class="v2-profile-hero">'+studentImg(s,'large')+'<div><span class="v2-eyebrow">FICTIONAL LEARNER PROFILE</span><h1>'+esc(s.name)+'</h1>'+
  '<p>'+esc(shortGrade(s.grade))+' · '+esc(s.classId)+' · '+esc(s.campus)+' Campus · '+esc(s.id)+'</p>'+
  '<div class="v2-tagline"><span>'+esc(s.primaryLanguage)+'</span><span>'+esc(s.yearsAtAISG)+' years at AISG</span></div></div>'+
  '<div class="v2-profile-action">'+actionBtn(s.classId,'New follow-up',s.id,'Teacher observation · fictional profile')+'</div></div>'+
- renderStudentNav(ctx,s)+body+
+ renderStudentNav(ctx,s)+'<div id="v2-student-panel" role="tabpanel" aria-labelledby="v2-tab-'+esc(section)+'" tabindex="0">'+body+'</div>'+
  '<p class="v2-caption">All learner identities, grades, academic records, survey information, attendance and support guidance are synthetic.</p>';
 }
 export function renderActions(ctx){
  const counts=actionCounts(ctx.actions);
  const filter=ctx.state.actionFilter;
  const rows=ctx.actions.filter(a=>filter==='all'||a.status===filter);
- return sectionTitle('REFLECTION INTO PRACTICE','My Actions','Notice → Respond → Revisit. Brief, teacher-owned instructional follow-ups—not formal safeguarding or MTSS records.',
+ return (ctx.state.actionOrigin?.teacherId===ctx.teacher.id&&ctx.state.actionOrigin.page!=='actions'?'<button class="v2-back" data-return-actions="1">'+icon('back',15)+' Back to '+esc(ctx.state.actionOrigin.page==='student'?'learner profile':ctx.state.actionOrigin.page==='today'?'Today':'Class Pulse')+'</button>':'')+
+ sectionTitle('REFLECTION INTO PRACTICE','My Actions','Notice → Respond → Revisit. Brief, teacher-owned instructional follow-ups—not formal safeguarding or MTSS records.',
  actionBtn(ctx.currentClass?.id||ctx.classes[0]?.id,'New response'))+
  '<div class="v2-stats-grid">'+stat('Total follow-ups',counts.total,'This demonstration teacher','neutral')+
  stat('Notice & respond',counts.open,'Ready for initial instructional action','blue')+
@@ -348,7 +354,9 @@ export function renderActions(ctx){
   '<span class="v2-action-state">'+esc(ACTION_STAGE_LABELS[a.status])+'</span></div>'+
   '<h2>'+esc(a.title)+'</h2><p>'+esc(a.strategy)+'</p>'+
   '<div class="v2-action-foot"><span>'+icon('calendar',15)+' Revisit '+smallDate(a.due)+'</span>'+
-  '<div><button class="v2-inline" data-review-action="'+esc(a.id)+'">'+icon('note',14)+' Review / update</button>'+
+  '<div><button class="v2-inline" data-open-class="'+esc(a.classId)+'">'+icon('layers',14)+' Open class</button>'+
+ (a.studentId?'<button class="v2-inline" data-open-student="'+esc(a.studentId)+'">'+icon('users',14)+' Open learner</button>':'')+
+ '<button class="v2-inline" data-review-action="'+esc(a.id)+'">'+icon('note',14)+' Review / update</button>'+
   '<button class="v2-inline muted" data-delete-action="'+esc(a.id)+'">Remove</button></div></div>'+
   (a.outcome?'<div class="v2-action-outcome"><strong>What happened when revisited?</strong><p>'+esc(a.outcome)+'</p></div>':'')+'</article>';
  }).join(''):emptyState('Nothing in this view','Choose another status or create a short instructional response.'))+'</div>'+
@@ -359,9 +367,9 @@ export function renderInsightDrawer(ctx){
  if(!item)return '';
  const c=ctx.data.classIndex.get(item.classId);
  return '<div class="v2-drawer-shade" data-close-insight="1"></div>'+
- '<aside class="v2-drawer" role="dialog" aria-modal="true" aria-label="Evidence trail"><div class="v2-drawer-top"><span class="v2-eyebrow">WHY THIS APPEARS</span>'+
+ '<aside class="v2-drawer" role="dialog" aria-modal="true" aria-labelledby="v2-drawer-title" tabindex="-1"><div class="v2-drawer-top"><span class="v2-eyebrow">WHY THIS APPEARS</span>'+
  '<button class="v2-icon-button" data-close-insight="1" aria-label="Close evidence">'+icon('close',19)+'</button></div>'+
- '<h2>'+esc(item.title)+'</h2><p>'+esc(item.description)+'</p>'+
+ '<h2 id="v2-drawer-title">'+esc(item.title)+'</h2><p>'+esc(item.description)+'</p>'+
  '<div class="v2-drawer-evidence"><span>CLASS CONTEXT</span><strong>'+esc(c?.name||item.classId)+'</strong></div>'+
  '<div class="v2-drawer-evidence"><span>GROUNDING EVIDENCE</span><strong>'+esc(item.source)+'</strong></div>'+
  '<div class="v2-drawer-evidence"><span>SUMMARY</span><strong>'+esc(item.metric)+'</strong></div>'+
@@ -375,11 +383,11 @@ export function renderActionModal(ctx){
  const c=ctx.currentClass||ctx.classes[0];
  const selected=ctx.state.modalClassId||editing?.classId||c?.id;
  return '<div class="v2-modal-scrim" data-close-modal="1"></div>'+
- '<section class="v2-modal" role="dialog" aria-modal="true" aria-label="'+(editing?'Review instructional follow-up':'Create instructional follow-up')+'">'+
- '<div class="v2-modal-head"><div><span class="v2-eyebrow">TEACHER REFLECTION</span><h2>'+(editing?'Revisit your instructional response':'Notice → Respond → Revisit')+'</h2></div>'+
+ '<section class="v2-modal" role="dialog" aria-modal="true" aria-labelledby="v2-modal-title" tabindex="-1">'+
+ '<div class="v2-modal-head"><div><span class="v2-eyebrow">TEACHER REFLECTION</span><h2 id="v2-modal-title">'+(editing?'Revisit your instructional response':'Notice → Respond → Revisit')+'</h2></div>'+
  '<button class="v2-icon-button" data-close-modal="1" aria-label="Close dialog">'+icon('close',20)+'</button></div>'+
  '<p class="v2-modal-intro">Keep the note brief and focused on teaching. Demo data is stored locally; do not use actual student information.</p>'+
- (ctx.state.formError?'<p class="v2-form-error" role="alert">'+esc(ctx.state.formError)+'</p>':'')+
+ (ctx.state.formError?'<p class="v2-form-error" role="alert" tabindex="-1">'+esc(ctx.state.formError)+'</p>':'')+
  (editing?'<form id="v2-review-form"><input type="hidden" name="id" value="'+esc(editing.id)+'"/>'+
  '<label>TEACHING RESPONSE<textarea name="strategy" rows="3" required maxlength="500">'+esc(editing.strategy)+'</textarea></label>'+
  '<label>WHAT DID YOU NOTICE WHEN YOU REVISITED THE LEARNING?<textarea name="outcome" rows="4" maxlength="600" placeholder="What changed? What evidence do you have?">'+esc(editing.outcome||'')+'</textarea></label>'+
