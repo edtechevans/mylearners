@@ -12,7 +12,7 @@ test('all five fictional indicators have safe, teacher-useful descriptions',()=>
  assert.equal(TAG_BY_ID.medical.restricted,true);
  assert.equal(TAG_BY_ID.behavioural.restricted,true);
  for(const restricted of [TAG_BY_ID.medical,TAG_BY_ID.behavioural]){
-  assert.doesNotMatch(restricted.summary+/\\d{4}-\\d\\d-\\d\\d/,'not a real record');
+  assert.doesNotMatch(restricted.summary,/\b(?:diagnosed with|prescribed|patient record)\b/i);
  }
 });
 test('every synthetic 20-student class visibly demonstrates all five categories',()=>{
