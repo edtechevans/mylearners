@@ -17,6 +17,8 @@ const shapes={
   clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
   spark:'<path d="M12 3 9 9l-6 3 6 3 3 6 3-6 6-3-6-3z"/>',
   shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/>',
+  'file-text':'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/>',
+  lock:'<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3"/>',
   info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
   menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
   close:'<path d="M18 6 6 18M6 6l12 12"/>',
