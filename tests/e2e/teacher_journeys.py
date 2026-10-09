@@ -149,7 +149,7 @@ def responsive(browser):
   context.close()
  return result
 def tag_journeys(browser):
- """Verify each fictional category can be filtered, opened and returned from."""
+ """Verify that all five support badges filter correctly and link to fictional guidance."""
  result=[]
  context=browser.new_context(viewport={'width':1440,'height':900},locale='en-GB')
  page=context.new_page()
@@ -161,13 +161,45 @@ def tag_journeys(browser):
    page.locator('#v2-support-filter').select_option(tag)
    expect(page.locator('#v2-support-filter')).to_have_value(tag)
    chips=page.locator('.launch-roster-table [data-tag-focus="'+tag+'"]')
-   check(chips.count()>0,tag+' tag missing from filtered demo class')
-   target=chips.first
-   student=target.get_attribute('data-open-student')
-   target.click()
-   expect(page).to_have_url(re.compile('#/student/'+re.escape(student)+'/support/'+tag+'
+   check(chips.count()>0,tag+' badge missing in the filtered fictional roster')
+   student=chips.first.get_attribute('data-open-student')
+   chips.first.click()
+   expect(page).to_have_url(re.compile('#/student/'+re.escape(student)+'/support/'+tag+'$'))
+   detail=page.locator('[data-support-detail="'+tag+'"]')
+   expect(detail).to_be_visible()
+   expect(detail).to_have_class(re.compile('selected'))
+   expect(detail).to_contain_text('Useful classroom approaches')
+   if tag in ['medical','behavioural']:
+    expect(detail).to_contain_text('Detailed health, behavioural, counselling or safeguarding records are not available')
+   if tag=='medical':
+    page.screenshot(path=str(OUT/'screenshots'/'1440-medical-tag-guidance.png'),full_page=True)
+   page.locator('[data-return-profile]').click()
+   expect(page).to_have_url(re.compile('#/class/G7-A$'))
+   expect(page.locator('#v2-support-filter')).to_have_value(tag)
+   result.append({'tag':tag,'status':'passed'})
+  page.screenshot(path=str(OUT/'screenshots'/'1440-class-support-tags.png'),full_page=True)
+ finally:context.close()
+ phone=browser.new_context(viewport={'width':390,'height':844})
+ pg=phone.new_page()
+ try:
+  load(pg)
+  persona(pg,'Zach Navarro')
+  pg.locator('[data-menu]').first.click()
+  class_page(pg,'G7-A')
+  pg.locator('#v2-support-filter').select_option('medical')
+  badge=pg.locator('.launch-roster-table [data-tag-focus="medical"]').first
+  expect(badge).to_be_visible()
+  badge.click()
+  expect(pg.locator('[data-support-detail="medical"]')).to_be_visible()
+  pg.screenshot(path=str(OUT/'screenshots'/'390-mobile-support-guidance.png'),full_page=True)
+  result.append({'tag':'medical-mobile','status':'passed'})
+ finally:phone.close()
+ return result
+
+def keyboard(browser):
  context=browser.new_context(viewport={'width':1440,'height':900})
- page=context.new_page();load(page)
+ page=context.new_page()
+ load(page)
  page.locator('[data-open-class="G7-A"]').first.click()
  sid=open_student(page)
  page.locator('[data-student-tab="overview"]').focus()
@@ -181,6 +213,7 @@ def tag_journeys(browser):
  expect(page).to_have_url(re.compile('#/learners$'))
  context.close()
  return {'keyboardTabs':True,'browserHistory':True,'contextReturn':True,'keyboardNavigation':True}
+
 def main():
  chrome=os.environ.get('CHROME_BIN') or shutil.which('google-chrome') or shutil.which('chromium') or '/usr/bin/chromium'
  with sync_playwright() as pw:
@@ -206,4 +239,5 @@ def main():
      summary['supportTagChecksPassed']!=6 or
      not all(keys.get(k) for k in ['keyboardTabs','browserHistory','contextReturn','keyboardNavigation']))
   finally:browser.close()
+
 if __name__=='__main__':raise SystemExit(main())
