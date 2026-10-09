@@ -7,6 +7,7 @@
 import {generateDemoData} from './data.mjs';
 import {applyFacultyDemo,DEFAULT_TEACHER_ID} from './faculty-demo.mjs';
 import {buildPulseData,DEMO_DAY} from './pulse-data.mjs';
+import {TAG_IDS} from './learner-tags.mjs';
 import {renderLaunchHome,renderLaunchClass} from './first-release-pages.mjs';
 import {renderLearners,renderGrowth,renderStudent} from './v2-pages.mjs';
 import {icon,esc,initials,prettyDate} from './v2-ui.mjs';
@@ -24,10 +25,10 @@ const settings=readSession().teacherId===teacherId?readSession():{};
 const validOrigin=x=>x?.teacherId===teacherId&&typeof x.hash==='string'&&x.hash.startsWith('#/');
 export const state={
  teacherId,classId:settings.classId||saved('aisg-v2-class')||'',
- rosterFilter:['all','attendance','support'].includes(settings.rosterFilter)?settings.rosterFilter:'all',
+ rosterFilter:['all','attendance','support',...TAG_IDS].includes(settings.rosterFilter)?settings.rosterFilter:'all',
  rosterQuery:settings.rosterQuery||'',learnerQuery:settings.learnerQuery||'',
  studentClassFilter:settings.studentClassFilter||'all',
- studentTab:'overview',subject:settings.subject||'Mathematics',
+ studentTab:'overview',supportFocus:'',subject:settings.subject||'Mathematics',
  returnContext:validOrigin(settings.returnContext)?settings.returnContext:null,
  classOrigin:validOrigin(settings.classOrigin)?settings.classOrigin:null,
  mobile:false,pendingFocus:''
@@ -51,8 +52,8 @@ function saveNavigation(){
 }
 function route(){
  const p=String(globalThis.location?.hash||'').replace(/^#\/?/,'');
- const [seg,id,tab]=p.split('/');
- if(seg==='student'&&id)return {page:'student',id,tab:['overview','learning','map','attendance','support'].includes(tab)?tab:'overview'};
+ const [seg,id,tab,focus]=p.split('/');
+ if(seg==='student'&&id)return {page:'student',id,tab:['overview','learning','map','attendance','support'].includes(tab)?tab:'overview',focusTag:tab==='support'&&TAG_IDS.includes(focus)?focus:''};
  if(seg==='class')return {page:'class',id:id||''};
  if(seg==='today'||seg==='actions'||!seg)return {page:'home'};
  if(routes.some(r=>r.id===seg))return {page:seg};
@@ -107,7 +108,7 @@ export function render(){
  let caret=null;try{caret=previous?.selectionStart}catch{}
  const focusTab=state.pendingFocus;
  const p=route();
- if(p.page==='student')state.studentTab=p.tab;
+ if(p.page==='student'){state.studentTab=p.tab;state.supportFocus=p.focusTag||'';}
  if(p.page==='class'&&p.id&&classes().some(c=>c.id===p.id))state.classId=p.id;
  const ctx=context(),body=pageContent(p,ctx);
  app.innerHTML='<div class="v2-app first-release"><div class="v2-brand-stripe"></div>'+
@@ -123,9 +124,10 @@ export function render(){
   app.querySelector?.(focusTab)?.focus?.();state.pendingFocus='';
  }
 }
-function go(page,id='',tab=''){
+function go(page,id='',tab='',focusTag=''){
  state.mobile=false;
- const hash='#/'+page+(id?'/'+id:'')+(page==='student'&&tab&&tab!=='overview'?'/'+tab:'');
+ const hash='#/'+page+(id?'/'+id:'')+(page==='student'&&tab&&tab!=='overview'?'/'+tab:'')+
+  (page==='student'&&tab==='support'&&TAG_IDS.includes(focusTag)?'/'+focusTag:'');
  if(globalThis.location.hash===hash)render();else globalThis.location.hash=hash;
  try{globalThis.window?.scrollTo?.({top:0,behavior:'instant'})}catch{}
 }
@@ -135,13 +137,15 @@ function openClass(id,from){
  if(state.classId!==id){state.rosterFilter='all';state.rosterQuery=''}
  state.classId=id;persist('aisg-v2-class',id);go('class',id);
 }
-function openStudent(id,tab='overview'){
+function openStudent(id,tab='overview',focusTag=''){
  if(!students().some(s=>s.id===id))return;
  const p=route();
  state.returnContext={teacherId:state.teacherId,page:p.page,hash:globalThis.location.hash||'#/home',
   classId:state.classId,rosterFilter:state.rosterFilter,rosterQuery:state.rosterQuery,
   learnerQuery:state.learnerQuery,studentClassFilter:state.studentClassFilter,subject:state.subject};
- state.studentTab=tab;go('student',id,tab);
+ state.studentTab=tab;state.supportFocus=TAG_IDS.includes(focusTag)?focusTag:'';
+ if(state.supportFocus)state.pendingFocus='[data-support-detail="'+state.supportFocus+'"]';
+ go('student',id,tab,state.supportFocus);
 }
 function returnProfile(){
  const x=state.returnContext;
@@ -166,7 +170,15 @@ function onclick(event){
   else go(dest);return;
  }
  if((b=e.closest('[data-open-class]'))){openClass(b.dataset.openClass,route());return}
- if((b=e.closest('[data-open-student]'))){openStudent(b.dataset.openStudent,b.dataset.targetTab||'overview');return}
+ if((b=e.closest('[data-open-student]'))){openStudent(b.dataset.openStudent,b.dataset.targetTab||'overview',b.dataset.tagFocus||'');return}
+ if((b=e.closest('[data-view-support]'))){
+  const tag=b.dataset.viewSupport;
+  if(TAG_IDS.includes(tag)){
+   state.supportFocus=tag;state.pendingFocus='[data-support-detail="'+tag+'"]';
+   go('student',route().id,'support',tag);
+  }
+  return;
+ }
  if((b=e.closest('[data-student-tab]'))){
   state.studentTab=b.dataset.studentTab;
   state.pendingFocus='[data-student-tab="'+state.studentTab+'"]';
@@ -187,6 +199,9 @@ function onChange(event){
   openClass(el.value,route());return;
  }
  if(el.id==='v2-learner-class'){state.studentClassFilter=el.value;render();return}
+ if(el.id==='v2-support-filter'){
+  state.rosterFilter=TAG_IDS.includes(el.value)?el.value:'all';render();return;
+ }
  if(el.id==='v2-subject-select'){state.subject=el.value;render();return}
 }
 function onInput(event){
