@@ -4,6 +4,8 @@
  */
 import {attendanceSummary, gradeNumber, formatPct} from './data.mjs';
 import {portrait} from './portraits.mjs';
+import {demoTagsForStudent} from './learner-tags.mjs';
+import {supportTagChips,taggedSupportDetail} from './learner-tags-ui.mjs';
 import {latestMapGrowth,mapGrowthSummary,growthFormat} from './map-growth.mjs';
 import {renderGrowthProfile} from './map-growth-ui.mjs';
 import {DEMO_DAY,DAILY_PROVENANCE,SKILL_STATES,gradeBand,skillsForGrade,studentTimeline,
@@ -184,9 +186,10 @@ export function renderLearners(ctx){
  '<span class="v2-result-note">'+learners.length+' fictional learners</span></div>'+
  (learners.length?'<div class="v2-learners-grid">'+learners.slice(0,160).map(s=>{
    const today=pulseForClass(ctx.data,ctx.pulse,ctx.data.classIndex.get(s.classId)).rows.find(r=>r.student.id===s.id);
-   return '<button class="v2-learner-card" data-open-student="'+esc(s.id)+'">'+studentImg(s,'large')+
+   return '<article class="v2-learner-card launch-learner-card"><button type="button" class="launch-learner-open" data-open-student="'+esc(s.id)+'">'+studentImg(s,'large')+
    '<span class="v2-learner-card-text"><strong>'+shortName(s)+'</strong><small>'+esc(shortGrade(s.grade))+' · '+esc(s.classId)+'</small>'+
-   '<span class="v2-learner-meta">'+stageBadge(today?.attendance.status||'not-recorded')+' <span class="v2-light-small">· '+esc(s.primaryLanguage)+'</span></span></span>'+icon('chevron',17)+'</button>';
+   '<span class="v2-learner-meta">'+stageBadge(today?.attendance.status||'not-recorded')+' <span class="v2-light-small">· '+esc(s.primaryLanguage)+'</span></span></span>'+icon('chevron',17)+'</button>'+
+   (demoTagsForStudent(s).length?'<div class="launch-learner-card-tags">'+supportTagChips(s,'card')+'</div>':'')+'</article>';
  }).join('')+'</div>':emptyState('No learners found','Try a different name or class.'))+
  '<p class="v2-caption">This is a demonstration roster. Teacher-class assignments are invented, even though faculty names are real.</p>';
 }
@@ -262,7 +265,7 @@ function ritHistoryChart(rows){
  '<text x="'+x(i)+'" y="'+(h-10)+'" text-anchor="middle" font-size="10" fill="#627e93">'+esc(r.window.replace('Fall ','F').replace('Spring ','S'))+'</text>').join('')+'</svg></div>';
 }
 function renderStudentNav(ctx,s){
- const items=[['overview','Overview'],['learning','Recent learning'],['map','MAP Growth'],['attendance','Attendance'],['support','Classroom guidance']];
+ const items=[['overview','Overview'],['learning','Recent learning'],['map','MAP Growth'],['attendance','Attendance'],['support','Classroom guidance' + (demoTagsForStudent(s).length?' ('+demoTagsForStudent(s).length+')':'')]];
  return '<div class="v2-profile-tabs" role="tablist" aria-label="Learner information">'+items.map(([key,label])=>
  '<button role="tab" aria-selected="'+(ctx.state.studentTab===key)+'" class="'+(ctx.state.studentTab===key?'active':'')+'" id="v2-tab-'+key+'" aria-controls="v2-student-panel" data-student-tab="'+key+'" tabindex="'+(ctx.state.studentTab===key?'0':'-1')+'">'+label+'</button>').join('')+'</div>';
 }
@@ -319,7 +322,7 @@ export function renderStudent(ctx,studentId){
   emptyState('No recent exceptions','No absences or late arrivals were recorded in this fictional period.'))+'</section>';
  }else{
   const items=ctx.data.support[s.id]||[];
-  body='<div class="v2-main-grid"><section class="v2-card v2-card-roomy"><span class="v2-eyebrow">CLASSROOM SUPPORT</span><h2>Practical guidance</h2>'+
+  body=taggedSupportDetail(s,ctx.state.supportFocus||'')+'<div class="v2-main-grid"><section class="v2-card v2-card-roomy"><span class="v2-eyebrow">CLASSROOM SUPPORT</span><h2>Practical guidance</h2>'+
   '<p class="v2-caption">Action-focused, fictional learning guidance. Full medical, counselling and safeguarding records never appear here.</p>'+
   (items.length?items.map(i=>'<article class="v2-guidance"><span>'+icon('shield',18)+'</span><div><small>'+esc(i.kind)+'</small><h3>'+esc(i.title)+'</h3><p>'+esc(i.detail)+'</p></div></article>').join(''):
   emptyState('No additional guidance recorded','Continue using purposeful, inclusive Tier 1 teaching strategies.'))+
@@ -334,7 +337,7 @@ export function renderStudent(ctx,studentId){
  return '<button class="v2-back" data-return-profile="1">'+icon('back',15)+' '+esc(returnLabel)+'</button>'+
  '<div class="v2-profile-hero">'+studentImg(s,'large')+'<div><span class="v2-eyebrow">FICTIONAL LEARNER PROFILE</span><h1>'+esc(s.name)+'</h1>'+
  '<p>'+esc(shortGrade(s.grade))+' · '+esc(s.classId)+' · '+esc(s.campus)+' Campus · '+esc(s.id)+'</p>'+
- '<div class="v2-tagline"><span>'+esc(s.primaryLanguage)+'</span><span>'+esc(s.yearsAtAISG)+' years at AISG</span></div></div>'+
+ '<div class="v2-tagline"><span>'+esc(s.primaryLanguage)+'</span><span>'+esc(s.yearsAtAISG)+' years at AISG</span></div>'+supportTagChips(s,'profile')+'</div>'+
  '</div>'+
  renderStudentNav(ctx,s)+'<div id="v2-student-panel" role="tabpanel" aria-labelledby="v2-tab-'+esc(section)+'" tabindex="0">'+body+'</div>'+
  '<p class="v2-caption">All learner identities, grades, academic records, survey information, attendance and support guidance are synthetic.</p>';
