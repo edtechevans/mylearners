@@ -101,3 +101,60 @@
 @media(prefers-reduced-motion:reduce){
  .launch-class-card{transition:none}
 }
+
+
+/* Phase-one learner support indicators: compact labels, not diagnoses. */
+.learner-support-chips{display:flex;align-items:center;flex-wrap:wrap;gap:6px;max-width:100%}
+.learner-support-chip,.learner-support-static-tag{
+ display:inline-flex;align-items:center;justify-content:center;min-height:31px;
+ border:1px solid transparent;border-radius:7px;padding:5px 9px;font:800 10px/1.25 'DM Sans',sans-serif;
+ white-space:nowrap;letter-spacing:.01em;text-align:center;
+}
+.learner-support-chip{cursor:pointer;transition:background .14s,border-color .14s,transform .14s}
+.learner-support-chip:hover{transform:translateY(-1px);filter:brightness(.965)}
+.learner-support-chip:focus-visible{outline:3px solid #23638f;outline-offset:2px}
+.learner-support-chip.tag-eal,.learner-support-static-tag.tag-eal{background:#e6f3f0;color:#195e58;border-color:#c7e0db}
+.learner-support-chip.tag-ss,.learner-support-static-tag.tag-ss{background:#e8f1f8;color:#235b83;border-color:#cbdfe9}
+.learner-support-chip.tag-iep,.learner-support-static-tag.tag-iep{background:#f0ebf9;color:#60418f;border-color:#ddd0ec}
+.learner-support-chip.tag-medical,.learner-support-static-tag.tag-medical{background:#fff1df;color:#82501a;border-color:#ecd5b0}
+.learner-support-chip.tag-behavioural,.learner-support-static-tag.tag-behavioural{background:#edf0f4;color:#44596e;border-color:#d5dfe7}
+.learner-tags-empty{color:#8598a7;font-size:12px}
+.launch-roster-table{min-width:960px}
+.launch-roster-table td:nth-child(5){min-width:185px;max-width:220px}
+.launch-roster-table .learner-support-chips{min-width:110px}
+.launch-support-select{display:flex;flex-direction:column;gap:5px;font-size:10px;font-weight:800;letter-spacing:.045em;color:#5f788d}
+.launch-support-select select{min-height:38px;max-width:185px;border:1px solid #d8e5ed;color:#284f70;border-radius:8px;background:#fff;padding:8px 28px 8px 9px;font-size:11px;font-weight:700;letter-spacing:0}
+.launch-support-select select:focus-visible{outline:3px solid #7db9dc;outline-offset:2px}
+.launch-learner-card{display:flex;flex-direction:column;align-items:stretch;padding:0;gap:0;overflow:hidden;min-width:0}
+.launch-learner-open{display:flex;align-items:center;width:100%;min-width:0;gap:12px;padding:14px;background:transparent;border:0;text-align:left;color:#315773;cursor:pointer}
+.launch-learner-open:hover{background:#f7fafc}
+.launch-learner-open:focus-visible{outline:3px solid #7fb4d4;outline-offset:-3px}
+.launch-learner-open .v2-learner-card-text{flex:1;min-width:0}
+.launch-learner-card-tags{padding:0 14px 14px;display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+.launch-learner-card-tags .learner-support-chip{min-height:30px}
+.v2-profile-hero .learner-support-chips{margin-top:12px}
+.v2-profile-hero .learner-support-chip{font-size:11px;min-height:33px}
+.learner-support-section{margin:0 0 18px}
+.learner-tag-explainer{display:flex;gap:9px;align-items:flex-start;background:#f2f7fa;border:1px solid #e0e9f1;border-radius:9px;padding:11px 13px;font-size:11px;line-height:1.65;color:#56748b;margin-bottom:17px}
+.learner-tag-explainer svg{margin-top:1px}
+.learner-support-details{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:12px}
+.learner-support-detail{border:1px solid #dee8ee;border-radius:11px;padding:16px;background:#fff;min-width:0;scroll-margin-top:110px}
+.learner-support-detail.selected{outline:3px solid #b2cedd;outline-offset:1px;border-color:#3f7ba2;background:#fbfdfe}
+.learner-support-detail:focus{outline:3px solid #5d95b8;outline-offset:2px}
+.learner-support-detail-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.learner-support-detail h3{margin:0;font:800 13px/1.4 Manrope,'DM Sans',sans-serif;color:#244b68}
+.learner-support-detail h4{font-size:11px;letter-spacing:.045em;text-transform:uppercase;color:#426582;margin:15px 0 7px}
+.learner-support-detail .learner-support-summary{font-size:12px;color:#536e82;margin:11px 0;line-height:1.7}
+.learner-support-detail ul{margin:7px 0 15px;padding-left:18px;display:grid;gap:7px;font-size:12px;color:#3d5d73;line-height:1.65}
+.learner-support-source{display:flex;align-items:flex-start;gap:6px;font-size:10px!important;color:#627d90!important;border-top:1px solid #ebf0f4;padding-top:11px;margin:0!important}
+.learner-support-source svg{margin-top:2px}
+.learner-support-restricted{display:flex;gap:6px;align-items:flex-start;color:#765b3c!important;font-size:10px!important;background:#fff9ee;padding:9px;border-radius:7px;line-height:1.6!important}
+.learner-support-restricted svg{margin-top:1px}
+@media(max-width:650px){
+ .launch-support-select{width:100%}
+ .launch-support-select select{max-width:100%;width:100%}
+ .launch-roster-filters .v2-roster-search{flex:1;min-width:190px}
+ .learner-support-details{grid-template-columns:1fr}
+ .learner-support-detail{padding:14px}
+ .v2-profile-hero .learner-support-chips{margin-top:9px}
+}
