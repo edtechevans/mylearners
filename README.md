@@ -16,6 +16,20 @@ A simple, teacher-facing view of **classes, student profiles and the essential i
 ### Student profile
 Each fictional learner has an overview, recent academic learning, MAP growth (where assessed), attendance and punctuality, and essential classroom guidance. The design remains growth-first: a change in a valid MAP score is surfaced ahead of the latest RIT value.
 
+### Fictional learner support indicators
+
+The first release displays five clearly labelled, easy-to-recognise **demonstration support tags** on class rosters, in My Learners search results and on individual learner profiles:
+
+- **EAL** — English as an Additional Language
+- **SS** — Student Support
+- **IEP** — Individualised Education Plan
+- **Medical** — essential classroom health/safety guidance indicator
+- **Behavioural** — proactive positive behaviour support indicator, not a judgement about the learner
+
+Teachers may select a badge to open the corresponding section of **Classroom guidance** and can filter a roster by any one of the five categories. Multiple badges can appear on one fictional learner. The demonstration is deliberately **enriched with examples**: every fictional class contains examples of all five badges. This must not be interpreted as realistic prevalence.
+
+**Sensitive data and scope:** This is an entirely synthetic feature with no imported student records or actual teacher support assignments. Medical, IEP, SS and Behavioural flags could reveal sensitive learner information in a real school. In production, both the presence of a tag and its underlying details must be role-limited and displayed only to authorised adults with an educational need to know. Approved plans should be accessed through the relevant governed source system, not copied into public HTML, spreadsheets, browser storage, GitHub Pages or an unapproved AI service. The Medical and Behavioural demo cards intentionally contain **no diagnoses, treatment history, incident records or personal case notes**. Do not treat a tag as a fixed description of a learner.
+
 ### Deliberately not included in the first release
 - Daily **Learning Pulse** alerts, automatic evidence signals and prescribed next teaching steps.
 - **My Actions** queues, intervention forms, follow-up documentation and browser-saved action records.
@@ -47,7 +61,8 @@ The real-browser test suite requires Playwright and Chromium. It models ten **si
 
 ### Architecture
 - `index.html` loads **`src/my-learners-launch.mjs`**, the streamlined public entry point.
-- `src/first-release-pages.mjs`: Home and class roster.
+- `src/first-release-pages.mjs`: Home and class roster with support filters and badges.
+- `src/learner-tags.mjs` and `src/learner-tags-ui.mjs`: synthetic support categories and interactive safe guidance; no live student-support data.
 - `src/my-learners-launch.css`: first-release visual refinements, above the AISG shared UI layer.
 - `src/v2-pages.mjs`: reusable learner profiles, class lists and MAP Growth screens. Advanced experimental renderers are retained in this historical module only.
 - `src/data.mjs`, `src/staff.mjs`, `src/faculty-demo.mjs`: deterministic synthetic data and real-named, fictionally assigned faculty views.
