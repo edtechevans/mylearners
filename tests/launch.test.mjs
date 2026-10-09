@@ -27,7 +27,8 @@ test('class page gives read-only student roster, recent assessments, MAP and sup
  assert.match(app.innerHTML,/CLASS ROSTER/);
  assert.match(app.innerHTML,/Recent assessment/);
  assert.match(app.innerHTML,/MAP Mathematics growth/);
- assert.match(app.innerHTML,/Classroom guidance/);
+ assert.match(app.innerHTML,/Support tags/);
+ assert.match(app.innerHTML,/data-target-tab="support"/);
  assert.match(app.innerHTML,/Attendance/);
  assert.match(app.innerHTML,/DEMO-0721/);
  assert.doesNotMatch(app.innerHTML,/(Flexible groups|data-group-student|data-create-action|DECISION RULE)/);
