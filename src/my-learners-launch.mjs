@@ -8,11 +8,11 @@ import {generateDemoData} from './data.mjs';
 import {applyFacultyDemo,DEFAULT_TEACHER_ID} from './faculty-demo.mjs';
 import {buildPulseData,DEMO_DAY} from './pulse-data.mjs';
 import {TAG_IDS} from './learner-tags.mjs';
-import {renderLaunchHome,renderLaunchClass} from './first-release-pages.mjs';
-import {renderLearners,renderGrowth,renderStudent} from './v2-pages.mjs';
+import {renderLaunchHome,renderLaunchClass} from './first-release-pages.mjs?v=tags1';
+import {renderLearners,renderGrowth,renderStudent} from './v2-pages.mjs?v=tags1';
 import {icon,esc,initials,prettyDate} from './v2-ui.mjs';
 
-export const APP_VERSION='2.1-first-release';
+export const APP_VERSION='2.2-support-tag-demo';
 export const data=applyFacultyDemo(generateDemoData());
 const pulse=buildPulseData(data);
 const storage=(()=>{try{return globalThis.localStorage}catch{return null}})();

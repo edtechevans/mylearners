@@ -1,6 +1,6 @@
 /** Shared badge and guidance UI for fictional student support indicators. */
 import {demoTagsForStudent} from './learner-tags.mjs';
-import {icon,esc} from './v2-ui.mjs';
+import {icon,esc} from './v2-ui.mjs?v=tags1';
 
 /** ctx=roster, cards or profile. Outside the profile chips open the support tab.
  * Within the profile chips select the matching guidance card.
