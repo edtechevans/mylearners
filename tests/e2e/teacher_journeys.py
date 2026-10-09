@@ -148,6 +148,134 @@ def responsive(browser):
     page.screenshot(path=str(OUT/'screenshots'/f'{width}-{route.replace("/","-")}.png'),full_page=True)
   context.close()
  return result
+def tag_journeys(browser):
+ """Verify each fictional category can be filtered, opened and returned from."""
+ result=[]
+ context=browser.new_context(viewport={'width':1440,'height':900},locale='en-GB')
+ page=context.new_page()
+ try:
+  load(page)
+  persona(page,'Zach Navarro')
+  class_page(page,'G7-A')
+  for tag in ['eal','ss','iep','medical','behavioural']:
+   page.locator('#v2-support-filter').select_option(tag)
+   expect(page.locator('#v2-support-filter')).to_have_value(tag)
+   chips=page.locator('.launch-roster-table [data-tag-focus="'+tag+'"]')
+   check(chips.count()>0,tag+' tag missing from filtered demo class')
+   target=chips.first
+   student=target.get_attribute('data-open-student')
+   target.click()
+   expect(page).to_have_url(re.compile('#/student/'+re.escape(student)+'/support/'+tag+'
+ context=browser.new_context(viewport={'width':1440,'height':900})
+ page=context.new_page();load(page)
+ page.locator('[data-open-class="G7-A"]').first.click()
+ sid=open_student(page)
+ page.locator('[data-student-tab="overview"]').focus()
+ page.keyboard.press('ArrowRight')
+ check(page.url.endswith('/learning'),'Learner tabs require working keyboard arrows')
+ page.go_back()
+ expect(page).to_have_url(re.compile('#/student/'+sid+'$'))
+ page.locator('[data-return-profile]').click()
+ expect(page).to_have_url(re.compile('#/class/G7-A$'))
+ page.locator('.v2-nav [data-nav="learners"]').press('Enter')
+ expect(page).to_have_url(re.compile('#/learners$'))
+ context.close()
+ return {'keyboardTabs':True,'browserHistory':True,'contextReturn':True,'keyboardNavigation':True}
+def main():
+ chrome=os.environ.get('CHROME_BIN') or shutil.which('google-chrome') or shutil.which('chromium') or '/usr/bin/chromium'
+ with sync_playwright() as pw:
+  browser=pw.chromium.launch(headless=True,executable_path=chrome,args=['--no-sandbox','--disable-dev-shm-usage'])
+  try:
+   journeys=[]
+   for i,person in enumerate(PEOPLE,1):
+    result=journey(browser,i,person);journeys.append(result)
+    print(('PASS' if result['status']=='passed' else 'FAIL'),result['name'],result.get('error','')[:140],flush=True)
+   sizes=responsive(browser)
+   try: tags=tag_journeys(browser)
+   except Exception as ex: tags=[{'tag':'tag-flow','status':'failed','error':str(ex)}]
+   try: keys=keyboard(browser)
+   except Exception as ex: keys={'error':str(ex),'keyboardTabs':False,'browserHistory':False,'contextReturn':False,'keyboardNavigation':False}
+   summary={'journeysPassed':sum(j['status']=='passed' for j in journeys),'journeysTotal':len(journeys),
+    'responsivePagesPassed':sum(v['status']=='passed' for v in sizes),'responsivePagesTotal':len(sizes),
+    'supportTagChecksPassed':sum(t['status']=='passed' for t in tags),
+    'supportTagChecksTotal':6,'keyboard':keys}
+   (OUT/'ux-journeys.json').write_text(json.dumps({'method':'simulated personas in Chromium, not human teacher research',
+     'baseUrl':BASE,'summary':summary,'journeys':journeys,'responsive':sizes,'supportTags':tags},indent=2))
+   print('SUMMARY',json.dumps(summary),flush=True)
+   return int(summary['journeysPassed']!=10 or summary['responsivePagesPassed']!=len(sizes) or
+     summary['supportTagChecksPassed']!=6 or
+     not all(keys.get(k) for k in ['keyboardTabs','browserHistory','contextReturn','keyboardNavigation']))
+  finally:browser.close()
+if __name__=='__main__':raise SystemExit(main())
+))
+   detail=page.locator('[data-support-detail="'+tag+'"]')
+   expect(detail).to_be_visible()
+   expect(detail).to_have_class(re.compile('selected'))
+   expect(detail).to_contain_text('Useful classroom approaches')
+   if tag in ['medical','behavioural']:
+    expect(detail).to_contain_text('Detailed health, behavioural, counselling or safeguarding records are not available')
+   if tag=='medical':
+    page.screenshot(path=str(OUT/'screenshots'/'1440-medical-tag-guidance.png'),full_page=True)
+   page.locator('[data-return-profile]').click()
+   expect(page).to_have_url(re.compile('#/class/G7-A
+ context=browser.new_context(viewport={'width':1440,'height':900})
+ page=context.new_page();load(page)
+ page.locator('[data-open-class="G7-A"]').first.click()
+ sid=open_student(page)
+ page.locator('[data-student-tab="overview"]').focus()
+ page.keyboard.press('ArrowRight')
+ check(page.url.endswith('/learning'),'Learner tabs require working keyboard arrows')
+ page.go_back()
+ expect(page).to_have_url(re.compile('#/student/'+sid+'$'))
+ page.locator('[data-return-profile]').click()
+ expect(page).to_have_url(re.compile('#/class/G7-A$'))
+ page.locator('.v2-nav [data-nav="learners"]').press('Enter')
+ expect(page).to_have_url(re.compile('#/learners$'))
+ context.close()
+ return {'keyboardTabs':True,'browserHistory':True,'contextReturn':True,'keyboardNavigation':True}
+def main():
+ chrome=os.environ.get('CHROME_BIN') or shutil.which('google-chrome') or shutil.which('chromium') or '/usr/bin/chromium'
+ with sync_playwright() as pw:
+  browser=pw.chromium.launch(headless=True,executable_path=chrome,args=['--no-sandbox','--disable-dev-shm-usage'])
+  try:
+   journeys=[]
+   for i,person in enumerate(PEOPLE,1):
+    result=journey(browser,i,person);journeys.append(result)
+    print(('PASS' if result['status']=='passed' else 'FAIL'),result['name'],result.get('error','')[:140],flush=True)
+   sizes=responsive(browser)
+   try: keys=keyboard(browser)
+   except Exception as ex: keys={'error':str(ex),'keyboardTabs':False,'browserHistory':False,'contextReturn':False,'keyboardNavigation':False}
+   summary={'journeysPassed':sum(j['status']=='passed' for j in journeys),'journeysTotal':len(journeys),
+    'responsivePagesPassed':sum(v['status']=='passed' for v in sizes),'responsivePagesTotal':len(sizes),
+    'keyboard':keys}
+   (OUT/'ux-journeys.json').write_text(json.dumps({'method':'simulated personas in Chromium, not human teacher research',
+     'baseUrl':BASE,'summary':summary,'journeys':journeys,'responsive':sizes},indent=2))
+   print('SUMMARY',json.dumps(summary),flush=True)
+   return int(summary['journeysPassed']!=10 or summary['responsivePagesPassed']!=len(sizes) or not all(keys.get(k) for k in ['keyboardTabs','browserHistory','contextReturn','keyboardNavigation']))
+  finally:browser.close()
+if __name__=='__main__':raise SystemExit(main())
+))
+   expect(page.locator('#v2-support-filter')).to_have_value(tag)
+   result.append({'tag':tag,'status':'passed'})
+  page.screenshot(path=str(OUT/'screenshots'/'1440-class-support-tags.png'),full_page=True)
+ finally:context.close()
+ # A mobile teacher must be able to use a tag without leaving the class workflow.
+ phone=browser.new_context(viewport={'width':390,'height':844})
+ pg=phone.new_page()
+ try:
+  load(pg);persona(pg,'Zach Navarro')
+  pg.locator('[data-menu]').first.click()
+  class_page(pg,'G7-A')
+  pg.locator('#v2-support-filter').select_option('medical')
+  badge=pg.locator('.launch-roster-table [data-tag-focus="medical"]').first
+  expect(badge).to_be_visible()
+  badge.click()
+  expect(pg.locator('[data-support-detail="medical"]')).to_be_visible()
+  pg.screenshot(path=str(OUT/'screenshots'/'390-mobile-support-guidance.png'),full_page=True)
+  result.append({'tag':'medical-mobile','status':'passed'})
+ finally:phone.close()
+ return result
+
 def keyboard(browser):
  context=browser.new_context(viewport={'width':1440,'height':900})
  page=context.new_page();load(page)
