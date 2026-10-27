@@ -169,37 +169,66 @@ function roster(ss,options={}){
 
 function learnerProfile(s,studentRole=false){
  if(!s)return '<section class="card">Select a learner to begin.</section>';
- const aa=attendanceSummary(DATA.attendance[s.id]||[]),mg=latestMapGrowth(DATA.map[s.id]||[]),tags=demoTagsForStudent(s);
- const academic=academicFor(ACADEMIC_RECORDS,s.id);
- const latest=academic.reports?.[0];
- const math=latest?.subjects.find(x=>x.subject==='Mathematics'||x.subject==='Early Mathematics')||null;
- const profileStart=(studentRole?'':'<div class="row-between"><button class="back" data-action="back">← Back to my class</button></div>');
- const history=studentRole&&experienceEligible(s)?'<section class="card"><h2>My check-ins over time</h2><div class="trend">'+EXPERIENCE_WINDOWS.map(w=>{
-  const e=experienceFor(RECORDS,s.id,'engagement',w.key)?.value;
-  const b=experienceFor(RECORDS,s.id,'belonging',w.key)?.value;
-  return '<div><span>'+w.label+'</span><strong>Engagement '+fmt(e)+'</strong><strong>Belonging '+fmt(b)+'</strong></div>';
- }).join('')+'</div><p class="tiny">These fictional check-ins describe my experience, not my ability or my grade.</p></section>':'';
- return profileStart+
- '<div class="profile-head"><img src="'+portrait(s.portraitSeed)+'" alt="Fictional portrait"><div><div class="eyebrow">'+
- (studentRole?'MY LEARNING PROFILE':'WHOLE LEARNER PROFILE')+'</div><h1>'+safe(s.name)+'</h1><p>'+safe(s.grade)+' · '+safe(s.classId)+' · '+safe(s.campus)+'</p></div></div>'+
- '<div class="kpis profile-kpis">'+kpi('Attendance',fmt(aa.rate)+'%','Recorded through '+safe(DATA.asOf))+
- kpi('MAP Mathematics growth',mg.status==='comparable'?(mg.actual>=0?'+':'')+mg.actual:'—',
- mg.status==='comparable'?'RIT points · illustrative projection '+fmt(mg.projected):'Not assessed or no comparable test')+
- kpi('Latest Mathematics report',math?.value||'—',latest?'Issued '+safe(latest.year)+' · '+safe(latest.framework):'No issued report yet')+'</div>'+
- renderAcademicProfile(s,ACADEMIC_RECORDS,studentRole,state.academicReportYear)+
- (experienceEligible(s)?
- '<div class="sectionhead"><h2>'+(studentRole?'How I experience learning':'Student experience')+'</h2><span class="tiny">Fictional Fall 2026 check-ins</span></div>'+
- metrics([s],s,studentRole?'student':'profile')+history:
- '<p class="academic-early-checkin-note">Student engagement and belonging check-ins begin in Grade 3 in this demonstration.</p>')+
- '<section class="card academic-next-step"><h2>'+(studentRole?'My next step':'Classroom guidance')+'</h2>'+
- (studentRole?'<p>What could help me feel more connected and engaged in learning?</p><label class="label" for="reflection">My reflection (this browser only)</label>'+
- '<textarea id="reflection" placeholder="One thing that helps me learn is...">'+safe(saved('reflection-'+s.id,''))+'</textarea>'+
- btn('save-reflection','Save my draft','primary')+
- '<p class="tiny" id="save-status">A private browser demonstration, not submitted to school.</p>':
- (tags.length?tags.map(t=>'<div class="guide"><strong>'+safe(t.fullName)+'</strong><p>'+safe(t.strategies[0])+'</p></div>').join(''):
- '<p class="muted">No additional classroom guidance tags in this fictional example.</p>')+
- '<p class="tiny">Detailed support plans and confidential records are not included in this public demo.</p>')+
- '</section>';
+ const aa=attendanceSummary(DATA.attendance[s.id]||[]),
+  mg=latestMapGrowth(DATA.map[s.id]||[]),tags=demoTagsForStudent(s);
+ const rec=academicFor(ACADEMIC_RECORDS,s.id);
+ const issued=rec.reports?.[0];
+ const math=issued?.subjects.find(x=>x.subject==='Mathematics'||x.subject==='Early Mathematics')||null;
+ const n=gradeNumber(s.grade);
+ const mapApplicable=n>=3&&n<=10;
+ const profileStart=studentRole?'':'<div class="row-between"><button class="back" data-action="back">← Back to my students</button></div>';
+ const header='<div class="profile-head"><img src="'+portrait(s.portraitSeed)+'" alt="Fictional portrait">'+
+  '<div><div class="eyebrow">'+(studentRole?'MY LEARNING PROFILE':'WHOLE LEARNER PROFILE')+'</div>'+
+  '<h1>'+safe(s.name)+'</h1><p>'+safe(s.grade)+' · '+safe(s.classId)+' · '+safe(s.campus)+'</p></div></div>';
+ const history=studentRole&&experienceEligible(s)?
+  '<section class="card student-checkin-history"><h3>How my check-ins have changed</h3><div class="trend">'+
+  EXPERIENCE_WINDOWS.map(w=>{
+   const e=experienceFor(RECORDS,s.id,'engagement',w.key)?.value;
+   const b=experienceFor(RECORDS,s.id,'belonging',w.key)?.value;
+   return '<div><span>'+w.label+'</span><strong>Engagement '+fmt(e)+'</strong>'+
+    '<strong>Belonging '+fmt(b)+'</strong></div>';
+  }).join('')+'</div><p class="tiny">My check-ins describe my experience of learning, not my ability or a school grade.</p></section>':'';
+ const wellbeing=experienceEligible(s)?
+  '<div class="sectionhead"><h2>'+(studentRole?'How I feel about learning':'Student experience')+
+  '</h2><span class="tiny">Fictional Fall 2026 check-ins</span></div>'+
+  metrics([s],s,studentRole?'student':'profile')+history:
+  '<p class="academic-early-checkin-note">Student engagement and belonging check-ins begin in Grade 3 in this demonstration.</p>';
+ const academics=renderAcademicProfile(s,ACADEMIC_RECORDS,studentRole,state.academicReportYear);
+ if(studentRole){
+  return profileStart+header+
+   renderStudentOverview(s,ACADEMIC_RECORDS,{
+    attendance:DATA.attendance[s.id],mathGrowth:mg,
+    reflectionDraft:saved('reflection-'+s.id,'')})+
+   '<details class="student-detail-section" data-student-panel="reports" id="student-reports"'+
+    (state.studentReportsOpen?' open':'')+'>'+
+   '<summary><span class="student-panel-symbol" aria-hidden="true">▤</span>'+
+   '<span><strong>My school reports and skills</strong>'+
+   '<small>Subjects, mathematics and reading check-ins · up to three report years</small></span>'+
+   '<span class="student-panel-chevron" aria-hidden="true">⌄</span></summary>'+
+   academics+'</details>'+
+   (experienceEligible(s)?
+    '<details class="student-detail-section" data-student-panel="wellbeing" id="student-wellbeing"'+
+     (state.studentWellbeingOpen?' open':'')+'>'+
+    '<summary><span class="student-panel-symbol" aria-hidden="true">♡</span>'+
+    '<span><strong>How I experience learning</strong>'+
+    '<small>Engagement, belonging and my past check-ins</small></span>'+
+    '<span class="student-panel-chevron" aria-hidden="true">⌄</span></summary>'+
+    '<div class="student-wellbeing-content">'+wellbeing+'</div></details>':
+    '<p class="academic-early-checkin-note">Student engagement and belonging check-ins begin in Grade 3 in this demo.</p>');
+ }
+ const profileKpis='<div class="kpis profile-kpis">'+
+  kpi('Attendance',fmt(aa.rate)+'%','Through 8 Oct 2026')+
+  (mapApplicable?kpi('MAP Mathematics growth',mg.status==='comparable'?
+   (mg.actual>=0?'+':'')+mg.actual:'—',
+   mg.status==='comparable'?'RIT points · latest comparable MAP tests':'Not yet comparable'):'')+
+  (math?kpi('Latest Mathematics report',math.value,issued?'Issued '+safe(issued.year)+
+   ' · Grade '+safe(issued.grade)+' · '+safe(issued.framework):''):'')+'</div>';
+ const guidance='<section class="card academic-next-step"><h2>Classroom guidance</h2>'+
+  (tags.length?tags.map(t=>'<div class="guide"><strong>'+safe(t.fullName)+'</strong><p>'+
+   safe(t.strategies[0])+'</p></div>').join(' '):
+  '<p class="muted">No additional classroom guidance tags in this fictional example.</p>')+
+  '<p class="tiny">Detailed support plans and confidential records are not included in this public demo.</p></section>';
+ return profileStart+header+profileKpis+academics+wellbeing+guidance;
 }
 
 function quickStat(label,value,detail,action=''){
@@ -207,10 +236,12 @@ function quickStat(label,value,detail,action=''){
  '<span>'+safe(label)+'</span><strong>'+fmt(value)+'</strong><small>'+detail+'</small>'+(action?'</button>':'</div>');
 }
 function faculty(){
- const cs=ownClasses();if(!cs.some(c=>c.id===state.classId))state.classId=cs[0]?.id||'';
+ const cs=ownClasses();
+ if(!cs.some(c=>c.id===state.classId))state.classId=cs[0]?.id||'';
  const ss=(activeClass()?.studentIds||[]).map(id=>DATA.userIndex.get(id));
- const selected=ss.find(s=>s.id===state.studentId);
+ const selected=ownStudents().find(s=>s.id===state.studentId);
  if(selected)return learnerProfile(selected);
+ const searching=!!state.query.trim();
  const meanAttendance=avg(ss.map(s=>attendanceSummary(DATA.attendance[s.id]).rate));
  const gradeHasCheckins=eligible(ss).length>0;
  const score=id=>{
@@ -219,17 +250,27 @@ function faculty(){
    sum.value===null?'No check-in':sum.n+'/'+sum.eligible+' responses · How is this calculated?',
    sum.value===null?'':'explain:faculty:'+id);
  };
- return heading('Your students, in one place.','Select a class or find a learner. Everything else is one click away.')+
- '<div class="toolbar faculty-toolbar"><label>My class '+selector('class',cs.map(c=>[c.id,c.name]),state.classId)+'</label>'+
- '<label class="search-label">Find a student<input data-query placeholder="Search by name..." value="'+safe(state.query)+'" aria-label="Find a student in this class"></label>'+
- '<label>Faculty demo '+selector('teacher',DATA.teachers.map(t=>[t.id,t.name]),state.teacher)+'</label></div>'+
- '<div class="quick-summary">'+quickStat('Students',ss.length,'In this class')+
- quickStat('Attendance',fmt(meanAttendance)+'%','Recorded through 8 Oct 2026')+
- (gradeHasCheckins?score('engagement')+score('belonging'):'<div class="quick-note">Student-reported engagement and belonging indices are not collected for PK–Grade 2 in this demo.</div>')+'</div>'+
- (typeof state.details==='string'&&state.details.startsWith('faculty:')?scoreExplanation(state.details.split(':')[1],ss,null):'')+
- renderClassAcademicPanel(ss,ACADEMIC_RECORDS,state.academicMode,state.academicSubject)+
- roster(ss)+info();
+ const toolbar='<div class="toolbar faculty-toolbar faculty-daily-toolbar">'+
+  '<label>My class '+selector('class',cs.map(c=>[c.id,c.name]),state.classId)+'</label>'+
+  '<label class="search-label">Find any assigned student'+
+   '<input data-query placeholder="Search across all my classes..." value="'+safe(state.query)+
+   '" aria-label="Search for a student across all assigned classes"></label>'+
+  '<label class="faculty-demo-picker">Faculty demo '+selector('teacher',DATA.teachers.map(t=>[t.id,t.name]),state.teacher)+'</label></div>';
+ const summary=searching?'':'<div class="quick-summary faculty-daily-summary">'+
+  quickStat('My class',ss.length,'Learners in '+safe(activeClass()?.name||'this class'))+
+  quickStat('Attendance',fmt(meanAttendance)+'%','Through 8 Oct 2026')+
+  (gradeHasCheckins?score('engagement')+score('belonging'):
+   '<div class="quick-note">Student-reported experience indices start at Grade 3 in this demo.</div>')+'</div>';
+ const reportControls=searching?'':renderClassAcademicPanel(ss,ACADEMIC_RECORDS,
+  state.academicMode,state.academicSubject,{compact:true});
+ return heading('My students','Find a learner, see essential information, or choose a class result.')+
+  toolbar+summary+
+  roster(searching?ownStudents():ss,{across:searching,controls:reportControls})+
+  (!searching&&typeof state.details==='string'&&state.details.startsWith('faculty:')?
+   scoreExplanation(state.details.split(':')[1],ss,null):'')+
+  info();
 }
+
 function leader(){
  const grades=GRADES.filter(x=>gradeNumber(x)>=3);
  const divisions=state.division==='All'?['Elementary','Secondary']:[state.division];
