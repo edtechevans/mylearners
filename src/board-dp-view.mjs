@@ -17,8 +17,9 @@ export function renderDPPointDetails(key){
  'Diploma pass rate is based on Diploma awards; a consistent examination-candidate denominator is not available.':
  'Average Diploma points are school-reported final results. Different graduating cohorts contribute each year.')+'</p>';
 }
-function dpLineChart(metric){
- const meta=metricMeta(metric),items=dpMetricSeries(metric);
+function dpLineChart(metric,{range='all',selectedYear=null}={}){
+ const meta=metricMeta(metric),all=dpMetricSeries(metric);
+ const items=range==='recent'?all.slice(-3):all;
  const width=860,height=320,left=56,right=24,top=70,bottom=255,max=meta.max;
  const xp=i=>left+(width-left-right)*(i/(items.length-1));
  const yp=n=>bottom-(n/max)*(bottom-top);
@@ -34,12 +35,14 @@ function dpLineChart(metric){
    (metric==='passRate'?value+'%':value)+'</text>';
  }).join('');
  const points=items.map((r,i)=>{
-  const x=xp(i),label='<text class="board-trend-year" text-anchor="middle" x="'+x.toFixed(1)+'" y="292">'+r.year+'</text>';
+  const x=xp(i),selected=Number(selectedYear)===r.end;
+  const label='<text class="board-trend-year" text-anchor="middle" x="'+x.toFixed(1)+'" y="292">'+r.year+'</text>';
   if(r.value===null)return label;
   const y=yp(r.value);
-  return '<g class="board-dp-point" data-board-dp-point="'+metric+':'+r.end+'" tabindex="0" role="button"'+
+  return '<g class="board-dp-point'+(selected?' is-selected':'')+'" data-board-dp-point="'+metric+':'+r.end+'" tabindex="0" role="button"'+
    ' aria-label="'+safe(r.year+', '+meta.label+': '+valueText(r.value,metric)+(metric==='average'?' of 45 points':'')+'. Select for an explanation.')+'">'+
    '<circle class="board-dp-point-hit" cx="'+x+'" cy="'+y+'" r="18" fill="transparent"/>'+
+   (selected?'<circle class="board-dp-selected-ring" cx="'+x+'" cy="'+y+'" r="12.8" fill="none" stroke="#72a8c4" stroke-width="4" opacity=".55"/>':'')+
    '<circle class="board-dp-point-mark" cx="'+x+'" cy="'+y+'" r="6.7" fill="#176397" stroke="#fff" stroke-width="2"/>'+
    '<text x="'+x+'" y="'+(y-17)+'" text-anchor="middle" class="board-trend-value" fill="#176397">'+valueText(r.value,metric)+'</text></g>'+label;
  }).join('');
@@ -62,37 +65,96 @@ function dpPathways(){
  DP_GRADE12_PATHWAYS.map(r=>'<tr><td>'+safe(r.year)+'</td><td>'+r.full+'</td><td>'+r.courses+'</td><td>'+r.aisg+'</td></tr>').join('')+
  '</tbody></table></div><p class="board-dp-caveat">'+safe(DP_METHODS.discrepancy)+'</p></details>';
 }
+function diplomaIcon(type){
+ const content={
+  average:'<circle cx="12" cy="8" r="5"/><path d="M8 13 6 21l6-3 6 3-2-8M12 5v6m-3-3h6"/>',
+  pass:'<path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 12v5c4 3 8 3 12 0v-5M22 9v7"/>',
+  pathways:'<rect x="4" y="12" width="4" height="8" rx=".7"/><rect x="10" y="8" width="4" height="12" rx=".7"/><rect x="16" y="4" width="4" height="16" rx=".7"/>'
+ };
+ return '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+content[type]+'</svg>';
+}
+function outcomeTile(type,label,value,unit,note){
+ return '<article class="board-dp-graphic-card board-dp-graphic-'+type+'">'+
+  '<span class="board-dp-graphic-icon">'+diplomaIcon(type)+'</span>'+
+  '<div class="board-dp-graphic-info">'+
+  '<span class="board-dp-graphic-label">'+safe(label)+'</span>'+
+  '<strong class="board-dp-graphic-value">'+safe(value)+(unit?'<small>'+safe(unit)+'</small>':'')+'</strong>'+
+  '<span class="board-dp-graphic-note">'+safe(note)+'</span>'+
+  '</div></article>';
+}
+const option=(value,label,selected)=>'<option value="'+safe(value)+'"'+
+ (String(value)===String(selected)?' selected':'')+'>'+safe(label)+'</option>';
 export function renderBoardDP(state){
- const selected=state.boardDpMetric==='passRate'?'passRate':'average';
- const latest=DP_RECORDS.at(-1);
- const formattedMetric=selected==='passRate'?'Pass rate':'Average score';
- return '<section class="board-dp"><div class="board-dp-intro"><div>'+
- '<span class="eyebrow">GRADUATION OUTCOMES · IB DIPLOMA PROGRAMME</span>'+
- '<h2>IB Diploma outcomes over time</h2>'+
- '<p>Reported Diploma results across graduating cohorts, separate from Grades 3–10 MAP achievement.</p></div>'+
- '<span class="board-dp-origin">Historical school-reported outcomes · through 2025–26</span></div>'+
- '<div class="board-dp-tiles">'+
- '<div class="board-dp-tile"><span>Latest reported average · '+safe(latest.year)+'</span><strong>'+valueText(latest.average,'average')+' <small>/ 45</small></strong><small>Reported Diploma points · final confirmation pending</small></div>'+
- '<div class="board-dp-tile"><span>Latest reported pass rate · '+safe(latest.year)+'</span><strong>'+valueText(latest.passRate,'passRate')+'</strong><small>Candidate denominator not supplied</small></div>'+
- '<div class="board-dp-tile"><span>Grade 12 full DP pathway · '+safe(latest.year)+'</span><strong>56 <small>learners</small></strong><small>Pathway enrolment, not exam candidature</small></div></div>'+
- '<div class="board-dp-alert"><strong>About these figures:</strong> '+safe(DP_METHODS.current)+' Candidate counts are not reliably available, so pass counts are not inferred.</div>'+
- '<section class="board-panel board-dp-panel"><div class="board-dp-chart-top"><div><span class="eyebrow">REPORTED YEARLY OUTCOMES</span>'+
- '<h3>'+formattedMetric+' by school year</h3><p>Hover, tap or keyboard-focus a year for the reported outcome and explanation.</p></div>'+
+ const metric=state.boardDpMetric==='passRate'?'passRate':'average';
+ const range=state.boardDpRange==='recent'?'recent':'all';
+ const end=DP_RECORDS.some(x=>x.end===Number(state.boardDpYear))?Number(state.boardDpYear):DP_RECORDS.at(-1).end;
+ const selected=DP_RECORDS.find(x=>x.end===end);
+ const pathway=DP_GRADE12_PATHWAYS.find(x=>x.year===selected.year);
+ const prior=DP_RECORDS.find(x=>x.end===end-1);
+ const timeText=range==='recent'?'the most recent three graduating years':'all seven reported graduating years';
+ const pNote=pathway?'Grade 12 full Diploma pathway enrolment · not exam candidature':
+  'Grade 12 pathway counts not available for this year';
+ const latestNote=selected.verify?'School-reported · awaiting final confirmation':
+  'Recorded school-reported result';
+ return '<section class="board-dp">'+
+ '<div class="board-dp-intro"><div><span class="eyebrow">GRADUATION OUTCOMES · IB DIPLOMA PROGRAMME</span>'+
+ '<h2>IB Diploma results</h2>'+
+ '<p>Choose a year, explore the Diploma indicators and see how outcomes have changed.</p></div>'+
+ '<span class="board-dp-origin">School-level graduation outcomes</span></div>'+
+ '<div class="board-dp-controls" aria-label="IB Diploma filters">'+
+ '<div class="board-dp-control-group"><span class="board-filter-label">Metric</span>'+
  '<div class="board-segmented" role="group" aria-label="IB Diploma measure">'+
- '<button type="button" data-board-dp-metric="average" aria-pressed="'+(selected==='average')+'" class="'+(selected==='average'?'active':'')+'">Average points</button>'+
- '<button type="button" data-board-dp-metric="passRate" aria-pressed="'+(selected==='passRate')+'" class="'+(selected==='passRate'?'active':'')+'">Pass rate</button></div></div>'+
- '<p class="board-dp-swipe">Most recent years shown first on phones · swipe to see earlier cohorts.</p>'+
- '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Scroll to inspect annual Diploma outcomes">'+dpLineChart(selected)+'</div>'+
+ '<button type="button" data-board-dp-metric="average" class="'+(metric==='average'?'active':'')+
+ '" aria-pressed="'+(metric==='average')+'">Average points</button>'+
+ '<button type="button" data-board-dp-metric="passRate" class="'+(metric==='passRate'?'active':'')+
+ '" aria-pressed="'+(metric==='passRate')+'">Pass rate</button></div></div>'+
+ '<label class="board-dp-control-group"><span class="board-filter-label">School year</span>'+
+ '<select data-board-dp-select="year" aria-label="Diploma school year">'+
+ [...DP_RECORDS].reverse().map(r=>option(r.end,r.year,end)).join('')+'</select></label>'+
+ '<label class="board-dp-control-group"><span class="board-filter-label">Historical range</span>'+
+ '<select data-board-dp-select="range" aria-label="Diploma trend years">'+
+ option('all','All reported years',range)+option('recent','Most recent 3 years',range)+'</select></label>'+
+ '</div>'+
+ '<section class="board-dp-comparison-panel">'+
+ '<div class="board-dp-panel-heading"><div><span class="eyebrow">DIPLOMA ACHIEVEMENT · '+safe(selected.year)+'</span>'+
+ '<h3>IB Diploma at a glance</h3><p>Three distinct outcomes for the selected graduating year.</p></div>'+
+ '<span class="board-dp-year-chip">'+safe(selected.year)+'</span></div>'+
+ '<div class="board-dp-graphic-grid">'+
+ outcomeTile('average','Average Diploma score',valueText(selected.average,'average'),'/45',
+  'Average awarded points · '+latestNote)+
+ outcomeTile('pass','Diploma pass rate',valueText(selected.passRate,'passRate'),'',
+  selected.passRate===null?'Rate not available for this graduating year':'Reported percentage awarded the Diploma')+
+ outcomeTile('pathways','Grade 12 full DP pathway',pathway?String(pathway.full):'—','',
+  pNote)+'</div>'+
+ '<p class="board-dp-graphic-footnote">The Diploma score and pass rate describe graduating outcomes. The pathway count describes Grade 12 enrolment, <strong>not</strong> Diploma examination candidates.</p>'+
+ '</section>'+
+ '<div class="board-dp-alert">'+(selected.verify?'<strong>Latest results:</strong> ':'<strong>Interpretation:</strong> ')+
+ safe(selected.verify?DP_METHODS.current:
+ 'Each point represents a different graduating cohort; the scores do not track individual student growth.')+
+ '</div>'+
+ '<section class="board-panel board-dp-panel"><div class="board-dp-chart-top"><div>'+
+ '<span class="eyebrow">RESULTS OVER TIME</span>'+
+ '<h3>'+(metric==='average'?'Average Diploma points':'Diploma pass rate')+' over time</h3>'+
+ '<p>Showing '+safe(timeText)+'. Select a point to inspect that year.</p></div>'+
+ '<div class="board-dp-trend-context"><span>Selected: '+safe(selected.year)+'</span>'+
+ '<span>'+(prior&&Number.isFinite(selected[metric])&&Number.isFinite(prior[metric])?
+  'Change from preceding year: '+(selected[metric]-prior[metric]>0?'+':'')+
+  (metric==='average'?(selected[metric]-prior[metric]).toFixed(1)+' pts':
+   (selected[metric]-prior[metric]).toFixed(0)+' percentage points'):
+  'Previous-year comparison unavailable')+'</span></div></div>'+
+ '<p class="board-dp-swipe">Swipe horizontally to see earlier years. Tap a point to select its cohort.</p>'+
+ '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Explore Diploma outcomes by school year">'+
+ dpLineChart(metric,{range,selectedYear:end})+'</div>'+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
- '<div class="board-dp-inspector" aria-live="polite"><p><strong>Select a year</strong> to understand its reported result.</p></div>'+
- '<p class="board-chart-caption">Scores are on the 0–45 Diploma point scale; pass rates are on the 0–100% scale. The chart deliberately uses the full scale rather than exaggerating small year-on-year variations. No world average is inferred.</p></section>'+
+ '<div class="board-dp-inspector" aria-live="polite"><p>Hover or select a year to see its reported result and explanation.</p></div>'+
+ '<p class="board-chart-caption">The y-axis uses the complete '+(metric==='average'?'0–45-point':'0–100%')+
+ ' scale to avoid exaggerating small differences. Missing historical outcomes remain blank.</p></section>'+
  dpOutcomesTable()+dpPathways()+
  '<details class="board-details board-dp-method"><summary>Data definitions and limitations <span>+</span></summary>'+
  '<p>'+safe(DP_METHODS.quality)+'</p><p>'+safe(DP_METHODS.limits)+'</p>'+
  '<p>'+safe(DP_METHODS.discrepancy)+'</p><p>'+safe(DP_METHODS.pathways)+'</p>'+
  '<p>'+safe(DP_METHODS.boundary)+'</p></details></section>';
 }
-
 
 /** One concise historical visual shared with the Board's Overview. */
 export function renderDPOverviewTrend(state){
