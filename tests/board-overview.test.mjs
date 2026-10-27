@@ -44,8 +44,8 @@ test('Hover breakdown identifies exact included grade averages rather than stude
 
 test('Board Overview communicates four defensible strengths in a clear schoolwide learning story',()=>{
  const html=renderBoardOverview({boardTrendTerm:'fall',boardTrendFocus:'all',boardOverviewChart:'map',boardDpMetric:'average'});
- assert.match(html,/STRENGTHS AT A GLANCE/);
- assert.match(html,/Strong learning outcomes, from Grade 3 to graduation/);
+ assert.match(html,/OUR LEARNING STORY · AT A GLANCE/);
+ assert.match(html,/From Grade 3 to graduation/);
  assert.equal((html.match(/class="board-strength-card"/g)||[]).length,4);
  assert.equal((html.match(/data-board-go=/g)||[]).length,2);
  assert.equal((html.match(/data-board-dp-go=/g)||[]).length,2);
@@ -60,6 +60,10 @@ test('Board Overview communicates four defensible strengths in a clear schoolwid
  assert.match(html,/data-board-point="fall:2025:math"/);
  assert.match(html,/board-trend-inspector/);
  assert.match(html,/View the annual values/);
+ assert.match(html,/board-story-insight/);
+ assert.match(html,/LATEST COMPLETE REGIONAL COMPARISON/);
+ assert.match(html,/Fall 2025/);
+ assert.match(html,/7\/8/);
  assert.match(html,/data-board-view="explore"/);
  assert.equal((html.match(/board-historical-chart"/g)||[]).length,1,'One historical panel only');
  assert.doesNotMatch(html,/data-board-dp-point=/,'Do not render the other history at the same time');
