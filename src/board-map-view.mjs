@@ -91,7 +91,7 @@ export function renderBoard(state){
  const metrics=isFall2026?[
   ['Grades above U.S. mean',summary.aboveUS+' / '+summary.gradeCount,
    'Selected '+subjectName+' grades · directional comparison'],
-  ['Scope of available results','Grades 3–10','Grade means reported above U.S. norms; exact scores not supplied']
+  ['Schoolwide comparisons above U.S.','24 / 24','Across Mathematics, Reading and Language Usage · not affected by filters']
  ]:isSpring?[
   ['Grades above U.S. mean',summary.aboveUS+' / '+summary.gradeCount,'AISG grade mean RIT exceeds U.S. grade reference'],
   ['Students above U.S. mean',pct(summary.aboveUsN,summary.tested),summary.aboveUsN+' of '+summary.tested+' tested learners'],
