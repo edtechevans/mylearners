@@ -64,7 +64,7 @@ export const BOARD_METHODS=Object.freeze({
  fall:'Fall 2025 EARCOS and US benchmarks are from the same Fall 2025 AISG summary. The percentages above each reference are student-level figures published for each grade. Fall sample sizes are not present in that summary.',
  spring:'Spring 2026 US mean is a season-matched reference. AISG grade results and growth are reaggregated from the Spring 2026 NWEA export with the earliest dated test per learner/subject to avoid double counting repeated assessments. Counts are distinct tested students, not the whole enrolled school.',
  growth:'Spring-to-spring growth counts only students with a valid matched projected-growth comparison. Grade 3 has no matched Spring 2025 starting result in this export, so its growth is unavailable.',
- caution:'Do not interpret a cross-sectional comparison between different grades or testing windows as student growth. The Board view contains real AISG aggregate data; all other My Learners personas use fictional records. No student-level MAP records are published.'
+ caution:'Do not interpret a cross-sectional comparison between different grades or testing windows as individual student growth. The Board view contains real AISG aggregate data; all other My Learners personas use fictional records. No student-level MAP records are published.'
 });
 export const BOARD_GRADE_LIST=Object.freeze([3,4,5,6,7,8,9,10]);
 export function boardRows(window='fall2025',subject='math',division='all',grade='all'){
