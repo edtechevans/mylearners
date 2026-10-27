@@ -29,7 +29,7 @@ function recentCheckin(record,growth){
    const delta=previous?latest.correct-previous.correct:null;
    return {title:'Reading skills check-in',
     value:delta!==null?(delta>0?'+':'')+delta+' items':latest.correct+'/50',
-    detail:delta!==null?'Change in a fictional 50-item decoding check':'Latest fictional decoding check',
+    detail:delta!==null?'Change in a fictional 50-item decoding check':'Latest fictional 50-item decoding check',
     date:latest.date};
   }
   if(kind==='fp')
