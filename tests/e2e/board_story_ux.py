@@ -97,8 +97,11 @@ def main():
           require("93%" in page.locator(".board-dp-tile").nth(1).inner_text(),"DP pass rate incorrect")
           page.locator(".board-dp-table summary").click()
           no_restricted_text(page)
-          require("Verification" in page.locator(".board-dp-table").inner_text(),
-                  "Diploma verification status missing")
+          headers=page.locator(".board-dp-table thead th").all_text_contents()
+          require(any("Verification" in h for h in headers),
+                  "Diploma verification column missing")
+          require(page.locator(".board-dp-table").get_attribute("open") is not None,
+                  "Diploma details did not expand")
           page.locator(".board-dp-table summary").click()
           page.locator(".board-dp-method summary").click()
           no_restricted_text(page)
