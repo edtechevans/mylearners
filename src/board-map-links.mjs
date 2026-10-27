@@ -29,6 +29,11 @@ export function parseBoardHash(hash){
   boardDpYear:clean(params.get('year'),dpYears,currentDpYear),
   boardDpRange:clean(params.get('range'),dpRanges,'all'),
   boardTrendTerm:clean(params.get('term'),trends,'fall'),
+  boardTrendRange:params.get('history')==='all'?'all':'recent',
+  boardMapDetailsOpen:params.get('details')==='1'||!!validGrade,
+  boardMapCompareSeasons:params.get('compare')==='1',
+  boardMapGrowthOpen:params.get('growth')==='1',
+  boardPresentation:params.get('present')==='1',
   boardTrendFocus:params.get('focus')==='both'?'all':clean(params.get('focus'),focuses,'all'),
   boardWindow:window&&BOARD_DATA[window]?window:'fall2026',
   boardSubject:clean(params.get('subject'),subjects,'math'),
@@ -51,6 +56,7 @@ export function boardHash(state){
   }else{
    params.set('term',clean(state.boardTrendTerm,trends,'fall'));
    params.set('focus',clean(state.boardTrendFocus,focuses,'all'));
+   if(state.boardTrendRange==='all')params.set('history','all');
   }
  }else{
   params.set('window',BOARD_DATA[state.boardWindow]?state.boardWindow:'fall2026');
@@ -58,7 +64,11 @@ export function boardHash(state){
   params.set('division',clean(state.boardDivision,divisions,'all'));
   const grade=String(state.boardGrade||'all');
   params.set('grade',BOARD_GRADE_LIST.includes(Number(grade))?grade:'all');
+  if(state.boardMapDetailsOpen)params.set('details','1');
+  if(state.boardMapCompareSeasons)params.set('compare','1');
+  if(state.boardMapGrowthOpen)params.set('growth','1');
  }
+ if(state.boardPresentation)params.set('present','1');
  return '#/board?'+params.toString();
 }
 export function boardShareUrl(location,state){
