@@ -956,6 +956,16 @@ try{globalThis.window?.addEventListener?.('hashchange',()=>{
  if(boardLink){
   const changed=state.role!=='board'||Object.entries(boardLink).some(([key,value])=>state[key]!==value);
   if(changed){state.role='board';Object.assign(state,boardLink);render()}
- }else if(ROLE_IDS.includes(id)&&state.role!==id){state.role=id;if(id==='sss')state.sssStudentId='';render();globalThis.window?.scrollTo?.(0,0)}
+ }else if(ROLE_IDS.includes(id)&&state.role!==id){
+  // Route navigation and browser history must behave like selecting a dashboard.
+  // Otherwise a previously opened Student profile can unexpectedly replace the
+  // Faculty roster when arriving via a hash link or Back/Forward navigation.
+  state.role=id;state.details=false;state.studentId='';state.classId='';
+  state.query='';state.academicReportYear='';
+  if(id==='faculty')recallFaculty();
+  if(id==='student'){state.studentReportsOpen=false;state.studentWellbeingOpen=false}
+  if(id==='sss'){state.sssStudentId='';state.sssAcademicOpen=false}
+  render();globalThis.window?.scrollTo?.(0,0)
+ }
 })}catch{}
 render();
