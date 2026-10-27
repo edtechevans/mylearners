@@ -3,6 +3,20 @@ import {DP_RECORDS,DP_GRADE12_PATHWAYS,DP_METRICS,DP_METHODS,dpMetricSeries,dpPo
 const safe=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const metricMeta=id=>DP_METRICS.find(m=>m.id===id)||DP_METRICS[0];
 const valueText=(v,metric)=>v===null?'—':metric==='passRate'?v+'%':v.toFixed(1);
+function dpRangeHighlight(metric){
+ const values=DP_RECORDS.map(r=>r[metric]).filter(Number.isFinite);
+ if(!values.length)return '';
+ const low=Math.min(...values),high=Math.max(...values),n=values.length;
+ const v=metric==='average'?low.toFixed(1)+'–'+high.toFixed(1)+' <small>/ 45</small>':
+  low.toFixed(0)+'–'+high.toFixed(0)+'<small>%</small>';
+ const label=metric==='average'?'Annual Diploma score range':'Reported pass-rate range';
+ return '<div class="board-chart-range-annotation" role="note">'+
+ '<span class="board-chart-range-icon" aria-hidden="true">↗</span>'+
+ '<div><span class="board-chart-range-title">'+label+'</span>'+
+ '<strong>'+v+'</strong>'+
+ '<small>Across '+n+' recorded graduating years · cohorts differ</small></div></div>';
+}
+
 export function renderDPPointDetails(key){
  const match=/^(average|passRate):(\d{4})$/.exec(String(key||''));
  const item=match?dpPoint(match[2],match[1]):null;
@@ -119,6 +133,7 @@ export function renderBoardDP(state){
  '" class="'+(metric==='average'?'active':'')+'">Average points</button>'+
  '<button type="button" data-board-dp-metric="passRate" aria-pressed="'+(metric==='passRate')+
  '" class="'+(metric==='passRate'?'active':'')+'">Pass rate</button></div></div>'+
+ dpRangeHighlight(metric)+
  '<p class="board-dp-swipe">Select a year on the chart to see its result above.</p>'+
  '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Explore Diploma outcomes by school year">'+
  dpLineChart(metric,{range:'all',selectedYear:end})+'</div>'+
@@ -143,6 +158,7 @@ export function renderDPOverviewTrend(state){
  '<div class="board-segmented" role="group" aria-label="IB Diploma historical measure">'+
  '<button type="button" data-board-dp-metric="average" aria-pressed="'+(selected==='average')+'" class="'+(selected==='average'?'active':'')+'">Average points</button>'+
  '<button type="button" data-board-dp-metric="passRate" aria-pressed="'+(selected==='passRate')+'" class="'+(selected==='passRate'?'active':'')+'">Pass rate</button></div></div>'+
+ dpRangeHighlight(selected)+
  '<p class="board-dp-swipe">Swipe for earlier graduation years. Tap a point for its value.</p>'+
  '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Scroll to inspect Diploma outcomes">'+dpLineChart(selected)+'</div>'+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
