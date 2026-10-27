@@ -61,18 +61,33 @@ test('Spring 2026 growth figures stay linked to the eligible matched subjects on
  assert.equal(boardSummary('spring2026','math','elementary',3).growthPct,null);
 });
 
-test('Latest Fall 2026 supports only reported directions, not invented means',()=>{
+test('Fall 2026 AISG grade averages use verified NWEA 2025 Fall US SCHOOL norms',()=>{
+ const expected={
+  math:[184,196,206,210,217,220,224,225],
+  reading:[184,195,203,208,212,215,216,217],
+  language:[184,194,202,206,209,213,215,216]
+ };
+ const totals={math:615,reading:586,language:617};
+ const gradeThreeMeans={math:200.7,reading:187.4,language:192.6};
+ const gradeTenMeans={math:254.5,reading:226.8,language:229.7};
  for(const subject of ['math','reading','language']){
-  const x=boardSummary('fall2026',subject);
+  const x=boardSummary('fall2026',subject),rows=boardRows('fall2026',subject);
+  assert.deepEqual(rows.map(r=>r.us),expected[subject]);
+  assert.equal(rows[0].aisg,gradeThreeMeans[subject]);
+  assert.equal(rows.at(-1).aisg,gradeTenMeans[subject]);
+  assert.equal(rows.reduce((total,r)=>total+r.n,0),totals[subject]);
+  assert.ok(rows.every(r=>r.n>=60&&r.aisg>r.us&&r.earcos===null));
   assert.equal(x.gradeCount,8);assert.equal(x.aboveUS,8);assert.equal(x.usAvailable,8);
   assert.equal(x.hasEarcos,false);assert.equal(x.earcosAvailable,0);
-  assert.equal(x.aboveEarcos,null);assert.equal(x.gapUS,null);assert.equal(x.gapEarcos,null);
+  assert.equal(x.aboveEarcos,null);assert.equal(x.gapEarcos,null);
+  assert.ok(x.gapUS>0,'Real AISG vs US numerical RIT gap should be calculable');
   assert.equal(x.growthPct,null);assert.equal(x.tested,null);
-  assert.ok(x.rows.every(r=>r.aboveUsMean===true&&r.aisg===null&&r.us===null&&r.earcos===null));
  }
  assert.equal(BOARD_DATA.fall2026.schoolwide.aboveUSComparisons,24);
  assert.equal(BOARD_DATA.fall2026.schoolwide.returningGrowthInOneOrMoreAreasPct,95);
- assert.ok(BOARD_METHODS.fall2026.includes('not a Mathematics or Reading projected-growth rate'));
+ assert.ok(BOARD_METHODS.fall2026.includes('NWEA 2025 Fall SCHOOL achievement norms'));
+ assert.ok(BOARD_METHODS.fall2026.includes('student-level data remain private')||
+   BOARD_METHODS.fall2026.includes('Student-level data remain private'));
 });
 
 test('Partial historical EARCOS data are missing, never mistakenly zero',()=>{
