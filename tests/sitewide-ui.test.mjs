@@ -85,7 +85,7 @@ test('sitewide polish keeps accessible system fallback and scope of data-safe vi
  assert.match(css,/\.board-view \.board-nav-tabs/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
  assert.match(html,/sitewide-polish\.css/);
- assert.match(js,/return profileStart\+header\+profileKpis\+academics\+wellbeing\+guidance/);
+ assert.match(js,/return profileStart\+header\+profileKpis\+academics\+wellbeing\+maiaFaculty\+guidance/);
  assert.match(js,/SSS_RECORDS=createSSSDemoRecords\(DATA\.students\)/);
 });
 
