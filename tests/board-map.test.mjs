@@ -1,83 +1,105 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {BOARD_DATA,BOARD_WINDOWS,BOARD_METHODS,boardRows,boardSummary} from '../src/board-map-data.mjs';
+import {BOARD_DATA,BOARD_WINDOWS,BOARD_SCHOOL_YEARS,BOARD_SUBJECTS,BOARD_GRADE_LIST,
+ BOARD_METHODS,boardWindowFor,boardRows,boardSummary} from '../src/board-map-data.mjs';
 
-test('Board view uses eight verified grade aggregates per subject/window',()=>{
- for(const window of ['fall2025','spring2026']){
-  for(const subject of ['math','reading']){
-   const rows=boardRows(window,subject);
-   assert.deepEqual(rows.map(x=>x.grade),[3,4,5,6,7,8,9,10]);
-   assert.ok(rows.every(x=>Number.isFinite(x.aisg)&&Number.isFinite(x.us)&&x.aisg>x.us));
+test('24 valid historical testing windows and 13 academic years',()=>{
+ assert.equal(Object.keys(BOARD_DATA).length,24);
+ assert.equal(BOARD_WINDOWS.length,24);
+ assert.equal(BOARD_SCHOOL_YEARS.length,13);
+ assert.deepEqual(BOARD_SUBJECTS.map(s=>s.id),['math','reading','language']);
+ for(const [window,item] of Object.entries(BOARD_DATA)){
+  for(const subject of ['math','reading','language']){
+   assert.deepEqual(item.subjects[subject].map(r=>r.grade),BOARD_GRADE_LIST,window+' '+subject);
   }
  }
- assert.deepEqual(BOARD_WINDOWS.map(x=>x.id),['fall2025','spring2026','fall2026']);
+ assert.equal(boardWindowFor(2014,'fall'),'fall2014');
+ assert.equal(boardWindowFor(2014,'spring'),'spring2015');
+ assert.equal(boardWindowFor(2025,'spring'),'spring2026');
+ assert.equal(boardWindowFor(2026,'fall'),'fall2026');
+ assert.equal(boardWindowFor(2026,'spring'),null);
+ assert.equal(boardWindowFor(2019,'spring'),null,'Spring 2020 not in archive');
 });
-test('Fall 2025 comparison preserves actual EARCOS result rather than an inflated claim',()=>{
- const m=boardSummary('fall2025','math'),r=boardSummary('fall2025','reading');
- assert.equal(m.aboveUS,8);assert.equal(m.aboveEarcos,7);
+
+test('Fall 2025 Mathematics, Reading and Language Usage are preserved',()=>{
+ const m=boardSummary('fall2025','math'),r=boardSummary('fall2025','reading'),l=boardSummary('fall2025','language');
+ assert.equal(m.aboveUS,8);assert.equal(m.aboveEarcos,7);assert.equal(m.earcosAvailable,8);
  assert.equal(r.aboveUS,8);assert.equal(r.aboveEarcos,3);
+ assert.equal(l.aboveUS,8);assert.equal(l.aboveEarcos,4);
  const g8=boardRows('fall2025','math','secondary',8)[0];
  assert.equal(g8.aisg,245.5);assert.equal(g8.earcos,246.5);
  assert.equal(g8.aboveEarcosPct,46);
 });
-test('Spring 2026 has comparable US norm, but never invents an EARCOS Spring benchmark',()=>{
- const m=boardSummary('spring2026','math'),r=boardSummary('spring2026','reading');
- assert.equal(m.hasEarcos,false);assert.equal(r.hasEarcos,false);
- assert.equal(m.aboveEarcos,null);assert.equal(r.gapEarcos,null);
- assert.equal(m.aboveUS,8);assert.equal(r.aboveUS,8);
+
+test('Spring 2026 EARCOS matches supplied screenshot exactly for all three subjects',()=>{
+ const expected={
+  math:[213.47,225.55,233.12,237.70,247.00,253.32,256.20,260.55],
+  reading:[201.60,209.29,216.21,219.60,223.99,227.78,227.15,229.17],
+  language:[205.20,211.80,217.72,221.32,225.53,229.07,228.73,231.98]
+ };
+ for(const [subject,reference] of Object.entries(expected)){
+  const rows=boardRows('spring2026',subject);
+  assert.deepEqual(rows.map(r=>r.earcos),reference,subject);
+  assert.equal(boardSummary('spring2026',subject).earcosAvailable,8);
+ }
+ assert.equal(boardSummary('spring2026','math').aboveEarcos,6);
+ assert.equal(boardSummary('spring2026','reading').aboveEarcos,3);
+ assert.equal(boardSummary('spring2026','language').aboveEarcos,3);
+ assert.equal(boardSummary('spring2026','math').aboveUS,8);
+ assert.equal(boardSummary('spring2026','reading').aboveUS,8);
+ assert.equal(boardSummary('spring2026','language').aboveUS,8);
+ const g8m=boardRows('spring2026','math','secondary',8)[0];
+ assert.equal(g8m.aisg,252.7);assert.equal(g8m.earcos,253.32);
+});
+
+test('Spring 2026 growth figures stay linked to the eligible matched subjects only',()=>{
+ const m=boardSummary('spring2026','math'),r=boardSummary('spring2026','reading'),l=boardSummary('spring2026','language');
  assert.equal(m.tested,628);assert.equal(r.tested,621);
  assert.equal(m.growthMet,311);assert.equal(m.growthEligible,438);assert.equal(m.growthPct,71);
  assert.equal(r.growthMet,265);assert.equal(r.growthEligible,428);assert.equal(r.growthPct,62);
- assert.ok(boardRows('spring2026','reading').every(row=>row.earcos===null));
-});
-test('Division, grade, individual cohorts and missing prior-year growth are filtered correctly',()=>{
- assert.equal(boardRows('fall2025','math','elementary').length,3);
- assert.equal(boardRows('spring2026','reading','secondary').length,5);
- assert.equal(boardRows('fall2025','math','secondary',5).length,0);
- assert.deepEqual(boardRows('fall2025','reading','all','10').map(x=>x.grade),[10]);
- const g3=boardSummary('spring2026','math','elementary','3');
- assert.equal(g3.growthEligible,0);assert.equal(g3.growthPct,null);
- const g8=boardSummary('fall2025','math','secondary','8');
- assert.equal(g8.aboveEarcos,0);assert.equal(g8.gradeCount,1);
-});
-test('Only aggregated school data is committed and interpretation is documented',()=>{
- const content=JSON.stringify(BOARD_DATA);
- assert.ok(!/StudentID|dateOfBirth|StudentFirstName|StudentLastName|@aisgz|DEMO-\d/.test(content));
- assert.ok(BOARD_METHODS.caution.includes('individual'));
- assert.ok(BOARD_METHODS.growth.includes('Grade 3'));
+ assert.equal(l.growthMet,null);assert.equal(l.growthEligible,null);assert.equal(l.growthPct,null);
+ assert.equal(boardSummary('spring2026','math','elementary',3).growthPct,null);
 });
 
-test('Fall 2026 summary uses only explicitly reported directional grade-level outcomes',()=>{
- const m=boardSummary('fall2026','math'),r=boardSummary('fall2026','reading');
- assert.equal(m.gradeCount,8);assert.equal(r.gradeCount,8);
- assert.equal(m.aboveUS,8);assert.equal(r.aboveUS,8);
- assert.equal(m.aboveEarcos,null);assert.equal(r.aboveEarcos,null);
- assert.equal(m.gapUS,null);assert.equal(r.gapUS,null);
- assert.equal(m.gapEarcos,null);assert.equal(r.gapEarcos,null);
- assert.equal(m.tested,null);assert.equal(r.tested,null);
- assert.equal(m.growthPct,null);assert.equal(r.growthPct,null);
- assert.equal(BOARD_DATA.fall2026.schoolwide.aboveUSComparisons,24);
- assert.equal(BOARD_DATA.fall2026.schoolwide.totalComparisons,24);
- assert.equal(BOARD_DATA.fall2026.schoolwide.returningGrowthInOneOrMoreAreasPct,95);
- assert.deepEqual(BOARD_DATA.fall2026.schoolwide.projectedGroupGrowthExceeded,
-  ['Mathematics','Reading','Language Usage']);
- for(const subject of ['math','reading']){
-  const rows=boardRows('fall2026',subject);
-  assert.deepEqual(rows.map(x=>x.grade),[3,4,5,6,7,8,9,10]);
-  assert.ok(rows.every(x=>x.aboveUsMean===true&&x.aisg===null&&x.us===null&&x.earcos===null));
+test('Latest Fall 2026 supports only reported directions, not invented means',()=>{
+ for(const subject of ['math','reading','language']){
+  const x=boardSummary('fall2026',subject);
+  assert.equal(x.gradeCount,8);assert.equal(x.aboveUS,8);assert.equal(x.usAvailable,8);
+  assert.equal(x.hasEarcos,false);assert.equal(x.earcosAvailable,0);
+  assert.equal(x.aboveEarcos,null);assert.equal(x.gapUS,null);assert.equal(x.gapEarcos,null);
+  assert.equal(x.growthPct,null);assert.equal(x.tested,null);
+  assert.ok(x.rows.every(r=>r.aboveUsMean===true&&r.aisg===null&&r.us===null&&r.earcos===null));
  }
- assert.ok(BOARD_METHODS.fall2026.includes('NOT give grade-level mean RIT'));
+ assert.equal(BOARD_DATA.fall2026.schoolwide.aboveUSComparisons,24);
+ assert.equal(BOARD_DATA.fall2026.schoolwide.returningGrowthInOneOrMoreAreasPct,95);
+ assert.ok(BOARD_METHODS.fall2026.includes('not a Mathematics or Reading projected-growth rate'));
 });
-test('Fall 2026 division and grade filters never convert a schoolwide statistic into a subject growth rate',()=>{
- for(const subject of ['math','reading']){
-  const elementary=boardSummary('fall2026',subject,'elementary');
-  const secondary=boardSummary('fall2026',subject,'secondary');
-  assert.equal(elementary.aboveUS,3);assert.equal(elementary.gradeCount,3);
-  assert.equal(secondary.aboveUS,5);assert.equal(secondary.gradeCount,5);
-  for(let grade=3;grade<=10;grade++){
-   const row=boardSummary('fall2026',subject,'all',String(grade));
-   assert.equal(row.gradeCount,1);assert.equal(row.aboveUS,1);
-   assert.equal(row.growthPct,null);
+
+test('Partial historical EARCOS data are missing, never mistakenly zero',()=>{
+ const row=boardRows('spring2016','math','secondary',8)[0];
+ assert.equal(row.earcos,null,'Outlier source value 21 discarded');
+ assert.equal(row.aisg,258);
+ const all=boardSummary('spring2016','math');
+ assert.equal(all.earcosAvailable,7);assert.equal(all.gapEarcos,null);
+ assert.equal(all.aboveEarcos,6);
+ const g8=boardSummary('spring2016','math','secondary',8);
+ assert.equal(g8.aboveEarcos,null);assert.equal(g8.gapEarcos,null);
+});
+
+test('Grade and division filters always return the correct eight-grade universe',()=>{
+ for(const w of ['fall2014','spring2019','spring2016','spring2026','fall2026']){
+  for(const s of ['math','reading','language']){
+   assert.equal(boardRows(w,s,'elementary').length,3);
+   assert.equal(boardRows(w,s,'secondary').length,5);
+   assert.equal(boardRows(w,s,'secondary','4').length,0);
+   assert.deepEqual(boardRows(w,s,'all','10').map(r=>r.grade),[10]);
   }
  }
+});
+
+test('Historical rows contain only school-level aggregates and source notes',()=>{
+ const text=JSON.stringify(BOARD_DATA);
+ assert.ok(!/StudentID|dateOfBirth|StudentFirstName|StudentLastName|@aisgz|DEMO-\d/.test(text));
+ assert.ok(BOARD_METHODS.caution.includes('individual'));
+ assert.ok(BOARD_METHODS.history.includes('norm editions'));
 });
