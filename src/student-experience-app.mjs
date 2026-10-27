@@ -81,7 +81,24 @@ function metricCard(ss,id,window='F26',scope='main'){
  (sum.value===null?'':btn('explain:'+scope+':'+id,'How is this calculated?','quiet'))+'</article>';
 }
 function info(){return '<div class="notice"><strong>Demonstration only.</strong> Learners, report cards, IXL Mathematics levels, Core Phonics checks, F&P text levels, assessment history, survey-style check-ins and class assignments are all fictional. No actual AISG learner results or confidential climate-survey responses are used. Experience indices are exploratory descriptions, not validated scores or labels.</div>'}
-function header(){return '<header class="top"><div class="brand"><img src="assets/aisg-logo.webp" alt="AISG logo"><div><strong>My Learners</strong><span>Understand the whole learner</span></div></div><div class="roles"><span class="roles-label">VIEW</span>'+ROLE_IDS.map(r=>'<button data-role="'+r+'" aria-pressed="'+(state.role===r)+'" class="'+(state.role===r?'selected':'')+'">'+(r==='sss'?'SSS':r[0].toUpperCase()+r.slice(1))+'</button>').join('')+'</div></header>'}
+const ROLE_DISPLAY=Object.freeze({faculty:'Faculty',student:'Student',sss:'SSS',leader:'Leaders',board:'Board'});
+const ROLE_DESCRIPTION=Object.freeze({
+ faculty:'Faculty dashboard',
+ student:'Student dashboard',
+ sss:'Student Support Services (SSS) demonstration dashboard',
+ leader:'Leaders dashboard',
+ board:'Board dashboard'
+});
+function header(){
+ return '<button type="button" class="skip-link" data-skip-main>Skip to main content</button>'+
+ '<header class="top"><div class="brand"><img src="assets/aisg-logo.webp" alt="AISG logo">'+
+ '<div><strong>My Learners</strong><span>Understand the whole learner</span></div></div>'+
+ '<nav class="roles" aria-label="Dashboard views"><span class="roles-label">DASHBOARDS</span>'+
+ ROLE_IDS.map(r=>'<button type="button" data-role="'+r+'" aria-pressed="'+(state.role===r)+
+ '" aria-label="Open '+ROLE_DESCRIPTION[r]+'" title="'+ROLE_DESCRIPTION[r]+
+ '" class="'+(state.role===r?'selected':'')+'">'+ROLE_DISPLAY[r]+'</button>').join('')+
+ '</nav></header>';
+}
 function heading(title,desc){
  const asOf=new Date(DATA.asOf+'T12:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
  return '<div class="heading"><div><div class="eyebrow">AISG · 2026–27</div><h1>'+safe(title)+'</h1><p>'+safe(desc)+'</p></div>'+
@@ -486,7 +503,7 @@ function render(){
   state.role==='sss'?sss():state.role==='student'?student():faculty();
  root.classList.toggle('board-presentation-mode',state.role==='board'&&!!state.boardPresentation);
  document.body.classList.toggle('board-drawer-open',state.role==='board'&&state.boardView==='explore'&&!!state.boardMapDetailsOpen);
- root.innerHTML=header()+'<main class="container" id="main">'+content+'</main><footer>'+
+ root.innerHTML=header()+'<main class="container" id="main" tabindex="-1">'+content+'</main><footer>'+
  (state.role==='board'?'AISG Board · Aggregated MAP and IB Diploma outcomes · No individual student scores published':
  'My Learners demonstration · Learners, assessments and student check-ins fictional')+
  '</footer>';
@@ -638,6 +655,13 @@ root.addEventListener('keydown',e=>{
  if(e.key==='Escape'){hideBoardFloat();if(pinnedChartKey)unpinChartPoint()}
 });
 root.addEventListener('click',e=>{
+ const skip=e.target.closest('[data-skip-main]');
+ if(skip){
+  const main=root.querySelector('#main');
+  main?.focus({preventScroll:true});
+  main?.scrollIntoView?.({block:'start'});
+  return;
+ }
  const sssStudent=e.target.closest('[data-sss-student]');
  if(sssStudent&&state.role==='sss'){
   const id=sssStudent.dataset.sssStudent;
@@ -683,8 +707,12 @@ root.addEventListener('click',e=>{
  state.role=role.dataset.role;state.details=false;state.studentId='';state.classId='';state.query='';state.academicReportYear='';
  if(state.role==='faculty')recallFaculty();
  if(state.role==='student'){state.studentReportsOpen=false;state.studentWellbeingOpen=false}
+ if(state.role==='sss'){state.sssStudentId='';state.sssAcademicOpen=false}
  if(globalThis.location?.hash!=='#/'+state.role)globalThis.location.hash='#/'+state.role;
- render();return}
+ render();
+ root.querySelector('[data-role="'+state.role+'"]')?.focus({preventScroll:true});
+ globalThis.window?.scrollTo?.(0,0);
+ return}
  const point=e.target.closest('[data-board-point]');
  if(point){pinChartPoint(point);
   if(e.detail>0&&window.matchMedia?.('(pointer: coarse)').matches)
@@ -911,6 +939,6 @@ try{globalThis.window?.addEventListener?.('hashchange',()=>{
  if(boardLink){
   const changed=state.role!=='board'||Object.entries(boardLink).some(([key,value])=>state[key]!==value);
   if(changed){state.role='board';Object.assign(state,boardLink);render()}
- }else if(ROLE_IDS.includes(id)&&state.role!==id){state.role=id;render()}
+ }else if(ROLE_IDS.includes(id)&&state.role!==id){state.role=id;if(id==='sss')state.sssStudentId='';render();globalThis.window?.scrollTo?.(0,0)}
 })}catch{}
 render();

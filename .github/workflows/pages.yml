@@ -19,10 +19,12 @@ jobs:
         with:
           node-version: 22
       - name: Verify fictional data model and transparent indicators
-        run: node --test tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs tests/student-experience.test.mjs tests/academic-journey.test.mjs tests/faculty-student-daily.test.mjs tests/leader-summary.test.mjs tests/sss-demo.test.mjs tests/board-map.test.mjs tests/board-overview.test.mjs tests/board-dp.test.mjs tests/board-comparison-tiles.test.mjs
+        run: node --test tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs tests/student-experience.test.mjs tests/academic-journey.test.mjs tests/faculty-student-daily.test.mjs tests/leader-summary.test.mjs tests/sss-demo.test.mjs tests/sitewide-ui.test.mjs tests/board-map.test.mjs tests/board-overview.test.mjs tests/board-dp.test.mjs tests/board-comparison-tiles.test.mjs
       - name: Validate entry point and Javascript syntax
         run: |
           node --check src/student-experience-app.mjs
+          node --check tests/sitewide-ui.test.mjs
+          grep -q 'sitewide-polish.css' index.html
           node --check src/leader-summary.mjs
           node --check src/sss-demo-data.mjs
           node --check src/sss-view.mjs
@@ -47,10 +49,13 @@ jobs:
           sleep 2
           browser="$(command -v google-chrome || command -v chromium || true)"
           if [ -z "$browser" ]; then echo 'No Chromium system browser'; exit 1; fi
-          timeout 45s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --virtual-time-budget=6000 --dump-dom http://127.0.0.1:8765/ > /tmp/mylearners-dom.html 2>/tmp/mylearners-chrome.log
+          timeout 45s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --window-size=1440,900 --virtual-time-budget=6000 --dump-dom http://127.0.0.1:8765/ > /tmp/mylearners-dom.html 2>/tmp/mylearners-chrome.log
           grep -q 'roster-daily' /tmp/mylearners-dom.html
           grep -q 'Search for a student across all assigned classes' /tmp/mylearners-dom.html
           grep -q 'data-role="student"' /tmp/mylearners-dom.html
+          grep -q 'aria-label="Dashboard views"' /tmp/mylearners-dom.html
+          grep -q 'data-skip-main' /tmp/mylearners-dom.html
+          grep -q '<nav class="roles"' /tmp/mylearners-dom.html
           grep -q 'data-role="leader"' /tmp/mylearners-dom.html
           grep -q 'How is this calculated' /tmp/mylearners-dom.html
           grep -q 'academic-class-compact' /tmp/mylearners-dom.html
@@ -67,6 +72,7 @@ jobs:
           grep -q 'IXL Mathematics' /tmp/mylearners-student-academic-dom.html
           timeout 45s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --virtual-time-budget=6000 --dump-dom 'http://127.0.0.1:8765/#/leader' > /tmp/mylearners-leader-dom.html 2>/tmp/mylearners-chrome-leader.log
           grep -q 'leader-learning-grid' /tmp/mylearners-leader-dom.html
+          grep -q 'Open Leaders dashboard' /tmp/mylearners-leader-dom.html
           grep -q 'MAP Mathematics growth' /tmp/mylearners-leader-dom.html
           grep -q 'MAP Reading growth' /tmp/mylearners-leader-dom.html
           grep -q 'Issued report cards' /tmp/mylearners-leader-dom.html
@@ -75,6 +81,7 @@ jobs:
           grep -q 'Core Phonics' /tmp/mylearners-leader-dom.html
           timeout 45s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --virtual-time-budget=6000 --dump-dom 'http://127.0.0.1:8765/#/sss' > /tmp/mylearners-sss-dom.html 2>/tmp/mylearners-chrome-sss.log
           grep -q 'data-role="sss"' /tmp/mylearners-sss-dom.html
+          grep -q 'Open Student Support Services (SSS) demonstration dashboard' /tmp/mylearners-sss-dom.html
           grep -q 'Student Support Services' /tmp/mylearners-sss-dom.html
           grep -q 'data-select="sss-grade"' /tmp/mylearners-sss-dom.html
           grep -q 'data-sss-student=' /tmp/mylearners-sss-dom.html

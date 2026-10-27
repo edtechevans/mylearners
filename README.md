@@ -48,6 +48,17 @@ The **SSS** tab is a grade-first, read-only demonstration of a **future access-c
 **Design references:** WIDA's [Screener guide](https://wida.wisc.edu/assess/screener) and [Interpretive Guide](https://wida.wisc.edu/resources/wida-screener-interpretive-guide-score-reports); the coordinated learner views and intervention-progress design principles described by [Panorama Student Success](https://www.panoramaed.com/products/student-success) and [Branching Minds](https://www.branchingminds.com/explore-branching-minds-platform). This demonstration does not copy their software or store intervention/casework.
 
 
+
+## Sitewide visual and navigation finish (October 2026)
+
+A final presentation-only pass is maintained in **src/sitewide-polish.css**, loaded after the main application stylesheet. It unifies the five dashboard views while preserving distinct visual encoding in the Board charts, the existing Faculty/Student/Leaders/SSS information hierarchy and all fictional-data boundaries.
+
+**Improvements:** compact sticky desktop navigation (Faculty · Student · SSS · Leaders · Board); clear selection styles, semantic landmark and accessible SSS title; one-click keyboard "Skip to main content" (works without interrupting the hash-based dashboard route); return to the top when changing dashboards; retained keyboard focus; consistent Noto Sans with robust system fallbacks, including for mainland-China environments where Google Fonts may be unavailable; more legible small text; calm navy-on-white cards, coherent borders and spacing; and lighter visual treatment of instructional/metadata copy. SSS role switching returns to its alphabetical programme roster rather than unexpectedly reopening an old student profile. The Board retains its own analytical chart styles and presentation mode.
+
+All enhancements are **CSS or navigation/usability-only**. No learner data, percentages, assessments, demo permissions, support flags, WIDA displays, or role-based access controls were changed. The demonstration remains publicly accessible and synthetic; no actual SSS/student data should be uploaded until deployment and permissions are genuinely secured.
+
+Validation now includes **tests/sitewide-ui.test.mjs** plus existing unit/Chrome GitHub Actions checks for each view. The first Chrome smoke check runs at a 1440×900 desktop viewport.
+
 ## Original demo introduction
 
 **[Open the My Learners demonstration](https://edtechevans.github.io/mylearners/)**
