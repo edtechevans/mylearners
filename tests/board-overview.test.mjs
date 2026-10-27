@@ -85,7 +85,7 @@ test('Focused Language Usage renders exactly one interactive trend and visible p
  assert.doesNotMatch(html,/data-board-series="reading"/);
  assert.doesNotMatch(html,/data-board-series="math"/);
  assert.match(html,/Language Usage, Spring 2026: 3 of 8/);
- assert.match(html,/Spring 2020/);
+ assert.doesNotMatch(html,/Spring 2020/);
  assert.match(html,/class="board-trend-value"/);
  assert.match(html,/role="button"/);
  assert.match(html,/tabindex="0"/);
@@ -140,6 +140,24 @@ test('Current Board facts remain aggregate, correctly windowed and privacy-safe'
  assert.equal(boardSummary('spring2026','reading').growthPct,62);
  assert.equal(boardSummary('spring2026','language').growthPct,null);
  assert.deepEqual(BOARD_GRADE_LIST,[3,4,5,6,7,8,9,10]);
+});
+
+test('Board historical chart defaults to five recent comparable windows and consistent subject colours',()=>{
+ const five=renderBoardOverview({boardTrendTerm:'fall',boardTrendFocus:'all',boardTrendRange:'recent'});
+ assert.match(five,/Recent 5 years/);
+ assert.match(five,/data-board-trend-range="all"/);
+ assert.match(five,/Fall 2025/);
+ assert.doesNotMatch(five,/Fall 2014/);
+ assert.match(five,/data-board-series="math"/);
+ assert.match(five,/stroke="#2479bd"/);
+ assert.match(five,/stroke="#7558c5"/);
+ assert.match(five,/stroke="#13906c"/);
+ const full=renderBoardOverview({boardTrendTerm:'fall',boardTrendFocus:'all',boardTrendRange:'all'});
+ assert.match(full,/Fall 2014/);
+ const link=boardHash({boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardTrendRange:'all'});
+ assert.match(link,/history=all/);
+ assert.equal(parseBoardHash(link).boardTrendRange,'all');
+ assert.equal(parseBoardHash('#/board').boardTrendRange,'recent');
 });
 
 test('Deep linking into the Diploma historical chart restores its selected measure',()=>{
