@@ -10,7 +10,7 @@ test('Board view uses eight verified grade aggregates per subject/window',()=>{
    assert.ok(rows.every(x=>Number.isFinite(x.aisg)&&Number.isFinite(x.us)&&x.aisg>x.us));
   }
  }
- assert.deepEqual(BOARD_WINDOWS.map(x=>x.id),['fall2025','spring2026']);
+ assert.deepEqual(BOARD_WINDOWS.map(x=>x.id),['fall2025','spring2026','fall2026']);
 });
 test('Fall 2025 comparison preserves actual EARCOS result rather than an inflated claim',()=>{
  const m=boardSummary('fall2025','math'),r=boardSummary('fall2025','reading');
@@ -45,4 +45,39 @@ test('Only aggregated school data is committed and interpretation is documented'
  assert.ok(!/StudentID|dateOfBirth|StudentFirstName|StudentLastName|@aisgz|DEMO-\d/.test(content));
  assert.ok(BOARD_METHODS.caution.includes('individual'));
  assert.ok(BOARD_METHODS.growth.includes('Grade 3'));
+});
+
+test('Fall 2026 summary uses only explicitly reported directional grade-level outcomes',()=>{
+ const m=boardSummary('fall2026','math'),r=boardSummary('fall2026','reading');
+ assert.equal(m.gradeCount,8);assert.equal(r.gradeCount,8);
+ assert.equal(m.aboveUS,8);assert.equal(r.aboveUS,8);
+ assert.equal(m.aboveEarcos,null);assert.equal(r.aboveEarcos,null);
+ assert.equal(m.gapUS,null);assert.equal(r.gapUS,null);
+ assert.equal(m.gapEarcos,null);assert.equal(r.gapEarcos,null);
+ assert.equal(m.tested,null);assert.equal(r.tested,null);
+ assert.equal(m.growthPct,null);assert.equal(r.growthPct,null);
+ assert.equal(BOARD_DATA.fall2026.schoolwide.aboveUSComparisons,24);
+ assert.equal(BOARD_DATA.fall2026.schoolwide.totalComparisons,24);
+ assert.equal(BOARD_DATA.fall2026.schoolwide.returningGrowthInOneOrMoreAreasPct,95);
+ assert.deepEqual(BOARD_DATA.fall2026.schoolwide.projectedGroupGrowthExceeded,
+  ['Mathematics','Reading','Language Usage']);
+ for(const subject of ['math','reading']){
+  const rows=boardRows('fall2026',subject);
+  assert.deepEqual(rows.map(x=>x.grade),[3,4,5,6,7,8,9,10]);
+  assert.ok(rows.every(x=>x.aboveUsMean===true&&x.aisg===null&&x.us===null&&x.earcos===null));
+ }
+ assert.ok(BOARD_METHODS.fall2026.includes('NOT give grade-level mean RIT'));
+});
+test('Fall 2026 division and grade filters never convert a schoolwide statistic into a subject growth rate',()=>{
+ for(const subject of ['math','reading']){
+  const elementary=boardSummary('fall2026',subject,'elementary');
+  const secondary=boardSummary('fall2026',subject,'secondary');
+  assert.equal(elementary.aboveUS,3);assert.equal(elementary.gradeCount,3);
+  assert.equal(secondary.aboveUS,5);assert.equal(secondary.gradeCount,5);
+  for(let grade=3;grade<=10;grade++){
+   const row=boardSummary('fall2026',subject,'all',String(grade));
+   assert.equal(row.gradeCount,1);assert.equal(row.aboveUS,1);
+   assert.equal(row.growthPct,null);
+  }
+ }
 });
