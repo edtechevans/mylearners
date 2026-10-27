@@ -98,7 +98,7 @@ test('Diploma missing pathway and pass rate are unavailable, never fabricated',(
 test('Diploma range filter limits chart years, and year-filtered sharing restores state',()=>{
  const short=renderBoardDP({boardDpYear:'2026',boardDpMetric:'average',boardDpRange:'recent'});
  assert.equal((short.match(/<g class="board-dp-point/g)||[]).length,3);
- assert.match(short,/Most recent 3 years/);
+ assert.match(short,/Latest 3 years/);
  assert.doesNotMatch(short,/data-board-dp-point="average:2021"/);
  const full=renderBoardDP({boardDpYear:'2026',boardDpMetric:'average',boardDpRange:'all'});
  assert.equal((full.match(/<g class="board-dp-point/g)||[]).length,7);
