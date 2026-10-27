@@ -4,6 +4,8 @@
  * Board-only module. No student identifiers.
  */
 import {BOARD_DATA,BOARD_SUBJECTS,boardSummary,BOARD_METHODS} from './board-map-data.mjs';
+import {DP_RECORDS} from './board-dp-data.mjs';
+import {renderDPOverviewTrend} from './board-dp-view.mjs';
 const SUBJECT_KEYS=['math','reading','language'];
 const NAME={math:'Mathematics',reading:'Reading',language:'Language Usage'};
 const COLOR={math:'#176c94',reading:'#a65d29',language:'#7755a4'};
@@ -152,31 +154,39 @@ export function renderTrendPointDetails(pointKey){
  (item.difference===null?'':'<em>'+(item.difference>0?'+':'')+item.difference.toFixed(1)+' RIT</em>')+'</span>').join('')+
  '</div><p class="board-trend-inspector-note">Signed differences are AISG mean minus EARCOS mean. Small margins alone do not prove a meaningful difference; these are averages, not individual student results.</p>';
 }
+/** The Board landing intentionally presents four strengths and only one
+ * historical visualization at a time. Each card is a real navigation action.
+ */
+function strengthCard(label,value,unit,description,action,actionType){
+ const attr=actionType==='dp'?'data-board-dp-go':'data-board-go';
+ return '<button class="board-strength-card" type="button" '+attr+'="'+safe(action)+'" '+
+ 'aria-label="'+safe(label+': '+value+(unit?' '+unit:'')+'. '+description+'. Explore details.')+'">'+
+ '<span class="board-strength-eyebrow">'+safe(label)+'</span>'+
+ '<span class="board-strength-number">'+safe(value)+(unit?'<small>'+safe(unit)+'</small>':'')+'</span>'+
+ '<span class="board-strength-caption">'+safe(description)+'</span>'+
+ '<span class="board-strength-action">Explore <span aria-hidden="true">›</span></span></button>';
+}
 export function renderBoardOverview(state){
  const season=state.boardTrendTerm==='spring'?'spring':'fall';
  const rawFocus=state.boardTrendFocus==='both'?'all':state.boardTrendFocus;
  const focus=['all',...SUBJECT_KEYS].includes(rawFocus)?rawFocus:'all';
+ const chartMode=state.boardOverviewChart==='dp'?'dp':'map';
  const data=historicalTrend(season);
  const selectedKeys=focus==='all'?SUBJECT_KEYS:[focus];
  const nWindows=data.filter(r=>selectedKeys.every(k=>r[k]!==null)).length;
  const mostRecent=season==='fall'?'Fall 2025':'Spring 2026';
- return '<div class="board-overview">'+
- '<div class="board-overview-intro"><div><span class="eyebrow">THE BIG PICTURE</span>'+
- '<h2>How are our learners doing over time?</h2>'+
- '<p>Start with the latest evidence, then explore how AISG compares across grades and years.</p></div>'+
- '<span class="board-overview-source">MAP · Grades 3–10 · Aggregated results</span></div>'+
- '<div class="board-overview-cards">'+
- bigCard('Achievement · Fall 2026','24 / 24', {math:'8 / 8',reading:'8 / 8',language:'8 / 8'},
- 'Grade averages above the NWEA U.S. school norm. Exact AISG and U.S. RIT means are now available.','fall2026:math',
- 'Explore Fall 2026 Mathematics against U.S. school norms')+
- bigCard('Regional comparison · Spring 2026','EARCOS',{math:'6 / 8',reading:'3 / 8',language:'3 / 8'},
- 'Grades whose averages exceeded their EARCOS comparison mean.','spring2026:math',
- 'Explore Spring 2026 Mathematics compared with EARCOS')+
- bigCard('Matched growth · Spring 2026','Projected growth',{math:'71%',reading:'62%',language:'—'},
- 'Math and Reading: matched students meeting projected growth. Language Usage data not supplied.','spring2026:reading',
- 'Explore Spring 2026 Reading matched projected growth')+'</div>'+
- '<section class="board-panel board-historical-chart" aria-labelledby="board-trend-heading">'+
- '<div class="board-overview-charthead"><div><span class="eyebrow">HISTORICAL COMPARISON</span>'+
+ const current=DP_RECORDS.at(-1);
+ const strengthCards=
+  strengthCard('MAP · achievement · Fall 2026','24 / 24','',
+    'Grade-subject averages above U.S. school norms · G3–10','fall2026:math','map')+
+  strengthCard('MAP · growth · Fall 2026','95%','',
+    'Returning students grew in at least one MAP area','fall2026:reading','map')+
+  strengthCard('IB Diploma · '+current.year,String(current.average),'/45',
+    'Reported average Diploma points · confirmation pending','average','dp')+
+  strengthCard('IB Diploma · '+current.year,String(current.passRate)+'%','',
+    'Reported Diploma pass rate · confirmation pending','passRate','dp');
+ const mapPanel='<div class="board-overview-chartbody">'+
+ '<div class="board-overview-charthead"><div><span class="eyebrow">MAP · HISTORICAL ACHIEVEMENT</span>'+
  '<h2 id="board-trend-heading">Our position relative to EARCOS</h2>'+
  '<p>Number of AISG grade averages above the EARCOS mean · Grades 3–10</p></div>'+
  '<div class="board-overview-filterarea"><div class="board-overview-control"><span>Window</span>'+
@@ -191,20 +201,27 @@ export function renderBoardOverview(state){
  selectedKeys.map(key=>'<span><i class="board-dot '+key+'"></i> '+NAME[key]+'</span>').join('')+
  '</span><span>'+nWindows+' fully comparable '+(season==='fall'?'Fall':'Spring')+
  ' windows · latest '+mostRecent+'</span></div>'+
- '<p class="board-mobile-swipe">Swipe for earlier years; tap a point for grade-by-grade RIT differences.</p>'+
- '<div class="board-trend-scroller" tabindex="0" aria-label="Scroll horizontally to inspect historical comparison chart">'+
+ '<p class="board-mobile-swipe">Swipe for earlier years; select a point to see grade-level RIT differences.</p>'+
+ '<div class="board-trend-scroller" tabindex="0" aria-label="Scroll horizontally through MAP comparisons">'+
  chartSvg(data,focus,season)+'</div>'+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
- '<section class="board-trend-inspector" aria-live="polite" aria-atomic="true"><p><strong>Explore the grade differences.</strong> Hover to open a tile by your pointer, or select a point to keep the grade details visible below.</p></section>'+
+ '<section class="board-trend-inspector" aria-live="polite" aria-atomic="true">'+
+ '<p>Hover, tap or focus a point to see which grades are above EARCOS and by how much.</p></section>'+
  chartSummary(data,season,selectedKeys)+chartTable(data,season)+
- '</section>'+
- '<section class="board-dp-preview"><div><span class="eyebrow">BEYOND MAP · GRADUATION OUTCOMES</span>'+
- '<h3>IB Diploma results are now available</h3>'+
- '<p>Explore reported average Diploma points and pass rates over seven school years, separately from MAP.</p></div>'+
- '<button type="button" data-board-view="dp" class="board-action-primary">Explore IB Diploma ›</button></section>'+
- '<div class="board-overview-next"><div><strong>Want to investigate a particular result?</strong>'+
- '<p>Explore one subject, year, division or grade, with exact RIT means where available.</p></div>'+
- '<button class="board-action-primary" type="button" data-board-view="explore">Explore by Year <span aria-hidden="true">›</span></button></div>'+
- '<p class="board-overview-method">Reading the trends: points count grade averages that exceeded EARCOS; they are not the percentage of students above the benchmark and not individual student growth. Norm editions and cohorts can differ. Missing EARCOS windows are not treated as zero. '+BOARD_METHODS.missing+'</p>'+
+ '<div class="board-overview-chartfoot"><span>Grade averages describe achievement, not matched student growth. Missing benchmarks are not plotted as zero.</span>'+
+ '<button type="button" data-board-view="explore" class="board-inline-link">Explore MAP by Year ›</button></div></div>';
+ return '<div class="board-overview board-story">'+
+ '<div class="board-overview-intro"><div><span class="eyebrow">STRENGTHS AT A GLANCE</span>'+
+ '<h2>Strong learning outcomes, from Grade 3 to graduation</h2>'+
+ '<p>Achievement, growth and graduating outcomes, with the detail available when you need it.</p></div></div>'+
+ '<div class="board-strength-grid">'+strengthCards+'</div>'+
+ '<p class="board-strength-interpretation"><strong>The picture:</strong> AISG’s latest MAP grade averages exceed U.S. school norms in all 24 grade-subject comparisons, and 95% of returning students grew in at least one MAP area. Reported Diploma results add a complementary graduation perspective. <span>These reflect different learners and measures; 2025–26 Diploma outcomes await final confirmation.</span></p>'+
+ '<div class="board-history-switch"><div><span class="eyebrow">LEARNING OVER TIME</span>'+
+ '<h3>Explore our learning story</h3></div>'+
+ '<div class="board-segmented" role="group" aria-label="Historical outcomes view">'+
+ tabButton('map','MAP achievement',chartMode,'data-board-overview-chart')+
+ tabButton('dp','IB Diploma',chartMode,'data-board-overview-chart')+'</div></div>'+
+ '<section class="board-panel board-historical-chart" aria-label="Historical learning outcomes">'+
+ (chartMode==='dp'?renderDPOverviewTrend(state):mapPanel)+'</section>'+
  '</div>';
 }
