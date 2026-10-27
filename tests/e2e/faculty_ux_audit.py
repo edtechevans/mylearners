@@ -51,12 +51,17 @@ def landing(pg):
     check(pg.locator("main .heading h1").inner_text()=="Your students, in one place.","Wrong default faculty experience")
     check(count(pg,"header [data-role]")==3,"Role toggle should show faculty/student/leader")
     check(pg.locator('[data-role="faculty"]').get_attribute("aria-pressed")=="true","Faculty not selected")
-    check(count(pg,'main .kpi')==3,"Too many summary cards or missing essentials")
-    check(count(pg,'main .metric')==2,"Engagement and belonging not visible")
-    check(count(pg,'main .tablewrap table tbody tr')==20,"First class roster is not 20 students")
+    check(count(pg,'.quick-summary .quick-tile')==4,"Expected four compact summary tiles")
+    check(count(pg,'.quick-score')==2,"Engagement and belonging quick scores must be visible")
+    check(count(pg,'main .metric')==0,"Large indicator panels should not crowd the faculty landing page")
+    check(count(pg,'main .roster-desktop tbody tr')==20,"First class roster is not 20 students")
+    check("Demo snapshot:" in pg.locator(".heading").inner_text(),"Missing as-of date")
+    check("Grade" not in pg.locator(".roster-desktop thead").inner_text(),"Grade column duplicates selected class")
+    toolbar=pg.locator(".faculty-toolbar").bounding_box()
+    roster=pg.locator(".roster").bounding_box()
+    check(toolbar["y"]<roster["y"],"Learner find input should appear before roster")
     screenshot(pg,"01-faculty-desktop")
-    return "Three summary cards, two indicators, one class roster; demo role switch visible"
-
+    return "Class and search first; four compact tiles; 20 learners; data date is visible"
 def daily_student(pg):
     name=pg.locator("table tbody [data-student]").first.inner_text()
     pg.locator("table tbody [data-student]").first.click()
@@ -72,22 +77,22 @@ def daily_student(pg):
     return "Roster → named learner → academic, attendance, MAP, guidance → back to same class"
 
 def explain(pg):
-    check(count(pg,".metric .action")==2,"Missing index explanation links")
-    pg.locator('[data-action="explain:engagement"]').first.click()
-    check("Understanding Engagement" in pg.locator(".explain h2").inner_text(),"Wrong index explanation")
-    check(count(pg,".explain-items > div")==3,"Three item contributions should be visible")
+    check(count(pg,'.quick-score')==2,"Missing index explanation buttons")
+    pg.locator('[data-action="explain:faculty:engagement"]').click()
+    check("Understanding Engagement" in pg.locator(".explain h2").inner_text(),"Wrong explanation")
+    check(count(pg,".explain-items > div")==3,"Three index ingredients should be visible")
     text=pg.locator(".explain").inner_text()
-    check("Strongly disagree = 0" in text and "Strongly agree = 100" in text,"Missing score mapping")
-    check("not 60% agreement" in text,"Need clear differentiation from percentage")
+    check("Strongly disagree 0" in text and "Strongly agree 100" in text,"Missing mapping")
+    check("not a percentage" in text,"Should distinguish index from percentages")
+    check("Fall 2026 student check-in" in text,"Missing source information")
     screenshot(pg,"03-explain-class-index")
-    pg.locator('[data-action="close"]').first.click()
+    pg.locator('[data-action="close"]').click()
     pg.locator("table tbody [data-student]").first.click()
-    pg.locator('[data-action="explain:belonging"]').first.click()
-    check(count(pg,".explain-items > div")==3,"Named student must see three item contributions")
-    check("agree" in pg.locator(".explain").inner_text().lower(),"Missing source response labels")
+    pg.locator('[data-action="explain:profile:belonging"]').click()
+    check(count(pg,".explain-items > div")==3,"Named learner's three responses must appear")
+    check("My response:" in pg.locator(".explain").inner_text(),"Underlying responses missing")
     screenshot(pg,"04-explain-individual-index")
-    return "Class average and named learner both open three-item score calculation"
-
+    return "Both class and learner index scores are traceable to three responses"
 def search(pg):
     textbox=pg.locator('input[data-query]')
     full=pg.locator("table tbody [data-student]").first.inner_text()
@@ -116,52 +121,72 @@ def change_teacher(pg):
     select=pg.locator('[data-select="teacher"]')
     option=select.locator("option").filter(has_text="Karen Robb").first
     tid=option.get_attribute("value")
-    check(tid,"Could not find fictional early childhood persona")
+    check(tid,"Demo faculty missing")
     select.select_option(tid)
-    check("PK3" in pg.locator('[data-select="class"]').inner_text() or "PK4" in pg.locator('[data-select="class"]').inner_text(),"Teacher demo did not change to early grades")
-    check(count(pg,"table tbody tr")==20,"Early childhood class not loaded")
-    summary=pg.locator("main .metric").first.inner_text()
-    if "0 of 0 check-ins" in summary:
-        flag("P1 UX","PK–Grade 2 shows 0 of 0 engagement responses and an explainable empty score rather than a plain 'Not collected for this age group' state.")
+    check("PK3" in pg.locator('[data-select="class"]').inner_text() or "PK4" in pg.locator('[data-select="class"]').inner_text(),"Early-years teacher did not update")
+    check(count(pg,"table tbody tr")==20,"Early years roster missing")
+    check(count(pg,".quick-score")==0,"PK–Grade 2 must not show empty indices")
+    check("not collected for PK" in pg.locator(".quick-note").inner_text(),"Clear age-ineligible message missing")
     screenshot(pg,"06-early-years-learner-view")
-    return "Switching demo teachers correctly scopes roster; age-ineligible indicator needs clearer treatment"
-
+    return "Early years get class/attendance with no meaningless empty engagement scores"
 def student_role(pg):
     pg.locator('[data-role="student"]').click()
-    check(pg.locator('[data-role="student"]').get_attribute("aria-pressed")=="true","Role toggle not active")
-    check("My learning, my story" in pg.locator("h1").first.inner_text(),"Student landing wrong")
+    check(pg.locator('[data-role="student"]').get_attribute("aria-pressed")=="true","Role switch not active")
+    check("My learning, my story" in pg.locator("h1").first.inner_text(),"Wrong Student landing")
     check(count(pg,'[data-select="student"]')==1,"Fictional student selector missing")
-    check(count(pg,".metric")==2,"Student should see two experience indices")
-    check(pg.locator("#reflection").is_visible(),"Personal reflection not available")
-    check(count(pg,"table tbody tr")==0,"Student view should not display other learners' class roster")
+    check(count(pg,".metric")==2,"Student needs both experience measures")
+    check("My check-ins over time" in pg.locator("main").inner_text(),"Progress history missing")
+    check(count(pg,'[data-action="studenthome"]')==0,"Misleading no-op back button remains")
+    check(pg.locator("#reflection").is_visible(),"Reflection draft not available")
+    check(count(pg,"table tbody tr")==0,"Student should not see class roster")
     pg.locator("#reflection").fill("I learn best when I collaborate with a partner.")
     pg.locator('[data-action="save-reflection"]').click()
-    check("saved" in pg.locator("#save-status").inner_text().lower(),"Reflection save not acknowledged")
+    check("saved" in pg.locator("#save-status").inner_text().lower(),"Draft save feedback missing")
     screenshot(pg,"07-student-view")
-    before=pg.locator("main h1").first.inner_text()
-    pg.locator('[data-action="studenthome"]').click()
-    if pg.locator("main h1").first.inner_text()==before:
-        flag("P2 misleading control","The Student view 'My dashboard' back link does not navigate anywhere; it only resets the score explainer.")
     pg.reload(wait_until="domcontentloaded")
-    check("I learn best" in pg.locator("#reflection").input_value(),"Reflection not retained in demo session")
-    return "Student-only view, explainable measures and browser-session reflection survive reload"
-
+    check("I learn best" in pg.locator("#reflection").input_value(),"Draft did not survive session reload")
+    return "Student sees own check-in history, academic progress and private browser reflection"
 def leader_role(pg):
     pg.locator('[data-role="leader"]').click()
-    check("Where are experiences improving" in pg.locator("h1").first.inner_text(),"Leader landing wrong")
+    check("Where are experiences improving" in pg.locator("h1").first.inner_text(),"Wrong Leader landing")
     pg.locator('[data-select="division"]').select_option("Secondary")
     pg.locator('[data-select="grade"]').select_option("G10")
     pg.locator('[data-select="leader-class"]').select_option("G10-A")
-    check("20" in pg.locator(".kpi").first.inner_text(),"Selected 20-person class not reflected in leader summary")
-    if count(pg,".card table tbody tr")==0:flag("P2 empty state","Leader view's 'Patterns by class' table becomes empty when a specific class is selected, with no useful message.")
-    pg.locator('[data-action="explain:engagement"]').click()
-    check(count(pg,".explain-items > div")==3,"Leader explanation missing item breakdown")
+    check("20" in pg.locator(".kpi").first.inner_text(),"Selected class size not reflected")
+    check(count(pg,".card table tbody tr")==1,"Selected class should appear as one row")
+    pg.locator('[data-action="explain:leader:engagement"]').click()
+    check(count(pg,".explain-items > div")==3,"Leader index question breakdown missing")
     screenshot(pg,"08-leader-drilldown")
     pg.locator('[data-action="close"]').click()
     pg.locator('[data-select="window"]').select_option("F25")
     label=pg.locator(".metric").first.inner_text()
-    if "vs Spring" in label:flag("P1 data interpretation","Selecting Fall 2025 still displays an engagement change 'vs Spring' computed from Fall 2026 and Spring 2026. Date filter and change label contradict.")
-    return "Leader division → grade → class → 3-item explanation → historical window"
+    check("First available check-in" in label,"Fall 2025 must not compare against later check-ins")
+    check("vs Spring" not in label,"Historic period label is inaccurate")
+    pg.locator('[data-select="window"]').select_option("S26")
+    label=pg.locator(".metric").first.inner_text()
+    check("vs Fall 2025" in label,"Spring 2026 should compare with Fall 2025")
+    return "Division → grade → class, valid historical comparisons and question-level explanation"
+def leader_schoolwide(pg):
+    pg.locator('[data-role="leader"]').click()
+    txt=pg.locator("main").inner_text()
+    check("Elementary student experience" in txt and "Secondary student experience" in txt,
+          "Whole school must show two non-interchangeable age-appropriate indices")
+    pg.locator('[data-action="explain:elementary:engagement"]').click()
+    check("Understanding Engagement" in pg.locator("#score-explanation h2").inner_text(),"Elementary item explanation missing")
+    pg.locator('[data-action="close"]').click()
+    pg.locator('[data-action="explain:secondary:belonging"]').click()
+    check("Understanding Belonging" in pg.locator("#score-explanation h2").inner_text(),"Secondary item explanation missing")
+    return "Separate Elementary and Secondary measurement instruments and scope-specific explanations"
+
+def mobile_student_lookup(pg):
+    check(pg.locator(".roster-mobile").is_visible(),"Mobile cards should replace wide table")
+    btn=pg.locator(".roster-mobile .roster-item").first
+    name=btn.locator("strong").inner_text()
+    btn.click()
+    check(pg.locator(".profile-head h1").inner_text()==name,"Wrong mobile student profile")
+    pg.locator('[data-action="back"]').click()
+    check(pg.locator(".roster-mobile").is_visible(),"Cannot return to mobile roster")
+    return "One tap into student profile and one tap back from phone"
 
 def user_controls(pg):
     pg.keyboard.press("Tab")
@@ -192,19 +217,18 @@ def responsive(browser):
                 values=pg.evaluate("""()=>{
                    const d=document.documentElement,view=window.innerWidth;
                    const roles=document.querySelector('.roles').getBoundingClientRect();
-                   return {documentScroll:d.scrollWidth,viewport:view,overflow:d.scrollWidth-view,
-                     mainWidth:document.querySelector('main').getBoundingClientRect().width,
-                     rolesLeft:roles.left,rolesRight:roles.right,
-                     roleVisible:roles.left>=0&&roles.right<=view+2,
-                     headings:document.querySelectorAll('main h1').length,
-                     horizTables:[...document.querySelectorAll('.tablewrap')].every(x=>getComputedStyle(x).overflowX==='auto')}
+                   return {scrollWidth:d.scrollWidth,viewport:view,overflow:d.scrollWidth-view,
+                     rolesVisible:roles.left>=0&&roles.right<=view+2,
+                     headings:document.querySelectorAll('main h1').length}
                 }""")
-                good=values["overflow"]<=2 and values["roleVisible"] and values["headings"]>0 and not errors
-                record(f"Responsive {role} {width}px",good,values,time.monotonic()-t)
+                good=values["overflow"]<=2 and values["rolesVisible"] and values["headings"]>0 and not errors
                 if width==390 and role=="faculty":
-                    roster_y=pg.locator("table").first.evaluate("e=>e.getBoundingClientRect().top+window.scrollY")
-                    if roster_y>800:flag("P1 mobile journey",f"Student roster starts {round(roster_y)}px below page top on 390px phone; student lookup is buried below five cards.")
-                if width in [390,1440] and role in ["faculty","student","leader"]:
+                    roster_y=pg.locator(".roster-mobile").evaluate("e=>e.getBoundingClientRect().top+window.scrollY")
+                    values["rosterTopPx"]=round(roster_y)
+                    values["mobileStudentCards"]=count(pg,".roster-mobile .roster-item")
+                    good=good and roster_y<900 and values["mobileStudentCards"]==20 and pg.locator(".roster-mobile").is_visible()
+                record(f"Responsive {role} {width}px",good,values,time.monotonic()-t)
+                if width in [390,1440]:
                     screenshot(pg,f"responsive-{role}-{width}")
             except Exception as exc:record(f"Responsive {role} {width}px",False,str(exc),time.monotonic()-t)
             finally:
@@ -223,11 +247,13 @@ def main():
                 ("Early-years faculty and unavailable measures",change_teacher),
                 ("Student ownership and reflection persistence",student_role),
                 ("Leader drilldown and comparable window",leader_role),
+                ("Whole-school age-appropriate measures",leader_schoolwide),
                 ("Keyboard and accessible controls",user_controls),
                 ("Roster scroll and return",scroll_to_class)
             ]:
                 execute(name,browser,task)
             responsive(browser)
+            execute("Mobile one-tap learner lookup",browser,mobile_student_lookup,390,844)
         finally:browser.close()
     passes=sum(x["passed"] for x in results)
     print("TOTAL",passes,"/",len(results),"scenarios pass",flush=True)
