@@ -112,10 +112,15 @@ function trendStats(data,key){
  return valid.length?{min:Math.min(...valid),max:Math.max(...valid),n:valid.length}:null;
 }
 function chartSummary(data,season,keys){
- const ranges=keys.map(k=>{const s=trendStats(data,k);return s?NAME[k]+' '+s.min+'–'+s.max:' '+NAME[k]+' unavailable'}).join('; ');
- return '<p class="board-overview-insight"><strong>What this tells us:</strong> Mathematics has generally been strong relative to EARCOS; Reading and Language Usage vary more. Across comparable '+
- (season==='fall'?'Fall':'Spring')+' windows, grades above EARCOS ranged from '+safe(ranges)+'. '+
- '<strong>Inquiry:</strong> Which grades show recurring differences, and what other evidence would help explain them? These are achievement snapshots, not individual student growth.</p>';
+ const latest=[...data].reverse().find(r=>keys.every(k=>Number.isInteger(r[k])));
+ if(!latest)return '<p class="board-overview-insight">Regional comparison data is not available for this selection. Missing information is not treated as zero.</p>';
+ const windowName=(season==='fall'?'Fall ':'Spring ')+latest.year;
+ const summaries=keys.map(k=>NAME[k]+' '+latest[k]+'/8').join(' · ');
+ return '<aside class="board-story-insight" aria-label="Historical comparison highlight">'+
+ '<span class="board-story-insight-icon" aria-hidden="true">↗</span>'+
+ '<div><span class="eyebrow">LATEST COMPLETE REGIONAL COMPARISON · '+safe(windowName)+'</span>'+
+ '<h3>'+safe(summaries)+'</h3>'+
+ '<p>These counts describe the grades whose average MAP score is above the EARCOS regional mean. Hover or select a chart point to see the exact differences; this is not individual student growth.</p></div></aside>';
 }
 function chartTable(data,season){
  return '<details class="board-details board-overview-table"><summary>View the annual values <span>+</span></summary>'+
@@ -190,7 +195,7 @@ export function renderBoardOverview(state){
     'Reported Diploma pass rate · confirmation pending','passRate','dp');
  const mapPanel='<div class="board-overview-chartbody">'+
  '<div class="board-overview-charthead"><div><span class="eyebrow">MAP · HISTORICAL ACHIEVEMENT</span>'+
- '<h2 id="board-trend-heading">Our position relative to EARCOS</h2>'+
+ '<h2 id="board-trend-heading">Learning over time · regional comparisons</h2>'+
  '<p>Number of AISG grade averages above the EARCOS mean · Grades 3–10</p></div>'+
  '<div class="board-overview-filterarea"><div class="board-overview-control"><span>Testing window</span>'+
  '<div class="board-segmented">'+tabButton('fall','Fall',season,'data-board-trend')+
@@ -207,7 +212,7 @@ export function renderBoardOverview(state){
  chartSvg(data,focus,season)+'</div>'+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
  '<section class="board-trend-inspector" aria-live="polite" aria-atomic="true">'+
- '<p>Hover, tap or focus a point to see which grades are above EARCOS and by how much.</p></section>'+
+ '<p>Hover to preview the grades. Select a point to pin its details here for comparison.</p></section>'+
  chartSummary(data,season,selectedKeys)+
  '<details class="board-details board-focus-more"><summary>Focus on one subject <span>+</span></summary>'+
  '<div class="board-segmented">'+tabButton('all','All three',focus,'data-board-focus')+
@@ -218,13 +223,13 @@ export function renderBoardOverview(state){
  '<div class="board-overview-chartfoot"><span>Grade averages describe achievement, not matched student growth. Missing benchmarks are not plotted as zero.</span>'+
  '<button type="button" data-board-view="explore" class="board-inline-link">Explore MAP results ›</button></div></div>';
  return '<div class="board-overview board-story">'+
- '<div class="board-overview-intro"><div><span class="eyebrow">STRENGTHS AT A GLANCE</span>'+
- '<h2>Strong learning outcomes, from Grade 3 to graduation</h2>'+
- '<p>Achievement, growth and graduating outcomes, with the detail available when you need it.</p></div></div>'+
+ '<div class="board-overview-intro"><div><span class="eyebrow">OUR LEARNING STORY · AT A GLANCE</span>'+
+ '<h2>From Grade 3 to graduation</h2>'+
+ '<p>Four meaningful measures of achievement, progress and graduation outcomes.</p></div></div>'+
  '<div class="board-strength-grid">'+strengthCards+'</div>'+
  '<p class="board-strength-interpretation"><strong>The picture:</strong> AISG’s latest MAP grade averages exceed U.S. school norms in all 24 grade-subject comparisons, and 95% of returning students grew in at least one MAP area. Reported Diploma results add a complementary graduation perspective. <span>These reflect different learners and measures; 2025–26 Diploma outcomes await final confirmation.</span></p>'+
- '<div class="board-history-switch"><div><span class="eyebrow">LEARNING OVER TIME</span>'+
- '<h3>Explore our learning story</h3></div>'+
+ '<div class="board-history-switch"><div><span class="eyebrow">EXPLORE THE EVIDENCE</span>'+
+ '<h3>How results have changed</h3></div>'+
  '<div class="board-segmented" role="group" aria-label="Historical outcomes view">'+
  tabButton('map','MAP achievement',chartMode,'data-board-overview-chart')+
  tabButton('dp','IB Diploma',chartMode,'data-board-overview-chart')+'</div></div>'+
