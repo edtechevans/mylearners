@@ -5,13 +5,16 @@ import {demoTagsForStudent} from './learner-tags.mjs';
 import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs';
 import {esc} from './v2-ui.mjs';
+import {createAcademicDemoRecords,academicFor,academicModesFor} from './academic-journey-data.mjs';
+import {renderClassAcademicPanel,renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs';
 import {renderBoard} from './board-map-view.mjs';
 import {renderTrendPointDetails} from './board-map-overview.mjs';
 import {renderDPPointDetails} from './board-dp-view.mjs';
 import {DP_RECORDS} from './board-dp-data.mjs';
 import {boardWindowFor,BOARD_DATA} from './board-map-data.mjs';
 import {parseBoardHash,boardShareUrl} from './board-map-links.mjs';
-const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(DATA.students);
+const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(DATA.students),
+ ACADEMIC_RECORDS=createAcademicDemoRecords(DATA.students);
 const root=document.getElementById('app');
 const saved=(k,d)=>{try{return sessionStorage.getItem(k)||d}catch{return d}};
 const ROLE_IDS=['faculty','student','leader','board'];
@@ -20,6 +23,7 @@ const initialRole=ROLE_IDS.includes(initialHash)?initialHash:saved('my-role','fa
 const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  teacher:saved('my-teacher',DEFAULT_TEACHER_ID),
  division:'All',grade:'All',classId:'',studentId:'',query:'',metric:'engagement',window:'F26',details:false,checkin:false,
+ academicMode:'report',academicSubject:'Mathematics',academicReportYear:'',studentGrade:'G7',
  boardWindow:saved('my-board-window-v2','fall2026'),boardSubject:saved('my-board-subject','math'),
  boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all'),
  boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardTrendRange:'recent',boardOverviewChart:'map',
@@ -52,7 +56,7 @@ function metricCard(ss,id,window='F26',scope='main'){
  '<p>'+safe(EXPERIENCE_METRICS[id].description)+'</p><div class="metric-foot"><span>'+sum.n+' of '+sum.eligible+' responses</span><span>'+safe(comparison)+'</span></div>'+
  (sum.value===null?'':btn('explain:'+scope+':'+id,'How is this calculated?','quiet'))+'</article>';
 }
-function info(){return '<div class="notice"><strong>Demonstration only.</strong> All learners, assessments, survey-style check-ins and class assignments are fictional. Actual confidential climate-survey responses are not linked to students. The indices are exploratory AISG-created descriptions, not validated scores or labels.</div>'}
+function info(){return '<div class="notice"><strong>Demonstration only.</strong> Learners, report cards, IXL Mathematics levels, Core Phonics checks, F&P text levels, assessment history, survey-style check-ins and class assignments are all fictional. No actual AISG learner results or confidential climate-survey responses are used. Experience indices are exploratory descriptions, not validated scores or labels.</div>'}
 function header(){return '<header class="top"><div class="brand"><img src="assets/aisg-logo.webp" alt="AISG logo"><div><strong>My Learners</strong><span>Understand the whole learner</span></div></div><div class="roles"><span class="roles-label">VIEW</span>'+ROLE_IDS.map(r=>'<button data-role="'+r+'" aria-pressed="'+(state.role===r)+'" class="'+(state.role===r?'selected':'')+'">'+r[0].toUpperCase()+r.slice(1)+'</button>').join('')+'</div></header>'}
 function heading(title,desc){
  const asOf=new Date(DATA.asOf+'T12:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
@@ -80,25 +84,43 @@ function metrics(ss,student,scope='main'){
  (detail?scoreExplanation(detail,ss,student):'');
 }
 function roster(ss){
+ const grade=ss[0]?.grade||'';
+ const allowed=academicModesFor(grade);
+ const mode=allowed.includes(state.academicMode)?state.academicMode:'report';
+ const reportSubjects=academicFor(ACADEMIC_RECORDS,ss[0]?.id).reports?.[0]?.subjects||[];
+ const subject=reportSubjects.some(x=>x.subject===state.academicSubject)?
+  state.academicSubject:reportSubjects[0]?.subject||'';
+ const modeLabel={report:'Report · '+(subject||'last issued'),ixl:'IXL Math · level',
+  core:'Core Phonics · items',fp:'F&P · text level'}[mode]||'Academic result';
  const rows=ss.filter(s=>s.name.toLowerCase().includes(state.query.trim().toLowerCase()));
  const data=rows.map(s=>{
   const e=experienceFor(RECORDS,s.id,'engagement'),b=experienceFor(RECORDS,s.id,'belonging'),
     a=attendanceSummary(DATA.attendance[s.id]),g=latestMapGrowth(DATA.map[s.id]||[]);
   const growth=g.status==='comparable'?(g.actual>=0?'+':'')+g.actual+' RIT':'Not assessed';
   return {s,eng:fmt(e?.value),bel:fmt(b?.value),attendance:fmt(a.rate)+'%',growth,
+    academic:classAcademicCell(s,ACADEMIC_RECORDS,mode,subject),
     tags:demoTagsForStudent(s)};
  });
  return '<section class="roster"><div class="sectionhead"><h2>My students</h2><span class="tiny">'+rows.length+' of '+ss.length+' learners</span></div>'+
- '<div class="tablewrap roster-desktop"><table><thead><tr><th>Learner</th><th>Attendance</th><th>MAP Math growth</th><th>Engagement</th><th>Belonging</th><th>Classroom guidance</th></tr></thead><tbody>'+
- data.map(x=>'<tr><td><button class="student-link" data-student="'+x.s.id+'"><img src="'+portrait(x.s.portraitSeed)+'" alt="">'+safe(x.s.name)+'</button></td><td>'+x.attendance+'</td><td>'+safe(x.growth)+'</td><td>'+x.eng+'</td><td>'+x.bel+'</td><td>'+x.tags.map(t=>pill(t.label)).join(' ')+'</td></tr>').join('')+'</tbody></table></div>'+
- '<div class="roster-mobile">'+data.map(x=>'<button class="roster-item" data-student="'+x.s.id+'" aria-label="Open learner '+safe(x.s.name)+'"><img src="'+portrait(x.s.portraitSeed)+'" alt=""><span class="roster-item-body"><strong>'+safe(x.s.name)+'</strong><span>Attendance '+x.attendance+' · MAP '+safe(x.growth)+'</span>'+(experienceEligible(x.s)?'<span>Engagement '+x.eng+' · Belonging '+x.bel+'</span>':'')+'</span><span class="roster-arrow" aria-hidden="true">›</span></button>').join('')+'</div>'+
+ '<div class="tablewrap roster-desktop"><table><thead><tr><th>Learner</th><th>Attendance</th>'+
+ '<th>'+safe(modeLabel)+'</th><th>MAP Math growth</th><th>Engagement</th><th>Belonging</th><th>Classroom guidance</th></tr></thead><tbody>'+
+ data.map(x=>'<tr><td><button class="student-link" data-student="'+x.s.id+'"><img src="'+portrait(x.s.portraitSeed)+'" alt="">'+safe(x.s.name)+'</button></td>'+
+ '<td>'+x.attendance+'</td><td>'+x.academic+'</td><td>'+safe(x.growth)+'</td><td>'+x.eng+
+ '</td><td>'+x.bel+'</td><td>'+x.tags.map(t=>pill(t.label)).join(' ')+'</td></tr>').join('')+'</tbody></table></div>'+
+ '<div class="roster-mobile">'+data.map(x=>'<button class="roster-item" data-student="'+x.s.id+'" aria-label="Open learner '+safe(x.s.name)+'"><img src="'+portrait(x.s.portraitSeed)+'" alt=""><span class="roster-item-body"><strong>'+safe(x.s.name)+'</strong><span>'+
+ safe(modeLabel)+': '+x.academic.replace(/<[^>]*>/g,'')+'</span><span>Attendance '+x.attendance+' · MAP '+safe(x.growth)+'</span>'+
+ (experienceEligible(x.s)?'<span>Engagement '+x.eng+' · Belonging '+x.bel+'</span>':'')+
+ '</span><span class="roster-arrow" aria-hidden="true">›</span></button>').join('')+'</div>'+
  (rows.length?'':'<p class="empty-message">No students match that search.</p>')+
- '<p class="tiny roster-caption">MAP = change in RIT points where a comparable test exists. Experience measures are fictional student-reported check-ins. Select a learner to see more.</p></section>';
+ '<p class="tiny roster-caption">Academic evidence reflects fictional latest issued reports or check-ins; metrics use different scales. MAP growth is a RIT-point change where comparable tests exist. Select a learner for their history.</p></section>';
 }
+
 function learnerProfile(s,studentRole=false){
  if(!s)return '<section class="card">Select a learner to begin.</section>';
  const aa=attendanceSummary(DATA.attendance[s.id]||[]),mg=latestMapGrowth(DATA.map[s.id]||[]),tags=demoTagsForStudent(s);
- const academics=(DATA.assessments[s.id]||[]).filter(x=>x.status==='Published').slice(0,3);
+ const academic=academicFor(ACADEMIC_RECORDS,s.id);
+ const latest=academic.reports?.[0];
+ const math=latest?.subjects.find(x=>x.subject==='Mathematics'||x.subject==='Early Mathematics')||null;
  const profileStart=(studentRole?'':'<div class="row-between"><button class="back" data-action="back">← Back to my class</button></div>');
  const history=studentRole?'<section class="card"><h2>My check-ins over time</h2><div class="trend">'+EXPERIENCE_WINDOWS.map(w=>{
   const e=experienceFor(RECORDS,s.id,'engagement',w.key)?.value;
@@ -106,13 +128,26 @@ function learnerProfile(s,studentRole=false){
   return '<div><span>'+w.label+'</span><strong>Engagement '+fmt(e)+'</strong><strong>Belonging '+fmt(b)+'</strong></div>';
  }).join('')+'</div><p class="tiny">These fictional check-ins describe my experience, not my ability or my grade.</p></section>':'';
  return profileStart+
- '<div class="profile-head"><img src="'+portrait(s.portraitSeed)+'" alt="Fictional portrait"><div><div class="eyebrow">WHOLE LEARNER PROFILE</div><h1>'+safe(s.name)+'</h1><p>'+safe(s.grade)+' · '+safe(s.classId)+' · '+safe(s.campus)+'</p></div></div>'+
- '<div class="kpis profile-kpis">'+kpi('Attendance',fmt(aa.rate)+'%','Recorded through '+safe(DATA.asOf))+kpi('MAP Mathematics growth',mg.status==='comparable'?(mg.actual>=0?'+':'')+mg.actual:'—',mg.status==='comparable'?'RIT points · projected '+fmt(mg.projected):'No comparable test')+kpi('Latest academic outcome',academics[0]?.outcome||'—',safe(academics[0]?.subject||'No published outcome'))+'</div>'+
- '<div class="sectionhead"><h2>'+(studentRole?'How I experience learning':'Student experience')+'</h2><span class="tiny">Fictional Fall 2026 check-ins</span></div>'+metrics([s],s,studentRole?'student':'profile')+history+
- '<div class="two-col"><section class="card"><h2>Academic overview</h2><p class="muted">Latest published outcomes.</p>'+academics.map(a=>'<div class="listrow"><span>'+safe(a.subject)+'</span><strong>'+safe(a.outcome)+'</strong></div>').join('')+'<p class="tiny">MAP achievement (RIT) and growth (change in RIT) are different measures.</p></section>'+
- '<section class="card"><h2>'+(studentRole?'My next step':'Classroom guidance')+'</h2>'+(studentRole?'<p>What could help me feel more connected and engaged in learning?</p><label class="label" for="reflection">My reflection (this browser only)</label><textarea id="reflection" placeholder="One thing that helps me learn is...">'+safe(saved('reflection-'+s.id,''))+'</textarea>'+btn('save-reflection','Save my draft','primary')+'<p class="tiny" id="save-status">A private browser demonstration, not submitted to school.</p>':
- (tags.length?tags.map(t=>'<div class="guide"><strong>'+safe(t.fullName)+'</strong><p>'+safe(t.strategies[0])+'</p></div>').join(''):'<p class="muted">No additional classroom guidance tags in this fictional example.</p>')+'<p class="tiny">Detailed support plans and confidential records are not included in this public demo.</p>')+'</section></div>';
+ '<div class="profile-head"><img src="'+portrait(s.portraitSeed)+'" alt="Fictional portrait"><div><div class="eyebrow">'+
+ (studentRole?'MY LEARNING PROFILE':'WHOLE LEARNER PROFILE')+'</div><h1>'+safe(s.name)+'</h1><p>'+safe(s.grade)+' · '+safe(s.classId)+' · '+safe(s.campus)+'</p></div></div>'+
+ '<div class="kpis profile-kpis">'+kpi('Attendance',fmt(aa.rate)+'%','Recorded through '+safe(DATA.asOf))+
+ kpi('MAP Mathematics growth',mg.status==='comparable'?(mg.actual>=0?'+':'')+mg.actual:'—',
+ mg.status==='comparable'?'RIT points · illustrative projection '+fmt(mg.projected):'Not assessed or no comparable test')+
+ kpi('Latest Mathematics report',math?.value||'—',latest?'Issued '+safe(latest.year)+' · '+safe(latest.framework):'No issued report yet')+'</div>'+
+ renderAcademicProfile(s,ACADEMIC_RECORDS,studentRole,state.academicReportYear)+
+ '<div class="sectionhead"><h2>'+(studentRole?'How I experience learning':'Student experience')+'</h2><span class="tiny">Fictional Fall 2026 check-ins</span></div>'+
+ metrics([s],s,studentRole?'student':'profile')+history+
+ '<section class="card academic-next-step"><h2>'+(studentRole?'My next step':'Classroom guidance')+'</h2>'+
+ (studentRole?'<p>What could help me feel more connected and engaged in learning?</p><label class="label" for="reflection">My reflection (this browser only)</label>'+
+ '<textarea id="reflection" placeholder="One thing that helps me learn is...">'+safe(saved('reflection-'+s.id,''))+'</textarea>'+
+ btn('save-reflection','Save my draft','primary')+
+ '<p class="tiny" id="save-status">A private browser demonstration, not submitted to school.</p>':
+ (tags.length?tags.map(t=>'<div class="guide"><strong>'+safe(t.fullName)+'</strong><p>'+safe(t.strategies[0])+'</p></div>').join(''):
+ '<p class="muted">No additional classroom guidance tags in this fictional example.</p>')+
+ '<p class="tiny">Detailed support plans and confidential records are not included in this public demo.</p>')+
+ '</section>';
 }
+
 function quickStat(label,value,detail,action=''){
  return (action?'<button type="button" data-action="'+safe(action)+'" class="quick-tile quick-score">':'<div class="quick-tile">')+
  '<span>'+safe(label)+'</span><strong>'+fmt(value)+'</strong><small>'+detail+'</small>'+(action?'</button>':'</div>');
@@ -138,6 +173,7 @@ function faculty(){
  quickStat('Attendance',fmt(meanAttendance)+'%','Recorded through 8 Oct 2026')+
  (gradeHasCheckins?score('engagement')+score('belonging'):'<div class="quick-note">Student-reported engagement and belonging indices are not collected for PK–Grade 2 in this demo.</div>')+'</div>'+
  (typeof state.details==='string'&&state.details.startsWith('faculty:')?scoreExplanation(state.details.split(':')[1],ss,null):'')+
+ renderClassAcademicPanel(ss,ACADEMIC_RECORDS,state.academicMode,state.academicSubject)+
  roster(ss)+info();
 }
 function leader(){
@@ -177,13 +213,18 @@ function leader(){
  (splitSchool?trendFor(group.filter(s=>s.division==='Elementary'),'Elementary · over time')+trendFor(group.filter(s=>s.division==='Secondary'),'Secondary · over time'):trendFor(group,'Over time'))+info();
 }
 function student(){
- const ss=DATA.students.filter(experienceEligible);
- const chosen=ss.find(s=>s.id===state.studentId)||ss.find(s=>s.id==='DEMO-0721')||ss[0];
- if(!state.studentId)state.studentId=chosen?.id||'';
- return heading('My learning, my story.','Explore my progress, what is going well and what might help.')+
- '<div class="toolbar"><label>Student demo '+selector('student',ss.map(s=>[s.id,s.name+' · '+s.grade]),state.studentId)+'</label></div>'+
+ const grades=GRADES;
+ const current=grades.includes(state.studentGrade)?state.studentGrade:'G7';
+ const ss=DATA.students.filter(s=>s.grade===current);
+ const chosen=ss.find(s=>s.id===state.studentId)||ss[0];
+ if(chosen&&!ss.some(x=>x.id===state.studentId))state.studentId=chosen.id;
+ return heading('My learning, my story.','Explore my school reports, skills and wellbeing in one place.')+
+ '<div class="toolbar academic-student-picker"><label>Demo grade '+selector('student-grade',
+ grades.map(g=>[g,g==='K'?'Kindergarten':g]),current)+'</label>'+
+ '<label>Student demo '+selector('student',ss.map(s=>[s.id,s.name]),state.studentId)+'</label></div>'+
  learnerProfile(chosen,true)+info();
 }
+
 let pinnedChartKey=null;
 function render(){
  pinnedChartKey=null;
