@@ -1,10 +1,11 @@
 /** Shareable, validated Board-only deep links; other My Learners views unchanged. */
 import {BOARD_DATA,BOARD_GRADE_LIST} from './board-map-data.mjs';
-const views=new Set(['overview','explore']);
+const views=new Set(['overview','explore','dp']);
 const subjects=new Set(['math','reading','language']);
 const divisions=new Set(['all','elementary','secondary']);
 const trends=new Set(['fall','spring']);
 const focuses=new Set(['all','math','reading','language']);
+const dpMetrics=new Set(['average','passRate']);
 const clean=(value,accepted,fallback)=>accepted.has(value)?value:fallback;
 export function parseBoardHash(hash){
  const value=String(hash||'').replace(/^#\/?/,'');
@@ -19,6 +20,7 @@ export function parseBoardHash(hash){
  const window=params.get('window');
  return {
   boardView:clean(params.get('view'),views,'overview'),
+  boardDpMetric:clean(params.get('metric'),dpMetrics,'average'),
   boardTrendTerm:clean(params.get('term'),trends,'fall'),
   boardTrendFocus:params.get('focus')==='both'?'all':clean(params.get('focus'),focuses,'all'),
   boardWindow:window&&BOARD_DATA[window]?window:'fall2026',
@@ -30,7 +32,9 @@ export function boardHash(state){
  const params=new URLSearchParams();
  const view=clean(state.boardView,views,'overview');
  params.set('view',view);
- if(view==='overview'){
+ if(view==='dp'){
+  params.set('metric',clean(state.boardDpMetric,dpMetrics,'average'));
+ }else if(view==='overview'){
   params.set('term',clean(state.boardTrendTerm,trends,'fall'));
   params.set('focus',clean(state.boardTrendFocus,focuses,'all'));
  }else{
