@@ -138,6 +138,50 @@ try{
   async()=>{const ok=await evaluate("(function(){const s=document.querySelector('[data-select=\"grade\"]');if(!s)return false;s.value='G7';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
    assert(ok,'Grade filter missing');await sleep(150);
    assert(await evaluate("document.querySelector('.leader-period')?.textContent.includes('Grade 7')"),'Grade filter did not update')});
+ await run('faculty-map-tab-1440','faculty','.faculty-daily-toolbar',1440,900,
+  async()=>{
+   await click('[data-class-evidence="map"]');
+   assert(await evaluate("document.querySelector('[data-class-evidence=\"map\"]')?.getAttribute('aria-pressed')==='true'"),
+    'MAP evidence tab not active');
+   assert(await evaluate("!!document.querySelector('[data-map-subject]')"),
+    'MAP subject picker missing');
+   assert(await evaluate("document.querySelector('.roster-daily thead')?.textContent.includes('MAP Mathematics growth')"),
+    'Roster not showing selected MAP measure');
+   const changed=await evaluate("(function(){const s=document.querySelector('[data-map-subject]');s.value='Reading';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
+   assert(changed,'MAP Reading could not be selected');await sleep(140);
+   assert(await evaluate("document.querySelector('.roster-daily thead')?.textContent.includes('MAP Reading growth')"),
+    'Roster MAP subject change not applied');
+  });
+ await run('faculty-engagement-tab-1440','faculty','.faculty-daily-toolbar',1440,900,
+  async()=>{
+   await click('[data-class-evidence="engagement"]');
+   assert(await evaluate("document.querySelector('.roster-daily thead')?.textContent.includes('Engagement')"),
+    'Engagement tab did not update roster');
+   assert(await evaluate("document.querySelector('.class-evidence-panel')?.textContent.includes('MaiaLearning Flourishing: not connected')"),
+    'Maia contextual evidence missing');
+  });
+ await run('faculty-belonging-tab-1440','faculty','.faculty-daily-toolbar',1440,900,
+  async()=>{
+   await click('[data-class-evidence="belonging"]');
+   assert(await evaluate("document.querySelector('.roster-daily thead')?.textContent.includes('Belonging')"),
+    'Belonging tab did not update roster');
+  });
+ await run('faculty-maia-pending-1440','faculty','.faculty-daily-toolbar',1440,900,
+  async()=>{
+   await click('[data-class-evidence="flourishing"]');
+   assert(await evaluate("document.querySelector('.class-evidence-panel')?.textContent.includes('Not connected')"),
+    'Maia pending data boundary not displayed');
+   assert(await evaluate("document.querySelector('.roster-daily tbody')?.textContent.includes('Source not connected')"),
+    'Maia pending student column must not contain fake scores');
+  });
+ await run('faculty-common-core-pending-1440','faculty','.faculty-daily-toolbar',1440,900,
+  async()=>{
+   await click('[data-class-evidence="commoncore"]');
+   assert(await evaluate("document.querySelector('.class-evidence-panel')?.textContent.includes('Not connected')"),
+    'Common Core pending source boundary missing');
+   assert(await evaluate("document.querySelector('.roster-daily tbody')?.textContent.includes('Source not connected')"),
+    'Common Core pending values should not be fabricated');
+  });
 }finally{
  await writeFile(path.join(OUT,'walkthrough-report.json'),JSON.stringify({
   executedAt:new Date().toISOString(),root:ROOT,cases,browserExceptions:client.exceptions
