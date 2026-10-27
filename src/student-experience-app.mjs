@@ -9,7 +9,7 @@ import {renderBoard} from './board-map-view.mjs';
 import {renderTrendPointDetails} from './board-map-overview.mjs';
 import {renderDPPointDetails} from './board-dp-view.mjs';
 import {DP_RECORDS} from './board-dp-data.mjs';
-import {boardWindowFor} from './board-map-data.mjs';
+import {boardWindowFor,BOARD_DATA} from './board-map-data.mjs';
 import {parseBoardHash,boardShareUrl} from './board-map-links.mjs';
 const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(DATA.students);
 const root=document.getElementById('app');
