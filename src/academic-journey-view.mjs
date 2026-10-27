@@ -60,7 +60,7 @@ export function renderClassAcademicPanel(students,records,mode='report',subject=
     ' academic-mode-'+id+'">'+esc(modeMeta(id).short)+'</button>').join('');
   return '<section class="academic-class-panel academic-class-compact" aria-label="Choose the academic evidence in the class roster">'+
    '<div class="academic-compact-heading"><div><span class="academic-eyebrow">ACADEMIC EVIDENCE</span>'+
-   '<h3>Show in my roster</h3></div>'+
+   '<h3>Show in My Roster</h3></div>'+
    '<span class="academic-compact-freshness">'+esc(latestDate)+'</span></div>'+
    '<div class="academic-compact-actions"><div class="academic-mode-tabs" role="group" aria-label="Choose academic result">'+
    controls+'</div>'+
@@ -76,7 +76,7 @@ export function renderClassAcademicPanel(students,records,mode='report',subject=
  }
  return '<section class="academic-class-panel" aria-label="Class academic snapshots">'+
  '<div class="academic-class-heading"><div><span class="academic-eyebrow">SUBJECT RESULTS · CLASS VIEW</span>'+
- '<h2>Academic snapshot</h2><p>Choose the evidence you need. Student-level detail stays one click away.</p></div>'+
+ '<h2>Academic Snapshot</h2><p>Choose the evidence you need. Student-level detail stays one click away.</p></div>'+
  '<span class="academic-demo-mark">Fictional examples</span></div>'+
  '<div class="academic-mode-tabs" role="group" aria-label="Select academic evidence displayed in roster">'+
  allowed.map(id=>'<button type="button" data-academic-mode="'+id+'" aria-pressed="'+(selectedMode===id)+
@@ -152,8 +152,8 @@ export function renderAcademicProfile(student,records,studentRole=false,selected
  const reports=record.reports||[];
  const year=reports.find(r=>r.year===selectedYear)||reports[0]||null;
  const available=['ixl','core','fp'].filter(kind=>record[kind]?.length);
- const title=studentRole?'My school reports':'Report card grades';
- const evidenceHeading=studentRole?'My maths and reading journey':'Maths and reading evidence';
+ const title=studentRole?'My School Reports':'Report Card Grades';
+ const evidenceHeading=studentRole?'My Maths and Reading Journey':'Maths and Reading Evidence';
  const sectionLabel=studentRole?'MY ACHIEVEMENT & PROGRESS':'ACADEMIC EVIDENCE';
  const selected=year?.subjects||[];
  return '<section class="academic-profile" aria-label="Student academic report cards and skills evidence">'+
