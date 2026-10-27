@@ -174,13 +174,14 @@ try{
    assert(await evaluate("document.querySelector('.roster-daily tbody')?.textContent.includes('Source not connected')"),
     'Maia pending student column must not contain fake scores');
   });
- await run('faculty-common-core-pending-1440','faculty','.faculty-daily-toolbar',1440,900,
+ await run('faculty-elementary-only-evidence-1440','faculty','.faculty-daily-toolbar',1440,900,
   async()=>{
-   await click('[data-class-evidence="commoncore"]');
-   assert(await evaluate("document.querySelector('.class-evidence-panel')?.textContent.includes('Not connected')"),
-    'Common Core pending source boundary missing');
-   assert(await evaluate("document.querySelector('.roster-daily tbody')?.textContent.includes('Source not connected')"),
-    'Common Core pending values should not be fabricated');
+   assert(await evaluate("!document.querySelector('[data-class-evidence=\"commoncore\"]')"),
+    'Common Core must not appear in any class');
+   assert(await evaluate("!document.querySelector('[data-class-evidence=\"core\"]')"),
+    'Core Phonics must not appear for Grade 7');
+   assert(await evaluate("!document.querySelector('[data-class-evidence=\"fp\"]')"),
+    'F&P Reading must not appear for Grade 7');
   });
 }finally{
  await writeFile(path.join(OUT,'walkthrough-report.json'),JSON.stringify({
