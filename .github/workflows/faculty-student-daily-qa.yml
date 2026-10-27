@@ -1,0 +1,44 @@
+name: Faculty Student Daily UX QA
+on:
+  push:
+    branches: [faculty-student-daily-first-20261027]
+permissions:
+  contents: read
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check source, historical reports and existing Board/Leader functionality
+        run: |
+          node --check src/student-daily-overview.mjs
+          node --check src/student-experience-app.mjs
+          node --check src/academic-journey-view.mjs
+          node --test tests/faculty-student-daily.test.mjs tests/academic-journey.test.mjs tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs tests/student-experience.test.mjs tests/board-map.test.mjs tests/board-overview.test.mjs tests/board-dp.test.mjs tests/board-comparison-tiles.test.mjs
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Chrome UI test tooling
+        run: python -m pip install playwright==1.57.0
+      - name: Test real daily Faculty and Student interactions
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/my-learners-daily.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          sleep 2
+          export MYLEARNERS_URL=http://127.0.0.1:8765
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          python tests/e2e/faculty_student_daily_qa.py
+      - name: Save Chrome screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: faculty-student-daily-chrome-qa
+          path: qa-faculty-student-daily/
+          retention-days: 14
+          if-no-files-found: warn
