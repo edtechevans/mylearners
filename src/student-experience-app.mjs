@@ -118,7 +118,7 @@ function faculty(){
  '<div class="quick-summary">'+quickStat('Students',ss.length,'In this class')+
  quickStat('Attendance',fmt(meanAttendance)+'%','Recorded through 8 Oct 2026')+
  (gradeHasCheckins?score('engagement')+score('belonging'):'<div class="quick-note">Student-reported engagement and belonging indices are not collected for PK–Grade 2 in this demo.</div>')+'</div>'+
- (state.details?.startsWith('faculty:')?scoreExplanation(state.details.split(':')[1],ss,null):'')+
+ (typeof state.details==='string'&&state.details.startsWith('faculty:')?scoreExplanation(state.details.split(':')[1],ss,null):'')+
  roster(ss)+info();
 }
 function leader(){
