@@ -1,7 +1,7 @@
 name: Board MAP QA before deployment
 on:
   push:
-    branches: [board-map-view-20261027]
+    branches: [board-map-view-20261027, board-fall2026-summary-20261027]
 permissions:
   contents: read
 jobs:
