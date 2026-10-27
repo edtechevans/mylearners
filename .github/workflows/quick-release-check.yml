@@ -1,0 +1,34 @@
+name: Fast My Learners release check
+on:
+  push:
+    branches: [qa-teacher-usability-20261027]
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Syntax and data integrity
+        run: |
+          node --check src/student-experience-app.mjs
+          node --check src/experience-data.mjs
+          node --test tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs tests/student-experience.test.mjs
+      - name: Render real Faculty page using Chrome
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/quick-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          sleep 2
+          browser="$(command -v google-chrome || command -v chromium)"
+          timeout 40s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --virtual-time-budget=3500 --dump-dom 'http://127.0.0.1:8765/#/overview' >/tmp/my-learners-dom.txt 2>/tmp/chrome.txt
+          grep -q 'Your students, in one place.' /tmp/my-learners-dom.txt
+          grep -q 'quick-summary' /tmp/my-learners-dom.txt
+          grep -q 'roster-mobile' /tmp/my-learners-dom.txt
+          grep -q 'data-role="leader"' /tmp/my-learners-dom.txt
+          echo 'Faculty DOM and role toggle render successfully'
