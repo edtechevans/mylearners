@@ -1,0 +1,173 @@
+/* AISG My Learners | Shared editorial tile palette 2026-10-28
+   Inherits Board's three gentle washes: sky, mint, lilac.
+   Use on introductory summary surfaces only. Never encode achievement,
+   risk, safeguarding, eligibility or wellbeing status by colour.
+   Detail tables, profiles, records and evidence panels stay neutral.
+*/
+:root{
+ --aisg-wash-sky:#dff1fa;
+ --aisg-wash-mint:#dff4ee;
+ --aisg-wash-lilac:#ebe5fc;
+ --aisg-wash-blue-border:#d9e8f0;
+ --aisg-wash-mint-border:#d8e9e4;
+ --aisg-wash-lilac-border:#e4dff2;
+ --aisg-wash-ring-blue:#a8ceda66;
+ --aisg-wash-ring-mint:#a9d8cd66;
+ --aisg-wash-ring-lilac:#c5b6e366;
+ --aisg-wash-shadow:0 7px 22px rgba(22,63,91,.055);
+}
+
+/* Scope the system to the first, high-level summary row in each dashboard.
+   The four Board strength cards deliberately retain their existing design.
+   Selectors reflect semantic role surfaces already rendered by the app. */
+#app :is(
+ .faculty-daily-summary>.quick-tile,
+ .leader-learning-grid>.leader-stat,
+ .sss-count-grid>.sss-number,
+ .student-landing-grid>.student-today-tile
+){
+ --tile-tint:var(--aisg-wash-sky);
+ --tile-edge:var(--aisg-wash-blue-border);
+ --tile-ring:var(--aisg-wash-ring-blue);
+ position:relative;
+ isolation:isolate;
+ overflow:hidden;
+ border:1px solid var(--tile-edge);
+ border-radius:17px;
+ background:radial-gradient(ellipse at 100% 0%,var(--tile-tint) 0%,transparent 61%),#fff;
+ box-shadow:var(--aisg-wash-shadow);
+ color:#173f5d;
+}
+
+/* Low-contrast ring from the Board reference; purely decorative. */
+#app :is(
+ .faculty-daily-summary>.quick-tile,
+ .leader-learning-grid>.leader-stat,
+ .sss-count-grid>.sss-number,
+ .student-landing-grid>.student-today-tile
+)::before{
+ content:"";
+ pointer-events:none;
+ position:absolute;
+ top:-37px;
+ right:-27px;
+ width:113px;
+ height:113px;
+ border-radius:50%;
+ border:1px solid var(--tile-ring);
+ z-index:0;
+}
+#app :is(
+ .faculty-daily-summary>.quick-tile,
+ .leader-learning-grid>.leader-stat,
+ .sss-count-grid>.sss-number,
+ .student-landing-grid>.student-today-tile
+)>*{
+ position:relative;
+ z-index:1;
+}
+
+/* Consistent visual rhythm: sky = introductory information,
+   mint and lilac = other independent summaries.
+   These are NOT performance scales or severity indicators. */
+#app .faculty-daily-summary>.quick-tile:nth-child(2),
+#app .leader-learning-grid>.leader-stat:nth-child(2),
+#app .sss-count-grid>.sss-number:nth-child(2),
+#app .student-landing-grid>.student-today-tile:nth-child(2){
+ --tile-tint:var(--aisg-wash-mint);
+ --tile-edge:var(--aisg-wash-mint-border);
+ --tile-ring:var(--aisg-wash-ring-mint);
+}
+#app .faculty-daily-summary>.quick-tile:nth-child(3),
+#app .leader-learning-grid>.leader-stat:nth-child(3),
+#app .sss-count-grid>.sss-number:nth-child(3),
+#app .student-landing-grid>.student-today-tile:nth-child(3){
+ --tile-tint:var(--aisg-wash-lilac);
+ --tile-edge:var(--aisg-wash-lilac-border);
+ --tile-ring:var(--aisg-wash-ring-lilac);
+}
+#app .faculty-daily-summary>.quick-tile:nth-child(4),
+#app .leader-learning-grid>.leader-stat:nth-child(4),
+#app .sss-count-grid>.sss-number:nth-child(4){
+ --tile-tint:var(--aisg-wash-mint);
+ --tile-edge:var(--aisg-wash-mint-border);
+ --tile-ring:var(--aisg-wash-ring-mint);
+}
+
+/* Maintain the Board aesthetic on Student cards even though the prior
+   clarity layer intentionally forced a white background. */
+#app .student-landing-grid>.student-today-tile{
+ background:radial-gradient(ellipse at 100% 0%,var(--tile-tint) 0%,transparent 61%),#fff!important;
+}
+#app .student-landing-grid>.student-today-tile:nth-child(2){
+ background:radial-gradient(ellipse at 100% 0%,var(--aisg-wash-mint) 0%,transparent 61%),#fff!important;
+}
+#app .student-landing-grid>.student-today-tile:nth-child(3){
+ background:radial-gradient(ellipse at 100% 0%,var(--aisg-wash-lilac) 0%,transparent 61%),#fff!important;
+}
+
+/* Strengthen consistency in hierarchy without making more surfaces colourful. */
+#app .faculty-daily-summary>.quick-tile strong,
+#app .leader-learning-grid>.leader-stat>strong,
+#app .sss-count-grid>.sss-number>strong,
+#app .student-landing-grid>.student-today-tile .student-today-score{
+ color:#123b59;
+ font-variant-numeric:tabular-nums;
+ letter-spacing:-.035em;
+}
+#app .faculty-daily-summary>.quick-tile>span,
+#app .sss-count-grid>.sss-number>span,
+#app .student-landing-grid>.student-today-tile .student-today-kicker{
+ color:#456982;
+ font-weight:750;
+}
+
+/* The first class evidence box uses a barely visible sky border,
+   while controls, tabs, student rows and numeric results stay neutral. */
+#app .faculty-daily-toolbar,
+#app .class-evidence-panel,
+#app .leader-view .leader-controls,
+#app .sss-controls{
+ border-color:#d9e7ef;
+}
+#app .class-evidence-panel{
+ background:linear-gradient(160deg,#f8fbfd,#fff 84%);
+}
+#app .class-evidence-selected,
+#app .roster-daily,
+#app .leader-detail,
+#app .sss-grade-section,
+#app .student-detail-section{
+ background-color:#fff;
+}
+
+/* No extra animations for data or non-interactive summary tiles.
+   Buttons retain the established focus outline. */
+#app .faculty-daily-summary>.quick-tile.quick-score:hover{
+ box-shadow:0 9px 23px rgba(22,63,91,.08);
+ border-color:#b6d2df;
+}
+@media(max-width:760px){
+ #app :is(
+  .faculty-daily-summary>.quick-tile,
+  .leader-learning-grid>.leader-stat,
+  .sss-count-grid>.sss-number,
+  .student-landing-grid>.student-today-tile
+ ){border-radius:14px}
+ #app :is(
+  .faculty-daily-summary>.quick-tile,
+  .leader-learning-grid>.leader-stat,
+  .sss-count-grid>.sss-number,
+  .student-landing-grid>.student-today-tile
+ )::before{
+  width:88px;height:88px;right:-27px;top:-34px;
+ }
+}
+@media print{
+ #app :is(
+  .faculty-daily-summary>.quick-tile,
+  .leader-learning-grid>.leader-stat,
+  .sss-count-grid>.sss-number,
+  .student-landing-grid>.student-today-tile
+ ){background:#fff!important;box-shadow:none}
+}
