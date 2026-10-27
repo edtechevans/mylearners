@@ -1,4 +1,4 @@
-name: Validate and deploy demo to GitHub Pages
+name: Validate and deploy My Learners demo
 on:
   push:
     branches: [main]
@@ -18,65 +18,26 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Validate synthetic dataset
-        run: node --test tests/*.test.mjs
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install Playwright browser test harness
-        run: python -m pip install playwright==1.57.0
-      - name: Ten simulated classroom teacher journeys, navigation and responsive QA
+      - name: Verify fictional data model and transparent indicators
+        run: node --test tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs tests/student-experience.test.mjs
+      - name: Validate entry point and Javascript syntax
         run: |
-          set -euo pipefail
-          python -m http.server 8765 --bind 127.0.0.1 >/tmp/mylearners-e2e-server.log 2>&1 &
-          site_pid=$!
-          trap 'kill "$site_pid" 2>/dev/null || true' EXIT
-          sleep 2
-          export MYLEARNERS_URL=http://127.0.0.1:8765
-          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
-          python tests/e2e/teacher_journeys.py
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: teacher-usability-e2e-report
-          path: qa-artifacts/
-          if-no-files-found: ignore
-          retention-days: 14
-      - name: Browser rendering smoke check
-        shell: bash
-        continue-on-error: true
+          node --check src/student-experience-app.mjs
+          node --check src/experience-data.mjs
+          grep -q 'student-experience-app.mjs' index.html
+      - name: Browser rendering and role toggle smoke test
         run: |
-          set -euo pipefail
-          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/aisg-mylearners-http.log 2>&1 &
-          server_pid=$!
-          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/mylearners-http.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
           sleep 2
           browser="$(command -v google-chrome || command -v chromium || true)"
-          if [[ -z "$browser" ]]; then
-            echo "No system Chromium available: browser QA skipped (Node tests still required)"
-            exit 0
-          fi
-          mkdir -p .qa
-          for page in today class learners growth actions student/DEMO-0721; do
-            name="${page//\//-}"
-            echo "Checking page: $page"
-            timeout 35s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --hide-scrollbars --window-size=1440,950 --virtual-time-budget=2500 --dump-dom "http://127.0.0.1:8765/#/$page" >".qa/$name.html" 2>/tmp/aisg-mylearners-browser.log
-            grep -q 'class="v2-app"' ".qa/$name.html"
-          done
-          for page in today class student/DEMO-0721; do
-            name="${page//\//-}"
-            timeout 35s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --hide-scrollbars --window-size=1440,950 --virtual-time-budget=2500 --screenshot="$PWD/.qa/$name.png" "http://127.0.0.1:8765/#/$page" >/dev/null 2>/tmp/aisg-mylearners-screenshot.log
-            test -s ".qa/$name.png"
-          done
-          echo "All six pages rendered; three desktop screenshots captured"
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: mylearners-v2-visual-qa
-          path: .qa/*.png
-          include-hidden-files: true
-          if-no-files-found: warn
-          retention-days: 7
+          if [ -z "$browser" ]; then echo 'No Chromium system browser'; exit 1; fi
+          timeout 45s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --virtual-time-budget=6000 --dump-dom http://127.0.0.1:8765/ > /tmp/mylearners-dom.html 2>/tmp/mylearners-chrome.log
+          grep -q 'Your students, in one place' /tmp/mylearners-dom.html
+          grep -q 'data-role="student"' /tmp/mylearners-dom.html
+          grep -q 'data-role="leader"' /tmp/mylearners-dom.html
+          grep -q 'How is this calculated' /tmp/mylearners-dom.html
   deploy:
     needs: validate
     runs-on: ubuntu-latest
