@@ -116,7 +116,7 @@ export function renderBoard(state){
  '<label>Grade <select data-board-select="grade" aria-label="Board MAP grade">'+
  option('all','All grades',grade)+allowed.map(g=>option(String(g),'Grade '+g,grade)).join('')+'</select></label></div></div>'+
  '<div class="board-context"><strong>'+safe(subjectName)+' · '+safe(formatWindow(window))+'</strong><span>'+safe(area)+'</span></div>'+
- '<div class="board-stats">'+metrics.map(m=>indicator(...m)).join('')+'</div>'+
+ '<div class="board-stats'+(isFall2026?' board-stats-latest':'')+'">'+metrics.map(m=>indicator(...m)).join('')+'</div>'+
  (isFall2026?'<p class="board-benchmark-note">Fall 2026 results are summary-level only: exact RIT averages, grade-specific growth rates and an EARCOS comparison were not supplied.</p>':
  (!isSpring?'<p class="board-benchmark-note">U.S. and EARCOS benchmarks are from the same Fall 2025 testing window.</p>':
  '<p class="board-benchmark-note">EARCOS Spring 2026 grade norms were not supplied, so no EARCOS comparison is shown for this window. Projected growth refers to matched Spring 2025 → Spring 2026 students.</p>'))+
