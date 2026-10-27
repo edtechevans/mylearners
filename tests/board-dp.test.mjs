@@ -37,7 +37,7 @@ test('Nine-year Diploma chart keeps full scale and supports actual global refere
  assert.equal(dpPoint(2026,'passRate').value,93);
  const html=renderBoardDP({boardDpMetric:'average',boardDpGlobal:true});
  assert.match(html,/board-dp-graphic-grid/);
- assert.match(html,/IB Diploma results/);
+ assert.match(html,/IB Diploma Results/);
  assert.match(html,/Consistent outcomes/);
  assert.match(html,/6 \/ 8/);
  assert.match(html,/data-board-dp-point="average:2018"/);
