@@ -83,13 +83,25 @@ const inspect='('+function(){
   Math.min(r.right,s.right)-Math.max(r.left,s.left)>8&&Math.min(r.bottom,s.bottom)-Math.max(r.top,s.top)>8));
  const visible=heading&&rect(heading).width>0&&rect(heading).top>=-1;
  const stylesheet=[...document.querySelectorAll('link[rel=stylesheet]')].some(x=>x.href.includes('clarity-design.css')&&x.sheet);
+ const paletteLoaded=[...document.querySelectorAll('link[rel=stylesheet]')].some(x=>x.href.includes('sitewide-palette.css')&&x.sheet);
+ const tiles=[...document.querySelectorAll(
+  '.faculty-daily-summary>.quick-tile,.leader-learning-grid>.leader-stat,'+
+  '.sss-count-grid>.sss-number,.student-landing-grid>.student-today-tile,'+
+  '.board-strength-grid>.board-strength-card'
+ )].map(e=>({r:rect(e),fill:getComputedStyle(e).backgroundImage}));
+ const tileOverlaps=tiles.some((a,i)=>tiles.slice(i+1).some(b=>
+   Math.min(a.r.right,b.r.right)-Math.max(a.r.left,b.r.left)>8&&
+   Math.min(a.r.bottom,b.r.bottom)-Math.max(a.r.top,b.r.top)>8));
+ const shadeCount=new Set(tiles.map(x=>x.fill)).size;
  return {role:document.querySelector('.roles [aria-pressed=true]')?.textContent.trim()||'',
   viewport:{width:innerWidth,height:innerHeight},navigationPosition:rail,
   canvas:getComputedStyle(document.body).backgroundColor,font:getComputedStyle(document.body).fontFamily,
   mainRect,navRect,navButtons:labels.map(x=>x.name),
   horizontalOverflow:document.documentElement.scrollWidth-innerWidth,
   navClipped:clipped,overlappingNavigation:overlap,overlappingBoardCards:collisions,
-  visibleHeading:!!visible,clarityLoaded:!!stylesheet,
+  visibleHeading:!!visible,clarityLoaded:!!stylesheet,paletteLoaded,
+  tileCount:tiles.length,tileShadeCount:shadeCount,tileOverlaps,
+  tileGradientApplied:tiles.every(x=>x.fill.includes('radial-gradient')),
   headings:[...document.querySelectorAll('h1')].map(e=>e.textContent.trim()).slice(0,2),
   focusables:[...document.querySelectorAll('button,select,input,[href]')].filter(e=>e.getBoundingClientRect().width>0).length
  };
@@ -101,6 +113,13 @@ async function run(name,route,selector,width,height,interaction){
   if(interaction)await interaction();
   Object.assign(record,await evaluate(inspect));await screenshot(name);
   assert(record.clarityLoaded,'Clarity stylesheet did not load');
+  assert(record.paletteLoaded,'Sitewide three-tone stylesheet did not load');
+  if(/^(faculty|student|sss|leader|board)-\d+x\d+$/.test(name)){
+   assert(record.tileCount>=3,'Expected at least three high-level summary tiles in '+name);
+   assert(record.tileGradientApplied,'The soft radial shading must appear on each summary tile');
+   assert(record.tileShadeCount>=3,'Sky, mint and lilac should all appear in the overview tiles');
+   assert(!record.tileOverlaps,'Summary tiles should not overlap');
+  }
   assert(record.visibleHeading,'Heading is not visible');
   assert(!record.overlappingNavigation,'Sidebar overlaps dashboard content');
   assert(!record.navClipped,'Navigation contains offscreen buttons');
