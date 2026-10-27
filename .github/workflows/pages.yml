@@ -25,6 +25,7 @@ jobs:
           node --check src/student-experience-app.mjs
           node --check src/experience-data.mjs
           node --check src/board-map-data.mjs
+          node --check src/board-map-history.mjs
           node --check src/board-map-view.mjs
           grep -q 'student-experience-app.mjs' index.html
       - name: Browser rendering and role toggle smoke test
@@ -42,7 +43,9 @@ jobs:
           grep -q 'How is this calculated' /tmp/mylearners-dom.html
           timeout 45s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --virtual-time-budget=6000 --dump-dom 'http://127.0.0.1:8765/#/board' > /tmp/mylearners-board-dom.html 2>/tmp/mylearners-chrome-board.log
           grep -q 'board-view' /tmp/mylearners-board-dom.html
-          grep -q 'ACTUAL AISG AGGREGATES' /tmp/mylearners-board-dom.html
+          grep -q 'AISG AGGREGATED DATA' /tmp/mylearners-board-dom.html
+          grep -q 'data-board-select="year"' /tmp/mylearners-board-dom.html
+          grep -q 'data-board-window="unavailable-spring"' /tmp/mylearners-board-dom.html
           grep -q 'Grade 10' /tmp/mylearners-board-dom.html
   deploy:
     needs: validate
