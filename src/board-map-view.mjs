@@ -7,6 +7,7 @@ import {BOARD_DATA,BOARD_SUBJECTS,BOARD_GRADE_LIST,BOARD_SCHOOL_YEARS,
 import {esc} from './v2-ui.mjs';
 import {renderBoardOverview} from './board-map-overview.mjs';
 import {renderBoardDP} from './board-dp-view.mjs';
+import {renderMapComparisonTiles} from './board-comparison-tiles.mjs';
 const safe=v=>esc(v??'');
 const n1=n=>Number.isFinite(n)?Number(n).toFixed(1):'—';
 const diff=n=>Number.isFinite(n)?(n>0?'+':'')+Number(n).toFixed(1):'—';
@@ -151,7 +152,7 @@ export function renderBoard(state){
  '<div class="board-provenance-badge"><strong>AISG AGGREGATED DATA</strong><small>No student records</small></div></div>'+
  '<div class="board-nav-row"><nav class="board-nav-tabs" aria-label="Board dashboard sections">'+
  '<button type="button" data-board-view="overview" aria-current="'+(!explore&&!diploma?'page':'false')+'" class="'+(!explore&&!diploma?'active':'')+'">Overview</button>'+
- '<button type="button" data-board-view="explore" aria-current="'+(explore?'page':'false')+'" class="'+(explore?'active':'')+'">MAP by Year</button>'+
+ '<button type="button" data-board-view="explore" aria-current="'+(explore?'page':'false')+'" class="'+(explore?'active':'')+'">MAP</button>'+
  '<button type="button" data-board-view="dp" aria-current="'+(diploma?'page':'false')+'" class="'+(diploma?'active':'')+'">IB Diploma</button>'+
  '</nav><div class="board-share-area"><button type="button" class="board-copy-link" data-board-share="true" aria-label="Copy link to this Board view">Copy link to this view</button>'+
  '<span class="board-share-feedback" id="board-share-feedback" role="status" aria-live="polite"></span></div></div>';
@@ -170,7 +171,9 @@ export function renderBoard(state){
  option('all','All tested grades (G3–10)',selectedDiv)+option('elementary','Elementary',selectedDiv)+option('secondary','Secondary',selectedDiv)+'</select></label>'+
  '<label>Grade <select data-board-select="grade" aria-label="Board MAP grade">'+
  option('all','All grades',selectedGrade)+allowed.map(g=>option(String(g),'Grade '+g,selectedGrade)).join('')+'</select></label></div></div>'+
- '<div class="board-context"><strong>'+safe(subjectName)+' · '+safe(source.label)+'</strong><span>'+safe(area)+'</span></div>'+
+ renderMapComparisonTiles({schoolYear:selectedYear,selectedWindow:active,selectedSubject,
+  division:selectedDiv,grade:selectedGrade})+
+ '<div class="board-context" id="board-map-detail"><strong>'+safe(subjectName)+' · '+safe(source.label)+'</strong><span>'+safe(area)+'</span></div>'+
  '<div class="board-stats">'+metrics.map(m=>indicator(...m)).join('')+'</div>'+
  '<p class="board-benchmark-note">'+safe(note)+'</p>'+
  (active==='fall2026'?'<p class="board-source-date">Fall 2026 assessment snapshot: 20 September 2026 · Aggregated data · Updated 27 October 2026</p>':'')+
