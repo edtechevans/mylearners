@@ -383,9 +383,27 @@ root.addEventListener('keydown',e=>{
  if(e.key==='Escape'){hideBoardFloat();if(pinnedChartKey)unpinChartPoint()}
 });
 root.addEventListener('click',e=>{
+ const academicMode=e.target.closest('[data-academic-mode]');
+ if(academicMode){
+  const options=academicModesFor(activeClass()?.grade||'');
+  if(options.includes(academicMode.dataset.academicMode)){
+   state.academicMode=academicMode.dataset.academicMode;
+   render();
+   root.querySelector('[data-academic-mode="'+state.academicMode+'"]')?.focus({preventScroll:true});
+  }
+  return;
+ }
+ const reportYear=e.target.closest('[data-academic-report-year]');
+ if(reportYear&&['faculty','student'].includes(state.role)){
+  state.academicReportYear=reportYear.dataset.academicReportYear;
+  render();
+  root.querySelector('[data-academic-report-year="'+state.academicReportYear+'"]')?.focus({preventScroll:true});
+  return;
+ }
  const role=e.target.closest('[data-role]');if(role){if(!ROLE_IDS.includes(role.dataset.role))return;
  if(role.dataset.role==='board')state.boardView='overview';
- state.role=role.dataset.role;state.details=false;state.studentId='';state.classId='';state.query='';
+ if(role.dataset.role==='student'&&state.studentId)state.studentGrade=DATA.userIndex.get(state.studentId)?.grade||'G7';
+ state.role=role.dataset.role;state.details=false;state.studentId='';state.classId='';state.query='';state.academicReportYear='';
  if(globalThis.location?.hash!=='#/'+state.role)globalThis.location.hash='#/'+state.role;
  render();return}
  const point=e.target.closest('[data-board-point]');
@@ -501,9 +519,14 @@ root.addEventListener('click',e=>{
  const boardWindow=e.target.closest('[data-board-window]');
  if(boardWindow){state.boardWindow=boardWindow.dataset.boardWindow;render();return}
  const b=e.target.closest('[data-action]');if(b){const a=b.dataset.action;if(a.startsWith('explain:')){state.details=a.slice('explain:'.length)}else if(a==='close')state.details=false;else if(a==='back'){state.studentId='';state.details=false}else if(a==='save-reflection'){const t=document.querySelector('#reflection');try{sessionStorage.setItem('reflection-'+state.studentId,t?.value||'')}catch{}document.querySelector('#save-status').textContent='Draft saved in this browser session only.';return}render();return}
- const link=e.target.closest('[data-student]');if(link){state.studentId=link.dataset.student;state.details=false;render();window.scrollTo(0,0)}
+ const link=e.target.closest('[data-student]');if(link){state.studentId=link.dataset.student;state.details=false;state.academicReportYear='';render();window.scrollTo(0,0)}
 });
 root.addEventListener('change',e=>{
+ const subjectSelect=e.target.closest('[data-academic-subject]');
+ if(subjectSelect&&state.role==='faculty'){
+  state.academicSubject=subjectSelect.value;render();
+  root.querySelector('[data-academic-subject]')?.focus({preventScroll:true});return;
+ }
  const dpSelect=e.target.closest('[data-board-dp-select]');
  if(dpSelect){
   if(dpSelect.dataset.boardDpSelect==='year'){
@@ -535,12 +558,19 @@ root.addEventListener('change',e=>{
   return;
  }
  const el=e.target.closest('[data-select]');if(!el)return;const v=el.value;
- if(el.dataset.select==='teacher'){state.teacher=v;state.classId='';state.studentId='';state.query='';state.details=false}
- if(el.dataset.select==='class'){state.classId=v;state.studentId='';state.query='';state.details=false}
+ if(el.dataset.select==='teacher'){state.teacher=v;state.classId='';state.studentId='';state.query='';state.details=false;
+  state.academicMode='report';state.academicSubject='Mathematics';state.academicReportYear='';}
+ if(el.dataset.select==='class'){state.classId=v;state.studentId='';state.query='';state.details=false;
+  state.academicMode='report';state.academicSubject='Mathematics';state.academicReportYear='';}
  if(el.dataset.select==='division'){state.division=v;state.grade='All';state.classId='';state.details=false}
  if(el.dataset.select==='grade'){state.grade=v;state.classId='';state.details=false}
  if(el.dataset.select==='leader-class'){state.classId=v;state.details=false}
- if(el.dataset.select==='student'){state.studentId=v;state.details=false}
+ if(el.dataset.select==='student'){state.studentId=v;state.details=false;state.academicReportYear='';
+  state.studentGrade=DATA.userIndex.get(v)?.grade||state.studentGrade;}
+ if(el.dataset.select==='student-grade'){
+  state.studentGrade=v;state.studentId=DATA.students.find(s=>s.grade===v)?.id||'';
+  state.academicReportYear='';state.details=false;
+ }
  if(el.dataset.select==='window'){state.window=v;state.details=false}
  render()
 });
