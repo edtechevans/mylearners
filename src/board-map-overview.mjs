@@ -58,7 +58,7 @@ function chartSvg(data,selected,season){
  const width=980,height=326,left=55,right=34,top=43,bottom=258;
  const xStep=(width-left-right)/Math.max(1,data.length-1);
  const point=(i,n)=>[left+xStep*i,bottom-(n/8)*(bottom-top)];
- const offset={math:-10,reading:0,language:10}; // separate coincident series
+ const offset={math:-20,reading:0,language:20}; // separate coincident series
  const seriesKeys=SUBJECT_KEYS.includes(selected)?[selected]:SUBJECT_KEYS;
  const horizontal=[0,2,4,6,8].map(y=>{
   const yPx=point(0,y)[1].toFixed(1);
@@ -87,7 +87,7 @@ function chartSvg(data,selected,season){
     '" text-anchor="middle" class="board-trend-value" fill="'+COLOR[key]+'">'+v+'</text>';
    return '<g class="board-trend-point" role="button" tabindex="0" focusable="true"'+
     ' data-board-point="'+season+':'+r.year+':'+key+'" aria-label="'+safe(description)+'">'+
-    '<circle class="board-point-hit" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="16" fill="transparent"/>'+
+    '<circle class="board-point-hit" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="14" fill="transparent"/>'+
     '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="7.6" fill="'+COLOR[key]+
     '" stroke="white" stroke-width="2.4"><title>'+safe(description)+'</title></circle>'+
     labelText+'</g>';
