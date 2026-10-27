@@ -1925,3 +1925,62 @@ body.board-drawer-open{overflow:hidden}
 @media(prefers-reduced-motion:reduce){
  .student-panel-chevron{transition:none}
 }
+
+
+/* Sitewide visual consistency pass — October 2026.
+   Deliberately presentation-only: no dashboard ordering, data, or profile guidance changes. */
+:root{
+  --navy:#103b61;
+  --blue:#176397;
+  --text:#18374c;
+  --muted:#50697b;
+  --border:#d9e5ed;
+  --paper:#f5f8fb;
+  --white:#fff;
+  --focus-ring:#267faf;
+  --type-xs:12px;
+  --type-sm:13px;
+  --type-body:14px;
+  --type-heading:18px;
+}
+html{font-size:16px;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{font-family:'Noto Sans',Arial,sans-serif;font-size:var(--type-body);line-height:1.6;font-synthesis:none;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit}
+h1,h2,h3,h4,.brand strong{font-family:'Noto Sans',Arial,sans-serif;letter-spacing:-.025em;text-wrap:balance}
+.heading h1,h1{letter-spacing:-.035em;line-height:1.22}
+h2{font-size:var(--type-heading);line-height:1.35}
+p,li,td,th{overflow-wrap:break-word}
+.muted,.tiny,.notice,.eyebrow,.roles-label,.demo,.asof,
+.sectionhead label,.toolbar label,.student-detail-section>summary small,
+.student-today-tile small,.student-today-tile p,.student-landing-foot{
+  line-height:1.55;
+}
+.tiny,.notice,.roles-label,.demo,.eyebrow,
+.student-detail-section>summary small,.student-today-tile small,
+.student-landing-foot{font-size:var(--type-xs)}
+.muted,.sectionhead label,.toolbar label,.student-today-tile p{font-size:var(--type-sm)}
+.tiny,.student-landing-foot,.student-detail-section>summary small,
+.student-today-tile small,.notice,footer{color:var(--muted)}
+th{font-size:12px;letter-spacing:.035em;color:#425f73}
+td{font-size:13px;line-height:1.5}
+.roles button,.action,.student-save-goal{font-size:13px;letter-spacing:0}
+.roles button{font-weight:700}
+.action,.student-save-goal{min-height:40px}
+:where(button,select,input,textarea,a,summary,[tabindex]):focus-visible{
+  outline:3px solid var(--focus-ring);
+  outline-offset:3px;
+}
+:where(button,a,summary){-webkit-tap-highlight-color:transparent}
+:where(button,a,summary):not(:disabled){transition:background-color .16s ease,border-color .16s ease,color .16s ease}
+.kpi,.metric,.card,.explain,.student-detail-section{border-color:var(--border)}
+.kpi strong,.metric-value,.explain-number{letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+.student-detail-section>summary strong{font-weight:750;line-height:1.35}
+.student-today-kicker{font-weight:750}
+.student-today-title{font-size:17px;line-height:1.4}
+.student-today-goal .student-goal-label{font-size:13px}
+.student-today-goal textarea{font-size:13px;line-height:1.6}
+.student-goal-actions #save-status{font-size:12px;color:var(--muted)}
+.student-detail-section>summary:hover{background:#edf5fa}
+@media(prefers-reduced-motion:reduce){
+  :where(button,a,summary){transition:none!important}
+}
