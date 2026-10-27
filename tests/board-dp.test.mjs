@@ -33,6 +33,8 @@ test('Diploma interactive measures preserve missing 2020 pass rate and full char
  assert.match(html,/7 \/ 7/);
  assert.match(html,/data-board-dp-point="average:2026"/);
  assert.match(html,/board-floating-tooltip/);
+ assert.match(html,/board-chart-range-annotation/);
+ assert.match(html,/34\.0–36\.4/);
  assert.match(html,/Full Diploma pathway/);
  assert.match(html,/candidate denominator/i);
  const passHtml=renderBoardDP({boardDpMetric:'passRate'});
