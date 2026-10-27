@@ -184,13 +184,19 @@ function student(){
  '<div class="toolbar"><label>Student demo '+selector('student',ss.map(s=>[s.id,s.name+' · '+s.grade]),state.studentId)+'</label></div>'+
  learnerProfile(chosen,true)+info();
 }
+let pinnedChartKey=null;
 function render(){
+ pinnedChartKey=null;
  const content=state.role==='board'?renderBoard(state):state.role==='leader'?leader():state.role==='student'?student():faculty();
  root.classList.toggle('board-presentation-mode',state.role==='board'&&!!state.boardPresentation);
+ document.body.classList.toggle('board-drawer-open',state.role==='board'&&state.boardView==='explore'&&!!state.boardMapDetailsOpen);
  root.innerHTML=header()+'<main class="container" id="main">'+content+'</main><footer>'+
  (state.role==='board'?'AISG Board · Aggregated MAP and IB Diploma outcomes · No individual student scores published':
  'My Learners demonstration · Learners, assessments and student check-ins fictional')+
  '</footer>';
+ if(state.role==='board'&&state.boardView==='explore'&&state.boardMapDetailsOpen){
+  root.querySelector('.board-drawer-close')?.focus({preventScroll:true});
+ }
  if(state.role==='board'&&globalThis.window?.innerWidth<700){
   const useDp=(state.boardView==='dp')||(state.boardView==='overview'&&state.boardOverviewChart==='dp');
   const scroller=root.querySelector?.(useDp?'.board-dp-chart-scroll':'.board-trend-scroller');
@@ -203,7 +209,7 @@ function render(){
 function showBoardPoint(point){
  const key=point?.dataset?.boardPoint;
  const inspector=root.querySelector('.board-trend-inspector');
- if(!inspector||!key)return;
+ if(!inspector||!key||pinnedChartKey&&pinnedChartKey!==key)return;
  if(inspector.dataset.activePoint!==key){
   inspector.innerHTML=renderTrendPointDetails(key);
   inspector.dataset.activePoint=key;
@@ -213,13 +219,50 @@ function showBoardPoint(point){
 }
 function showDPPoint(point){
  const key=point?.dataset?.boardDpPoint,inspector=root.querySelector('.board-dp-inspector');
- if(!inspector||!key)return;
+ if(!inspector||!key||pinnedChartKey&&pinnedChartKey!==key)return;
  if(inspector.dataset.activePoint!==key){
   inspector.innerHTML=renderDPPointDetails(key);
   inspector.dataset.activePoint=key;
   root.querySelectorAll('.board-dp-point.is-active').forEach(x=>x.classList.remove('is-active'));
   point.classList.add('is-active');
  }
+}
+function pinChartPoint(point){
+ const dp=!!point?.dataset?.boardDpPoint;
+ const key=dp?point?.dataset?.boardDpPoint:point?.dataset?.boardPoint;
+ const inspector=root.querySelector(dp?'.board-dp-inspector':'.board-trend-inspector');
+ if(!key||!inspector)return;
+ if(pinnedChartKey===key){
+  pinnedChartKey=null;
+  inspector.classList.remove('is-pinned');
+  inspector.querySelector('.board-pin-controls')?.remove();
+  root.querySelectorAll('.board-trend-point.is-pinned,.board-dp-point.is-pinned').forEach(n=>n.classList.remove('is-pinned'));
+  return;
+ }
+ pinnedChartKey=null;
+ if(dp)showDPPoint(point);else showBoardPoint(point);
+ pinnedChartKey=key;
+ inspector.classList.add('is-pinned');
+ root.querySelectorAll('.board-trend-point.is-pinned,.board-dp-point.is-pinned').forEach(n=>n.classList.remove('is-pinned'));
+ point.classList.add('is-pinned');
+ inspector.insertAdjacentHTML('beforeend',
+ '<div class="board-pin-controls"><span>Selection pinned for closer inspection</span>'+
+ '<button type="button" data-board-unpin>Unpin ×</button></div>');
+}
+function unpinChartPoint(){
+ pinnedChartKey=null;
+ root.querySelectorAll('.board-trend-inspector.is-pinned,.board-dp-inspector.is-pinned')
+  .forEach(n=>{n.classList.remove('is-pinned');n.querySelector('.board-pin-controls')?.remove()});
+ root.querySelectorAll('.board-trend-point.is-pinned,.board-dp-point.is-pinned')
+  .forEach(n=>n.classList.remove('is-pinned'));
+}
+function closeBoardDrawer(){
+ if(state.role!=='board'||state.boardView!=='explore'||!state.boardMapDetailsOpen)return;
+ const window=state.boardWindow,subject=state.boardSubject;
+ state.boardMapDetailsOpen=false;state.boardGrade='all';
+ render();
+ root.querySelector('[data-board-tile-window="'+window+'"][data-board-tile-subject="'+subject+'"]')
+  ?.focus({preventScroll:true});
 }
 function placeBoardFloat(point,e){
  const tooltip=root.querySelector('.board-floating-tooltip');
@@ -276,14 +319,27 @@ root.addEventListener('focusout',e=>{
  if(e.target.closest?.('[data-board-point],[data-board-dp-point]'))hideBoardFloat();
 });
 root.addEventListener('keydown',e=>{
+ const drawer=root.querySelector('.board-map-drawer[aria-modal="true"]');
+ if(drawer){
+  if(e.key==='Escape'){e.preventDefault();closeBoardDrawer();return}
+  if(e.key==='Tab'){
+   const focusables=[...drawer.querySelectorAll('button:not([disabled]),select:not([disabled]),a[href],summary')]
+    .filter(el=>el.getClientRects().length);
+   if(focusables.length){
+    const first=focusables[0],last=focusables.at(-1);
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();return}
+    if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();return}
+   }
+  }
+  return;
+ }
  const point=e.target.closest?.('[data-board-point],[data-board-dp-point]');
  if(point&&(e.key==='Enter'||e.key===' ')){
   e.preventDefault();
-  if(point.dataset.boardPoint)showBoardPoint(point);
-  if(point.dataset.boardDpPoint)showDPPoint(point);
-  placeBoardFloat(point);
+  if(point.dataset.boardDpPoint){point.click();return}
+  pinChartPoint(point);placeBoardFloat(point);
  }
- if(e.key==='Escape')hideBoardFloat();
+ if(e.key==='Escape'){hideBoardFloat();if(pinnedChartKey)unpinChartPoint()}
 });
 root.addEventListener('click',e=>{
  const role=e.target.closest('[data-role]');if(role){if(!ROLE_IDS.includes(role.dataset.role))return;
@@ -292,7 +348,7 @@ root.addEventListener('click',e=>{
  if(globalThis.location?.hash!=='#/'+state.role)globalThis.location.hash='#/'+state.role;
  render();return}
  const point=e.target.closest('[data-board-point]');
- if(point){showBoardPoint(point);
+ if(point){pinChartPoint(point);
   if(e.detail>0&&window.matchMedia?.('(pointer: coarse)').matches)
    root.querySelector('.board-trend-inspector')?.scrollIntoView?.({block:'nearest',behavior:'smooth'});
   return;
@@ -306,8 +362,8 @@ root.addEventListener('click',e=>{
     state.boardDpRange='all';
    render();
    const selected=root.querySelector('[data-board-dp-point="'+metric+':'+year+'"]');
-   if(selected)showDPPoint(selected);
-  }else showDPPoint(dpPoint);
+   if(selected)pinChartPoint(selected);
+  }else pinChartPoint(dpPoint);
   if(e.detail>0&&window.matchMedia?.('(pointer: coarse)').matches)
    root.querySelector('.board-dp-inspector')?.scrollIntoView?.({block:'nearest',behavior:'smooth'});
   return;
@@ -320,7 +376,7 @@ root.addEventListener('click',e=>{
    state.boardWindow=windowId;state.boardSubject=subject;
    state.boardMapDetailsOpen=true;state.boardMapGrowthOpen=false;
    render();
-   root.querySelector('#board-map-detail')?.scrollIntoView?.({block:'start',behavior:'smooth'});
+   root.querySelector('.board-drawer-close')?.focus({preventScroll:true});
   }
   return;
  }
@@ -331,7 +387,9 @@ root.addEventListener('click',e=>{
   render();return;
  }
  const closeDetails=e.target.closest('[data-board-close-details]');
- if(closeDetails){state.boardMapDetailsOpen=false;state.boardGrade='all';render();return}
+ if(closeDetails){closeBoardDrawer();return}
+ const unpin=e.target.closest('[data-board-unpin]');
+ if(unpin){unpinChartPoint();return}
  const dismissGrowth=e.target.closest('[data-board-dismiss-growth]');
  if(dismissGrowth){state.boardMapGrowthOpen=false;render();return}
  const compare=e.target.closest('[data-board-compare-seasons]');
@@ -431,7 +489,9 @@ root.addEventListener('change',e=>{
    state.boardWindow=boardWindowFor(boardSelect.value,previousSeason)||
     boardWindowFor(boardSelect.value,'fall')||state.boardWindow;
   }
-  render();return;
+  render();
+  if(boardSelect.dataset.boardSelect==='grade')root.querySelector('[data-board-select="grade"]')?.focus({preventScroll:true});
+  return;
  }
  const el=e.target.closest('[data-select]');if(!el)return;const v=el.value;
  if(el.dataset.select==='teacher'){state.teacher=v;state.classId='';state.studentId='';state.query='';state.details=false}
