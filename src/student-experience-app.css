@@ -576,3 +576,239 @@
  .board-view .board-strength-card{padding:10px}
  .board-view .board-strength-caption{font-size:10.5px}
 }
+
+
+/* Board MAP/IB Diploma editorial tiles: real, responsive components.
+ * Visual language: AISG navy + blue, lilac and mint subject accents.
+ * Styles are constrained to the Board, leaving faculty/student/leader unchanged.
+ */
+.board-view .board-comparison-display{
+ border:1px solid #d4e3f0;background:#fff;border-radius:17px;
+ padding:clamp(15px,2.2vw,24px);margin:20px 0 19px;
+ box-shadow:0 4px 18px #173d5e08;
+}
+.board-view .board-comparison-intro{
+ display:flex;align-items:flex-start;justify-content:space-between;
+ flex-wrap:wrap;gap:12px;margin-bottom:17px
+}
+.board-view .board-comparison-intro h2{
+ font-size:clamp(21px,2.35vw,27px);font-weight:800;letter-spacing:-.035em;
+ line-height:1.25;color:#103c5f;margin:5px 0 4px
+}
+.board-view .board-comparison-intro p{
+ color:#587388;font-size:12px;line-height:1.55;margin:0
+}
+.board-view .board-comparison-basis{
+ display:block;background:#eaf3fa;color:#245d82;border:1px solid #d0e5f3;
+ border-radius:50px;padding:8px 12px;font-size:11px;font-weight:750;
+ max-width:220px;text-align:center
+}
+.board-view .board-comparison-window{
+ border:1px solid #dae6f3;border-radius:14px;
+ background:linear-gradient(150deg,#fff 75%,#f8fbfd);
+ padding:15px;margin:0 0 14px
+}
+.board-view .board-comparison-window:last-of-type{margin-bottom:8px}
+.board-view .board-comparison-window-head{
+ display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap
+}
+.board-view .board-window-icon{
+ width:46px;height:46px;border-radius:50%;color:#2672b0;
+ background:#e1eeff;display:grid;place-items:center
+}
+.board-view .board-window-icon svg{width:24px;height:24px}
+.board-view .board-comparison-window-head h3{
+ font-size:20px;line-height:1.2;letter-spacing:-.03em;color:#12385e;
+ font-weight:850;margin:0 0 3px
+}
+.board-view .board-comparison-window-head p{
+ margin:0;color:#5d768b;font-size:11.5px;line-height:1.55
+}
+.board-view .board-window-current{
+ margin-left:auto;border-radius:50px;padding:7px 10px;
+ background:#ecf6ee;color:#236a59;font-size:10px;font-weight:800
+}
+.board-view .board-comparison-subjects{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px
+}
+.board-view .board-comparison-subject{
+ --tile-accent:#2479bd;--tile-tint:#eef7ff;--tile-line:#cfe3f8;
+ appearance:none;min-width:0;display:block;text-align:left;cursor:pointer;
+ font:inherit;border-radius:13px;border:1px solid var(--tile-line);
+ background:linear-gradient(135deg,var(--tile-tint),#fff 95%);
+ padding:13px 12px 11px;color:#173b5a;transition:box-shadow .15s,transform .15s,border-color .15s;
+}
+.board-view .board-comparison-reading{
+ --tile-accent:#7558c5;--tile-tint:#f4f0ff;--tile-line:#ded7fb
+}
+.board-view .board-comparison-language{
+ --tile-accent:#13906c;--tile-tint:#edfaf5;--tile-line:#cfebe1
+}
+.board-view .board-comparison-subject:hover{
+ border-color:var(--tile-accent);box-shadow:0 5px 17px #284a6a13;
+ transform:translateY(-1px)
+}
+.board-view .board-comparison-subject:focus-visible{
+ outline:3px solid #4d9bc8;outline-offset:3px
+}
+.board-view .board-comparison-subject.is-selected{
+ border-color:var(--tile-accent);box-shadow:0 0 0 1px var(--tile-accent) inset
+}
+.board-view .board-comparison-subject-head{
+ display:flex;align-items:center;gap:9px;margin:0 0 12px;min-width:0
+}
+.board-view .board-comparison-subject-head strong{
+ font-size:14px;font-weight:850;color:#173b60;letter-spacing:-.02em;
+ overflow-wrap:anywhere
+}
+.board-view .board-comparison-icon{
+ width:43px;height:43px;border-radius:50%;background:color-mix(in srgb,var(--tile-accent),white 83%);
+ color:var(--tile-accent);display:grid;place-items:center;flex-shrink:0
+}
+.board-view .board-comparison-icon svg{width:23px;height:23px}
+.board-view .board-tile-action{
+ color:var(--tile-accent);font-size:18px;font-weight:700;margin-left:auto;align-self:center
+}
+.board-view .board-comparison-pair{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px
+}
+.board-view .board-comparison-mini{
+ display:flex;flex-direction:column;gap:7px;min-width:0;min-height:131px;
+ border:1px solid #d9e6f2;background:#ffffffd9;border-radius:11px;
+ padding:12px 10px
+}
+.board-view .board-comparison-mini-label{
+ color:#496a83;font-size:11px;line-height:1.4;font-weight:750
+}
+.board-view .board-comparison-mini-value{
+ display:block;font-size:clamp(20px,1.9vw,28px);line-height:1.12;
+ color:#0e385b;font-weight:850;letter-spacing:-.05em;white-space:nowrap;
+ font-variant-numeric:tabular-nums
+}
+.board-view .board-comparison-mini-detail{
+ color:#57738b;font-size:10.5px;line-height:1.48;
+ margin-top:auto;min-height:28px
+}
+.board-view .board-comparison-mini.unavailable{
+ background:#f8fafc;color:#698193
+}
+.board-view .board-comparison-mini.unavailable .board-comparison-mini-value{
+ color:#668091;font-size:31px
+}
+.board-view .board-comparison-footnote{
+ margin:14px 1px 0;font-size:11px;line-height:1.7;color:#5d7486
+}
+.board-view #board-map-detail{scroll-margin-top:20px}
+.board-view .board-dp-controls{
+ display:flex;align-items:flex-end;flex-wrap:wrap;gap:14px 23px;
+ margin:12px 0 20px;padding:16px 18px;background:#fff;
+ border:1px solid #d5e3ed;border-radius:14px
+}
+.board-view .board-dp-control-group{
+ display:flex;flex-direction:column;gap:7px;
+ min-width:0
+}
+.board-view .board-dp-control-group .board-segmented{min-height:44px}
+.board-view .board-dp-control-group .board-segmented button{min-height:41px}
+.board-view .board-dp-control-group select{
+ min-height:44px;padding:9px 36px 9px 12px;color:#133d60;
+ background-color:#fff;border:1px solid #cbdde9;border-radius:10px;
+ font:800 12px 'Noto Sans',Arial,sans-serif;min-width:150px
+}
+.board-view .board-dp-comparison-panel{
+ border:1px solid #d4e3f0;border-radius:17px;background:#fff;
+ padding:clamp(16px,2.2vw,24px);margin-bottom:15px;
+ box-shadow:0 4px 18px #173d5e08
+}
+.board-view .board-dp-panel-heading{
+ display:flex;align-items:flex-start;justify-content:space-between;
+ flex-wrap:wrap;gap:12px;margin:0 0 16px
+}
+.board-view .board-dp-panel-heading h3{
+ font-size:clamp(21px,2.3vw,26px);letter-spacing:-.03em;font-weight:850;
+ color:#123c60;margin:5px 0 4px
+}
+.board-view .board-dp-panel-heading p{color:#5b7587;font-size:12px;margin:0}
+.board-view .board-dp-year-chip{
+ color:#245c86;background:#edf5fb;padding:9px 13px;
+ border-radius:40px;font-weight:800;font-size:11px
+}
+.board-view .board-dp-graphic-grid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px
+}
+.board-view .board-dp-graphic-card{
+ --dp-accent:#267ac1;--dp-tint:#eef8ff;--dp-border:#cfe7fb;
+ display:flex;align-items:center;gap:14px;min-width:0;
+ min-height:142px;padding:16px;
+ background:linear-gradient(115deg,var(--dp-tint),#fff 110%);
+ border:1px solid var(--dp-border);border-radius:14px
+}
+.board-view .board-dp-graphic-pass{
+ --dp-accent:#7558c5;--dp-tint:#f3f0ff;--dp-border:#e0d8fa
+}
+.board-view .board-dp-graphic-pathways{
+ --dp-accent:#13906c;--dp-tint:#eaf8f2;--dp-border:#cfeadd
+}
+.board-view .board-dp-graphic-icon{
+ display:grid;place-items:center;width:60px;height:60px;flex-shrink:0;
+ border-radius:50%;background:color-mix(in srgb,var(--dp-accent),white 80%);
+ color:var(--dp-accent)
+}
+.board-view .board-dp-graphic-icon svg{height:32px;width:32px}
+.board-view .board-dp-graphic-info{min-width:0;display:flex;flex-direction:column;gap:6px}
+.board-view .board-dp-graphic-label{
+ color:#20435e;font-size:12px;font-weight:850;line-height:1.35
+}
+.board-view .board-dp-graphic-value{
+ display:flex;gap:6px;align-items:baseline;white-space:nowrap;
+ color:#123657;font-size:clamp(26px,2.7vw,34px);font-weight:850;
+ font-variant-numeric:tabular-nums;letter-spacing:-.04em;line-height:1.18
+}
+.board-view .board-dp-graphic-value small{color:#52768e;font-size:16px;letter-spacing:0}
+.board-view .board-dp-graphic-note{color:#58768a;font-size:11px;line-height:1.55}
+.board-view .board-dp-graphic-footnote{
+ color:#627b8c;font-size:11px;line-height:1.6;margin:14px 0 0
+}
+.board-view .board-dp-trend-context{display:flex;flex-direction:column;align-items:flex-end;gap:5px;
+ color:#527287;font-size:11px;font-weight:700;text-align:right
+}
+.board-view .board-dp-point.is-selected .board-dp-point-mark{
+ stroke:#194b71;stroke-width:3.5;filter:drop-shadow(0 0 7px #307db060)
+}
+.board-view .board-dp-chart-top .board-dp-trend-context span{
+ background:#f1f7fb;border-radius:8px;padding:5px 8px
+}
+@media(max-width:1150px){
+ .board-view .board-comparison-subjects{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .board-view .board-comparison-subject:last-child:nth-child(odd){grid-column:1 / -1}
+ .board-view .board-comparison-mini-value{font-size:26px}
+ .board-view .board-dp-graphic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .board-view .board-dp-graphic-card:last-child:nth-child(odd){grid-column:1 / -1}
+}
+@media(max-width:760px){
+ .board-view .board-comparison-subjects{grid-template-columns:1fr;gap:10px}
+ .board-view .board-comparison-subject:last-child:nth-child(odd){grid-column:auto}
+ .board-view .board-comparison-mini-value{font-size:clamp(20px,5vw,28px)}
+ .board-view .board-comparison-mini{min-height:107px}
+ .board-view .board-dp-graphic-grid{grid-template-columns:1fr}
+ .board-view .board-dp-graphic-card:last-child:nth-child(odd){grid-column:auto}
+ .board-view .board-dp-graphic-card{min-height:107px;padding:13px}
+ .board-view .board-dp-controls{gap:11px;padding:13px}
+ .board-view .board-dp-control-group:first-child{width:100%}
+ .board-view .board-dp-control-group:first-child .board-segmented{width:100%}
+ .board-view .board-dp-control-group:first-child .board-segmented button{flex:1}
+ .board-view .board-dp-control-group select{min-width:0;width:100%}
+ .board-view .board-dp-control-group{flex:1}
+ .board-view .board-dp-trend-context{align-items:flex-start;text-align:left}
+}
+@media(max-width:400px){
+ .board-view .board-comparison-window{padding:10px}
+ .board-view .board-comparison-subject{padding:10px}
+ .board-view .board-comparison-mini{padding:10px 8px}
+ .board-view .board-comparison-mini-value{font-size:21px}
+ .board-view .board-comparison-mini-label{font-size:10px}
+ .board-view .board-comparison-mini-detail{font-size:10px}
+ .board-view .board-comparison-subject-head strong{font-size:14px}
+ .board-view .board-comparison-basis{max-width:100%}
+ .board-view .board-dp-control-group select{font-size:11px}
+}
