@@ -5,12 +5,13 @@ import {renderBoardDP,renderDPPointDetails} from '../src/board-dp-view.mjs';
 import {BOARD_DATA,BOARD_US_SCHOOL_NORMS_2025,boardRows,boardSummary} from '../src/board-map-data.mjs';
 import {boardHash,parseBoardHash} from '../src/board-map-links.mjs';
 
-test('IB Diploma values exactly match the AISG historical KPI workbook without invented candidates',()=>{
+test('IB Diploma annual school-reported values stay accurate without invented candidates',()=>{
  assert.deepEqual(DP_RECORDS.map(x=>x.year),[
   '2019–20','2020–21','2021–22','2022–23','2023–24','2024–25','2025–26']);
  assert.deepEqual(DP_RECORDS.map(x=>x.average),[35.7,36.4,36,34,34,34,34]);
  assert.deepEqual(DP_RECORDS.map(x=>x.passRate),[null,95,100,91,92,93,93]);
- assert.ok(DP_RECORDS.every(x=>x.source&&x.source.includes('!')));
+ assert.ok(DP_RECORDS.every(x=>!('source' in x)));
+ assert.ok(DP_GRADE12_PATHWAYS.every(x=>!('source' in x)));
  assert.equal(DP_RECORDS.at(-1).verify,true);
  assert.deepEqual(DP_GRADE12_PATHWAYS.map(x=>[x.full,x.courses,x.aisg]),
  [[38,5,0],[42,9,0],[56,6,1]]);
@@ -78,5 +79,16 @@ test('Public DP module contains only annual aggregates, pathway counts and no le
  const raw=JSON.stringify({DP_RECORDS,DP_GRADE12_PATHWAYS});
  assert.ok(!/(?:@aisgz|studentid|dateofbirth|learner name|student email)/i.test(raw));
  assert.ok(DP_METHODS.limits.includes('examination'));
- assert.ok(DP_METHODS.current.includes('reconfirmed'));
+ assert.ok(DP_METHODS.current.includes('Confirm'));
+ assert.ok(DP_METHODS.quality.includes('annual school-reported'));
+});
+
+test('No filenames or underlying cell references are shown in any Diploma result',()=>{
+ for(const metric of ['average','passRate']){
+  const html=renderBoardDP({boardDpMetric:metric});
+  const tooltip=renderDPPointDetails(metric+':2026');
+  assert.doesNotMatch(html+tooltip,/\.xlsx|\.csv|\.pdf|Dashboard SY\d|KPIs!|Source:|workbook/i);
+  assert.match(html,/Data definitions and limitations/);
+  assert.match(html,/verification|confirm/i);
+ }
 });
