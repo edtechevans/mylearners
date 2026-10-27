@@ -45,7 +45,7 @@ test('Hover breakdown identifies exact included grade averages rather than stude
 test('Board Overview communicates four defensible strengths in a clear schoolwide learning story',()=>{
  const html=renderBoardOverview({boardTrendTerm:'fall',boardTrendFocus:'all',boardOverviewChart:'map',boardDpMetric:'average'});
  assert.match(html,/OUR LEARNING STORY · AT A GLANCE/);
- assert.match(html,/From Grade 3 to graduation/);
+ assert.match(html,/From Grade 3 to Graduation/);
  assert.equal((html.match(/class="board-strength-card"/g)||[]).length,4);
  assert.equal((html.match(/data-board-go=/g)||[]).length,2);
  assert.equal((html.match(/data-board-dp-go=/g)||[]).length,2);
@@ -72,7 +72,7 @@ test('Board Overview communicates four defensible strengths in a clear schoolwid
 test('Diploma switch shows one DP timeline instead of a second MAP visualization',()=>{
  const html=renderBoardOverview({boardOverviewChart:'dp',boardDpMetric:'passRate',boardTrendTerm:'fall',boardTrendFocus:'all'});
  assert.equal((html.match(/class="board-strength-card"/g)||[]).length,4);
- assert.match(html,/Diploma outcomes over time/);
+ assert.match(html,/Diploma Outcomes Over Time/);
  assert.match(html,/data-board-dp-point="passRate:2026"/);
  assert.match(html,/data-board-dp-metric="average"/);
  assert.match(html,/data-board-dp-metric="passRate"/);
