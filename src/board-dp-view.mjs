@@ -1,8 +1,14 @@
 /** Board-only IB Diploma outcomes; distinct from MAP grades and growth. */
-import {DP_RECORDS,DP_GRADE12_PATHWAYS,DP_METRICS,DP_METHODS,dpMetricSeries,dpPoint} from './board-dp-data.mjs';
+import {DP_RECORDS,DP_GRADE12_PATHWAYS,DP_METRICS,DP_METHODS,dpMetricSeries,dpPoint,dpParticipation,dpPassCount} from './board-dp-data.mjs';
 const safe=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const metricMeta=id=>DP_METRICS.find(m=>m.id===id)||DP_METRICS[0];
-const valueText=(v,metric)=>v===null?'—':metric==='passRate'?v+'%':v.toFixed(1);
+const valueText=(v,metric)=>v===null||v===undefined?'—':metric==='passRate'?v+'%':
+ (Math.round(v*10)===v*10?v.toFixed(1):v.toFixed(2));
+const points=v=>Number.isFinite(v)?valueText(v,'average'):'—';
+const percentage=v=>Number.isFinite(v)?(Math.round(v*10)/10).toString()+'%':'—';
+const delta=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)?(a-b>=0?'+':'')+valueText(a-b,'average'):'—';
+const count=(v)=>Number.isFinite(v)?String(v):'—';
+const mini=(label,value,note)=>'<span class="board-dp-evidence-item"><span>'+safe(label)+'</span><strong>'+safe(value)+'</strong><small>'+safe(note)+'</small></span>';
 function dpRangeHighlight(metric){
  const values=DP_RECORDS.map(r=>r[metric]).filter(Number.isFinite);
  if(!values.length)return '';
@@ -20,57 +26,80 @@ function dpRangeHighlight(metric){
 export function renderDPPointDetails(key){
  const match=/^(average|passRate):(\d{4})$/.exec(String(key||''));
  const item=match?dpPoint(match[2],match[1]):null;
- if(!item)return '<p>Select a year to see the reported outcome.</p>';
- const {row,metric,value,label}=item;
- const format=valueText(value,metric);
- return '<div class="board-dp-point-title"><div><span class="eyebrow">REPORTED IB DIPLOMA OUTCOME</span>'+
- '<h3>'+safe(row.year)+' · '+safe(label)+'</h3></div><strong>'+format+(metric==='average'?'<small> / 45</small>':'')+'</strong></div>'+
- '<p>Reported school outcome for '+safe(row.year)+'.</p>'+
- (row.verify?'<p class="board-dp-caveat">Latest reported result · confirmation against final IB examination outcomes is pending.</p>':'')+
- '<p class="board-dp-point-footnote">'+(metric==='passRate'?
- 'Diploma pass rate is based on Diploma awards; a consistent examination-candidate denominator is not available.':
- 'Average Diploma points are school-reported final results. Different graduating cohorts contribute each year.')+'</p>';
+ if(!item)return '<p>Select a year to see the school outcome.</p>';
+ const {row,metric,value,label,worldValue}=item;
+ return '<div class="board-dp-point-title"><div><span class="eyebrow">IB DIPLOMA · '+safe(row.year)+'</span>'+
+ '<h3>'+safe(label)+'</h3></div><strong>'+valueText(value,metric)+(metric==='average'?'<small> / 45</small>':'')+'</strong></div>'+
+ (Number.isFinite(worldValue)?'<p class="board-dp-global-point">Global IB · '+valueText(worldValue,metric)+
+  (metric==='average'?' / 45':'')+' · AISG '+(metric==='average'?delta(value,worldValue):
+  percentage(value-worldValue)+' pts')+' versus global</p>':
+  '<p>Global comparison not supplied for this measure and year.</p>')+
+ (row.candidates?'<p>'+row.passes+' Diploma awards from '+row.candidates+' full Diploma candidates.</p>':'')+
+ (row.verify?'<p class="board-dp-caveat">2026 school outcome is reported in the existing dashboard but absent from the newly supplied school examination summary; final confirmation pending.</p>':'')+
+ (row.covid?'<p class="board-dp-caveat">'+safe(row.covid)+'</p>':'')+
+ '<p class="board-dp-point-footnote">Annual graduating cohorts differ; participation and qualification measures are not interchangeable.</p>';
 }
-function dpLineChart(metric,{range='all',selectedYear=null}={}){
+function dpLineChart(metric,{range='all',selectedYear=null,compareWorld=false}={}){
  const meta=metricMeta(metric),all=dpMetricSeries(metric);
  const items=range==='recent'?all.slice(-3):all;
- const width=860,height=320,left=56,right=24,top=70,bottom=255,max=meta.max;
- const xp=i=>left+(width-left-right)*(i/(items.length-1));
+ const width=920,height=330,left=58,right=28,top=75,bottom=257,max=meta.max;
+ const xp=i=>left+(width-left-right)*(i/Math.max(1,items.length-1));
  const yp=n=>bottom-(n/max)*(bottom-top);
- const lineSegments=[];let current=[];
- items.forEach((r,i)=>{if(r.value===null){if(current.length){lineSegments.push(current);current=[]}}else current.push([xp(i),yp(r.value)])});
- if(current.length)lineSegments.push(current);
- const paths=lineSegments.map(segment=>'<path class="board-dp-chart-line" d="'+segment.map(([x,y],i)=>
- (i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)).join(' ')+'" fill="none" stroke="#176397" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"/>').join('');
- const ticks=[0,.25,.5,.75,1].map(r=>{
-  const value=Math.round(max*r),y=yp(value);
+ const pathFor=(field,color,dashed=false)=>{
+  const segments=[];let current=[];
+  items.forEach((r,i)=>{
+   if(!Number.isFinite(r[field])){if(current.length){segments.push(current);current=[]}}
+   else current.push([xp(i),yp(r[field])]);
+  });if(current.length)segments.push(current);
+  return segments.map(segment=>'<path d="'+segment.map(([a,b],i)=>(i?'L':'M')+a.toFixed(1)+' '+b.toFixed(1)).join(' ')+
+   '" fill="none" stroke="'+color+'" stroke-width="'+(dashed?'2.6':'3.3')+'" stroke-linecap="round" stroke-linejoin="round"'+
+   (dashed?' stroke-dasharray="7 7"':'')+'/>').join('');
+ };
+ const lines=pathFor('value','#176397')+(compareWorld?pathFor('worldValue','#13847c',true):'');
+ const worldPoints=compareWorld?items.map((r,i)=>Number.isFinite(r.worldValue)?
+  '<circle class="board-dp-world-point" cx="'+xp(i)+'" cy="'+yp(r.worldValue)+'" r="4.6" fill="#13847c" stroke="#fff" stroke-width="1.4"/>' : '').join(''):'';
+ const ticks=[0,.25,.5,.75,1].map(frac=>{
+  const val=Math.round(max*frac),y=yp(val);
   return '<line class="board-trend-grid" x1="'+left+'" y1="'+y+'" x2="'+(width-right)+'" y2="'+y+'"/>'+
-   '<text class="board-trend-tick" x="'+(left-13)+'" y="'+(y+4)+'" text-anchor="end">'+
-   (metric==='passRate'?value+'%':value)+'</text>';
+   '<text class="board-trend-tick" x="'+(left-13)+'" y="'+(y+4)+'" text-anchor="end">'+(metric==='passRate'?val+'%':val)+'</text>';
  }).join('');
- const points=items.map((r,i)=>{
-  const x=xp(i),selected=Number(selectedYear)===r.end;
-  const label='<text class="board-trend-year" text-anchor="middle" x="'+x.toFixed(1)+'" y="292">'+r.year+'</text>';
-  if(r.value===null)return label;
-  const y=yp(r.value);
+ const marks=items.map((r,i)=>{
+  const xx=xp(i),selected=Number(selectedYear)===r.end;
+  const title='<text class="board-trend-year" text-anchor="middle" x="'+xx.toFixed(1)+'" y="294">'+r.year+'</text>';
+  if(!Number.isFinite(r.value))return title;
+  const yy=yp(r.value);
   return '<g class="board-dp-point'+(selected?' is-selected':'')+'" data-board-dp-point="'+metric+':'+r.end+'" tabindex="0" role="button"'+
-   ' aria-label="'+safe(r.year+', '+meta.label+': '+valueText(r.value,metric)+(metric==='average'?' of 45 points':'')+'. Select for an explanation.')+'">'+
-   '<circle class="board-dp-point-hit" cx="'+x+'" cy="'+y+'" r="18" fill="transparent"/>'+
-   (selected?'<circle class="board-dp-selected-ring" cx="'+x+'" cy="'+y+'" r="12.8" fill="none" stroke="#72a8c4" stroke-width="4" opacity=".55"/>':'')+
-   '<circle class="board-dp-point-mark" cx="'+x+'" cy="'+y+'" r="6.7" fill="#176397" stroke="#fff" stroke-width="2"/>'+
-   '<text x="'+x+'" y="'+(y-17)+'" text-anchor="middle" class="board-trend-value" fill="#176397">'+valueText(r.value,metric)+'</text></g>'+label;
+   ' aria-label="'+safe(r.year+', AISG '+meta.label+': '+valueText(r.value,metric)+(r.provisional?', confirmation pending':'')+'. Select to see the year.')+'">'+
+   '<circle class="board-dp-point-hit" cx="'+xx+'" cy="'+yy+'" r="17" fill="transparent"/>'+
+   (selected?'<circle class="board-dp-selected-ring" cx="'+xx+'" cy="'+yy+'" r="12.8" fill="none" stroke="#72a8c4" stroke-width="4" opacity=".55"/>':'')+
+   '<circle class="board-dp-point-mark" cx="'+xx+'" cy="'+yy+'" r="6.3" fill="'+(r.provisional?'#8697a5':'#176397')+'" stroke="#fff" stroke-width="2"/>'+
+   '<text x="'+xx+'" y="'+(yy-19)+'" text-anchor="middle" class="board-trend-value" fill="#176397">'+valueText(r.value,metric)+(r.provisional?'*':'')+'</text></g>'+title;
  }).join('');
  return '<svg class="board-dp-svg" viewBox="0 0 '+width+' '+height+'" role="group" aria-label="'+safe(meta.label)+
- ' by AISG school year. Point values are visible and interactive." xmlns="http://www.w3.org/2000/svg">'+
- '<text class="board-trend-axislabel" x="'+left+'" y="22">'+safe(meta.label)+(metric==='average'?' · out of 45':' · percentage')+'</text>'+
- ticks+paths+points+'</svg>';
+  ' by AISG graduating year'+(compareWorld?', with global IB reference':'')+'. Full chart scale." xmlns="http://www.w3.org/2000/svg">'+
+  '<text class="board-trend-axislabel" x="'+left+'" y="22">'+safe(meta.label)+(metric==='average'?' · out of 45':' · percentage')+'</text>'+
+  ticks+lines+worldPoints+marks+'</svg>';
 }
 function dpOutcomesTable(){
- return '<details class="board-details board-dp-table"><summary>View all recorded Diploma outcomes <span>+</span></summary>'+
- '<div class="tablewrap"><table class="board-table"><thead><tr><th>School year</th><th>Average Diploma points / 45</th><th>Diploma pass rate</th><th>Verification</th></tr></thead><tbody>'+
- DP_RECORDS.map(r=>'<tr><td>'+safe(r.year)+'</td><td>'+valueText(r.average,'average')+'</td>'+
- '<td>'+valueText(r.passRate,'passRate')+'</td><td>'+(r.verify?'Confirmation pending':'Recorded')+'</td></tr>').join('')+
- '</tbody></table></div></details>';
+ return '<details class="board-details board-dp-table"><summary>Detailed results by graduating year <span>+</span></summary>'+
+ '<p>School results and selected global references are listed separately. Dashes indicate missing—not zero—values. Exam candidates and Grade 12 pathways have different denominators.</p>'+
+ '<div class="tablewrap"><table class="board-table board-dp-detail-table"><thead><tr>'+
+ '<th>Class</th><th>AISG average /45</th><th>World average</th><th>AISG minus world</th>'+
+ '<th>Diploma pass</th><th>World pass</th><th>Candidates / cohort</th><th>Diplomas awarded</th>'+
+ '<th>35+ points</th><th>Bilingual</th><th>Mean subject grade</th><th>Mean core</th><th>Highest /45</th><th>Status</th></tr></thead><tbody>'+
+ DP_RECORDS.map(r=>'<tr><td>'+r.end+'</td><td>'+points(r.average)+'</td>'+
+ '<td>'+points(r.worldAverage)+'</td><td>'+delta(r.average,r.worldAverage)+'</td>'+
+ '<td>'+percentage(r.passRate)+'</td><td>'+percentage(r.worldPassRate)+'</td>'+
+ '<td>'+(r.candidates?(r.candidates+(Number.isFinite(r.cohort)?' / '+r.cohort:'')):'—')+'</td>'+
+ '<td>'+count(r.passes)+'</td>'+
+ '<td>'+(r.highCount?r.highCount+' / '+r.highDenominator:'—')+'</td>'+
+ '<td>'+(r.bilingualCount?r.bilingualCount+(r.bilingualDenominator?' / '+r.bilingualDenominator:''):'—')+'</td>'+
+ '<td>'+points(r.meanGrade)+'</td><td>'+points(r.corePoints)+'</td>'+
+ '<td>'+count(r.highScore)+'</td><td>'+(r.verify?'Unconfirmed':r.covid?'COVID adjustments':'School summary')+'</td></tr>').join('')+
+ '</tbody></table></div>'+
+ '<p class="board-dp-caveat">'+safe(DP_METHODS.discrepancy2024)+'</p>'+
+ '<p class="board-dp-caveat">'+safe(DP_METHODS.discrepancy2023)+'</p>'+
+ '</details>';
 }
 function dpPathways(){
  return '<details class="board-details board-dp-pathways"><summary>Explore Grade 12 Diploma pathways <span>+</span></summary>'+
@@ -103,49 +132,84 @@ export function renderBoardDP(state){
  const metric=state.boardDpMetric==='passRate'?'passRate':'average';
  const end=DP_RECORDS.some(r=>r.end===Number(state.boardDpYear))?Number(state.boardDpYear):DP_RECORDS.at(-1).end;
  const selected=DP_RECORDS.find(r=>r.end===end);
- const meets34=DP_RECORDS.filter(r=>Number.isFinite(r.average)&&r.average>=34).length;
- const available=DP_RECORDS.filter(r=>Number.isFinite(r.average)).length;
- const confirmation=selected.verify?' · final result confirmation pending':'';
- const detailNote='Different graduating cohorts each year. These figures do not track the same learners.';
+ const comparison=state.boardDpGlobal!==false;
+ const verified=DP_RECORDS.filter(r=>!r.verify&&Number.isFinite(r.average));
+ const meets34=verified.filter(r=>r.average>=34).length;
+ const confirmation=selected.verify?' · verification pending':'';
+ const detailNote='Different graduating cohorts each year; these are not matched student growth scores.';
+ const worldAvg=selected.worldAverage;
+ const worldPass=selected.worldPassRate;
+ const international='<div class="board-dp-world-strip" aria-label="International Diploma comparisons">'+
+  mini('World IB average',points(worldAvg)+' /45',
+   Number.isFinite(worldAvg)?'AISG '+delta(selected.average,worldAvg)+' points vs world':'No comparable global average')+
+  mini('World Diploma pass rate',percentage(worldPass),
+   Number.isFinite(worldPass)?'AISG '+percentage(selected.passRate-worldPass).replace('%',' percentage points')+' vs world':'Global pass-rate result unavailable for this year')+
+  mini('Full Diploma candidates',selected.candidates?
+    selected.candidates+(Number.isFinite(selected.cohort)?' / '+selected.cohort:''):'—',
+    selected.candidates?(Number.isFinite(selected.cohort)?dpParticipation(selected)+'% of graduating class':'Graduating-class size unavailable'):
+     '2026 examination cohort not confirmed')+
+  '</div>';
+ const achievements='<details class="board-details board-dp-achievement"><summary>More about this cohort <span>+</span></summary>'+
+  '<div class="board-dp-extra-grid">'+
+  mini('35+ Diploma points',selected.highCount?
+   selected.highCount+' / '+selected.highDenominator:'—',selected.highCount?'Denominator as recorded':'Not available')+
+  mini('Bilingual Diplomas',selected.bilingualCount?
+   String(selected.bilingualCount):'—',selected.bilingualCount?'Count from school summary':'Not available')+
+  mini('Highest Diploma score',count(selected.highScore), 'Out of 45')+
+  mini('Mean subject grade',points(selected.meanGrade),'Diploma recipients where supplied')+
+  mini('Mean core points',points(selected.corePoints),'Theory of Knowledge and Extended Essay')+
+  '</div></details>';
  return '<section class="board-dp board-dp-simplified">'+
  '<div class="board-dp-intro"><div><span class="eyebrow">GRADUATION OUTCOMES · IB DIPLOMA PROGRAMME</span>'+
- '<h2>IB Diploma results</h2><p>What are our learners achieving at graduation?</p></div>'+
- '<label class="board-dp-year-simple">School year <select data-board-dp-select="year" aria-label="Diploma school year">'+
- [...DP_RECORDS].reverse().map(r=>option(r.end,r.year,end)).join('')+'</select></label></div>'+
+ '<h2>IB Diploma results</h2><p>School outcomes alongside the global IB reference, with cohort context.</p></div>'+
+ '<label class="board-dp-year-simple">Graduating class <select data-board-dp-select="year" aria-label="Diploma school year">'+
+ [...DP_RECORDS].reverse().map(r=>option(r.end,String(r.end)+(r.verify?' · unconfirmed':''),end)).join('')+'</select></label></div>'+
  '<section class="board-dp-comparison-panel"><div class="board-dp-panel-heading"><div>'+
- '<span class="eyebrow">DIPLOMA OUTCOMES · '+safe(selected.year)+'</span>'+
- '<h3>Diploma at a glance</h3><p>Reported outcomes for the selected graduating year.</p></div></div>'+
+ '<span class="eyebrow">DIPLOMA OUTCOMES · CLASS OF '+end+'</span>'+
+ '<h3>Diploma at a glance</h3><p>Each number describes the selected graduating cohort.</p></div>'+
+ (selected.verify?'<span class="board-dp-status">2026 school results · confirmation pending</span>':'')+'</div>'+
  '<div class="board-dp-graphic-grid">'+
- outcomeTile('average','Average Diploma score',valueText(selected.average,'average'),'/45',
-   'Average points awarded'+confirmation)+
- outcomeTile('pass','Diploma pass rate',valueText(selected.passRate,'passRate'),'',
-   selected.passRate===null?'No result available for this year':'Learners awarded the full Diploma'+confirmation)+
- outcomeTile('consistency','Consistent results',meets34+' / '+available,'years',
-   'Annual average of at least 34 / 45, since 2019–20')+'</div>'+
- '<p class="board-dp-graphic-footnote">The first two measures reflect '+safe(selected.year)+
- '. The consistency indicator covers all '+available+' reported graduating years. Results for 2025–26 are awaiting final confirmation.</p></section>'+
+ outcomeTile('average','AISG average Diploma score',valueText(selected.average,'average'),'/45',
+   'Class of '+end+confirmation)+
+ outcomeTile('pass','AISG Diploma pass rate',valueText(selected.passRate,'passRate'),'',
+   (dpPassCount(selected)?dpPassCount(selected)+' candidates':'School reported rate')+confirmation)+
+ outcomeTile('consistency','Consistent outcomes',meets34+' / '+verified.length,'years',
+   'Verified school-summary years averaging at least 34 / 45')+'</div>'+
+ international+
+ '<p class="board-dp-graphic-footnote">'+
+ (selected.verify?'2026 AISG average and pass rate come from the previously reported dashboard, not the newly provided school exam summary. Verify before formal Board reporting. ':
+  'AISG Class of '+end+' data come from the school examination statistics summary. ')+
+ 'Global values: school summary (2023–2025); IB published May 2026 world mean.</p></section>'+
  '<section class="board-panel board-dp-panel"><div class="board-dp-chart-top"><div>'+
  '<span class="eyebrow">HISTORICAL OUTCOMES</span>'+
- '<h3>'+(metric==='average'?'Average Diploma points':'Diploma pass rate')+' over time</h3>'+
- '<p>Seven graduating years · '+safe(detailNote)+'</p></div>'+
+ '<h3>'+(metric==='average'?'Diploma average points':'Diploma pass rate')+' over time</h3>'+
+ '<p>Nine graduating years · '+safe(detailNote)+'</p></div>'+
  '<div class="board-segmented" role="group" aria-label="Select Diploma history measure">'+
  '<button type="button" data-board-dp-metric="average" aria-pressed="'+(metric==='average')+
  '" class="'+(metric==='average'?'active':'')+'">Average points</button>'+
  '<button type="button" data-board-dp-metric="passRate" aria-pressed="'+(metric==='passRate')+
  '" class="'+(metric==='passRate'?'active':'')+'">Pass rate</button></div></div>'+
+ '<div class="board-dp-trend-controls"><span class="board-dp-legend"><i class="board-dp-key-aisg"></i>AISG'+
+ (comparison?'<i class="board-dp-key-world"></i>World IB':'')+'</span>'+
+ '<button type="button" class="board-dp-global-toggle" data-board-dp-global aria-pressed="'+comparison+'">'+
+ (comparison?'Show AISG only':'Compare with world')+'</button></div>'+
  dpRangeHighlight(metric)+
- '<p class="board-dp-swipe">Select a year on the chart to see its result above.</p>'+
+ '<p class="board-dp-swipe">Select a year on the chart to inspect its school outcome and available global comparison.</p>'+
  '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Explore Diploma outcomes by school year">'+
- dpLineChart(metric,{range:'all',selectedYear:end})+'</div>'+
+ dpLineChart(metric,{selectedYear:end,compareWorld:comparison})+'</div>'+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
- '<div class="board-dp-inspector" aria-live="polite"><p>Hover or select a year to see the result and what it means.</p></div>'+
- '<p class="board-chart-caption">Scores are measured out of 45 points, or as a percentage awarded the full Diploma. The full scale avoids exaggerating small annual differences.</p></section>'+
+ '<div class="board-dp-inspector" aria-live="polite"><p>Hover or select a year to inspect its outcome.</p></div>'+
+ '<p class="board-chart-caption">Full 0–45 point or 0–100% scale. Dashed world line begins only when a global reference is available. *2026 AISG school figure awaits confirmation. The 2020–22 years had COVID-related assessment adjustments.</p></section>'+
+ achievements+
  dpPathways()+
  dpOutcomesTable()+
  '<details class="board-details board-dp-method"><summary>Understanding Diploma results <span>+</span></summary>'+
  '<p>'+safe(DP_METHODS.quality)+'</p><p>'+safe(DP_METHODS.limits)+'</p>'+
+ '<p>'+safe(DP_METHODS.comparison)+'</p><p>'+safe(DP_METHODS.covid)+'</p>'+
  '<p>'+safe(DP_METHODS.discrepancy)+'</p><p>'+safe(DP_METHODS.pathways)+'</p>'+
- '<p>'+safe(DP_METHODS.boundary)+'</p></details></section>';
+ '<p>'+safe(DP_METHODS.boundary)+'</p>'+
+ '<p>IB published May 2026 world average: <a href="https://ibo.org/news/news-list/more-than-209000-ib-students-worldwide-receive-their-dp-and-cp-results/" target="_blank" rel="noopener noreferrer">IB official results announcement</a>.</p>'+
+ '</details></section>';
 }
 
 /** One concise historical visual shared with the Board's Overview. */
@@ -154,16 +218,16 @@ export function renderDPOverviewTrend(state){
  return '<div class="board-dp-overview-trend">'+
  '<div class="board-dp-chart-top"><div><span class="eyebrow">GRADUATION OUTCOMES · IB DIPLOMA</span>'+
  '<h2>Diploma outcomes over time</h2>'+
- '<p>Seven graduating years · '+(selected==='average'?'Average Diploma points out of 45':'Diploma pass rate as a percentage')+'</p></div>'+
+ '<p>Nine graduating years · '+(selected==='average'?'Average Diploma points out of 45':'Diploma pass rate as a percentage')+'</p></div>'+
  '<div class="board-segmented" role="group" aria-label="IB Diploma historical measure">'+
  '<button type="button" data-board-dp-metric="average" aria-pressed="'+(selected==='average')+'" class="'+(selected==='average'?'active':'')+'">Average points</button>'+
  '<button type="button" data-board-dp-metric="passRate" aria-pressed="'+(selected==='passRate')+'" class="'+(selected==='passRate'?'active':'')+'">Pass rate</button></div></div>'+
  dpRangeHighlight(selected)+
  '<p class="board-dp-swipe">Swipe for earlier graduation years. Tap a point for its value.</p>'+
- '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Scroll to inspect Diploma outcomes">'+dpLineChart(selected)+'</div>'+
+ '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Scroll to inspect Diploma outcomes">'+dpLineChart(selected,{compareWorld:true})+'</div>'+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
  '<div class="board-dp-inspector" aria-live="polite"><p>Select a year to understand its reported outcome.</p></div>'+
- '<div class="board-overview-chartfoot"><span>2025–26 results await final confirmation. Graduating cohorts are distinct from MAP grade cohorts.</span>'+
+ '<div class="board-overview-chartfoot"><span>2025–26 school outcomes await confirmation; older results follow the school examination summary. Graduating cohorts are distinct from MAP grade cohorts.</span>'+
  '<button type="button" data-board-view="dp" class="board-inline-link">Explore IB Diploma details ›</button></div>'+
  '</div>';
 }
