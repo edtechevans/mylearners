@@ -118,7 +118,8 @@ def main():
     require(pg.locator(".academic-class-compact").count()==1,"Academic selector back")
     pg.locator('[data-academic-mode="ixl"]').click()
     require(pg.locator('[data-academic-mode="ixl"]').get_attribute("aria-pressed")=="true","IXL selected")
-    require("IXL Math" in pg.locator('.roster-desktop thead').inner_text(),"Roster switches IXL measure")
+    require("IXL Math" in " ".join(pg.locator('.roster-desktop thead th').all_text_contents()),
+            "Roster switches IXL measure; headers="+str(pg.locator('.roster-desktop thead th').all_text_contents()))
     pg.reload(wait_until="domcontentloaded")
     pg.locator(".academic-class-compact").wait_for(timeout=16000)
     require(pg.locator('[data-select="class"]').input_value()==data['classB'],
@@ -127,7 +128,8 @@ def main():
             "Teacher measure persisted across reload")
     pg.locator('[data-academic-mode="report"]').click()
     pg.locator('[data-academic-subject]').select_option("Sciences")
-    require("Sciences" in pg.locator('.roster-desktop thead').inner_text(),"Subject selection updates result")
+    require("Sciences" in " ".join(pg.locator('.roster-desktop thead th').all_text_contents()),
+            "Subject selection updates result; headers="+str(pg.locator('.roster-desktop thead th').all_text_contents()))
     pg.locator(".academic-class-breakdown summary").click()
     require(pg.locator(".academic-class-breakdown").evaluate("e=>e.open"),"Class analysis available on demand")
     capture(pg,"03-faculty-subject-detail-open")
@@ -141,15 +143,15 @@ def main():
      pg.locator('[data-select="teacher"]').select_option(x['teacher'])
      pg.locator('[data-select="class"]').select_option(x['class'])
      require(pg.locator(".roster-daily").count()==1,"Roster for "+grade)
-     require("MAP Math growth" not in pg.locator(".roster-desktop thead").inner_text(),
+     require("MAP Math growth" not in " ".join(pg.locator(".roster-desktop thead th").all_text_contents()),
              "Do not show ineligible MAP growth for "+grade)
      if grade=='K':
-      require("Engagement" not in pg.locator(".roster-desktop thead").inner_text(),
+      require("Engagement" not in " ".join(pg.locator(".roster-desktop thead th").all_text_contents()),
               "No K SEL index column")
       require(pg.locator('[data-academic-mode="core"]').count()==1,"K phonics")
      if grade=='G12':
       require(pg.locator('[data-academic-mode="ixl"]').count()==0,"No G12 IXL")
-      require("Engagement" in pg.locator(".roster-desktop thead").inner_text(),"G12 SEL remains")
+      require("Engagement" in " ".join(pg.locator(".roster-desktop thead th").all_text_contents()),"G12 SEL remains")
     return "Academic, MAP and wellbeing columns remain grade-relevant"
    scenario("Faculty age-relevant columns",early_and_secondary_faculty,pg)
 
@@ -171,7 +173,7 @@ def main():
    scenario("Student landing simplicity",student_landing,pg)
 
    def report_expand():
-    pg.locator('[data-student-panel="reports"] summary').click()
+    pg.locator('[data-student-panel="reports"] > summary').click()
     require(pg.locator('[data-student-panel="reports"]').evaluate("e=>e.open"),
             "Academic accordion opens")
     require(pg.locator(".academic-subject-result").count()>=5,"Subject report detail")
@@ -184,7 +186,7 @@ def main():
              "Report accordion stays open after changing year")
      require(older in pg.locator(".academic-report-meta").inner_text(),
              "Historical report content changes")
-    pg.locator('[data-student-panel="wellbeing"] summary').click()
+    pg.locator('[data-student-panel="wellbeing"] > summary').click()
     require(pg.locator('[data-student-panel="wellbeing"]').evaluate("e=>e.open"),
             "Wellbeing panel opens")
     require(pg.locator(".student-checkin-history").count()==1,
