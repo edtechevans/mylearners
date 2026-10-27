@@ -183,7 +183,7 @@ export function renderBoardOverview(state){
   strengthCard('MAP · achievement · Fall 2026','24 / 24','',
     'Grade-subject averages above U.S. school norms · G3–10','fall2026:math','map')+
   strengthCard('MAP · growth · Fall 2026','95%','',
-    'Returning students grew in at least one MAP area','fall2026:reading','map')+
+    'Returning students grew in at least one MAP area','fall2026:growth','map')+
   strengthCard('IB Diploma · '+current.year,String(current.average),'/45',
     'Reported average Diploma points · confirmation pending','average','dp')+
   strengthCard('IB Diploma · '+current.year,String(current.passRate)+'%','',
