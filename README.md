@@ -8,6 +8,14 @@ Opening a student shows all subjects in an issued report card, with up to three 
 
 **All named learner profiles and these academic records are synthetic.** The IXL data are simulated *diagnostic levels*, not practice SmartScores or exports. The Core Phonics display is a *fictional 50-item classroom decoding check*, not an official CORE Phonics Survey total or normative score. F&P letters indicate text difficulty, not percentages or overall ability. Current 2026–27 report-card grades are not presented as issued results. This public GitHub Pages demo must never contain identifiable AISG student assessment or survey data.
 
+## Daily-first Faculty and Student experiences (October 2026)
+
+**Faculty:** The selected class roster is now visible directly below the class picker, a search box covering **all classes assigned to the demo teacher**, and a restrained summary of learner count, attendance and available student-experience measures. Report-card subject, IXL, Core Phonics and F&P controls live inside the roster. The class grade distribution is available through a collapsible "Class results breakdown" control rather than blocking daily access. Results across classes are explicitly labelled with the student’s class, relevant subject, previous grade and last issued school year. Each fictional teacher's last selected class and academic mode are remembered locally on that browser. **Classroom guidance deliberately remains at the end of the Faculty learner profile**, after academic and wellbeing data.
+
+**Student:** The first screen now highlights one fictional issued-report result, a recent suitable learning check-in, and a short student-owned reflection, with age-adjusted language for PK–G2, G3–5 and G6–12. Complete report cards and wellbeing check-ins are independently expandable, so older results remain accessible without crowding the landing screen. Inapplicable MAP, IXL, Core Phonics, F&P and pre-Grade-3 wellbeing measures are hidden. Report dates and grade/programme context remain explicit; historical grades are not presented as current-year grades. Reflection drafts are kept only in the user's browser session and are not submitted to a server.
+
+These are interface demonstrations using **entirely fictional** student records. They do not import real grades, attainment, attendance or wellbeing data, and the role selector is not production-level authorisation. Do not use the public GitHub Pages site for genuine student records.
+
 ## Original demo introduction
 
 **[Open the My Learners demonstration](https://edtechevans.github.io/mylearners/)**
