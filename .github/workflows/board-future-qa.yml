@@ -1,0 +1,47 @@
+name: Board future design and Chrome UX QA
+on:
+  push:
+    branches: [board-future-design-20261027]
+permissions:
+  contents: read
+jobs:
+  chrome-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify data, unchanged demo roles and Board source
+        run: |
+          node --check src/student-experience-app.mjs
+          node --check src/board-map-view.mjs
+          node --check src/board-comparison-tiles.mjs
+          node --check src/board-map-overview.mjs
+          node --check src/board-dp-view.mjs
+          node --check src/board-map-links.mjs
+          node --test tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs tests/student-experience.test.mjs tests/board-map.test.mjs tests/board-overview.test.mjs tests/board-dp.test.mjs tests/board-comparison-tiles.test.mjs
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Chrome automation
+        run: python -m pip install playwright==1.57.0
+      - name: Test Board design, modal focus, pinning and Chrome presentation
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/board-future-http.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          sleep 2
+          export MYLEARNERS_URL=http://127.0.0.1:8765
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          python tests/e2e/board_future_design_qa.py
+      - name: Archive Chrome screenshots for visual review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: board-future-chrome-screens
+          path: qa-board-future/
+          retention-days: 14
+          if-no-files-found: warn
