@@ -175,7 +175,10 @@ def main():
      require(p2.evaluate("document.documentElement.scrollWidth<=window.innerWidth+2"),
        "DP page horizontal overflow")
      require(p2.locator(".board-dp-point").count()==7,"DP markers missing")
-     if width==390:screenshot(p2,"06-dp-mobile")
+     if width==390:
+      require(p2.locator(".board-dp-chart-scroll").evaluate("e=>e.scrollLeft")>0,
+        "Mobile DP should begin with newest cohort years visible")
+      screenshot(p2,"06-dp-mobile")
      p2.locator('[data-board-dp-metric="passRate"]').click()
      require(p2.locator(".board-dp-point").count()==6,"DP pass rate markers mobile")
      if width==390:
