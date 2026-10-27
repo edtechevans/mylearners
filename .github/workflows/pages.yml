@@ -75,7 +75,8 @@ jobs:
           grep -q 'Open Leaders dashboard' /tmp/mylearners-leader-dom.html
           grep -q 'MAP Mathematics growth' /tmp/mylearners-leader-dom.html
           grep -q 'MAP Reading growth' /tmp/mylearners-leader-dom.html
-          grep -q 'Issued report cards' /tmp/mylearners-leader-dom.html
+          grep -q 'Report card coverage' /tmp/mylearners-leader-dom.html
+          grep -q 'leader-evidence-strip' /tmp/mylearners-leader-dom.html
           grep -q 'data-leader-panel="academics"' /tmp/mylearners-leader-dom.html
           grep -q 'data-leader-panel="patterns"' /tmp/mylearners-leader-dom.html
           grep -q 'Core Phonics' /tmp/mylearners-leader-dom.html
