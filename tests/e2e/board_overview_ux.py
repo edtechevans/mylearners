@@ -1,213 +1,230 @@
-"""Chromium Board-only UI/UX audit — summary-first navigation, trends, detail and deep links.
-Tests use public, aggregated AISG MAP results. Other role code and data stay untouched.
+"""Board-only Chrome UI/UX audit: Fall 2026 U.S. norms, Language Usage, and
+accessible historical grade hover/tap/focus details. No student data published.
 """
-import os,json,re,traceback
+import os,json,re
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 BASE=os.environ.get("MYLEARNERS_URL","http://127.0.0.1:8765").rstrip("/")
 OUT=Path("qa-board-overview");OUT.mkdir(parents=True,exist_ok=True)
-checks=[]
+results=[]
 def check(cond,msg):
     if not cond:raise AssertionError(msg)
-def screenshot(pg,name):
+def snap(pg,name):
     pg.screenshot(path=str(OUT/(name+".png")),full_page=True,animations="disabled")
-def scenario(name,run,pg=None):
+def scenario(name,fn,pg=None):
     try:
-        note=run()
-        checks.append({"name":name,"passed":True,"description":str(note)})
+        note=fn()
+        results.append({"scenario":name,"pass":True,"details":str(note)})
         print("PASS | "+name+" | "+str(note),flush=True)
-    except Exception as ex:
-        checks.append({"name":name,"passed":False,"error":str(ex)})
-        print("FAIL | "+name+" | "+str(ex),flush=True)
+    except Exception as error:
+        results.append({"scenario":name,"pass":False,"error":str(error)})
+        print("FAIL | "+name+" | "+str(error),flush=True)
         if pg:
-            try:screenshot(pg,"FAIL-"+re.sub(r'[^a-z0-9]+','-',name.lower())[:45])
+            try:snap(pg,"FAIL-"+re.sub(r'[^a-z0-9]+','-',name.lower())[:42])
             except Exception:pass
 
 def main():
-    with sync_playwright() as p:
-        browser=p.chromium.launch(headless=True,executable_path=os.environ.get("CHROME_BIN","/usr/bin/google-chrome"),
-            args=["--no-sandbox","--disable-dev-shm-usage"])
+    with sync_playwright() as pw:
+        browser=pw.chromium.launch(headless=True,executable_path=os.environ.get("CHROME_BIN","/usr/bin/google-chrome"),
+           args=["--no-sandbox","--disable-dev-shm-usage"])
         try:
             ctx=browser.new_context(viewport={"width":1440,"height":900},permissions=["clipboard-read","clipboard-write"])
-            pg=ctx.new_page();errors=[]
-            pg.on("pageerror",lambda error:errors.append(str(error)))
-            pg.goto(BASE+"/#/faculty",wait_until="domcontentloaded")
+            pg=ctx.new_page()
+            errors=[]
+            pg.on("pageerror",lambda e:errors.append(str(e)))
+            pg.goto(BASE+"/#/faculty",wait_until="domcontentloaded",timeout=20000)
             pg.locator("header.top").wait_for(timeout=20000)
-            def faculty_to_board():
-                check(pg.locator(".roster").count()==1,"Teacher homepage changed")
-                check(pg.locator("[data-role]").count()==4,"Four top role buttons")
+
+            def roles():
+                check(pg.locator(".roster").count()==1,"Original teacher roster must be intact")
+                check(pg.locator("[data-role]").count()==4,"Four demo role toggles")
                 pg.locator('[data-role="board"]').click()
                 pg.locator(".board-overview").wait_for(timeout=10000)
-                check(pg.locator(".board-nav-tabs button").count()==2,"Two simple Board tabs required")
-                check(pg.locator('[data-board-view="overview"]').get_attribute("aria-current")=="page","Overview should be default")
-                check(pg.locator(".board-overview-card").count()==3,"Three headline summaries")
-                check(pg.locator(".board-controls").count()==0,"Detailed filters must not clutter Overview")
-                screenshot(pg,"01-board-overview-desktop")
-                return "Board defaults to 3 key indicators and historical chart, not detailed filters"
-            scenario("Faculty role retained and Overview opens first",faculty_to_board,pg)
+                check(pg.locator(".board-nav-tabs button").count()==2,"Two Board pages")
+                check(pg.locator(".board-overview-card").count()==3,"Three Board headline cards")
+                check(pg.locator(".board-controls").count()==0,"Detailed filters should not clutter Board Overview")
+                snap(pg,"01-board-three-subject-overview")
+                return "Faculty intact, Board Overview first, 3 headline cards"
+            scenario("Board-only changes and role switch",roles,pg)
 
-            def latest_and_chart():
-                summary=pg.locator(".board-overview-cards").inner_text()
-                check("24 / 24" in summary,"Latest Fall 2026 achievement missing")
-                check("6 / 8 · 3 / 8" in summary,"Latest Spring 2026 EARCOS findings missing")
-                check("71% · 62%" in summary,"Matched growth data missing")
-                check(pg.locator(".board-trend-svg").count()==1,"Single historical line chart")
-                check(pg.locator('[data-board-series="math"]').count()==1,"Math line missing")
-                check(pg.locator('[data-board-series="reading"]').count()==1,"Reading line missing")
-                check(pg.locator(".board-trend-svg").locator("text.board-trend-value").count()>=20,"Visible numeric point labels missing")
-                check("not individual student growth" in pg.locator(".board-overview-method").inner_text(),"Longitudinal caveat missing")
+            def metrics():
+                text=pg.locator(".board-overview-cards").inner_text()
+                check("24 / 24" in text,"Fall 2026 24/24")
+                check(pg.locator(".board-overview-three-metrics").count()==3,"Each headline needs three subject metrics")
+                check(pg.locator(".board-overview-subject").count()==9,"Math/Reading/Language Usage in each card")
+                check("Language Usage" in text,"Language Usage missing")
+                check("6 / 8" in text and "3 / 8" in text,"Spring regional comparison")
+                check("71%" in text and "62%" in text,"Spring Math/Reading growth")
+                check("Language Usage data not supplied" in text,"Language growth missing note")
+                check(pg.locator(".board-trend-series").count()==3,"History should plot Math, Reading and Language")
+                check(pg.locator('.board-overview-table').count()==1,"Accessible yearly values needed")
+                return "All three subjects present in every headline and EARCOS history"
+            scenario("Overview three-subject parity",metrics,pg)
+
+            def fall_table():
                 pg.locator(".board-overview-table summary").click()
+                headings=pg.locator(".board-overview-table thead th").all_text_contents()
+                check(len(headings)==4,"Annual values need Fall/Spring, Math, Reading, Language Usage columns")
+                check("Language Usage" in headings[3],"Last table column should be Language Usage")
                 rows=pg.locator(".board-overview-table tbody tr")
-                check(rows.count()==13,"Fall axis should include 2014–2026")
-                check("—" in rows.last.inner_text(),"Fall 2026 absent EARCOS must show dash")
-                check("7" in rows.first.inner_text() and "4" in rows.first.inner_text(),"Historical start values wrong")
+                check(rows.count()==13,"2014–2026 Fall rows")
+                check("—" in rows.last.inner_text(),"Fall 2026 EARCOS absence shown as —")
                 pg.locator(".board-overview-table summary").click()
-                return "Fall 2014–2026 Math/Reading lines, point counts and missing 2026 gap"
-            scenario("Actual Fall historical chart and accessible values",latest_and_chart,pg)
+                return "13 Fall windows, three subjects, Fall 2026 EARCOS not fabricated"
+            scenario("Historical annual table and absent EARCOS",fall_table,pg)
 
-            def term_switch():
+            def grade_hover():
+                point=pg.locator('[data-board-point="fall:2025:math"]')
+                check(point.count()==1,"Specific Fall 2025 math point")
+                point.hover()
+                panel=pg.locator(".board-trend-inspector")
+                check("Mathematics · Fall 2025" in panel.inner_text(),"Wrong tooltip title")
+                check("7 of 8" in panel.inner_text(),"Math Fall 2025 7/8")
+                chips=panel.locator(".board-trend-grade")
+                check(chips.count()==8,"Need chips G3–G10")
+                check(panel.locator(".board-trend-grade.is-above").count()==7,"Above status grade count")
+                check(panel.locator(".board-trend-grade.is-below").count()==1,"Below status grade count")
+                check("G8" in panel.locator(".board-trend-grade.is-below").inner_text(),"G8 should be below EARCOS")
+                check(point.get_attribute("role")=="button","Point should be keyboard operable")
+                snap(pg,"02-chart-hover-shows-grades")
+                return "Hover Fall 2025 Math: G3,G4,G5,G6,G7,G9,G10 above; G8 not above"
+            scenario("Hover point highlights exact grades",grade_hover,pg)
+
+            def keyboard():
+                point=pg.locator('[data-board-point="fall:2025:language"]')
+                point.focus()
+                check("Language Usage · Fall 2025" in pg.locator(".board-trend-inspector").inner_text(),"Keyboard focus update")
+                point.press("Enter")
+                check(point.evaluate("e=>e.classList.contains('is-active')"),"Keyboard selects point")
+                check("G10" in pg.locator(".board-trend-grade-chips").inner_text(),"Grade chips accessible")
+                return "Keyboard focus and Enter reveal Language Usage grade details"
+            scenario("Accessible keyboard point inspection",keyboard,pg)
+
+            def spring():
                 pg.locator('[data-board-trend="spring"]').click()
-                check(pg.locator('[data-board-trend="spring"]').get_attribute("aria-pressed")=="true","Spring not selected")
+                check(pg.locator('[data-board-point="spring:2026:language"]').count()==1,"Spring 2026 Language point missing")
+                pg.locator('[data-board-focus="language"]').click()
+                check(pg.locator('[data-board-series="language"]').count()==1,"Language filtered")
+                check(pg.locator('[data-board-series="math"]').count()==0,"Math line should hide when focused")
+                pg.locator('[data-board-point="spring:2026:language"]').hover()
+                check("3 of 8" in pg.locator(".board-trend-inspector").inner_text(),"Spring Language EARCOS 3/8")
                 pg.locator(".board-overview-table summary").click()
-                rows=pg.locator(".board-overview-table tbody tr")
-                check(rows.count()==12,"Spring axis should include 2015–2026")
-                missing=rows.filter(has_text="Spring 2020")
-                check(missing.count()==1 and missing.inner_text().count("—")>=2,"Missing Spring 2020 gap lost")
-                recent=rows.filter(has_text="Spring 2026").inner_text()
-                check("6" in recent and "3" in recent,"Spring 2026 EARCOS values wrong")
+                row=pg.locator(".board-overview-table tbody tr").filter(has_text="Spring 2020")
+                check("—" in row.inner_text(),"2020 Spring should remain unavailable")
                 pg.locator(".board-overview-table summary").click()
-                screenshot(pg,"02-board-overview-spring-desktop")
-                return "Spring 2020 excluded, Spring 2026 EARCOS Math 6/8 and Reading 3/8"
-            scenario("Spring season and historical missing-data integrity",term_switch,pg)
+                pg.locator('[data-board-focus="all"]').click()
+                check(pg.locator(".board-trend-series").count()==3,"All series restored")
+                snap(pg,"03-board-spring-language-comparison")
+                return "Spring Language 3/8 EARCOS; missing spring 2020 preserved"
+            scenario("Language Usage chart focus and historical gaps",spring,pg)
 
-            def filter_lines():
-                pg.locator('[data-board-focus="math"]').click()
-                check(pg.locator('[data-board-series="reading"]').count()==0,"Reading line should be hidden")
-                check(pg.locator('[data-board-series="math"]').count()==1,"Math line should remain")
-                pg.locator('[data-board-focus="reading"]').click()
-                check(pg.locator('[data-board-series="math"]').count()==0,"Math line should be hidden")
-                check(pg.locator('[data-board-series="reading"]').count()==1,"Reading line should remain")
-                pg.locator('[data-board-focus="both"]').click()
-                check(pg.locator(".board-trend-series").count()==2,"Both lines should return")
-                return "Subject focus responds immediately without adding a second chart"
-            scenario("Historical chart subject filter",filter_lines,pg)
-
-            def overview_card_to_explorer():
-                pg.locator('[data-board-go="spring2026:math"]').click()
-                check(pg.locator('[data-board-view="explore"]').get_attribute("aria-current")=="page","Explorer tab inactive")
-                check(pg.locator(".board-controls").count()==1,"Detailed filters missing")
-                check(pg.locator(".board-indicator").count()==4,"Detailed snapshot should preserve 4 KPI slots")
-                check("6 / 8" in pg.locator(".board-indicator").nth(1).inner_text(),"Spring 2026 Maths EARCOS 6/8")
-                check("71%" in pg.locator(".board-indicator").nth(3).inner_text(),"Spring 2026 Math growth 71%")
-                check("Unweighted" in pg.locator(".board-indicator").nth(2).inner_text(),"Mean grade gap method label missing")
-                screenshot(pg,"03-explore-spring2026-math-desktop")
-                return "One click from overview summary to grade-level Spring 2026 detail"
-            scenario("Overview to Explore with correct data",overview_card_to_explorer,pg)
-
-            def year_filter_and_missing():
+            def latest_us():
+                pg.locator('.board-nav-tabs [data-board-view="explore"]').click()
                 pg.locator('[data-board-select="year"]').select_option("2026")
-                check(pg.locator('[data-board-window="fall2026"]').get_attribute("aria-pressed")=="true","Fall 2026 fallback missing")
-                check(pg.locator(".board-achievement-grade").count()==8,"2026 needs compact grade summary")
-                check(pg.locator(".board-bar-series").count()==0,"Do not draw 8 empty EARCOS bar tracks")
-                check("EARCOS comparison —" in pg.locator(".board-not-available").inner_text(),"Unavailable EARCOS not explained")
-                check("—" in pg.locator(".board-indicator.is-unavailable").first.inner_text(),"Missing benchmark KPI not muted")
+                pg.locator('[data-board-subject="math"]').click()
+                check("8 / 8" in pg.locator(".board-indicator").first.inner_text(),"All 8 math grade means above US")
+                check("—" in pg.locator(".board-indicator").nth(1).inner_text(),"EARCOS remains unavailable")
+                check("RIT" in pg.locator(".board-indicator").nth(2).inner_text(),"Actual U.S. gap should show RIT")
+                check(pg.locator(".board-bar-series").count()==8,"8 real US comparison bars without repeated empty EARCOS")
+                check(pg.locator(".board-bar-fill.us").count()==8,"Numeric U.S. RIT bars missing")
+                check(pg.locator(".board-bar-fill.earcos").count()==0,"Invented EARCOS bars")
+                check("week 4" in pg.locator(".board-benchmark-note").inner_text().lower(),"2025 school norm source context")
                 pg.locator(".board-figures summary").click()
-                check(pg.locator(".board-table tbody tr").count()==8,"Exact figures table must remain")
-                check("—" in pg.locator(".board-table tbody tr").first.inner_text(),"Blank EARCOS must show dash, not zero")
+                row=pg.locator(".board-table tbody tr").first.inner_text()
+                check("200.7" in row and "184.0" in row and "16.7" in row,"Grade 3 math AISG/US/gap mismatch")
+                check("n=75" in row,"Source grade count missing")
                 pg.locator(".board-figures summary").click()
-                screenshot(pg,"04-explore-fall2026-desktop")
-                return "Fall 2026 shows achieved grades but avoids eight empty benchmark rows"
-            scenario("No misleading 2026 EARCOS bars",year_filter_and_missing,pg)
+                snap(pg,"04-fall2026-us-math-rit")
+                return "Fall 2026 Math G3 AISG 200.7, US 184, gap +16.7; EARCOS —"
+            scenario("Fall 2026 U.S. school norms and real AISG RIT",latest_us,pg)
 
-            def grade_detail_and_source():
-                pg.locator('[data-board-select="year"]').select_option("2025")
-                pg.locator('[data-board-window="spring2026"]').click()
+            def subject_and_grade():
                 pg.locator('[data-board-subject="reading"]').click()
+                pg.locator(".board-figures summary").click()
+                check("187.4" in pg.locator(".board-table tbody tr").first.inner_text(),"Fall G3 Reading AISG")
+                pg.locator(".board-figures summary").click()
+                pg.locator('[data-board-subject="language"]').click()
                 pg.locator('[data-board-select="division"]').select_option("secondary")
                 pg.locator('[data-board-select="grade"]').select_option("8")
-                check("Grade 8" in pg.locator(".board-context").inner_text(),"Selected Grade 8 missing")
-                check("All tested grades" in pg.locator('[data-board-select="division"] option').first.inner_text(),"Scope label imprecise")
-                check(pg.locator(".board-grade-row").count()==1,"Grade drilldown should show one row")
-                pg.locator(".board-source summary").click()
-                check("screenshot" in pg.locator(".board-source").inner_text(),"EARCOS source not documented")
-                pg.locator(".board-source summary").click()
-                return "Division, grade and season drilldowns remain intact"
-            scenario("Grade 8 Reading Spring 2026 detail and sources",grade_detail_and_source,pg)
+                check(pg.locator(".board-grade-row").count()==1,"G8 single bar")
+                pg.locator(".board-figures summary").click()
+                row=pg.locator(".board-table tbody tr").first.inner_text()
+                check("225.8" in row and "213.0" in row and "12.8" in row,"G8 Language 2026 actual RIT gap")
+                check("n=90" in row,"Language G8 n")
+                pg.locator(".board-figures summary").click()
+                return "Reading and Language Usage actual RIT means, division and grade filters"
+            scenario("Three-subject grade-level U.S. comparisons",subject_and_grade,pg)
 
-            def share():
-                button=pg.locator('[data-board-share]')
-                button.click()
-                pg.wait_for_timeout(220)
-                feedback=pg.locator('#board-share-feedback').inner_text()
-                check("Link copied" in feedback or "Copy this link:" in feedback,"Share feedback missing")
-                if "Link copied" in feedback:
-                    url=pg.evaluate("navigator.clipboard.readText()")
-                    check("view=explore" in url and "window=spring2026" in url and "subject=reading" in url and "grade=8" in url,"Copied URL misses filter state")
-                else:
-                    url=feedback.split("Copy this link:",1)[-1].strip()
-                direct=ctx.new_page()
+            def source():
+                pg.locator(".board-source summary").click()
+                body=pg.locator(".board-source").inner_text()
+                check("2025" in body and "school" in body.lower(),"NWEA school norms source")
+                check("Student-level data remain private" in body,"Privacy and aggregation disclosure")
+                link=pg.locator('.board-source a[href*="2025-norms-quick-reference"]')
+                check(link.count()==1,"Official US norms reference not linked")
+                pg.locator(".board-source summary").click()
+                return "Clear source link, grades aggregated without published student records"
+            scenario("Official norms and privacy explanation",source,pg)
+
+            def links():
+                pg.locator('[data-board-share]').click()
+                pg.wait_for_timeout(250)
+                copied=pg.locator("#board-share-feedback").inner_text()
+                check("Link copied" in copied or "Copy this link:" in copied,"Copy link feedback")
+                url=pg.evaluate("navigator.clipboard.readText()") if "Link copied" in copied else copied.split("Copy this link:",1)[-1].strip()
+                check("subject=language" in url and "window=fall2026" in url and "grade=8" in url,"Subject/grade share state")
+                tab=ctx.new_page()
                 try:
-                    direct.goto(url,wait_until="domcontentloaded")
-                    direct.locator(".board-grade-row").wait_for(timeout=12000)
-                    check(direct.locator('[data-board-view="explore"]').get_attribute("aria-current")=="page","Deep link did not restore Explorer")
-                    check(direct.locator('[data-board-select="grade"]').input_value()=="8","Deep link did not restore grade")
-                    check(direct.locator('[data-board-subject="reading"]').get_attribute("aria-pressed")=="true","Deep link did not restore subject")
-                finally:direct.close()
-                return "Copy link shares selected Board view; direct URL restores year, subject and grade"
-            scenario("Share exact Board year/grade selection",share,pg)
+                    tab.goto(url,wait_until="domcontentloaded")
+                    tab.locator(".board-grade-row").wait_for(timeout=15000)
+                    check(tab.locator('[data-board-select="grade"]').input_value()=="8","Restored grade")
+                    check(tab.locator('[data-board-subject="language"]').get_attribute("aria-pressed")=="true","Restored Language")
+                finally:tab.close()
+                return "Grade 8 Language Fall 2026 deep link restores exact results"
+            scenario("Share new Language Usage Board view",links,pg)
 
-            def overview_deeplink():
-                pg.goto(BASE+"/#/board?view=overview&term=spring&focus=reading",wait_until="domcontentloaded")
-                pg.locator(".board-overview").wait_for(timeout=15000)
-                check(pg.locator('[data-board-focus="reading"]').get_attribute("aria-pressed")=="true","Subject focus not restored")
-                check(pg.locator('[data-board-trend="spring"]').get_attribute("aria-pressed")=="true","Spring focus not restored")
-                check(pg.locator(".board-trend-series").count()==1,"Shared filtered chart wrong")
-                check(pg.locator('[data-board-series="reading"]').count()==1,"Reading line missing")
-                return "Share link restores filtered historical chart"
-            scenario("Share historical Overview URL",overview_deeplink,pg)
-
-            def back_to_faculty():
+            def isolation():
                 pg.locator('[data-role="faculty"]').click()
-                check(pg.locator(".roster").count()==1,"Teacher page changed")
-                check(pg.locator(".board-view").count()==0,"Board data leaked into Faculty")
-                pg.locator('[data-role="board"]').click()
-                check(pg.locator(".board-overview").count()==1,"Board toggle should open Overview afresh")
-                return "Other My Learners roles remain unchanged"
-            scenario("Board-only changes and role isolation",back_to_faculty,pg)
-            check(not errors,"Browser JS errors: "+str(errors))
+                check(pg.locator(".roster").count()==1,"Faculty view regression")
+                pg.locator('[data-role="student"]').click()
+                check(pg.locator(".profile-head").count()==1,"Student view regression")
+                pg.locator('[data-role="leader"]').click()
+                check(pg.locator(".leader-kpis").count()==1,"Leader view regression")
+                return "Faculty, Student, Leader views function as before"
+            scenario("Other three roles unchanged",isolation,pg)
+            check(not errors,"Page Javascript errors: "+str(errors))
             ctx.close()
 
             for width,height in [(360,800),(390,844),(768,1024),(1280,900)]:
-                context=browser.new_context(viewport={"width":width,"height":height},locale="en-GB")
-                mobile=context.new_page();errs=[]
-                mobile.on("pageerror",lambda error:errs.append(str(error)))
-                def mobile_tasks():
+                context=browser.new_context(viewport={"width":width,"height":height})
+                mobile=context.new_page();e=[]
+                mobile.on("pageerror",lambda err:e.append(str(err)))
+                def responsive():
                     mobile.goto(BASE+"/#/board",wait_until="domcontentloaded")
-                    mobile.locator(".board-overview").wait_for(timeout=14000)
-                    check(mobile.evaluate("document.documentElement.scrollWidth<=window.innerWidth+2"),"Page-level horizontal overflow")
-                    check(mobile.locator('.board-overview-card').count()==3,"Overview headline cards not visible")
-                    check(mobile.locator(".board-trend-svg").count()==1,"Trend absent")
-                    check(mobile.locator(".board-nav-tabs button").count()==2,"Board section controls missing")
-                    if width<=390:
-                        scroll=mobile.locator(".board-trend-scroller")
-                        info=scroll.evaluate("e=>({scroll:e.scrollWidth,client:e.clientWidth,left:e.scrollLeft})")
-                        check(info["scroll"]>info["client"],"History should scroll horizontally on a phone")
-                        check(info["left"]>0,"Mobile should start near most recent years")
-                    if width==390:screenshot(mobile,"05-board-overview-mobile-390")
+                    mobile.locator(".board-overview").wait_for(timeout=16000)
+                    check(mobile.locator(".board-trend-series").count()==3,"All 3 subjects in mobile chart")
+                    check(mobile.locator(".board-overview-subject").count()==9,"All 3 subjects in cards")
+                    check(mobile.evaluate("document.documentElement.scrollWidth<=innerWidth+2"),"Page horizontal overflow")
+                    if width==390:
+                        snap(mobile,"05-three-subjects-mobile")
+                        mobile.locator('[data-board-point="fall:2025:math"]').click()
+                        check("G8" in mobile.locator(".board-trend-inspector").inner_text(),"Tap point grades")
+                        snap(mobile,"06-mobile-tap-grades")
                     mobile.locator('.board-nav-tabs [data-board-view="explore"]').click()
-                    check(mobile.evaluate("document.documentElement.scrollWidth<=window.innerWidth+2"),"Explorer overflow")
-                    if width==390:screenshot(mobile,"06-board-explore-mobile-390")
-                    mobile.locator('[data-board-view="overview"]').click()
-                    check(mobile.locator(".board-overview").count()==1,"Return to Overview failed")
-                    check(not errs,"JS errors: "+str(errs))
-                    return str(width)+"px mobile/tablet/desktop: chart, navigation and detail without page overflow"
-                scenario("Responsive Board experience "+str(width)+"px",mobile_tasks,mobile)
+                    check(mobile.evaluate("document.documentElement.scrollWidth<=innerWidth+2"),"Explorer page overflow")
+                    check(mobile.locator(".board-grade-row").count()==8,"8 grades")
+                    if width==390:snap(mobile,"07-mobile-fall26-us")
+                    mobile.locator('.board-nav-tabs [data-board-view="overview"]').click()
+                    check(mobile.locator(".board-overview").count()==1,"Return overview")
+                    check(not e,"Javascript errors: "+str(e))
+                    return f"{width}px: three subjects, interactive grade detail and U.S. norm results"
+                scenario(f"Responsive Board {width}px",responsive,mobile)
                 context.close()
         finally:browser.close()
-    passed=sum(x["passed"] for x in checks)
-    (OUT/"summary.json").write_text(json.dumps({"passed":passed,"total":len(checks),"checks":checks},indent=2))
-    print("SUMMARY",passed,"/",len(checks),flush=True)
-    return 0 if passed==len(checks) else 1
+    passed=sum(x["pass"] for x in results)
+    (OUT/"summary.json").write_text(json.dumps({"passed":passed,"total":len(results),"checks":results},indent=2))
+    print("SUMMARY",passed,"/",len(results),flush=True)
+    return 0 if passed==len(results) else 1
 
 if __name__=="__main__":raise SystemExit(main())
