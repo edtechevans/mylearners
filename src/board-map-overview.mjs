@@ -190,7 +190,7 @@ export function renderBoardOverview(state){
   strengthCard('MAP · growth · Fall 2026','95%','',
     'Returning students grew in at least one MAP area','fall2026:growth','map')+
   strengthCard('IB Diploma · '+current.year,String(current.average),'/45',
-    'Reported average Diploma points · confirmation pending','average','dp')+
+    'Reported school average · global IB mean 30.88 /45 · confirmation pending','average','dp')+
   strengthCard('IB Diploma · '+current.year,String(current.passRate)+'%','',
     'Reported Diploma pass rate · confirmation pending','passRate','dp');
  const mapPanel='<div class="board-overview-chartbody">'+
