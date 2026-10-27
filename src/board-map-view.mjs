@@ -47,25 +47,19 @@ function comparisonSeries(row,benchmark){
  '<strong class="board-bar-value'+(value!==null&&value<0?' below':'')+(isDirectional?' directional':'')+'">'+safe(result)+'</strong></div>';
 }
 function gradeComparison(rows,summary){
- if(summary.source?.evidence==='direction-only'){
-  return '<section class="board-panel board-chart-panel board-direction-panel">'+
-   '<div class="board-chart-top"><div><span class="eyebrow">GRADE-LEVEL ACHIEVEMENT</span>'+
-   '<h2>Above the U.S. mean in every reported grade</h2>'+
-   '<p>The Fall 2026 summary reports the direction of achievement, but not exact RIT differences.</p></div></div>'+
-   '<div class="board-achievement-grade-grid">'+rows.map(r=>'<div class="board-achievement-grade">'+
-   '<strong>Grade '+r.grade+'</strong><span>Above U.S. norm</span></div>').join('')+'</div>'+
-   '<div class="board-not-available"><strong>EARCOS comparison —</strong><span>No Fall 2026 EARCOS benchmark has been supplied.</span></div>'+
-   '<p class="board-chart-caption">An above-norm grade average does not mean every student scored above the norm. Exact RIT gaps are not available for this window.</p></section>';
- }
- return '<section class="board-panel board-chart-panel"><div class="board-chart-top"><div>'+
- '<span class="eyebrow">GRADE-LEVEL ACHIEVEMENT</span><h2>AISG compared with U.S. and EARCOS</h2>'+
+ const showEarcos=summary.earcosAvailable>0;
+ return '<section class="board-panel board-chart-panel'+(!showEarcos?' board-us-only':'')+'">'+
+ '<div class="board-chart-top"><div><span class="eyebrow">GRADE-LEVEL ACHIEVEMENT</span>'+
+ '<h2>'+(!showEarcos?'AISG compared with U.S. school norms':'AISG compared with U.S. and EARCOS')+'</h2>'+
  '<p>Differences in mean RIT points. Right of zero = AISG above the comparison average.</p>'+
  '</div><div class="board-legend"><span><i class="board-dot us"></i>U.S. norm</span>'+
- '<span><i class="board-dot earcos"></i>EARCOS mean</span></div></div>'+
+ (showEarcos?'<span><i class="board-dot earcos"></i>EARCOS mean</span>':'')+'</div></div>'+
  '<div class="board-axis"><span>Below reference</span><span>0 RIT</span><span>Above reference</span></div>'+
  '<div class="board-grade-plot">'+rows.map(r=>'<div class="board-grade-row"><div class="board-grade-name">Grade '+r.grade+'</div>'+
- '<div class="board-grade-series">'+comparisonSeries(r,'us')+comparisonSeries(r,'earcos')+'</div></div>').join('')+'</div>'+
- '<p class="board-chart-caption">— means unavailable, not zero. Different grade snapshots do not measure individual growth.</p></section>';
+ '<div class="board-grade-series">'+comparisonSeries(r,'us')+
+ (showEarcos?comparisonSeries(r,'earcos'):'')+'</div></div>').join('')+'</div>'+
+ (!showEarcos?'<div class="board-not-available"><strong>EARCOS —</strong><span>Not available for this testing window; no regional comparison is inferred.</span></div>':'')+
+ '<p class="board-chart-caption">Each bar shows the AISG grade mean minus the published grade reference. — means missing, not zero. Different grade snapshots do not measure individual growth.</p></section>';
 }
 function growthCell(row){
  return Number.isFinite(row.growthEligible)&&row.growthEligible>0?
@@ -77,7 +71,7 @@ function exactTable(rows,summary){
  '<div class="tablewrap"><table class="board-table"><thead><tr>'+
  '<th>Grade</th><th>AISG mean RIT</th><th>U.S. mean RIT</th><th>EARCOS mean RIT</th>'+
  '<th>Gap vs U.S.</th><th>Gap vs EARCOS</th><th>Meeting projected growth</th></tr></thead><tbody>'+
- rows.map(r=>'<tr><td>G'+r.grade+'</td><td><strong>'+n1(r.aisg)+'</strong></td>'+
+ rows.map(r=>'<tr><td>G'+r.grade+'</td><td><strong>'+n1(r.aisg)+'</strong>'+(Number.isInteger(r.n)?'<small class="board-count-note">n='+r.n+'</small>':'')+'</td>'+
  '<td>'+n1(r.us)+'</td><td>'+n1(r.earcos)+'</td>'+
  '<td>'+(directionOnly&&r.aboveUsMean?'Above':diff(difference(r,'us')))+'</td>'+
  '<td>'+diff(difference(r,'earcos'))+'</td><td>'+growthCell(r)+'</td></tr>').join('')+
@@ -90,6 +84,7 @@ function sourceDetails(window){
   window==='fall2025'?BOARD_METHODS.fall:BOARD_METHODS.history;
  return '<details class="board-details board-source"><summary>Sources, definitions and missing data <span>+</span></summary>'+
  '<p><strong>Source:</strong> '+safe(source.source)+'</p>'+
+ (window==='fall2026'?'<p><a href="https://www.nwea.org/resource-center/fact-sheet/87992/MAP-Growth-2025-norms-quick-reference_NWEA_onesheet.pdf" target="_blank" rel="noopener noreferrer">NWEA 2025 Norms quick reference · Fall school achievement benchmarks, page 3</a></p>':'')+
  '<p>'+safe(description)+'</p>'+
  '<p>'+safe(BOARD_METHODS.achievement)+'</p>'+
  '<p>'+safe(BOARD_METHODS.growth)+'</p>'+
@@ -138,7 +133,7 @@ export function renderBoard(state){
    matched?'Of '+matched+' matched students · Spring-to-Spring':'Matched subject growth not available']
  ];
  const note=active==='fall2026'?
-  'Fall 2026 reports direction of achievement, but not numerical RIT means or EARCOS benchmarks. Missing values appear as —.':
+  'Fall 2026 AISG mean RIT scores now use student report aggregates and NWEA 2025 Fall U.S. school norms (week 4). Exact RIT gaps are available. EARCOS Fall 2026 data remain unavailable (—).':
   active==='spring2026'?
   'Spring 2026 EARCOS values are from the supplied Spring 2025/26 international comparison and are now available for all three subjects.':
   'Historical grade means are available; cohort composition and norm editions may change over time.';
