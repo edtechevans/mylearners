@@ -1,15 +1,13 @@
-/** Native, responsive Board MAP comparison tiles.
- * Calculations use actual grade-mean RIT differences. Each displayed number
- * is the unweighted mean across the stated comparable grades. Partial
- * coverage is labelled; missing references never become zero.
+/** AISG Board MAP: one readable comparison window with optional side-by-side
+ * seasons. Each metric is a real grade-average RIT difference. Missing values
+ * remain missing. The UI calls them "MAP score points" for non-specialists.
  */
-import {BOARD_DATA,BOARD_SUBJECTS,BOARD_GRADE_LIST,boardRows,boardWindowFor} from './board-map-data.mjs';
-
+import {BOARD_DATA,BOARD_SUBJECTS,boardRows,boardWindowFor} from './board-map-data.mjs';
 const titles={math:'Mathematics',reading:'Reading',language:'Language Usage'};
 const escape=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const icon={
  math:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M7 8h10M8 12h2m4 0h2M8 16h2m4 0h2"/>',
- reading:'<path d="M12 7c-3-2-6-2-9-1v13c3-1 6-1 9 1 3-2 6-2 9-1V6c-3-1-6-1-9 1Zm0 0v13"/>',
+ reading:'<path d="M12 7c-3-2-6-2-9-1v13c3-1 6-1 9 1 3-2 6-1 9-1V6c-3-1-6-1-9 1Zm0 0v13"/>',
  language:'<path d="M20 11.5a7 7 0 0 1-7 7H9l-5 3v-5a7 7 0 1 1 16-5Z"/><path d="M8 11h8M8 14h5"/>'
 };
 const iconSVG=subject=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" aria-hidden="true">'+icon[subject]+'</svg>';
@@ -18,68 +16,63 @@ export function compareGradeMeans(window,subject,benchmark,division='all',grade=
  if(!['us','earcos'].includes(benchmark)||!titles[subject]||!BOARD_DATA[window])return null;
  const rows=boardRows(window,subject,division,grade);
  const valid=rows.filter(r=>Number.isFinite(r.aisg)&&Number.isFinite(r[benchmark]));
- const gradeNums=valid.map(r=>r.grade);
  const count=valid.length,total=rows.length;
- const value=count?round1(valid.reduce((total,r)=>total+(r.aisg-r[benchmark]),0)/count):null;
- return {value,count,total,gradeNums,complete:count===total&&count>0,
-  subject,benchmark,window};
+ return {value:count?round1(valid.reduce((sum,r)=>sum+(r.aisg-r[benchmark]),0)/count):null,
+  count,total,gradeNums:valid.map(r=>r.grade),complete:count===total&&count>0,subject,benchmark,window};
 }
-export const gapText=gap=>!gap||gap.value===null?'—':
- (gap.value>0?'+':'')+gap.value.toFixed(1)+' RIT';
-export function gapExplanation(result,selectedGrade='all'){
- if(!result||result.count===0)return 'Comparison not available for this window';
- if(result.count===1)return 'Grade '+result.gradeNums[0]+' mean difference';
- const base='Unweighted mean of '+result.count+' grade-level gaps';
- return result.complete?base:base+' · partial ('+result.count+' of '+result.total+')';
+export const gapText=gap=>!gap||gap.value===null?'—':(gap.value>0?'+':'')+gap.value.toFixed(1)+' MAP pts';
+export function gapExplanation(result){
+ if(!result||!result.count)return 'Not available for this testing window';
+ if(result.count===1)return 'Grade '+result.gradeNums[0]+' average difference';
+ const base='Average across '+result.count+' grades';
+ return result.complete?base:base+' · '+result.count+' of '+result.total+' comparable';
 }
-function miniCard(result,label,grade){
- const unavailable=result.value===null;
- const description=gapExplanation(result,grade);
- return '<div class="board-comparison-mini'+(unavailable?' unavailable':'')+'">'+
- '<div class="board-comparison-mini-label">'+label+'</div>'+
+function miniCard(result,label){
+ const missing=result.value===null;
+ return '<div class="board-comparison-mini'+(missing?' unavailable':'')+'">'+
+ '<span class="board-comparison-mini-label">'+label+'</span>'+
  '<strong class="board-comparison-mini-value">'+gapText(result)+'</strong>'+
- '<span class="board-comparison-mini-detail">'+escape(description)+'</span></div>';
+ '<span class="board-comparison-mini-detail">'+escape(gapExplanation(result))+'</span></div>';
 }
-export function renderMapComparisonTiles({schoolYear,selectedWindow,selectedSubject='math',division='all',grade='all'}={}){
+function windowTiles(window,selectedWindow,selectedSubject,division){
+ const period=BOARD_DATA[window].label;
+ return '<section class="board-comparison-window" aria-label="'+escape(period)+' subject comparisons">'+
+ '<div class="board-comparison-window-head"><span class="board-window-icon" aria-hidden="true">'+
+ '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M7 2v6m10-6v6M4 11h16"/></svg></span>'+
+ '<div><h3>'+escape(period)+'</h3><p>Choose a subject to explore how individual grades compare</p></div></div>'+
+ '<div class="board-comparison-subjects">'+BOARD_SUBJECTS.map(({id})=>{
+  const us=compareGradeMeans(window,id,'us',division);
+  const earcos=compareGradeMeans(window,id,'earcos',division);
+  const active=window===selectedWindow&&selectedSubject===id;
+  return '<button class="board-comparison-subject board-comparison-'+id+(active?' is-selected':'')+
+   '" type="button" data-board-tile-window="'+window+'" data-board-tile-subject="'+id+
+   '" aria-pressed="'+active+'" title="Explore grades in '+escape(titles[id])+' · '+escape(period)+'"'+
+   ' aria-label="'+escape('Explore '+titles[id]+' in '+period+'. Average difference versus U.S. schools '+gapText(us)+
+   '; versus EARCOS regional schools '+gapText(earcos))+'.">'+
+   '<span class="board-comparison-subject-head"><span class="board-comparison-icon">'+iconSVG(id)+
+   '</span><strong>'+escape(titles[id])+'</strong><span class="board-tile-action" aria-hidden="true">↗</span></span>'+
+   '<span class="board-comparison-pair">'+miniCard(us,'vs U.S. schools')+
+   miniCard(earcos,'vs regional schools (EARCOS)')+'</span>'+
+   '<span class="board-tile-hint">Explore grades <span aria-hidden="true">›</span></span></button>';
+ }).join('')+'</div></section>';
+}
+export function renderMapComparisonTiles({schoolYear,selectedWindow,selectedSubject='math',division='all',compareSeasons=false}={}){
  const year=Number(schoolYear);
  if(!Number.isInteger(year)||year<2000||year>2100)return '';
  const seasons=['fall','spring'].map(season=>boardWindowFor(year,season)).filter(Boolean);
- const gradeLabel=grade!=='all'?'Grade '+grade:division==='elementary'?'Elementary · G3–5':
-  division==='secondary'?'Secondary · G6–10':'All tested grades · G3–10';
- const years=year+'–'+String((year+1)%100).padStart(2,'0');
- const content=seasons.map(window=>{
-  const period=BOARD_DATA[window].label;
-  return '<section class="board-comparison-window" aria-label="'+escape(period)+' subject comparisons">'+
-   '<div class="board-comparison-window-head"><div><span class="board-window-icon" aria-hidden="true">'+
-   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M7 2v6m10-6v6M4 11h16"/></svg></span></div>'+
-   '<div><h3>'+escape(period)+'</h3>'+
-   '<p>AISG grade-average RIT differences compared with U.S. and EARCOS means</p></div>'+
-   (window===selectedWindow?'<span class="board-window-current">Selected window</span>':'')+'</div>'+
-   '<div class="board-comparison-subjects">'+BOARD_SUBJECTS.map(s=>{
-    const subject=s.id;
-    const us=compareGradeMeans(window,subject,'us',division,grade);
-    const earcos=compareGradeMeans(window,subject,'earcos',division,grade);
-    const active=window===selectedWindow&&selectedSubject===subject;
-    return '<button class="board-comparison-subject board-comparison-'+subject+(active?' is-selected':'')+
-     '" type="button" data-board-tile-window="'+window+'" data-board-tile-subject="'+subject+
-     '" aria-pressed="'+(active?'true':'false')+'" aria-label="'+escape('Explore '+titles[subject]+', '+period+
-     ', '+gradeLabel+'. Gap versus U.S. '+gapText(us)+'. Gap versus EARCOS '+gapText(earcos))+'">'+
-     '<div class="board-comparison-subject-head">'+
-     '<span class="board-comparison-icon">'+iconSVG(subject)+'</span>'+
-     '<strong>'+escape(titles[subject])+'</strong>'+
-     '<span class="board-tile-action" aria-hidden="true">↗</span></div>'+
-     '<div class="board-comparison-pair">'+
-     miniCard(us,'Avg grade gap vs U.S.',grade)+
-     miniCard(earcos,'Avg grade gap vs EARCOS',grade)+'</div>'+
-     '</button>';
-   }).join('')+'</div></section>';
- }).join('');
- return '<section class="board-comparison-display" aria-label="MAP benchmark comparison tiles">'+
-  '<div class="board-comparison-intro"><div><span class="eyebrow">MAP · ACHIEVEMENT COMPARISONS</span>'+
-  '<h2>MAP comparison tiles</h2>'+
-  '<p>'+escape(years)+' · '+escape(gradeLabel)+' · Choose a subject to explore its grades</p></div>'+
-  '<span class="board-comparison-basis">Unweighted grade-level RIT differences</span></div>'+
-  (content||'<p>No testing windows are available for this school year.</p>')+
-  '<p class="board-comparison-footnote">A positive gap means the AISG grade mean is higher than the comparison mean; it does not mean every student is above that benchmark. A dash (—) means unavailable, never zero. Historical U.S. norm editions may differ.</p>'+
-  '</section>';
+ const validWindow=seasons.includes(selectedWindow)?selectedWindow:seasons[0];
+ const windows=compareSeasons&&seasons.length>1?seasons:validWindow?[validWindow]:[];
+ const area=division==='elementary'?'Elementary · Grades 3–5':division==='secondary'?'Secondary · Grades 6–10':'Grades 3–10';
+ return '<section class="board-comparison-display" aria-label="MAP achievement comparison tiles">'+
+ '<div class="board-comparison-intro"><div><span class="eyebrow">MAP ACHIEVEMENT</span>'+
+ '<h2>How does AISG compare?</h2>'+
+ '<p>'+escape(area)+' · Average MAP score-point difference from U.S. and regional schools</p></div>'+
+ (seasons.length>1?'<button type="button" class="board-compare-toggle" data-board-compare-seasons aria-pressed="'+!!compareSeasons+'">'+
+ (compareSeasons?'Show one testing window':'Compare Fall & Spring')+'</button>':'')+'</div>'+
+ windows.map(w=>windowTiles(w,validWindow,selectedSubject,division)).join('')+
+ '<details class="board-details board-understanding"><summary>What do these numbers mean? <span>+</span></summary>'+
+ '<p>Each grade has an AISG average MAP score. We compare it with the corresponding average for U.S. schools and EARCOS regional schools, then average the available grade differences equally. MAP score points are also called RIT points.</p>'+
+ '<p>A positive difference means the AISG grade average is higher; it does not mean every student is ahead. Small differences may not be meaningful. A dash (—) means comparison data is unavailable, not zero.</p>'+
+ '<p>Older U.S. comparisons may use different norm editions, so historical gaps should not be assumed to be directly equivalent.</p></details>'+
+ '</section>';
 }
