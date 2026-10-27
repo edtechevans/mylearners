@@ -31,7 +31,8 @@ function miniCard(result,label){
  const missing=result.value===null;
  return '<div class="board-comparison-mini'+(missing?' unavailable':'')+'">'+
  '<span class="board-comparison-mini-label">'+label+'</span>'+
- '<strong class="board-comparison-mini-value">'+gapText(result)+'</strong>'+
+ '<strong class="board-comparison-mini-value">'+(missing?'—':
+ (result.value>0?'+':'')+result.value.toFixed(1)+'<small>MAP pts</small>')+'</strong>'+
  '<span class="board-comparison-mini-detail">'+escape(gapExplanation(result))+'</span></div>';
 }
 function windowTiles(window,selectedWindow,selectedSubject,division){
