@@ -19,7 +19,7 @@ export function renderDPPointDetails(key){
 }
 function dpLineChart(metric){
  const meta=metricMeta(metric),items=dpMetricSeries(metric);
- const width=860,height=285,left=56,right=24,top=26,bottom=224,max=meta.max;
+ const width=860,height=320,left=56,right=24,top=70,bottom=255,max=meta.max;
  const xp=i=>left+(width-left-right)*(i/(items.length-1));
  const yp=n=>bottom-(n/max)*(bottom-top);
  const lineSegments=[];let current=[];
@@ -34,7 +34,7 @@ function dpLineChart(metric){
    (metric==='passRate'?value+'%':value)+'</text>';
  }).join('');
  const points=items.map((r,i)=>{
-  const x=xp(i),label='<text class="board-trend-year" text-anchor="middle" x="'+x.toFixed(1)+'" y="255">'+r.year+'</text>';
+  const x=xp(i),label='<text class="board-trend-year" text-anchor="middle" x="'+x.toFixed(1)+'" y="292">'+r.year+'</text>';
   if(r.value===null)return label;
   const y=yp(r.value);
   return '<g class="board-dp-point" data-board-dp-point="'+metric+':'+r.end+'" tabindex="0" role="button"'+
@@ -45,7 +45,7 @@ function dpLineChart(metric){
  }).join('');
  return '<svg class="board-dp-svg" viewBox="0 0 '+width+' '+height+'" role="group" aria-label="'+safe(meta.label)+
  ' by AISG school year. Point values are visible and interactive." xmlns="http://www.w3.org/2000/svg">'+
- '<text class="board-trend-axislabel" x="'+left+'" y="15">'+safe(meta.label)+(metric==='average'?' · out of 45':' · percentage')+'</text>'+
+ '<text class="board-trend-axislabel" x="'+left+'" y="22">'+safe(meta.label)+(metric==='average'?' · out of 45':' · percentage')+'</text>'+
  ticks+paths+points+'</svg>';
 }
 function dpOutcomesTable(){
