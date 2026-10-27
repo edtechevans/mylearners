@@ -18,16 +18,28 @@ const group=grade=>{
 const ctx={academic,map:DATA.map,experience,subject:'Mathematics',mapSubject:'Mathematics',window:'F26'};
 test('grade-specific tabs avoid inapplicable measures',()=>{
  assert.deepEqual(evidenceModesForGrade('PK3'),['report']);
- assert.deepEqual(evidenceModesForGrade('K'),['report','core','fp','commoncore']);
+ assert.deepEqual(evidenceModesForGrade('K'),['report','core','fp']);
  const g3=evidenceModesForGrade('G3');
- for(const id of ['report','map','ixl','core','fp','commoncore','engagement','belonging','flourishing'])
+ for(const id of ['report','map','ixl','core','fp','engagement','belonging','flourishing'])
   assert.ok(g3.includes(id),'Grade 3 tab '+id);
  const g7=evidenceModesForGrade('G7');
- for(const id of ['report','map','ixl','commoncore','engagement','belonging','flourishing'])
+ for(const id of ['report','map','ixl','engagement','belonging','flourishing'])
   assert.ok(g7.includes(id),'Grade 7 tab '+id);
  assert.ok(!g7.includes('core')&&!g7.includes('fp'));
  assert.deepEqual(evidenceModesForGrade('G12'),
-  ['report','commoncore','engagement','belonging','flourishing']);
+  ['report','engagement','belonging','flourishing']);
+ // Core Phonics and F&P are Elementary (K–G5) only; never show in Secondary.
+ for(const g of ['K','G1','G2','G3','G4','G5']){
+  const modes=evidenceModesForGrade(g);
+  assert.ok(modes.includes('core') && modes.includes('fp'),g+' Elementary assessment tabs');
+ }
+ for(const g of ['PK3','PK4','G6','G7','G8','G9','G10','G11','G12']){
+  const modes=evidenceModesForGrade(g);
+  assert.ok(!modes.includes('core') && !modes.includes('fp'),g+' must not show Elementary assessments');
+ }
+ for(const g of ['PK3','K','G1','G3','G5','G7','G12']){
+  assert.ok(!evidenceModesForGrade(g).includes('commoncore'),g+' must not have Common Core tab');
+ }
  assert.equal(normalizeEvidenceMode('K','map'),'report');
 });
 test('every grade class renders a single selector and correctly scoped tab groups',()=>{
@@ -39,6 +51,7 @@ test('every grade class renders a single selector and correctly scoped tab group
   if(g!=='PK3')assert.match(html,/data-academic-subject/);
   else assert.doesNotMatch(html,/data-academic-subject/);
   assert.match(html,/class-evidence-selection/);
+  assert.doesNotMatch(html,/Common Core|data-class-evidence="commoncore"/);
   assert.match(html,/class-evidence-breakdown/);
   if(g==='PK3')assert.doesNotMatch(html,/data-class-evidence="map"/);
   if(g==='G7')assert.match(html,/data-class-evidence="engagement"/);
@@ -62,9 +75,9 @@ test('class MAP and wellbeing tabs read distinct fictional sources',()=>{
  assert.match(belonging,/Belonging/);
  assert.match(evidenceRosterColumn(student,{...ctx,mode:'engagement'}),/class-evidence-result/);
 });
-test('Maia and Common Core stay unconnected and never fabricate student results',()=>{
+test('Maia stays unconnected and never fabricates student results',()=>{
  const students=group('G7');
- for(const mode of ['flourishing','commoncore']){
+ for(const mode of ['flourishing']){
   const html=renderClassEvidencePanel(students,{...ctx,mode});
   assert.match(html,/Not connected/);
   assert.match(html,/No student results available/);
