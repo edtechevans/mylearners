@@ -6,6 +6,7 @@ import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs';
 import {esc} from './v2-ui.mjs';
 import {renderBoard} from './board-map-view.mjs';
+import {boardWindowFor} from './board-map-data.mjs';
 const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(DATA.students);
 const root=document.getElementById('app');
 const saved=(k,d)=>{try{return sessionStorage.getItem(k)||d}catch{return d}};
@@ -200,6 +201,11 @@ root.addEventListener('change',e=>{
  if(boardSelect){
   if(boardSelect.dataset.boardSelect==='division'){state.boardDivision=boardSelect.value;state.boardGrade='all'}
   if(boardSelect.dataset.boardSelect==='grade')state.boardGrade=boardSelect.value;
+  if(boardSelect.dataset.boardSelect==='year'){
+   const previousSeason=state.boardWindow.startsWith('spring')?'spring':'fall';
+   state.boardWindow=boardWindowFor(boardSelect.value,previousSeason)||
+    boardWindowFor(boardSelect.value,'fall')||state.boardWindow;
+  }
   render();return;
  }
  const el=e.target.closest('[data-select]');if(!el)return;const v=el.value;
