@@ -109,7 +109,7 @@ test('Report-card subject selection changes teacher roster values from the same 
  assert.match(html,/academic-class-panel/);
  assert.match(html,/data-academic-subject/);
  assert.match(html,/option value="Science" selected/);
- assert.match(html,/Academic snapshot/);
+ assert.match(html,/Academic Snapshot/);
  assert.match(html,/80 <small>of 80 learners with a result/);
  assert.match(html,/academic-distribution-track/);
  assert.match(html,/data-academic-mode="ixl"/);
@@ -136,7 +136,7 @@ test('Student profile displays all latest report subjects and 2–3 year history
   const student=first(g);
   const rec=academicFor(records,student.id);
   const html=renderAcademicProfile(student,records,true);
-  assert.match(html,/My school reports/);
+  assert.match(html,/My School Reports/);
   assert.match(html,/Fictional demonstration/);
   assert.equal((html.match(/data-academic-report-year="/g)||[]).length,rec.reports.length,g);
   if(rec.reports.length){
@@ -156,7 +156,7 @@ test('Selected historical report year re-renders year-specific subject list, not
  const rec=academicFor(records,student.id);
  const oldest=rec.reports.at(-1);
  const html=renderAcademicProfile(student,records,false,oldest.year);
- assert.match(html,/Report card grades/);
+ assert.match(html,/Report Card Grades/);
  assert.match(html,new RegExp('class="academic-report-meta"><strong>'+oldest.year));
  assert.match(html,new RegExp(oldest.framework));
  assert.match(html,new RegExp(oldest.grade));
