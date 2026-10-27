@@ -32,7 +32,7 @@ export function classAcademicCell(student,records,mode='report',subject='Mathema
  ' title="'+esc(modeMeta(mode).label+' · '+item.label+(mode==='report'?' · '+subject:'')+
  ': '+value)+'">'+esc(value)+'</span>';
 }
-export function renderClassAcademicPanel(students,records,mode='report',subject='Mathematics'){
+export function renderClassAcademicPanel(students,records,mode='report',subject='Mathematics',options={}){
  const grade=students[0]?.grade||'';
  const allowed=academicModesFor(grade);
  const selectedMode=allowed.includes(mode)?mode:'report';
@@ -54,6 +54,26 @@ export function renderClassAcademicPanel(students,records,mode='report',subject=
  const distribution=selectedMode==='report'?
   (selectedSubject?renderReportDistribution(students,records,selectedSubject):
    '<p class="academic-no-data">No completed reports yet for this class.</p>'):'';
+ if(options.compact){
+  const controls=allowed.map(id=>'<button type="button" data-academic-mode="'+id+
+    '" aria-pressed="'+(selectedMode===id)+'" class="'+(selectedMode===id?'active':'')+
+    ' academic-mode-'+id+'">'+esc(modeMeta(id).short)+'</button>').join('');
+  return '<section class="academic-class-panel academic-class-compact" aria-label="Choose the academic evidence in the class roster">'+
+   '<div class="academic-compact-heading"><div><span class="academic-eyebrow">ACADEMIC EVIDENCE</span>'+
+   '<h3>Show in my roster</h3></div>'+
+   '<span class="academic-compact-freshness">'+esc(latestDate)+'</span></div>'+
+   '<div class="academic-compact-actions"><div class="academic-mode-tabs" role="group" aria-label="Choose academic result">'+
+   controls+'</div>'+
+   (selectedMode==='report'&&reportSubjects.length?
+    '<label class="academic-subject-picker">Subject <select data-academic-subject aria-label="Report card subject">'+
+    reportSubjects.map(entry=>'<option value="'+esc(entry.subject)+'"'+
+    (entry.subject===selectedSubject?' selected':'')+'>'+esc(entry.subject)+'</option>').join('')+'</select></label>':'')+
+   '</div>'+
+   '<details class="academic-class-breakdown"><summary>Class results breakdown <span>('+coverage.available+
+   ' of '+coverage.eligible+' learners)</span></summary>'+
+   (distribution||'<p class="academic-guidance">'+esc(note)+'</p>')+'</details>'+
+   '<p class="academic-compact-footnote">'+esc(note)+'</p></section>';
+ }
  return '<section class="academic-class-panel" aria-label="Class academic snapshots">'+
  '<div class="academic-class-heading"><div><span class="academic-eyebrow">SUBJECT RESULTS · CLASS VIEW</span>'+
  '<h2>Academic snapshot</h2><p>Choose the evidence you need. Student-level detail stays one click away.</p></div>'+
