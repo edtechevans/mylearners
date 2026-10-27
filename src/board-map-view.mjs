@@ -79,14 +79,15 @@ function exactTable(rows,summary){
  '</tbody></table></div><p class="board-table-note">Every testing window uses the same columns. A dash indicates data not provided or not applicable, never zero. The reported student growth rate only exists for matched Spring 2026 Mathematics and Reading records.</p></details>';
 }
 function sourceDetails(window){
- const source=BOARD_DATA[window];
+ const info=BOARD_DATA[window];
  const description=window==='fall2026'?BOARD_METHODS.fall2026:
   window==='spring2026'?BOARD_METHODS.spring:
   window==='fall2025'?BOARD_METHODS.fall:BOARD_METHODS.history;
- return '<details class="board-details board-source"><summary>Sources, definitions and missing data <span>+</span></summary>'+
- '<p><strong>Source:</strong> '+safe(source.source)+'</p>'+
- (source.usNormType==='2025-school'?'<p><a href="https://www.nwea.org/resource-center/fact-sheet/87992/MAP-Growth-2025-norms-quick-reference_NWEA_onesheet.pdf" target="_blank" rel="noopener noreferrer">NWEA 2025 Norms quick reference · school achievement norms, page 3</a></p>':'')+
- (source.usNormType==='historical-unverified'?'<p><strong>Historical U.S. comparison:</strong> archived reference mean; the norm type and edition could not be confirmed. Do not treat older U.S. gaps as a consistent national trend.</p>':'')+
+ const benchmark=info.usNormType==='2025-school'?
+  'U.S. comparison: NWEA 2025 school-achievement norms, season-matched to the selected MAP window.':
+  'Historical U.S. comparison: norm population and edition not confirmed; avoid comparing benchmark gaps between editions.';
+ return '<details class="board-details board-source"><summary>How to interpret these results <span>+</span></summary>'+
+ '<p><strong>Benchmark:</strong> '+safe(benchmark)+'</p>'+
  '<p>'+safe(description)+'</p>'+
  '<p>'+safe(BOARD_METHODS.achievement)+'</p>'+
  '<p>'+safe(BOARD_METHODS.growth)+'</p>'+
