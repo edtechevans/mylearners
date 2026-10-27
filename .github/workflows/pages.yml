@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: 22
       - name: Verify fictional data model and transparent indicators
-        run: node --test tests/class-evidence.test.mjs tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs tests/student-experience.test.mjs tests/academic-journey.test.mjs tests/faculty-student-daily.test.mjs tests/leader-summary.test.mjs tests/sss-demo.test.mjs tests/sitewide-ui.test.mjs tests/board-map.test.mjs tests/board-overview.test.mjs tests/board-dp.test.mjs tests/board-comparison-tiles.test.mjs
+        run: node --test tests/sitewide-palette.test.mjs tests/class-evidence.test.mjs tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs tests/student-experience.test.mjs tests/academic-journey.test.mjs tests/faculty-student-daily.test.mjs tests/leader-summary.test.mjs tests/sss-demo.test.mjs tests/sitewide-ui.test.mjs tests/board-map.test.mjs tests/board-overview.test.mjs tests/board-dp.test.mjs tests/board-comparison-tiles.test.mjs
       - name: Validate entry point and Javascript syntax
         run: |
           node --check src/class-evidence.mjs
@@ -27,6 +27,7 @@ jobs:
           node --check src/student-experience-app.mjs
           node --check tests/sitewide-ui.test.mjs
           grep -q 'sitewide-polish.css' index.html
+          grep -q 'sitewide-palette.css?v=20261028palette1' index.html
           node --check src/leader-summary.mjs
           node --check src/sss-demo-data.mjs
           node --check src/sss-view.mjs
