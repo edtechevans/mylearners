@@ -200,7 +200,7 @@ export function renderClassEvidencePanel(students,{
   '<p class="class-evidence-secondary">Maia-style PERMA examples are available separately in Secondary classes; the two measures use different instruments and scales.</p>':'';
  return '<section class="class-evidence-panel" aria-label="Select learning and wellbeing evidence for the class roster">'+
   '<div class="class-evidence-heading"><div><span class="academic-eyebrow">CLASS DATA</span>'+
-  '<h3>Learning &amp; wellbeing evidence</h3><p>Choose a measure. Compare two columns if useful.</p></div></div>'+
+  '<h3>Learning &amp; Wellbeing Evidence</h3><p>Choose a measure. Compare two columns if useful.</p></div></div>'+
   '<div class="class-evidence-navigation">'+tabs+'</div>'+
   '<div class="class-evidence-controls">'+compareSelect+(filters.length?
    '<div class="class-evidence-filter-row">'+filters.join('')+'</div>':'')+'</div>'+
