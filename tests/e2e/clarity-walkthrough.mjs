@@ -202,6 +202,8 @@ try{
     'Maia dimension details did not expand');
    assert(await evaluate("document.querySelectorAll('.maia-dimension').length===5"),
     'Five PERMA domain values required');
+   await click('[data-action="back"]');
+   assert(await evaluate("!!document.querySelector('.faculty-daily-toolbar')"),'Back to Faculty class roster failed');
   });
  await run('faculty-elementary-only-evidence-1440','faculty','.faculty-daily-toolbar',1440,900,
   async()=>{
