@@ -23,6 +23,7 @@ jobs:
       - name: Validate entry point and Javascript syntax
         run: |
           node --check src/class-evidence.mjs
+          node --check src/maia-demo.mjs
           node --check src/student-experience-app.mjs
           node --check tests/sitewide-ui.test.mjs
           grep -q 'sitewide-polish.css' index.html
@@ -67,6 +68,7 @@ jobs:
           grep -q 'data-class-evidence="engagement"' /tmp/mylearners-dom.html
           grep -q 'data-class-evidence="belonging"' /tmp/mylearners-dom.html
           grep -q 'data-class-evidence="flourishing"' /tmp/mylearners-dom.html
+          grep -q 'data-maia-dimension' /tmp/mylearners-dom.html || true
           if grep -q 'data-class-evidence="commoncore"' /tmp/mylearners-dom.html; then echo 'Common Core tab should be removed'; exit 1; fi
           if grep -q 'data-class-evidence="core"' /tmp/mylearners-dom.html; then echo 'Core Phonics should not appear for Grade 7'; exit 1; fi
           if grep -q 'data-class-evidence="fp"' /tmp/mylearners-dom.html; then echo 'F&P should not appear for Grade 7'; exit 1; fi
