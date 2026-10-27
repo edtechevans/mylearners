@@ -121,7 +121,7 @@ export function renderBoard(state){
  const explore=state.boardView==='explore',diploma=state.boardView==='dp';
  const header='<section class="board-view">'+
  '<div class="heading board-heading"><div><div class="eyebrow">AISG · BOARD · LEARNING EVIDENCE</div>'+
- '<h1>Learning outcomes over time</h1><p>MAP achievement and growth, alongside Diploma Programme outcomes.</p></div>'+
+ '<h1>Learning at AISG</h1><p>Achievement, progress and graduation outcomes—clearly presented.</p></div>'+
  '<div class="board-provenance-badge"><strong>AISG AGGREGATED DATA</strong><small>No student records</small></div></div>'+
  '<div class="board-nav-row"><nav class="board-nav-tabs" aria-label="Board dashboard sections">'+
  '<button type="button" data-board-view="overview" aria-current="'+(!explore&&!diploma?'page':'false')+'" class="'+(!explore&&!diploma?'active':'')+'">Overview</button>'+
@@ -150,20 +150,27 @@ export function renderBoard(state){
  '<p>Fall 2026 schoolwide finding. It measures whether a returning student improved in <em>one or more</em> subject areas, not the percentage reaching projected growth and not the proportion above U.S. norms. This figure is schoolwide and is not filtered by division or grade.</p></div>'+
  '<button type="button" data-board-dismiss-growth aria-label="Close growth explanation">Close</button></section>':'';
  const details=state.boardMapDetailsOpen?
- '<section class="board-map-drilldown" id="board-map-detail" tabindex="-1">'+
- '<div class="board-map-drilldown-heading"><div><span class="eyebrow">EXPLORE THE GRADES</span>'+
- '<h2>'+safe(name)+' · '+safe(BOARD_DATA[active].label)+'</h2>'+
- '<p>See where individual grade averages sit relative to U.S. and regional schools.</p></div>'+
- '<button type="button" class="board-close-drilldown" data-board-close-details>Close details ×</button></div>'+
- '<div class="board-map-grade-controls"><label>Grade <select data-board-select="grade" aria-label="Board MAP grade">'+
+ '<div class="board-drawer-layer" data-board-drawer-layer>'+
+ '<button type="button" class="board-drawer-backdrop" data-board-close-details aria-label="Close grade evidence panel"></button>'+
+ '<aside class="board-map-drawer" id="board-map-detail" role="dialog" aria-modal="true" aria-labelledby="board-drawer-heading" tabindex="-1">'+
+ '<div class="board-drawer-header"><div><span class="eyebrow">GRADE EVIDENCE · '+safe(BOARD_DATA[active].label)+'</span>'+
+ '<h2 id="board-drawer-heading">'+safe(name)+'</h2>'+
+ '<p>Explore the grade averages behind the comparison.</p></div>'+
+ '<button type="button" class="board-drawer-close" data-board-close-details aria-label="Close grade evidence panel">×</button></div>'+
+ '<div class="board-drawer-content">'+
+ '<div class="board-drawer-highlights" aria-label="Selected grade results">'+
+ '<div><small>Above U.S. average</small><strong>'+summary.aboveUS+' / '+summary.usAvailable+'</strong><span>comparable grade averages</span></div>'+
+ '<div><small>Above EARCOS average</small><strong>'+(summary.earcosAvailable?summary.aboveEarcos+' / '+summary.earcosAvailable:'—')+'</strong>'+
+ '<span>'+(summary.earcosAvailable?'comparable grade averages':'No comparison available')+'</span></div></div>'+
+ '<div class="board-map-grade-controls"><label>Look at a grade <select data-board-select="grade" aria-label="Select MAP grade in evidence panel">'+
  option('all','All grades in selection',selectedGrade)+allowed.map(g=>option(String(g),'Grade '+g,selectedGrade)).join('')+
  '</select></label></div>'+
  gradeComparison(rows,summary)+
- (summary.growthPct!==null?'<p class="board-matched-growth"><strong>Matched student growth:</strong> '+
- summary.growthPct+'% of eligible students met projected growth in this subject, based on Spring-to-Spring comparisons. This is distinct from achievement.</p>':'')+
+ (summary.growthPct!==null?'<p class="board-matched-growth"><strong>About growth:</strong> '+
+ summary.growthPct+'% of eligible students met projected growth in this subject in the matched Spring-to-Spring period. This is different from achievement.</p>':'')+
  exactTable(rows,summary)+sourceDetails(active)+
- '</section>':
- '<div class="board-choose-prompt" aria-live="polite"><strong>Want to look more closely?</strong> Select Mathematics, Reading or Language Usage above to explore individual grades.</div>';
+ '</div></aside></div>':
+ '<div class="board-choose-prompt" aria-live="polite"><strong>Curious about a subject?</strong> Select a coloured tile to open its grade evidence without leaving this page.</div>';
  return header+filters+growth+
  renderMapComparisonTiles({schoolYear:year,selectedWindow:active,
   selectedSubject:state.boardMapDetailsOpen?selectedSubject:'',
