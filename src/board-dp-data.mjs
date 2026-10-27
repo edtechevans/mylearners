@@ -38,7 +38,7 @@ export const DP_METHODS=Object.freeze({
  source:'Measuring the Mission KPI Dashboard.xlsx (AISG internal historical KPI workbook). Reported annual values, not independently verified against official IBO exam-session reports.',
  limits:'The workbook does not provide a consistent number of Diploma examination candidates each year, so do not calculate pass counts or use pathway participation as an exam denominator.',
  discrepancy:'For SY2025–26 the workbook lists 117 “full DP students” and 56 Grade 12 Full DP pathway learners. These figures describe different or inconsistent populations and are intentionally not treated as comparable examination counts.',
- current:'SY2025–26 values are the latest reported figures in the supplied workbook and should be reconfirmed against final IB results before formal Board reporting.',
+ current:'SY2025–26 values are the latest reported figures in the supplied workbook. Please verify them against the official final IB Diploma examination results; they should be reconfirmed before formal Board reporting.',
  pathways:'Grade 12 pathway counts show pathways selected or enrolled (full Diploma, DP courses and AISG pathway). They are not candidate counts, pass counts or a statement that one pathway is more valuable than another.',
  boundary:'This page uses aggregate school-reported data only. The Diploma Programme applies to a different age cohort from MAP Grades 3–10, and neither set should be directly combined.'
 });
