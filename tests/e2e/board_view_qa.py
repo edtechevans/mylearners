@@ -115,6 +115,8 @@ def main():
             scenario("Division and grade filters",drilldown)
             def first_archives():
                 page.locator('[data-board-select="year"]').select_option("2014")
+                require(page.locator('[data-board-window="spring2015"]').get_attribute("aria-pressed")=="true","Selecting another year should retain the Spring term")
+                page.locator('[data-board-window="fall2014"]').click()
                 require(page.locator('[data-board-window="fall2014"]').get_attribute("aria-pressed")=="true","Fall 2014 absent")
                 require(page.locator(".board-bar-fill.earcos").count()==8,"2014 archive not mapped")
                 assert_schema(page)
