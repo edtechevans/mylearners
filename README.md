@@ -27,6 +27,27 @@ Two **closed-by-default** sections provide extra depth when needed. *Explore aca
 
 **These are fictional learning examples, not schoolwide attainment claims.** The public GitHub Pages site has no live student connection, authentication, or approved access controls for individual student data.
 
+## Student Support Services (SSS) — **fictional prototype** (October 2026)
+
+The **SSS** tab is a grade-first, read-only demonstration of a **future access-controlled department workspace**. It uses the **same synthetic students and deterministic learner IDs** as Faculty, Student and Leaders. No real WIDA scores, actual SSS enrolment lists, diagnoses, confidential notes or student support plans are included.
+
+**Quick team view**
+- Compact summary for fictional programme membership, language support, learning support and available Elementary WIDA examples.
+- Grade selector (PK3–G12), optional learner-name search, and cohorts listed by grade with students sorted **alphabetically by family name, then given name**.
+- Collapsible grade lists show the student's class, illustrated EAL/SS/IEP classroom flags, support stream, last-issued Mathematics result, Elementary WIDA snapshot (where appropriate), and **fictional** upcoming review date. The **SSS programme cohort is a separate seeded demonstration membership indicator**: an EAL classroom tag alone does not automatically constitute admission, and Medical/Behavioural tags alone never cause programme membership.
+- Faculty class rosters and Faculty learner profiles identify fictional SSS cohort members with a small **SSS** marker; all classroom guidance remains at the **end** of Faculty profiles.
+
+**Selected learner**
+- An illustrative, strengths-and-access-oriented team focus, with example review dates and demo language context.
+- The **same** attendance, last-issued subject outcomes, MAP Mathematics/Reading observed RIT change (G3–10), IXL diagnostic level (G1–10), mock Core Phonics 50-item decoding result (K–G5), F&P text level (K–G5), and Grade 3+ check-in indices already available through Faculty/Student. These are all **synthetic**; assessment scales are kept separate.
+- Example WIDA Screener for **Kindergarten** displays an oral two-domain illustration (Listening and Speaking with an Oral Language composite); **Grades 1–5** display four-domain **WIDA Screener Paper** illustrations (Listening, Reading, Speaking, Writing and an Overall composite). All visible levels are marked **fictional** and confined to 1.0–6.0. The composites are **illustrative placeholders** and **are not calculated from the displayed proficiency levels**; do not use them as reportable WIDA scores. WIDA Screener is an **initial identification** input, not a progress-monitoring series, diagnostic label, placement threshold or substitute for trained staff review.
+- Shared classroom strategies from the existing fictional support tags; a collapsed, full academic report-card/history view. No note writing, confidential plans, referrals, counselling records, CPOMS incidents or medical case histories.
+
+**Future access requirements:** GitHub Pages and this role switcher are **not an authentication or authorisation boundary**. Before connecting real school records, AISG must approve a private deployment with staff Microsoft SSO, **server-enforced assignment-based and student-level access**, role-limited flags and source links, revocation, audit logs, data retention rules and safeguarding/health separation. Never place actual student profiles, SSS membership lists, IEPs or WIDA exports into this public GitHub repository or browser-side JavaScript bundle. Only authorised faculty and SSS staff should see the particular support information required for their role.
+
+**Design references:** WIDA's [Screener guide](https://wida.wisc.edu/assess/screener) and [Interpretive Guide](https://wida.wisc.edu/resources/wida-screener-interpretive-guide-score-reports); the coordinated learner views and intervention-progress design principles described by [Panorama Student Success](https://www.panoramaed.com/products/student-success) and [Branching Minds](https://www.branchingminds.com/explore-branching-minds-platform). This demonstration does not copy their software or store intervention/casework.
+
+
 ## Original demo introduction
 
 **[Open the My Learners demonstration](https://edtechevans.github.io/mylearners/)**

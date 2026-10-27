@@ -3,6 +3,8 @@ import {applyFacultyDemo,DEFAULT_TEACHER_ID} from './faculty-demo.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
+import {createSSSDemoRecords} from './sss-demo-data.mjs';
+import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs';
 import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs';
 import {esc} from './v2-ui.mjs';
@@ -16,7 +18,8 @@ import {DP_RECORDS} from './board-dp-data.mjs';
 import {boardWindowFor,BOARD_DATA} from './board-map-data.mjs';
 import {parseBoardHash,boardShareUrl} from './board-map-links.mjs';
 const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(DATA.students),
- ACADEMIC_RECORDS=createAcademicDemoRecords(DATA.students);
+ ACADEMIC_RECORDS=createAcademicDemoRecords(DATA.students),
+ SSS_RECORDS=createSSSDemoRecords(DATA.students);
 const root=document.getElementById('app');
 const saved=(k,d)=>{try{return sessionStorage.getItem(k)||d}catch{return d}};
 const facultyPref=(teacherId,field,fallback='')=>{
@@ -34,7 +37,7 @@ const recallFaculty=()=>{
  state.academicMode=facultyPref(state.teacher,'mode','report');
  state.academicSubject=facultyPref(state.teacher,'subject','Mathematics');
 };
-const ROLE_IDS=['faculty','student','leader','board'];
+const ROLE_IDS=['faculty','student','sss','leader','board'];
 const initialHash=String(globalThis.location?.hash||'').replace(/^#\//,'').split('?')[0];
 const initialRole=ROLE_IDS.includes(initialHash)?initialHash:saved('my-role','faculty');
 const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
@@ -42,6 +45,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  division:'All',grade:'All',classId:'',studentId:'',query:'',metric:'engagement',window:'F26',details:false,checkin:false,
  academicMode:'report',academicSubject:'Mathematics',academicReportYear:'',studentGrade:'G7',
  studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
+ sssGrade:'All',sssQuery:'',sssStudentId:'',sssOpenGrades:['G3'],sssAcademicOpen:false,
  boardWindow:saved('my-board-window-v2','fall2026'),boardSubject:saved('my-board-subject','math'),
  boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all'),
  boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardTrendRange:'recent',boardOverviewChart:'map',
@@ -77,7 +81,7 @@ function metricCard(ss,id,window='F26',scope='main'){
  (sum.value===null?'':btn('explain:'+scope+':'+id,'How is this calculated?','quiet'))+'</article>';
 }
 function info(){return '<div class="notice"><strong>Demonstration only.</strong> Learners, report cards, IXL Mathematics levels, Core Phonics checks, F&P text levels, assessment history, survey-style check-ins and class assignments are all fictional. No actual AISG learner results or confidential climate-survey responses are used. Experience indices are exploratory descriptions, not validated scores or labels.</div>'}
-function header(){return '<header class="top"><div class="brand"><img src="assets/aisg-logo.webp" alt="AISG logo"><div><strong>My Learners</strong><span>Understand the whole learner</span></div></div><div class="roles"><span class="roles-label">VIEW</span>'+ROLE_IDS.map(r=>'<button data-role="'+r+'" aria-pressed="'+(state.role===r)+'" class="'+(state.role===r?'selected':'')+'">'+r[0].toUpperCase()+r.slice(1)+'</button>').join('')+'</div></header>'}
+function header(){return '<header class="top"><div class="brand"><img src="assets/aisg-logo.webp" alt="AISG logo"><div><strong>My Learners</strong><span>Understand the whole learner</span></div></div><div class="roles"><span class="roles-label">VIEW</span>'+ROLE_IDS.map(r=>'<button data-role="'+r+'" aria-pressed="'+(state.role===r)+'" class="'+(state.role===r?'selected':'')+'">'+(r==='sss'?'SSS':r[0].toUpperCase()+r.slice(1))+'</button>').join('')+'</div></header>'}
 function heading(title,desc){
  const asOf=new Date(DATA.asOf+'T12:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
  return '<div class="heading"><div><div class="eyebrow">AISG · 2026–27</div><h1>'+safe(title)+'</h1><p>'+safe(desc)+'</p></div>'+
@@ -134,7 +138,8 @@ function roster(ss,options={}){
    (latest?'<small>'+safe(mixSubject)+' · '+safe(latest.year)+' ('+safe(latest.grade)+')</small>':'<small>No issued report</small>')+'</span>':
    classAcademicCell(student,ACADEMIC_RECORDS,mode,subject);
   return {student,attendance:fmt(attendance.rate)+'%',growth:growthText,
-   eng:engagement,bel:belonging,academics,tags:demoTagsForStudent(student)};
+   eng:engagement,bel:belonging,academics,tags:demoTagsForStudent(student),
+   sss:SSS_RECORDS.has(student.id)};
  });
  const heading=across?'Students matching “'+safe(state.query.trim())+'”':'My students';
  const context=across?rows.length+' of '+ss.length+' assigned students across all classes':
@@ -150,7 +155,8 @@ function roster(ss,options={}){
    '<td>'+x.attendance+'</td><td>'+x.academics+'</td>'+
    (showMap?'<td>'+safe(x.growth)+'</td>':'')+
    (showSEL?'<td>'+x.eng+'</td><td>'+x.bel+'</td>':'')+
-   '<td>'+x.tags.map(t=>pill(t.label)).join(' ')+'</td></tr>').join('')+'</tbody></table></div>';
+   '<td>'+(x.sss?'<span class="pill sss-faculty-indicator" title="Fictional SSS programme membership">SSS</span> ':'')+
+    x.tags.map(t=>pill(t.label)).join(' ')+'</td></tr>').join('')+'</tbody></table></div>';
  const mobile='<div class="roster-mobile">'+data.map(x=>
   '<button class="roster-item" data-student="'+x.student.id+'" aria-label="Open learner '+safe(x.student.name)+'">'+
   '<img src="'+portrait(x.student.portraitSeed)+'" alt=""><span class="roster-item-body"><strong>'+
@@ -159,6 +165,7 @@ function roster(ss,options={}){
   '<span>'+safe(modeLabel)+': '+x.academics.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()+'</span>'+
   '<span>Attendance '+x.attendance+(showMap?' · MAP '+safe(x.growth):'')+'</span>'+
   (experienceEligible(x.student)?'<span>Engagement '+x.eng+' · Belonging '+x.bel+'</span>':'')+
+  (x.sss?'<span>SSS programme · demonstration</span>':'')+
   '</span><span class="roster-arrow" aria-hidden="true">›</span></button>').join('')+'</div>';
  return '<section class="roster roster-daily" aria-label="'+(across?'Search across assigned students':'My class roster')+'">'+
   '<div class="sectionhead"><div><h2>'+heading+'</h2><span class="tiny">'+context+'</span></div>'+
@@ -181,7 +188,8 @@ function learnerProfile(s,studentRole=false){
  const profileStart=studentRole?'':'<div class="row-between"><button class="back" data-action="back">← Back to my students</button></div>';
  const header='<div class="profile-head"><img src="'+portrait(s.portraitSeed)+'" alt="Fictional portrait">'+
   '<div><div class="eyebrow">'+(studentRole?'MY LEARNING PROFILE':'WHOLE LEARNER PROFILE')+'</div>'+
-  '<h1>'+safe(s.name)+'</h1><p>'+safe(s.grade)+' · '+safe(s.classId)+' · '+safe(s.campus)+'</p></div></div>';
+  '<h1>'+safe(s.name)+'</h1><p>'+safe(s.grade)+' · '+safe(s.classId)+' · '+safe(s.campus)+'</p>'+
+  (!studentRole&&SSS_RECORDS.has(s.id)?'<span class="sss-faculty-profile-tag">SSS · fictional cohort</span>':'')+'</div></div>';
  const history=studentRole&&experienceEligible(s)?
   '<section class="card student-checkin-history"><h3>How my check-ins have changed</h3><div class="trend">'+
   EXPERIENCE_WINDOWS.map(w=>{
@@ -442,6 +450,22 @@ function leader(){
   'They do not rank learners or indicate academic achievement.</p>'+
   '<h3>Over time</h3>'+trends+'</div></details></div>'+info();
 }
+function sss(){
+ const banner=heading('Student Support Services',
+  'A grade-organised, read-only demonstration of coordinated learner support.');
+ if(state.sssStudentId){
+  return banner+renderSSSStudentProfile({
+   data:DATA,academicRecords:ACADEMIC_RECORDS,experienceRecords:RECORDS,
+   sssRecords:SSS_RECORDS,studentId:state.sssStudentId,
+   reportYear:state.academicReportYear,academicOpen:state.sssAcademicOpen
+  })+info();
+ }
+ return banner+renderSSSOverview({
+  data:DATA,academicRecords:ACADEMIC_RECORDS,sssRecords:SSS_RECORDS,
+  grade:state.sssGrade,query:state.sssQuery,openGrades:state.sssOpenGrades
+ })+info();
+}
+
 function student(){
  const grades=GRADES;
  const current=grades.includes(state.studentGrade)?state.studentGrade:'G7';
@@ -458,7 +482,8 @@ function student(){
 let pinnedChartKey=null;
 function render(){
  pinnedChartKey=null;
- const content=state.role==='board'?renderBoard(state):state.role==='leader'?leader():state.role==='student'?student():faculty();
+ const content=state.role==='board'?renderBoard(state):state.role==='leader'?leader():
+  state.role==='sss'?sss():state.role==='student'?student():faculty();
  root.classList.toggle('board-presentation-mode',state.role==='board'&&!!state.boardPresentation);
  document.body.classList.toggle('board-drawer-open',state.role==='board'&&state.boardView==='explore'&&!!state.boardMapDetailsOpen);
  root.innerHTML=header()+'<main class="container" id="main">'+content+'</main><footer>'+
@@ -613,6 +638,22 @@ root.addEventListener('keydown',e=>{
  if(e.key==='Escape'){hideBoardFloat();if(pinnedChartKey)unpinChartPoint()}
 });
 root.addEventListener('click',e=>{
+ const sssStudent=e.target.closest('[data-sss-student]');
+ if(sssStudent&&state.role==='sss'){
+  const id=sssStudent.dataset.sssStudent;
+  if(!SSS_RECORDS.has(id))return;
+  state.sssStudentId=id;state.sssAcademicOpen=false;
+  state.academicReportYear='';render();
+  globalThis.window?.scrollTo?.(0,0);
+  return;
+ }
+ const sssBack=e.target.closest('[data-sss-back]');
+ if(sssBack&&state.role==='sss'){
+  state.sssStudentId='';state.sssAcademicOpen=false;
+  state.academicReportYear='';render();
+  globalThis.window?.scrollTo?.(0,0);
+  return;
+ }
  const academicMode=e.target.closest('[data-academic-mode]');
  if(academicMode){
   const options=academicModesFor(activeClass()?.grade||'');
@@ -625,7 +666,7 @@ root.addEventListener('click',e=>{
   return;
  }
  const reportYear=e.target.closest('[data-academic-report-year]');
- if(reportYear&&['faculty','student'].includes(state.role)){
+ if(reportYear&&['faculty','student','sss'].includes(state.role)){
   state.academicReportYear=reportYear.dataset.academicReportYear;
   render();
   root.querySelector('[data-academic-report-year="'+state.academicReportYear+'"]')?.focus({preventScroll:true});
@@ -811,6 +852,10 @@ root.addEventListener('change',e=>{
  if(el.dataset.select==='division'){state.division=v;state.grade='All';state.classId='';state.details=false}
  if(el.dataset.select==='grade'){state.grade=v;state.classId='';state.details=false}
  if(el.dataset.select==='leader-class'){state.classId=v;state.details=false}
+ if(el.dataset.select==='sss-grade'&&state.role==='sss'){
+  state.sssGrade=v;state.sssStudentId='';
+  if(v!=='All'&&!state.sssOpenGrades.includes(v))state.sssOpenGrades.push(v);
+ }
  if(el.dataset.select==='student'){state.studentId=v;state.details=false;state.academicReportYear='';
   state.studentGrade=DATA.userIndex.get(v)?.grade||state.studentGrade;
   state.studentReportsOpen=false;state.studentWellbeingOpen=false;}
@@ -823,6 +868,20 @@ root.addEventListener('change',e=>{
  render()
 });
 root.addEventListener('toggle',e=>{
+ if(state.role==='sss'){
+  const gradePanel=e.target.closest?.('details[data-sss-grade-panel]');
+  if(gradePanel){
+   const grade=gradePanel.dataset.sssGradePanel;
+   if(gradePanel.open&&!state.sssOpenGrades.includes(grade))state.sssOpenGrades.push(grade);
+   if(!gradePanel.open)state.sssOpenGrades=state.sssOpenGrades.filter(x=>x!==grade);
+   return;
+  }
+  const academics=e.target.closest?.('details[data-sss-detail]');
+  if(academics){
+   if(academics.dataset.sssDetail==='academics')state.sssAcademicOpen=academics.open;
+   return;
+  }
+ }
  const leaderPanel=e.target.closest?.('details[data-leader-panel]');
  if(leaderPanel&&state.role==='leader'){
   if(leaderPanel.dataset.leaderPanel==='academics')state.leaderAcademicOpen=leaderPanel.open;
@@ -834,7 +893,17 @@ root.addEventListener('toggle',e=>{
  if(panel.dataset.studentPanel==='reports')state.studentReportsOpen=panel.open;
  if(panel.dataset.studentPanel==='wellbeing')state.studentWellbeingOpen=panel.open;
 },true);
-root.addEventListener('input',e=>{if(e.target.matches('[data-query]')){const p=e.target.selectionStart;state.query=e.target.value;render();const input=document.querySelector('[data-query]');input?.focus();input?.setSelectionRange(p,p)}});
+root.addEventListener('input',e=>{
+ if(e.target.matches('[data-sss-query]')&&state.role==='sss'){
+  const p=e.target.selectionStart;
+  state.sssQuery=e.target.value;
+  render();
+  const field=root.querySelector('[data-sss-query]');
+  field?.focus({preventScroll:true});
+  if(Number.isInteger(p))field?.setSelectionRange(p,p);
+  return;
+ }
+ if(e.target.matches('[data-query]')){const p=e.target.selectionStart;state.query=e.target.value;render();const input=document.querySelector('[data-query]');input?.focus();input?.setSelectionRange(p,p)}});
 try{globalThis.window?.addEventListener?.('hashchange',()=>{
  const hash=String(globalThis.location?.hash||'');
  const id=hash.replace(/^#\//,'').split('?')[0];
