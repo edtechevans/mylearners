@@ -212,3 +212,130 @@
  .board-direction-label{font-size:9px}
  .board-schoolwide-inner{grid-template-columns:1fr}
 }
+
+
+/* Board-first navigation and historical story; no styling outside .board-view. */
+.board-view{--board-ink:#153d5c;--board-math:#176c94;--board-reading:#a65d29}
+.board-nav-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:11px;
+ padding:0 0 20px;margin:-3px 0 7px;border-bottom:1px solid #dce7ef}
+.board-nav-tabs{display:flex;align-items:center;gap:4px;border:1px solid #cbdce8;border-radius:12px;padding:4px;background:#f0f5f9}
+.board-nav-tabs button{font:800 13px/1.4 'Noto Sans',Arial,sans-serif;color:#3d6178;border:0;border-radius:8px;
+ padding:11px 19px;min-height:44px;background:transparent}
+.board-nav-tabs button.active{background:white;color:#103b61;box-shadow:0 2px 7px #16456818}
+.board-nav-tabs button:hover:not(.active){background:#e4eef5}
+.board-nav-tabs button:focus-visible,.board-overview-card:focus-visible,.board-action-primary:focus-visible,
+.board-copy-link:focus-visible{outline:3px solid #5da7d3;outline-offset:2px}
+.board-share-area{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.board-copy-link{border:1px solid #d2e0e9;border-radius:9px;background:white;color:#1a5e86;
+ padding:10px 14px;min-height:44px;font-size:12px;font-weight:800;cursor:pointer}
+.board-copy-link:hover{background:#eef5f9}
+.board-share-feedback{font-size:12px;color:#22675b;font-weight:750;max-width:300px;overflow-wrap:anywhere}
+.board-view .board-heading{margin-bottom:18px}
+.board-view .board-heading h1{font-size:clamp(28px,3.2vw,38px)}
+.board-overview{padding:10px 0 15px}
+.board-overview-intro{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:0 0 18px}
+.board-overview-intro h2{font-size:clamp(21px,2.7vw,26px);margin:5px 0 4px}
+.board-overview-intro p{color:#49657a;font-size:13px;margin:0}
+.board-overview-source{font-size:12px;color:#567083;white-space:nowrap}
+.board-overview-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:23px}
+.board-overview-card{font:inherit;text-align:left;display:flex;flex-direction:column;align-items:flex-start;
+ gap:10px;min-width:0;background:white;border:1px solid #d6e4ec;border-radius:14px;padding:22px 20px;
+ min-height:191px;cursor:pointer}
+.board-overview-card:hover{border-color:#75a7c1;box-shadow:0 6px 18px #183d5710}
+.board-overview-card .eyebrow{color:#4a6a7f;line-height:1.5;font-size:11px}
+.board-overview-card>strong{font-size:clamp(25px,2.7vw,32px);line-height:1.15;letter-spacing:-.045em;color:#113c5d}
+.board-overview-card-note{font-size:12px;line-height:1.62;color:#415f74;flex:1}
+.board-overview-card-link{font-size:12px;color:#0c5b82;font-weight:800;padding-top:4px}
+.board-overview-card-link span{font-size:16px}
+.board-historical-chart{margin-bottom:13px}
+.board-overview-charthead{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.board-overview-charthead h2{font-size:clamp(19px,2.3vw,23px);margin:5px 0 4px}
+.board-overview-charthead p{font-size:12px;color:#49697d;margin:0}
+.board-overview-filterarea{display:flex;align-items:end;gap:12px;flex-wrap:wrap}
+.board-overview-control{display:flex;flex-direction:column;gap:6px}
+.board-overview-control>span{color:#46667c;font-size:11px;font-weight:800}
+.board-overview-control .board-segmented{min-height:44px}
+.board-overview-control .board-segmented button{min-height:41px;padding:8px 14px}
+.board-overview-chartmeta{display:flex;justify-content:space-between;gap:8px 17px;align-items:center;
+ flex-wrap:wrap;margin:22px 0 0;color:#4c687c;font-size:12px}
+.board-trend-series-legend{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-weight:800}
+.board-trend-series-legend>span{display:flex;align-items:center;gap:7px}
+.board-dot.math{background:var(--board-math)}.board-dot.reading{background:var(--board-reading)}
+.board-trend-scroller{overflow-x:auto;overflow-y:hidden;max-width:100%;scrollbar-color:#a5bdca #edf4f8;
+ scroll-padding:8px;overscroll-behavior-x:contain}
+.board-trend-svg{width:100%;min-width:920px;height:auto;display:block}
+.board-trend-grid{stroke:#e4ebf0;stroke-width:1.4}
+.board-trend-tick{font:700 12px 'Noto Sans',Arial,sans-serif;fill:#5b7486}
+.board-trend-year{font:700 12px 'Noto Sans',Arial,sans-serif;fill:#3e5d70}
+.board-trend-axislabel{font:800 12px 'Noto Sans',Arial,sans-serif;fill:#405f73}
+.board-trend-value{font:800 13px 'Noto Sans',Arial,sans-serif;paint-order:stroke;stroke:#fff;stroke-width:3px}
+.board-mobile-swipe{display:none}
+.board-overview-insight{font-size:13px;line-height:1.75;color:#344f64;background:#f3f7f9;
+ padding:15px 17px;border-radius:10px;margin:7px 0 12px}
+.board-overview-table{margin-bottom:5px}
+.board-overview-table .board-table{min-width:650px}
+.board-overview-next{display:flex;align-items:center;justify-content:space-between;gap:14px;
+ padding:18px 20px;margin:15px 0 17px;border:1px solid #d5e4ed;border-radius:12px;background:#fff}
+.board-overview-next strong{font-size:15px;color:#17425f}
+.board-overview-next p{font-size:12px;color:#526d7f;margin:3px 0}
+.board-action-primary{border:0;background:#123f63;color:white;padding:12px 18px;min-height:45px;border-radius:10px;
+ font:800 13px 'Noto Sans',Arial,sans-serif;cursor:pointer;white-space:nowrap}
+.board-action-primary:hover{background:#176a99}
+.board-overview-method{font-size:12px;line-height:1.75;color:#586f81;margin:14px 0 0}
+.board-view .board-indicator.is-unavailable{background:#f7f9fa;border-color:#dce6eb}
+.board-view .board-indicator.is-unavailable strong{font-size:25px;color:#6b8495}
+.board-view .board-indicator.is-unavailable .board-indicator-detail{color:#607789}
+.board-view .board-filter-label,.board-view .board-filter-selects label{font-size:12px;color:#385c75}
+.board-view .board-bar-track{height:22px}
+.board-view .board-bar-zero{height:28px;top:-3px}
+.board-view .board-bar-fill{height:10px;top:6px}
+.board-view .board-bar-value{font-size:13px}
+.board-view .board-bar-name{font-size:12px}
+.board-view .board-grade-name{font-size:13px}
+.board-view .board-grade-row{padding:12px 0}
+.board-view .board-axis{font-size:12px}
+.board-view .board-chart-caption{font-size:12px;line-height:1.65}
+.board-view .board-indicator-label{font-size:12px}
+.board-view .board-indicator-detail{font-size:12px;line-height:1.55}
+.board-view .board-details summary{min-height:50px}
+.board-view .board-segmented button{min-height:42px}
+.board-achievement-grade-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:18px 0 14px}
+.board-achievement-grade{border:1px solid #cde2e3;background:#f7fbfb;border-radius:10px;padding:13px;
+ display:flex;flex-direction:column;gap:6px}
+.board-achievement-grade strong{color:#1d485f;font-size:14px}
+.board-achievement-grade span{color:#1c6b63;font-weight:800;font-size:12px}
+.board-not-available{display:flex;align-items:center;flex-wrap:wrap;gap:5px 10px;
+ border-top:1px solid #e2e9ef;margin-top:12px;padding-top:13px;color:#516d80;font-size:12px}
+.board-not-available strong{color:#315b74}
+.board-direction-panel .board-chart-top p{font-size:13px}
+@media(max-width:1020px){
+ .board-overview-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .board-overview-card:last-child{grid-column:1 / -1;min-height:150px}
+ .board-overview-charthead{display:block}
+ .board-overview-filterarea{margin-top:17px}
+}
+@media(max-width:650px){
+ .board-nav-row{align-items:stretch}
+ .board-nav-tabs{width:100%}
+ .board-nav-tabs button{flex:1;padding:11px 9px}
+ .board-share-area{width:100%;justify-content:flex-start}
+ .board-overview-intro{display:block}
+ .board-overview-source{display:block;white-space:normal;margin-top:9px}
+ .board-overview-cards{grid-template-columns:1fr;gap:9px}
+ .board-overview-card,.board-overview-card:last-child{grid-column:auto;min-height:0;padding:17px;gap:7px}
+ .board-overview-card>strong{font-size:28px}
+ .board-overview-filterarea{display:grid;grid-template-columns:1fr;gap:10px}
+ .board-overview-chartmeta{align-items:flex-start;display:grid}
+ .board-mobile-swipe{display:block;font-size:12px;color:#4f6c7e;margin:8px 0}
+ .board-trend-svg{min-width:900px}
+ .board-overview-next{display:block;padding:16px}
+ .board-overview-next button{margin-top:12px;width:100%}
+ .board-achievement-grade-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .board-view .board-grade-name{font-size:12px}
+ .board-view .board-bar-name{font-size:11px}
+ .board-view .board-bar-value{font-size:12px}
+ .board-view .board-bar-track{height:20px}
+ .board-view .board-bar-zero{height:26px}
+ .board-view .board-bar-fill{top:5px}
+ .board-share-feedback{max-width:100%}
+}
