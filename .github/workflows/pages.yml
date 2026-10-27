@@ -119,7 +119,7 @@ jobs:
           grep -q 'vs regional schools' /tmp/mylearners-board-explore-dom.html
           grep -q '>MAP</button>' /tmp/mylearners-board-explore-dom.html
           timeout 45s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --virtual-time-budget=6000 --dump-dom 'http://127.0.0.1:8765/#/board?view=dp&metric=average' > /tmp/mylearners-board-dp-dom.html 2>/tmp/mylearners-dp-chrome.log
-          grep -q 'IB Diploma results' /tmp/mylearners-board-dp-dom.html
+          grep -q 'IB Diploma Results' /tmp/mylearners-board-dp-dom.html
           grep -q 'board-dp-graphic-grid' /tmp/mylearners-board-dp-dom.html
           grep -q 'data-board-dp-select="year"' /tmp/mylearners-board-dp-dom.html
           grep -q 'board-dp-graphic-consistency' /tmp/mylearners-board-dp-dom.html
