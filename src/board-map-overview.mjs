@@ -4,8 +4,8 @@
  * Board-only module. No student identifiers.
  */
 import {BOARD_DATA,BOARD_SUBJECTS,boardSummary,BOARD_METHODS} from './board-map-data.mjs';
-import {DP_RECORDS} from './board-dp-data.mjs';
-import {renderDPOverviewTrend} from './board-dp-view.mjs';
+import {DP_RECORDS} from './board-dp-data.mjs?v=20261028exam1';
+import {renderDPOverviewTrend} from './board-dp-view.mjs?v=20261028exam1';
 const SUBJECT_KEYS=['math','reading','language'];
 const NAME={math:'Mathematics',reading:'Reading',language:'Language Usage'};
 const COLOR={math:'#2479bd',reading:'#7558c5',language:'#13906c'};
