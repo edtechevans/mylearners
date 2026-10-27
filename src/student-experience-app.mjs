@@ -22,7 +22,9 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  division:'All',grade:'All',classId:'',studentId:'',query:'',metric:'engagement',window:'F26',details:false,checkin:false,
  boardWindow:saved('my-board-window-v2','fall2026'),boardSubject:saved('my-board-subject','math'),
  boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all'),
- boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardOverviewChart:'map',boardDpMetric:'average',
+ boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardTrendRange:'recent',boardOverviewChart:'map',
+ boardMapDetailsOpen:false,boardMapCompareSeasons:false,boardMapGrowthOpen:false,boardPresentation:false,
+ boardDpMetric:'average',
  boardDpYear:String(DP_RECORDS.at(-1).end),boardDpRange:'all'};
 const boardDeepLink=parseBoardHash(globalThis.location?.hash);
 if(boardDeepLink&&state.role==='board')Object.assign(state,boardDeepLink);
@@ -184,6 +186,7 @@ function student(){
 }
 function render(){
  const content=state.role==='board'?renderBoard(state):state.role==='leader'?leader():state.role==='student'?student():faculty();
+ root.classList.toggle('board-presentation-mode',state.role==='board'&&!!state.boardPresentation);
  root.innerHTML=header()+'<main class="container" id="main">'+content+'</main><footer>'+
  (state.role==='board'?'AISG Board · Aggregated MAP and IB Diploma outcomes · No individual student scores published':
  'My Learners demonstration · Learners, assessments and student check-ins fictional')+
@@ -313,12 +316,28 @@ root.addEventListener('click',e=>{
  if(comparisonTile){
   const windowId=comparisonTile.dataset.boardTileWindow,subject=comparisonTile.dataset.boardTileSubject;
   if(BOARD_DATA[windowId]&&['math','reading','language'].includes(subject)){
+   if(state.boardWindow!==windowId||state.boardSubject!==subject)state.boardGrade='all';
    state.boardWindow=windowId;state.boardSubject=subject;
+   state.boardMapDetailsOpen=true;state.boardMapGrowthOpen=false;
    render();
    root.querySelector('#board-map-detail')?.scrollIntoView?.({block:'start',behavior:'smooth'});
   }
   return;
  }
+ const presentation=e.target.closest('[data-board-presentation]');
+ if(presentation){
+  state.boardPresentation=!state.boardPresentation;
+  try{globalThis.history?.replaceState?.(null,'',boardShareUrl(globalThis.location,state))}catch{}
+  render();return;
+ }
+ const closeDetails=e.target.closest('[data-board-close-details]');
+ if(closeDetails){state.boardMapDetailsOpen=false;state.boardGrade='all';render();return}
+ const dismissGrowth=e.target.closest('[data-board-dismiss-growth]');
+ if(dismissGrowth){state.boardMapGrowthOpen=false;render();return}
+ const compare=e.target.closest('[data-board-compare-seasons]');
+ if(compare){state.boardMapCompareSeasons=!state.boardMapCompareSeasons;render();return}
+ const timeRange=e.target.closest('[data-board-trend-range]');
+ if(timeRange){state.boardTrendRange=timeRange.dataset.boardTrendRange==='all'?'all':'recent';render();return}
  const boardView=e.target.closest('[data-board-view]');
  if(boardView){
   state.boardView=['overview','explore','dp'].includes(boardView.dataset.boardView)?
@@ -339,9 +358,13 @@ root.addEventListener('click',e=>{
  const boardGo=e.target.closest('[data-board-go]');
  if(boardGo){
   const [windowId,subject]=String(boardGo.dataset.boardGo).split(':');
-  if(['math','reading','language'].includes(subject)){
-   state.boardWindow=windowId;state.boardSubject=subject;
+  if(BOARD_DATA[windowId]&&['math','reading','language','growth'].includes(subject)){
+   state.boardWindow=windowId;
+   state.boardSubject=subject==='growth'?'math':subject;
    state.boardDivision='all';state.boardGrade='all';state.boardView='explore';
+   state.boardMapGrowthOpen=subject==='growth';
+   state.boardMapDetailsOpen=subject!=='growth';
+   state.boardMapCompareSeasons=false;
    render();globalThis.window?.scrollTo?.(0,0);
   }
   return;
