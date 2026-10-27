@@ -113,7 +113,7 @@ export function renderBoardDP(state){
  [...DP_RECORDS].reverse().map(r=>option(r.end,r.year,end)).join('')+'</select></label>'+
  '<label class="board-dp-control-group"><span class="board-filter-label">Historical range</span>'+
  '<select data-board-dp-select="range" aria-label="Diploma trend years">'+
- option('all','All reported years',range)+option('recent','Most recent 3 years',range)+'</select></label>'+
+ option('all','All 7 years',range)+option('recent','Latest 3 years',range)+'</select></label>'+
  '</div>'+
  '<section class="board-dp-comparison-panel">'+
  '<div class="board-dp-panel-heading"><div><span class="eyebrow">DIPLOMA ACHIEVEMENT · '+safe(selected.year)+'</span>'+
