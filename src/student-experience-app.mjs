@@ -8,6 +8,7 @@ import {esc} from './v2-ui.mjs';
 import {renderBoard} from './board-map-view.mjs';
 import {renderTrendPointDetails} from './board-map-overview.mjs';
 import {renderDPPointDetails} from './board-dp-view.mjs';
+import {DP_RECORDS} from './board-dp-data.mjs';
 import {boardWindowFor} from './board-map-data.mjs';
 import {parseBoardHash,boardShareUrl} from './board-map-links.mjs';
 const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(DATA.students);
@@ -21,7 +22,8 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  division:'All',grade:'All',classId:'',studentId:'',query:'',metric:'engagement',window:'F26',details:false,checkin:false,
  boardWindow:saved('my-board-window-v2','fall2026'),boardSubject:saved('my-board-subject','math'),
  boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all'),
- boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardOverviewChart:'map',boardDpMetric:'average'};
+ boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardOverviewChart:'map',boardDpMetric:'average',
+ boardDpYear:String(DP_RECORDS.at(-1).end),boardDpRange:'all'};
 const boardDeepLink=parseBoardHash(globalThis.location?.hash);
 if(boardDeepLink&&state.role==='board')Object.assign(state,boardDeepLink);
 const safe=(v)=>esc(v??'');
@@ -293,9 +295,28 @@ root.addEventListener('click',e=>{
   return;
  }
  const dpPoint=e.target.closest('[data-board-dp-point]');
- if(dpPoint){showDPPoint(dpPoint);
+ if(dpPoint){
+  const [metric,year]=String(dpPoint.dataset.boardDpPoint||'').split(':');
+  if(state.boardView==='dp'&&DP_RECORDS.some(row=>row.end===Number(year))){
+   state.boardDpYear=String(year);
+   if(state.boardDpRange==='recent'&&!DP_RECORDS.slice(-3).some(row=>row.end===Number(year)))
+    state.boardDpRange='all';
+   render();
+   const selected=root.querySelector('[data-board-dp-point="'+metric+':'+year+'"]');
+   if(selected)showDPPoint(selected);
+  }else showDPPoint(dpPoint);
   if(e.detail>0&&window.matchMedia?.('(pointer: coarse)').matches)
    root.querySelector('.board-dp-inspector')?.scrollIntoView?.({block:'nearest',behavior:'smooth'});
+  return;
+ }
+ const comparisonTile=e.target.closest('[data-board-tile-window][data-board-tile-subject]');
+ if(comparisonTile){
+  const windowId=comparisonTile.dataset.boardTileWindow,subject=comparisonTile.dataset.boardTileSubject;
+  if(BOARD_DATA[windowId]&&['math','reading','language'].includes(subject)){
+   state.boardWindow=windowId;state.boardSubject=subject;
+   render();
+   root.querySelector('#board-map-detail')?.scrollIntoView?.({block:'start',behavior:'smooth'});
+  }
   return;
  }
  const boardView=e.target.closest('[data-board-view]');
@@ -361,6 +382,23 @@ root.addEventListener('click',e=>{
  const link=e.target.closest('[data-student]');if(link){state.studentId=link.dataset.student;state.details=false;render();window.scrollTo(0,0)}
 });
 root.addEventListener('change',e=>{
+ const dpSelect=e.target.closest('[data-board-dp-select]');
+ if(dpSelect){
+  if(dpSelect.dataset.boardDpSelect==='year'){
+   const valid=DP_RECORDS.some(r=>String(r.end)===dpSelect.value);
+   if(valid){
+    state.boardDpYear=dpSelect.value;
+    if(state.boardDpRange==='recent'&&!DP_RECORDS.slice(-3).some(r=>String(r.end)===dpSelect.value))
+     state.boardDpRange='all';
+   }
+  }
+  if(dpSelect.dataset.boardDpSelect==='range'&&['all','recent'].includes(dpSelect.value)){
+   state.boardDpRange=dpSelect.value;
+   if(state.boardDpRange==='recent'&&!DP_RECORDS.slice(-3).some(r=>String(r.end)===String(state.boardDpYear)))
+    state.boardDpYear=String(DP_RECORDS.at(-1).end);
+  }
+  render();return;
+ }
  const boardSelect=e.target.closest('[data-board-select]');
  if(boardSelect){
   if(boardSelect.dataset.boardSelect==='division'){state.boardDivision=boardSelect.value;state.boardGrade='all'}
