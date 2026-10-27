@@ -812,3 +812,21 @@
  .board-view .board-comparison-basis{max-width:100%}
  .board-view .board-dp-control-group select{font-size:11px}
 }
+
+
+/* Final mobile DP filter refinement: full-width metric switch, legible year/range. */
+@media(max-width:760px){
+ .board-view .board-dp-controls{display:flex;gap:10px;align-items:stretch}
+ .board-view .board-dp-control-group:first-child{
+  flex:0 0 100%;width:100%;max-width:100%
+ }
+ .board-view .board-dp-control-group:not(:first-child){
+  flex:1 1 calc(50% - 5px);min-width:0
+ }
+ .board-view .board-dp-control-group select{
+  width:100%;min-width:0;min-height:46px;font-size:12px;
+  padding-left:10px;padding-right:23px
+ }
+ .board-view .board-dp-control-group .board-segmented{width:100%}
+ .board-view .board-dp-control-group .board-segmented button{flex:1}
+}
