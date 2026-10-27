@@ -9,7 +9,8 @@ import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs';
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic} from './academic-journey-data.mjs';
-import {renderClassAcademicPanel,renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs';
+import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs';
+import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,evidenceRosterColumn} from './class-evidence.mjs';
 import {renderStudentOverview} from './student-daily-overview.mjs';
 import {renderBoard} from './board-map-view.mjs';
 import {renderTrendPointDetails} from './board-map-overview.mjs';
@@ -29,12 +30,14 @@ const rememberFaculty=()=>{
  try{
   localStorage.setItem('mylearners-demo-'+state.teacher+'-class',state.classId);
   localStorage.setItem('mylearners-demo-'+state.teacher+'-mode',state.academicMode);
+  localStorage.setItem('mylearners-demo-'+state.teacher+'-evidence',state.classEvidence);
   localStorage.setItem('mylearners-demo-'+state.teacher+'-subject',state.academicSubject)
  }catch{}
 };
 const recallFaculty=()=>{
  state.classId=facultyPref(state.teacher,'class','');
  state.academicMode=facultyPref(state.teacher,'mode','report');
+ state.classEvidence=facultyPref(state.teacher,'evidence','report');
  state.academicSubject=facultyPref(state.teacher,'subject','Mathematics');
 };
 const ROLE_IDS=['faculty','student','sss','leader','board'];
@@ -44,6 +47,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  teacher:saved('my-teacher',DEFAULT_TEACHER_ID),
  division:'All',grade:'All',classId:'',studentId:'',query:'',metric:'engagement',window:'F26',details:false,checkin:false,
  academicMode:'report',academicSubject:'Mathematics',academicReportYear:'',studentGrade:'G7',
+ classEvidence:'report',classMapSubject:'Mathematics',
  studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
  sssGrade:'All',sssQuery:'',sssStudentId:'',sssOpenGrades:['G3'],sssAcademicOpen:false,
  boardWindow:saved('my-board-window-v2','fall2026'),boardSubject:saved('my-board-subject','math'),
@@ -128,17 +132,19 @@ function roster(ss,options={}){
  const across=!!options.across;
  const grade=ss[0]?.grade||activeClass()?.grade||'';
  const allowed=academicModesFor(grade);
- const mode=across?'report':allowed.includes(state.academicMode)?state.academicMode:'report';
+ const mode=across?'report':normalizeEvidenceMode(grade,state.classEvidence);
  const reportSubjects=academicFor(ACADEMIC_RECORDS,ss[0]?.id).reports?.[0]?.subjects||[];
  const subject=reportSubjects.some(x=>x.subject===state.academicSubject)?
   state.academicSubject:reportSubjects[0]?.subject||'';
  const modeLabel=across?'Last issued report':{
-  report:'Report · '+(subject||'last issued'),ixl:'IXL Math · level',
-  core:'Core Phonics · items',fp:'F&P · text level'}[mode]||'Academic result';
+  report:'Report · '+(subject||'last issued'),map:'MAP '+state.classMapSubject+' growth',
+  ixl:'IXL Math · level',core:'Core Phonics · items',fp:'F&P · text level',
+  engagement:'Engagement · check-in',belonging:'Belonging · check-in',
+  flourishing:'Maia Flourishing',commoncore:'Common Core evidence'}[mode]||'Learning evidence';
  const query=state.query.trim().toLowerCase();
  const rows=ss.filter(s=>!query||s.name.toLowerCase().includes(query));
- const showMap=rows.some(s=>gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10);
- const showSEL=rows.some(s=>experienceEligible(s));
+ const showMap=across&&rows.some(s=>gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10);
+ const showSEL=across&&rows.some(s=>experienceEligible(s));
  const data=rows.map(student=>{
   const engagement=experienceEligible(student)?fmt(experienceFor(RECORDS,student.id,'engagement')?.value):'—';
   const belonging=experienceEligible(student)?fmt(experienceFor(RECORDS,student.id,'belonging')?.value):'—';
@@ -153,7 +159,8 @@ function roster(ss,options={}){
   const academics=across?
    '<span class="roster-mixed-academic">'+classAcademicCell(student,ACADEMIC_RECORDS,'report',mixSubject)+
    (latest?'<small>'+safe(mixSubject)+' · '+safe(latest.year)+' ('+safe(latest.grade)+')</small>':'<small>No issued report</small>')+'</span>':
-   classAcademicCell(student,ACADEMIC_RECORDS,mode,subject);
+   evidenceRosterColumn(student,{mode,academic:ACADEMIC_RECORDS,map:DATA.map,
+    experience:RECORDS,subject,mapSubject:state.classMapSubject,window:'F26'});
   return {student,attendance:fmt(attendance.rate)+'%',growth:growthText,
    eng:engagement,bel:belonging,academics,tags:demoTagsForStudent(student),
    sss:SSS_RECORDS.has(student.id)};
@@ -288,8 +295,10 @@ function faculty(){
   quickStat('Attendance',fmt(meanAttendance)+'%','Through 8 Oct 2026')+
   (gradeHasCheckins?score('engagement')+score('belonging'):
    '<div class="quick-note">Student-reported experience indices start at Grade 3 in this demo.</div>')+'</div>';
- const reportControls=searching?'':renderClassAcademicPanel(ss,ACADEMIC_RECORDS,
-  state.academicMode,state.academicSubject,{compact:true});
+ const reportControls=searching?'':renderClassEvidencePanel(ss,{
+  academic:ACADEMIC_RECORDS,map:DATA.map,experience:RECORDS,
+  mode:state.classEvidence,subject:state.academicSubject,
+  mapSubject:state.classMapSubject,window:'F26'});
  return heading('My students','Find a learner, see essential information, or choose a class result.')+
   toolbar+summary+
   roster(searching?ownStudents():ss,{across:searching,controls:reportControls})+
@@ -695,6 +704,14 @@ root.addEventListener('click',e=>{
   globalThis.window?.scrollTo?.(0,0);
   return;
  }
+ const evidenceTab=e.target.closest('[data-class-evidence]');
+ if(evidenceTab&&state.role==='faculty'){
+  const next=evidenceTab.dataset.classEvidence;
+  if(!evidenceModesForGrade(activeClass()?.grade||'').includes(next))return;
+  state.classEvidence=next;rememberFaculty();render();
+  root.querySelector('[data-class-evidence="'+next+'"]')?.focus({preventScroll:true});
+  return;
+ }
  const academicMode=e.target.closest('[data-academic-mode]');
  if(academicMode){
   const options=academicModesFor(activeClass()?.grade||'');
@@ -846,6 +863,14 @@ root.addEventListener('click',e=>{
  const link=e.target.closest('[data-student]');if(link){state.studentId=link.dataset.student;state.details=false;state.academicReportYear='';render();window.scrollTo(0,0)}
 });
 root.addEventListener('change',e=>{
+ const mapSelect=e.target.closest('[data-map-subject]');
+ if(mapSelect&&state.role==='faculty'){
+  if(['Mathematics','Reading','Language Usage'].includes(mapSelect.value)){
+   state.classMapSubject=mapSelect.value;render();
+   root.querySelector('[data-map-subject]')?.focus({preventScroll:true});
+  }
+  return;
+ }
  const subjectSelect=e.target.closest('[data-academic-subject]');
  if(subjectSelect&&state.role==='faculty'){
   state.academicSubject=subjectSelect.value;rememberFaculty();render();
@@ -892,6 +917,7 @@ root.addEventListener('change',e=>{
   state.academicReportYear='';
   if(!academicModesFor(DATA.classIndex.get(v)?.grade).includes(state.academicMode))
    state.academicMode='report';
+  state.classEvidence=normalizeEvidenceMode(DATA.classIndex.get(v)?.grade,state.classEvidence);
   rememberFaculty();
  }
  if(el.dataset.select==='division'){state.division=v;state.grade='All';state.classId='';state.details=false}
