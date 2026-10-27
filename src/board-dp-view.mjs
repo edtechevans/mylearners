@@ -82,6 +82,7 @@ export function renderBoardDP(state){
  '<button type="button" data-board-dp-metric="average" aria-pressed="'+(selected==='average')+'" class="'+(selected==='average'?'active':'')+'">Average points</button>'+
  '<button type="button" data-board-dp-metric="passRate" aria-pressed="'+(selected==='passRate')+'" class="'+(selected==='passRate'?'active':'')+'">Pass rate</button></div></div>'+
  '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Scroll to inspect annual Diploma outcomes">'+dpLineChart(selected)+'</div>'+
+ '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
  '<div class="board-dp-inspector" aria-live="polite"><p><strong>Select a year</strong> to see its reported result and source.</p></div>'+
  '<p class="board-chart-caption">Scores are on the 0–45 Diploma point scale; pass rates are on the 0–100% scale. The chart deliberately uses the full scale rather than exaggerating small year-on-year variations. No world average is inferred.</p></section>'+
  dpOutcomesTable()+dpPathways()+
