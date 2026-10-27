@@ -215,6 +215,15 @@ def main():
                     require(p.evaluate("document.documentElement.scrollWidth<=innerWidth+2"),
                             "DP page horizontal overflow at "+str(w))
                     require(p.locator('[data-board-dp-select="year"]').is_visible(),"DP year filter hidden")
+                    if w<=390:
+                        groups=p.locator(".board-dp-control-group")
+                        metric_box=groups.nth(0).bounding_box()
+                        year_box=groups.nth(1).bounding_box()
+                        range_box=groups.nth(2).bounding_box()
+                        require(metric_box["y"]+metric_box["height"]<=year_box["y"]+3,
+                                "Mobile metric toggle must have its own row")
+                        require(abs(year_box["y"]-range_box["y"])<5,
+                                "Mobile Year and Range should align as two clear controls")
                     if w==390:capture(p,"06-DP-mobile-390")
                     p.locator('[data-board-dp-select="year"]').select_option("2024")
                     require("92%" in p.locator(".board-dp-graphic-pass").inner_text(),"Mobile DP filtered pass rate")
