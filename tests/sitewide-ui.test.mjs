@@ -59,8 +59,8 @@ test('dashboard switching preserves location, restores focus and starts from top
  assert.ok(navFoci>0);
  assert.ok(pageScrolls>previous);
  for(const [role,headline] of [
-  ['leader','Leadership overview'],['board','AISG AGGREGATED DATA'],
-  ['student','My learning, my story.'],['faculty','My students']
+  ['leader','Leadership Overview'],['board','AISG AGGREGATED DATA'],
+  ['student','My Learning, My Story.'],['faculty','My Students']
  ]){
   click('[data-role]',{role});
   assert.match(node.innerHTML,new RegExp(headline));
@@ -92,7 +92,7 @@ test('sitewide polish keeps accessible system fallback and scope of data-safe vi
 
 test('Leaders use a simple four-metric overview with grade-eligible academic checks',()=>{
  click('[data-role]',{role:'leader'});
- assert.match(node.innerHTML,/Leadership overview/);
+ assert.match(node.innerHTML,/Leadership Overview/);
  assert.match(node.innerHTML,/Whole school · Fictional data · Fall 2026/);
  assert.equal((node.innerHTML.match(/<article class="leader-stat">/g)||[]).length,4);
  assert.match(node.innerHTML,/Report card coverage/);
