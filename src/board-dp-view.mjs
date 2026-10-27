@@ -161,12 +161,12 @@ export function renderBoardDP(state){
   '</div></details>';
  return '<section class="board-dp board-dp-simplified">'+
  '<div class="board-dp-intro"><div><span class="eyebrow">GRADUATION OUTCOMES · IB DIPLOMA PROGRAMME</span>'+
- '<h2>IB Diploma results</h2><p>School outcomes alongside the global IB reference, with cohort context.</p></div>'+
+ '<h2>IB Diploma Results</h2><p>School outcomes alongside the global IB reference, with cohort context.</p></div>'+
  '<label class="board-dp-year-simple">Graduating class <select data-board-dp-select="year" aria-label="Diploma school year">'+
  [...DP_RECORDS].reverse().map(r=>option(r.end,String(r.end)+(r.verify?' · unconfirmed':''),end)).join('')+'</select></label></div>'+
  '<section class="board-dp-comparison-panel"><div class="board-dp-panel-heading"><div>'+
  '<span class="eyebrow">DIPLOMA OUTCOMES · CLASS OF '+end+'</span>'+
- '<h3>Diploma at a glance</h3><p>Each number describes the selected graduating cohort.</p></div>'+
+ '<h3>Diploma at a Glance</h3><p>Each number describes the selected graduating cohort.</p></div>'+
  (selected.verify?'<span class="board-dp-status">2026 school results · confirmation pending</span>':'')+'</div>'+
  '<div class="board-dp-graphic-grid">'+
  outcomeTile('average','AISG average Diploma score',valueText(selected.average,'average'),'/45',
@@ -182,7 +182,7 @@ export function renderBoardDP(state){
  'Global values: school summary (2023–2025); IB published May 2026 world mean.</p></section>'+
  '<section class="board-panel board-dp-panel"><div class="board-dp-chart-top"><div>'+
  '<span class="eyebrow">HISTORICAL OUTCOMES</span>'+
- '<h3>'+(metric==='average'?'Diploma average points':'Diploma pass rate')+' over time</h3>'+
+ '<h3>'+(metric==='average'?'Diploma Average Points':'Diploma Pass Rate')+' Over Time</h3>'+
  '<p>Nine graduating years · '+safe(detailNote)+'</p></div>'+
  '<div class="board-segmented" role="group" aria-label="Select Diploma history measure">'+
  '<button type="button" data-board-dp-metric="average" aria-pressed="'+(metric==='average')+
@@ -217,7 +217,7 @@ export function renderDPOverviewTrend(state){
  const selected=state.boardDpMetric==='passRate'?'passRate':'average';
  return '<div class="board-dp-overview-trend">'+
  '<div class="board-dp-chart-top"><div><span class="eyebrow">GRADUATION OUTCOMES · IB DIPLOMA</span>'+
- '<h2>Diploma outcomes over time</h2>'+
+ '<h2>Diploma Outcomes Over Time</h2>'+
  '<p>Nine graduating years · '+(selected==='average'?'Average Diploma points out of 45':'Diploma pass rate as a percentage')+'</p></div>'+
  '<div class="board-segmented" role="group" aria-label="IB Diploma historical measure">'+
  '<button type="button" data-board-dp-metric="average" aria-pressed="'+(selected==='average')+'" class="'+(selected==='average'?'active':'')+'">Average points</button>'+
