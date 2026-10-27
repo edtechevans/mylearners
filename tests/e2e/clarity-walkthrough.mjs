@@ -127,6 +127,35 @@ try{
  }
  await run('board-map-1440','board?view=explore&window=fall2026&subject=math','.board-controls',1440,900);
  await run('board-dp-1440','board?view=dp&metric=average','.board-dp',1440,900);
+ await run('board-dp-global-2025-1440','board?view=dp&metric=average','.board-dp',1440,900,
+  async()=>{
+   const select=await evaluate("(function(){const s=document.querySelector('[data-board-dp-select=\"year\"]');s.value='2025';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
+   assert(select,'DP graduation year selector missing');await sleep(180);
+   assert(await evaluate("document.querySelector('.board-dp-comparison-panel')?.textContent.includes('33.66')"),
+    'The authoritative Class of 2025 average must be 33.66');
+   assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('30.58')"),
+    'The 2025 world Diploma average should be visible');
+   assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('42 / 51')"),
+    'Cohort participation should use 42 of 51');
+   assert(await evaluate("document.querySelectorAll('.board-dp-world-point').length>=3"),
+    'World chart line should include comparable years');
+   await click('[data-board-dp-global]');
+   assert(await evaluate("document.querySelectorAll('.board-dp-world-point').length===0"),
+    'World comparison toggle did not remove world series');
+   await click('[data-board-dp-global]');
+   assert(await evaluate("document.querySelectorAll('.board-dp-world-point').length>=3"),
+    'World comparison toggle did not restore world series');
+  });
+ await run('board-dp-2026-provenance-1440','board?view=dp&metric=average','.board-dp',1440,900,
+  async()=>{
+   assert(await evaluate("document.querySelector('.board-dp-status')?.textContent.includes('confirmation pending')"),
+    '2026 AISG school results must remain clearly unconfirmed');
+   assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('30.88')"),
+    'May 2026 world average from IB not visible');
+   assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('2026 examination cohort not confirmed')"),
+    'No 2026 examination denominator can be invented');
+  });
+
  await run('faculty-profile-1440','faculty','.faculty-daily-toolbar',1440,900,
   async()=>{await click('.student-link');assert(await evaluate("!!document.querySelector('.profile-head')"),'Faculty profile did not open')});
  await run('sss-profile-1440','sss','.sss-overview',1440,900,
