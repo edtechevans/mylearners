@@ -97,7 +97,7 @@ test('Leaders use a simple four-metric overview with grade-eligible academic che
  assert.equal((node.innerHTML.match(/<article class="leader-stat">/g)||[]).length,4);
  assert.match(node.innerHTML,/Report card coverage/);
  assert.match(node.innerHTML,/leader-evidence-strip/);
- for(const name of ['IXL Mathematics','Core Phonics','F&P reading'])
+ for(const name of ['IXL Mathematics','Core Phonics','F&amp;P reading'])
   assert.ok(node.innerHTML.includes(name));
  assert.match(node.innerHTML,/Records available \/ eligible/);
  assert.match(node.innerHTML,/data-leader-panel="academics"/);
