@@ -7,17 +7,21 @@ import {createExperienceRecords,experienceFor,summarizeExperience,experienceChan
 import {esc} from './v2-ui.mjs';
 import {renderBoard} from './board-map-view.mjs';
 import {boardWindowFor} from './board-map-data.mjs';
+import {parseBoardHash,boardShareUrl} from './board-map-links.mjs';
 const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(DATA.students);
 const root=document.getElementById('app');
 const saved=(k,d)=>{try{return sessionStorage.getItem(k)||d}catch{return d}};
 const ROLE_IDS=['faculty','student','leader','board'];
-const initialHash=String(globalThis.location?.hash||'').replace(/^#\//,'');
+const initialHash=String(globalThis.location?.hash||'').replace(/^#\//,'').split('?')[0];
 const initialRole=ROLE_IDS.includes(initialHash)?initialHash:saved('my-role','faculty');
 const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  teacher:saved('my-teacher',DEFAULT_TEACHER_ID),
  division:'All',grade:'All',classId:'',studentId:'',query:'',metric:'engagement',window:'F26',details:false,checkin:false,
  boardWindow:saved('my-board-window-v2','fall2026'),boardSubject:saved('my-board-subject','math'),
- boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all')};
+ boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all'),
+ boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'both'};
+const boardDeepLink=parseBoardHash(globalThis.location?.hash);
+if(boardDeepLink&&state.role==='board')Object.assign(state,boardDeepLink);
 const safe=(v)=>esc(v??'');
 const teacher=()=>DATA.teachers.find(t=>t.id===state.teacher)||DATA.teachers.find(t=>t.id===DEFAULT_TEACHER_ID);
 const ownClasses=()=>DATA.classes.filter(c=>teacher().classIds.includes(c.id));
@@ -180,15 +184,58 @@ function render(){
  (state.role==='board'?'AISG MAP Board view · Historical, aggregated AISG school data only · No individual scores published':
  'My Learners demonstration · Learners, assessments and student check-ins fictional')+
  '</footer>';
+ if(state.role==='board'&&state.boardView==='overview'){
+  const scroller=root.querySelector?.('.board-trend-scroller');
+  if(scroller&&globalThis.window?.innerWidth<700)scroller.scrollLeft=scroller.scrollWidth;
+ }
  try{sessionStorage.setItem('my-role',state.role);sessionStorage.setItem('my-teacher',state.teacher);
  sessionStorage.setItem('my-board-window-v2',state.boardWindow);sessionStorage.setItem('my-board-subject',state.boardSubject);
  sessionStorage.setItem('my-board-division',state.boardDivision);sessionStorage.setItem('my-board-grade',state.boardGrade)}catch{}
 }
 root.addEventListener('click',e=>{
  const role=e.target.closest('[data-role]');if(role){if(!ROLE_IDS.includes(role.dataset.role))return;
+ if(role.dataset.role==='board')state.boardView='overview';
  state.role=role.dataset.role;state.details=false;state.studentId='';state.classId='';state.query='';
  if(globalThis.location?.hash!=='#/'+state.role)globalThis.location.hash='#/'+state.role;
  render();return}
+ const boardView=e.target.closest('[data-board-view]');
+ if(boardView){
+  state.boardView=boardView.dataset.boardView==='explore'?'explore':'overview';
+  render();globalThis.window?.scrollTo?.(0,0);return;
+ }
+ const boardGo=e.target.closest('[data-board-go]');
+ if(boardGo){
+  const [windowId,subject]=String(boardGo.dataset.boardGo).split(':');
+  if(['math','reading','language'].includes(subject)){
+   state.boardWindow=windowId;state.boardSubject=subject;
+   state.boardDivision='all';state.boardGrade='all';state.boardView='explore';
+   render();globalThis.window?.scrollTo?.(0,0);
+  }
+  return;
+ }
+ const boardTerm=e.target.closest('[data-board-trend]');
+ if(boardTerm){state.boardTrendTerm=boardTerm.dataset.boardTrend==='spring'?'spring':'fall';render();return}
+ const boardFocus=e.target.closest('[data-board-focus]');
+ if(boardFocus){state.boardTrendFocus=['both','math','reading'].includes(boardFocus.dataset.boardFocus)?boardFocus.dataset.boardFocus:'both';render();return}
+ const share=e.target.closest('[data-board-share]');
+ if(share){
+  const url=boardShareUrl(globalThis.location,state);
+  const status=document.getElementById('board-share-feedback');
+  const say=(message)=>{if(status)status.textContent=message};
+  const copy=(async()=>{
+   try{if(!globalThis.navigator?.clipboard?.writeText)throw Error('Clipboard API unavailable');
+    await globalThis.navigator.clipboard.writeText(url);say('Link copied');return;
+   }catch{}
+   const field=document.createElement('textarea');
+   field.value=url;field.setAttribute('readonly','true');
+   field.style.position='fixed';field.style.opacity='0';
+   document.body.appendChild(field);field.select();
+   let copied=false;try{copied=document.execCommand('copy')}catch{}
+   field.remove();
+   if(copied){say('Link copied');return}
+   if(status){status.textContent='Copy this link: '+url;status.setAttribute('title',url)}
+  })();void copy;return;
+ }
  const boardSubject=e.target.closest('[data-board-subject]');
  if(boardSubject){state.boardSubject=boardSubject.dataset.boardSubject;render();return}
  const boardWindow=e.target.closest('[data-board-window]');
@@ -220,7 +267,12 @@ root.addEventListener('change',e=>{
 });
 root.addEventListener('input',e=>{if(e.target.matches('[data-query]')){const p=e.target.selectionStart;state.query=e.target.value;render();const input=document.querySelector('[data-query]');input?.focus();input?.setSelectionRange(p,p)}});
 try{globalThis.window?.addEventListener?.('hashchange',()=>{
- const id=String(globalThis.location?.hash||'').replace(/^#\//,'');
- if(ROLE_IDS.includes(id)&&state.role!==id){state.role=id;render()}
+ const hash=String(globalThis.location?.hash||'');
+ const id=hash.replace(/^#\//,'').split('?')[0];
+ const boardLink=parseBoardHash(hash);
+ if(boardLink){
+  const changed=state.role!=='board'||Object.entries(boardLink).some(([key,value])=>state[key]!==value);
+  if(changed){state.role='board';Object.assign(state,boardLink);render()}
+ }else if(ROLE_IDS.includes(id)&&state.role!==id){state.role=id;render()}
 })}catch{}
 render();
