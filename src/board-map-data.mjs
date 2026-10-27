@@ -3,8 +3,11 @@
  * Source 1: AISG MAP Data Fall 2025 PDF (pp.4 & 8).
  * Source 2: NWEA Spring 2025–26 AssessmentResults + StudentsBySchool CSV,
  * and AISG Spring 2026 US comparison workbook for reference means.
+ * Source 3: AISG MAP Fall 2026–27 Family Highlights (published September 2026)
+ * summarises direction of grade-subject means against US norms, without RIT values.
+ * Only directional assertions can be represented for Fall 2026; don't invent gaps.
  *
- * Fall 2025 and Spring 2026 are separate testing windows; EARCOS comparisons
+ * The three testing windows must not be conflated; grade-level EARCOS means
  * are available for Fall 2025 only. No individual records or identifiers here.
  * 2026 Spring results use one earliest chronologically dated valid test
  * per learner and subject; growth is eligible spring-to-spring matched progress.
@@ -39,9 +42,14 @@ const fallRow=([grade,aisg,us,earcos,aboveUsPct,aboveEarcosPct])=>
  ({grade,aisg,us,earcos,aboveUsPct,aboveEarcosPct});
 const springRow=([grade,aisg,us,n,aboveUsN,growthMet,growthEligible])=>
  ({grade,aisg,us,earcos:null,n,aboveUsN,growthMet,growthEligible});
+// The Fall 2026 summary reports every grade-subject mean above US norms;
+// it DOES NOT supply the RIT score, norm mean, comparison gap or grade counts.
+const fall2026Row=grade=>({grade,aisg:null,us:null,earcos:null,aboveUsMean:true});
+const fall2026Grades=[3,4,5,6,7,8,9,10];
 export const BOARD_WINDOWS=Object.freeze([
  Object.freeze({id:'fall2025',label:'Fall 2025',benchmarks:'US + EARCOS'}),
- Object.freeze({id:'spring2026',label:'Spring 2026',benchmarks:'US + growth'})
+ Object.freeze({id:'spring2026',label:'Spring 2026',benchmarks:'US + growth'}),
+ Object.freeze({id:'fall2026',label:'Fall 2026',benchmarks:'US directional only'})
 ]);
 export const BOARD_SUBJECTS=Object.freeze([
  Object.freeze({id:'math',label:'Mathematics'}),
@@ -57,17 +65,29 @@ export const BOARD_DATA=Object.freeze({
   label:'Spring 2026',hasEarcos:false,hasMatchedGrowth:true,
   source:'AISG NWEA Spring 2026 AssessmentResults and StudentsBySchool exports; Spring 2026 US comparison workbook',
   subjects:{math:springMath.map(springRow),reading:springReading.map(springRow)}
+ },
+ fall2026:{
+  label:'Fall 2026',hasEarcos:false,hasMatchedGrowth:false,evidence:'summary-only',
+  source:'AISG MAP Fall 2026–27 Family Highlights: Positive Highlights for Families (Grades 3–10; September 2026)',
+  schoolwide:{
+   aboveUSComparisons:24,totalComparisons:24,
+   returningGrowthInOneOrMoreAreasPct:95,
+   projectedGroupGrowthExceeded:['Mathematics','Reading','Language Usage'],
+   gradesReported:[3,4,5,6,7,8,9,10]
+  },
+  subjects:{math:fall2026Grades.map(fall2026Row),reading:fall2026Grades.map(fall2026Row)}
  }
 });
 export const BOARD_METHODS=Object.freeze({
  achievement:'Each bar shows AISG mean RIT minus the comparison-group grade-level mean. A positive gap means the AISG grade mean is higher; it does not mean every student is above the norm.',
+ fall2026:'The Fall 2026–27 AISG family summary reports that all 24 grade-subject comparisons across Grades 3–10 and Mathematics, Reading and Language Usage exceeded US school norms. Therefore all eight reported Mathematics grades and all eight reported Reading grades were above US norms. The source does NOT give grade-level mean RIT values, EARCOS grade norms, student counts or subject-specific matched growth rates. The 95% growth statistic is across returning students and ANY MAP area, and it is schoolwide, not a Mathematics or Reading growth rate. Group projected-growth results are qualitative schoolwide summaries.',
  fall:'Fall 2025 EARCOS and US benchmarks are from the same Fall 2025 AISG summary. The percentages above each reference are student-level figures published for each grade. Fall sample sizes are not present in that summary.',
  spring:'Spring 2026 US mean is a season-matched reference. AISG grade results and growth are reaggregated from the Spring 2026 NWEA export with the earliest dated test per learner/subject to avoid double counting repeated assessments. Counts are distinct tested students, not the whole enrolled school.',
  growth:'Spring-to-spring growth counts only students with a valid matched projected-growth comparison. Grade 3 has no matched Spring 2025 starting result in this export, so its growth is unavailable.',
  caution:'Do not interpret a cross-sectional comparison between different grades or testing windows as individual student growth. The Board view contains real AISG aggregate data; all other My Learners personas use fictional records. No student-level MAP records are published.'
 });
 export const BOARD_GRADE_LIST=Object.freeze([3,4,5,6,7,8,9,10]);
-export function boardRows(window='fall2025',subject='math',division='all',grade='all'){
+export function boardRows(window='fall2026',subject='math',division='all',grade='all'){
  const item=BOARD_DATA[window];
  if(!item || !['math','reading'].includes(subject))return [];
  return item.subjects[subject].filter(x=>
@@ -77,12 +97,15 @@ export function boardRows(window='fall2025',subject='math',division='all',grade=
 }
 const sum=(rows,key)=>rows.reduce((v,row)=>v+(Number.isFinite(row[key])?row[key]:0),0);
 const round1=x=>Math.round((x+Number.EPSILON)*10)/10;
-export function boardSummary(window='fall2025',subject='math',division='all',grade='all'){
+export function boardSummary(window='fall2026',subject='math',division='all',grade='all'){
  const rows=boardRows(window,subject,division,grade),hasEarcos=BOARD_DATA[window]?.hasEarcos??false;
- const total=rows.length,aboveUS=rows.filter(r=>r.aisg>r.us).length;
+ const total=rows.length,aboveUS=rows.filter(r=>r.aboveUsMean===true||
+  (Number.isFinite(r.aisg)&&Number.isFinite(r.us)&&r.aisg>r.us)).length;
  const aboveEarcos=hasEarcos?rows.filter(r=>r.aisg>r.earcos).length:null;
- const gapUS=total?round1(rows.reduce((v,r)=>v+r.aisg-r.us,0)/total):null;
- const gapEarcos=hasEarcos&&total?round1(rows.reduce((v,r)=>v+r.aisg-r.earcos,0)/total):null;
+ const gapUS=total&&rows.every(r=>Number.isFinite(r.aisg)&&Number.isFinite(r.us))?
+  round1(rows.reduce((v,r)=>v+r.aisg-r.us,0)/total):null;
+ const gapEarcos=hasEarcos&&total&&rows.every(r=>Number.isFinite(r.aisg)&&Number.isFinite(r.earcos))?
+  round1(rows.reduce((v,r)=>v+r.aisg-r.earcos,0)/total):null;
  const tested=window==='spring2026'?sum(rows,'n'):null;
  const aboveUsN=window==='spring2026'?sum(rows,'aboveUsN'):null;
  const growthMet=window==='spring2026'?sum(rows,'growthMet'):null;
