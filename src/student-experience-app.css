@@ -339,3 +339,58 @@
  .board-view .board-bar-fill{top:5px}
  .board-share-feedback{max-width:100%}
 }
+
+
+/* Board 2026 norm completion / three-subject historical trend / accessible inspection */
+.board-dot.language{background:#7755a4}
+.board-overview-card{min-height:221px;gap:10px}
+.board-overview-card .board-card-headline{font-size:clamp(20px,2.1vw,28px);letter-spacing:-.035em}
+.board-overview-three-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;width:100%}
+.board-overview-subject{display:flex;flex-direction:column;gap:4px;min-width:0;border:1px solid #dce8ef;
+ border-radius:9px;padding:9px 7px;background:#f7fafc}
+.board-overview-subject small{color:#526b7f;font-weight:750;font-size:10px;line-height:1.3;overflow-wrap:anywhere}
+.board-overview-subject strong{font-size:20px;color:#123d5c;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.board-trend-point{cursor:pointer;outline:none}
+.board-trend-point circle{transition:stroke-width .12s,r .12s,filter .12s}
+.board-trend-point:is(:hover,:focus-visible,.is-active) circle{
+ stroke:#123d5c;stroke-width:3.6;filter:drop-shadow(0 0 6px #1b597b70)
+}
+.board-trend-point:focus-visible circle{outline:none}
+.board-trend-inspector{
+ background:#f5f9fb;border:1px solid #d4e4ed;border-radius:12px;margin:12px 0 16px;
+ padding:16px 18px;color:#36566c;min-height:68px
+}
+.board-trend-inspector>p{font-size:13px;color:#46647a;margin:0;line-height:1.6}
+.board-trend-inspector-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.board-trend-inspector-head h3{color:#194965;font-size:18px;margin:2px 0;letter-spacing:-.025em}
+.board-trend-inspector-head p{font-size:12px;color:#516f81;margin:0}
+.board-trend-inspector-head>strong{font-size:25px;font-variant-numeric:tabular-nums;color:#153d5c}
+.board-trend-grade-chips{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:7px;margin:14px 0 8px}
+.board-trend-grade{border:1px solid #d0dce5;border-radius:8px;background:#fff;text-align:center;
+ display:flex;flex-direction:column;gap:4px;padding:10px 5px}
+.board-trend-grade b{font-size:13px;color:#36576e}
+.board-trend-grade small{font-size:10px;font-weight:800;color:#627a8a}
+.board-trend-grade.is-above{background:#e6f5ef;border-color:#9acbb6}
+.board-trend-grade.is-above b,.board-trend-grade.is-above small{color:#176c4e}
+.board-trend-grade.is-below{background:#f3f5f7;border-color:#d6e1e7}
+.board-trend-inspector-note{font-size:12px;color:#4b687b;line-height:1.6;margin:10px 0 0}
+.board-count-note{font-size:11px;color:#557388;display:block;margin-top:3px}
+.board-us-only .board-bar-series{grid-template-columns:51px minmax(0,1fr) 60px}
+.board-us-only .board-not-available{margin:18px 0 0}
+.board-source a{color:#13648e;text-decoration:underline}
+@media(max-width:1100px){
+ .board-overview-subject strong{font-size:18px}
+ .board-overview-subject{padding:8px 5px}
+ .board-overview-card{padding:17px}
+}
+@media(max-width:650px){
+ .board-overview-card{min-height:0}
+ .board-overview-three-metrics{gap:6px}
+ .board-overview-subject{min-height:61px}
+ .board-overview-subject small{font-size:10px}
+ .board-trend-inspector{padding:12px}
+ .board-trend-grade-chips{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .board-trend-grade{padding:8px 5px}
+ .board-overview-control .board-segmented button{font-size:11px;padding:8px 9px}
+ .board-overview-filterarea{gap:10px}
+}
