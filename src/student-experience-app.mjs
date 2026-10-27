@@ -10,7 +10,8 @@ import {createExperienceRecords,experienceFor,summarizeExperience,experienceChan
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic} from './academic-journey-data.mjs';
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs';
-import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceRosterColumn} from './class-evidence.mjs?v=20261028compare2';
+import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceRosterColumn} from './class-evidence.mjs?v=20261028maia1';
+import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile} from './maia-demo.mjs';
 import {renderStudentOverview} from './student-daily-overview.mjs';
 import {renderBoard} from './board-map-view.mjs';
 import {renderTrendPointDetails} from './board-map-overview.mjs';
@@ -20,6 +21,7 @@ import {boardWindowFor,BOARD_DATA} from './board-map-data.mjs';
 import {parseBoardHash,boardShareUrl} from './board-map-links.mjs';
 const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(DATA.students),
  ACADEMIC_RECORDS=createAcademicDemoRecords(DATA.students),
+ MAIA_RECORDS=createMaiaDemoRecords(DATA.students),
  SSS_RECORDS=createSSSDemoRecords(DATA.students);
 const root=document.getElementById('app');
 const saved=(k,d)=>{try{return sessionStorage.getItem(k)||d}catch{return d}};
@@ -33,6 +35,8 @@ const rememberFaculty=()=>{
   localStorage.setItem('mylearners-demo-'+state.teacher+'-evidence',state.classEvidence);
   localStorage.setItem('mylearners-demo-'+state.teacher+'-compare',state.classCompare);
   localStorage.setItem('mylearners-demo-'+state.teacher+'-checkin',state.classExperienceWindow);
+  localStorage.setItem('mylearners-demo-'+state.teacher+'-maia-dimension',state.maiaDimension);
+  localStorage.setItem('mylearners-demo-'+state.teacher+'-maia-window',state.maiaWindow);
   localStorage.setItem('mylearners-demo-'+state.teacher+'-subject',state.academicSubject)
  }catch{}
 };
@@ -42,6 +46,8 @@ const recallFaculty=()=>{
  state.classEvidence=facultyPref(state.teacher,'evidence','report');
  state.classCompare=facultyPref(state.teacher,'compare','none');
  state.classExperienceWindow=facultyPref(state.teacher,'checkin','F26');
+ state.maiaDimension=maiaDimension(facultyPref(state.teacher,'maia-dimension','relationships'));
+ state.maiaWindow=maiaPeriod(facultyPref(state.teacher,'maia-window','F26'));
  state.academicSubject=facultyPref(state.teacher,'subject','Mathematics');
 };
 const ROLE_IDS=['faculty','student','sss','leader','board'];
@@ -52,6 +58,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  division:'All',grade:'All',classId:'',studentId:'',query:'',metric:'engagement',window:'F26',details:false,checkin:false,
  academicMode:'report',academicSubject:'Mathematics',academicReportYear:'',studentGrade:'G7',
  classEvidence:'report',classMapSubject:'Mathematics',classCompare:'none',classExperienceWindow:'F26',
+ maiaDimension:'relationships',maiaWindow:'F26',
  studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
  sssGrade:'All',sssQuery:'',sssStudentId:'',sssOpenGrades:['G3'],sssAcademicOpen:false,
  boardWindow:saved('my-board-window-v2','fall2026'),boardSubject:saved('my-board-subject','math'),
@@ -139,7 +146,8 @@ function roster(ss,options={}){
  const mode=across?'report':normalizeEvidenceMode(grade,state.classEvidence);
  const compare=across?'none':normalizeComparison(grade,mode,state.classCompare);
  const evidenceCtx={academic:ACADEMIC_RECORDS,map:DATA.map,
-  experience:RECORDS,subject:state.academicSubject,mapSubject:state.classMapSubject,
+  experience:RECORDS,maia:MAIA_RECORDS,maiaDimension:state.maiaDimension,maiaWindow:state.maiaWindow,
+  subject:state.academicSubject,mapSubject:state.classMapSubject,
   window:state.classExperienceWindow};
  const reportSubjects=academicFor(ACADEMIC_RECORDS,ss[0]?.id).reports?.[0]?.subjects||[];
  const subject=reportSubjects.some(x=>x.subject===state.academicSubject)?
@@ -227,6 +235,7 @@ function learnerProfile(s,studentRole=false){
    return '<div><span>'+w.label+'</span><strong>Engagement '+fmt(e)+'</strong>'+
     '<strong>Belonging '+fmt(b)+'</strong></div>';
   }).join('')+'</div><p class="tiny">My check-ins describe my experience of learning, not my ability or a school grade.</p></section>':'';
+ const maiaFaculty=studentRole?'':renderMaiaFacultyProfile(s,MAIA_RECORDS);
  const wellbeing=experienceEligible(s)?
   '<div class="sectionhead"><h2>'+(studentRole?'How I feel about learning':'Student experience')+
   '</h2><span class="tiny">Fictional Fall 2026 check-ins</span></div>'+
@@ -267,7 +276,7 @@ function learnerProfile(s,studentRole=false){
    safe(t.strategies[0])+'</p></div>').join(' '):
   '<p class="muted">No additional classroom guidance tags in this fictional example.</p>')+
   '<p class="tiny">Detailed support plans and confidential records are not included in this public demo.</p></section>';
- return profileStart+header+profileKpis+academics+wellbeing+guidance;
+ return profileStart+header+profileKpis+academics+wellbeing+maiaFaculty+guidance;
 }
 
 function quickStat(label,value,detail,action=''){
@@ -301,7 +310,8 @@ function faculty(){
   (gradeHasCheckins?score('engagement')+score('belonging'):
    '<div class="quick-note">Student-reported experience indices start at Grade 3 in this demo.</div>')+'</div>';
  const reportControls=searching?'':renderClassEvidencePanel(ss,{
-  academic:ACADEMIC_RECORDS,map:DATA.map,experience:RECORDS,
+  academic:ACADEMIC_RECORDS,map:DATA.map,experience:RECORDS,maia:MAIA_RECORDS,
+  maiaDimension:state.maiaDimension,maiaWindow:state.maiaWindow,
   mode:state.classEvidence,subject:state.academicSubject,
   mapSubject:state.classMapSubject,compare:state.classCompare,window:state.classExperienceWindow});
  return heading('My students','Find a learner, see essential information, or choose a class result.')+
@@ -885,6 +895,20 @@ root.addEventListener('change',e=>{
    state.classExperienceWindow=classWindow.value;rememberFaculty();render();
    root.querySelector('[data-class-window]')?.focus({preventScroll:true});
   }
+  return;
+ }
+ const maiaDimSelect=e.target.closest('[data-maia-dimension]');
+ if(maiaDimSelect&&state.role==='faculty'){
+  state.maiaDimension=maiaDimension(maiaDimSelect.value);
+  rememberFaculty();render();
+  root.querySelector('[data-maia-dimension]')?.focus({preventScroll:true});
+  return;
+ }
+ const maiaWindowSelect=e.target.closest('[data-maia-window]');
+ if(maiaWindowSelect&&state.role==='faculty'){
+  state.maiaWindow=maiaPeriod(maiaWindowSelect.value);
+  rememberFaculty();render();
+  root.querySelector('[data-maia-window]')?.focus({preventScroll:true});
   return;
  }
  const mapSelect=e.target.closest('[data-map-subject]');
