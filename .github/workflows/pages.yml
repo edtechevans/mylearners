@@ -124,6 +124,24 @@ jobs:
           grep -q 'board-strength-grid' /tmp/mylearners-board-story-dom.html
           grep -q 'board-dp-overview-trend' /tmp/mylearners-board-story-dom.html
           if grep -Eiq '\.xlsx|\.csv|\.pdf|KPIs!|Dashboard SY[0-9]|Source:' /tmp/mylearners-board-story-dom.html; then echo 'Board displayed restricted document details'; exit 1; fi
+      - name: Full desktop Chrome screenshot and usability walkthrough
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/mylearners-visual-server.log 2>&1 &
+          server_pid=$!
+          browser="$(command -v google-chrome || command -v chromium || true)"
+          if [ -z "$browser" ]; then echo 'Chrome not available'; exit 1; fi
+          "$browser" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --no-first-run --remote-allow-origins='*' --remote-debugging-port=9229 --user-data-dir=/tmp/mylearners-clarity-chrome about:blank >/tmp/mylearners-visual-chrome.log 2>&1 &
+          chrome_pid=$!
+          trap 'kill "$server_pid" "$chrome_pid" 2>/dev/null || true' EXIT
+          node --check tests/e2e/clarity-walkthrough.mjs
+          node tests/e2e/clarity-walkthrough.mjs
+      - name: Preserve rendered Chrome screenshots and QA report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: clarity-chrome-walkthrough
+          path: qa-artifacts/
+          if-no-files-found: warn
   deploy:
     needs: validate
     runs-on: ubuntu-latest
