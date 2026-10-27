@@ -1,13 +1,14 @@
 /**
  * Faculty class homepage: one evidence selector, one roster column.
  * Every displayed number comes from existing, synthetic demo records.
- * Maia Flourishing is a not-connected integration placeholder.
+ * Maia Flourishing examples are synthetic PERMA dimension values, not an official export.
  * Core Phonics and F&P reading are limited to Kindergarten–Grade 5.
  */
 import {academicModesFor,academicFor,latestAcademic,academicCoverage} from './academic-journey-data.mjs';
 import {latestMapGrowth,MAP_SUBJECTS} from './map-growth.mjs';
 import {experienceEligible,summarizeExperience,experienceFor,EXPERIENCE_WINDOWS} from './experience-data.mjs';
 import {gradeNumber} from './data.mjs';
+import {MAIA_DIMENSIONS,MAIA_PERIODS,MAIA_DEFAULT_DIMENSION,maiaEligible,maiaDimension,maiaPeriod,maiaValue,maiaClassSummary} from './maia-demo.mjs';
 const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 export const EVIDENCE_MODES=Object.freeze([
  {id:'report',label:'Report card',category:'Learning'},
@@ -20,13 +21,14 @@ export const EVIDENCE_MODES=Object.freeze([
  {id:'flourishing',label:'Maia Flourishing',category:'Experience'}
 ]);
 const labels=Object.fromEntries(EVIDENCE_MODES.map(x=>[x.id,x.label]));
-const pending=new Set(['flourishing']);
+const pending=new Set();
 export function evidenceModesForGrade(grade){
  const n=gradeNumber(grade),academic=academicModesFor(grade);
  return EVIDENCE_MODES.filter(m=>
   academic.includes(m.id)||
   (m.id==='map'&&n>=3&&n<=10)||
-  ((m.id==='engagement'||m.id==='belonging'||m.id==='flourishing')&&n>=3)
+  ((m.id==='engagement'||m.id==='belonging')&&n>=3)||
+  (m.id==='flourishing'&&n>=6&&n<=12)
  ).map(m=>m.id);
 }
 export function normalizeEvidenceMode(grade,selected){
@@ -37,8 +39,9 @@ export function normalizeComparison(grade,primary,compare='none'){
  return compare!==primary&&evidenceModesForGrade(grade).includes(compare)?compare:'none';
 }
 /** Each source has its own label and unit; never combine incompatible scores. */
-export function evidenceLabel(mode,{subject='Mathematics',mapSubject='Mathematics',window='F26'}={}){
+export function evidenceLabel(mode,{subject='Mathematics',mapSubject='Mathematics',window='F26',maiaDimension:dim=MAIA_DEFAULT_DIMENSION,maiaWindow='F26'}={}){
  const period=EXPERIENCE_WINDOWS.find(x=>x.key===window)?.label||'Fall 2026';
+ if(mode==='flourishing')return 'Maia · '+(MAIA_DIMENSIONS.find(x=>x.key===maiaDimension(dim))?.label||'Relationships')+' · '+(MAIA_PERIODS.find(x=>x.key===maiaPeriod(maiaWindow))?.label||'Fall 2026');
  if(mode==='report')return 'Report · '+subject;
  if(mode==='map')return 'MAP '+mapSubject+' growth';
  if(mode==='engagement'||mode==='belonging')return labels[mode]+' · '+period;
@@ -49,7 +52,13 @@ function reportSubject(students,academic,subject){
  const choices=report?.subjects||[];
  return choices.some(s=>s.subject===subject)?subject:choices[0]?.subject||'';
 }
-export function evidenceValue(student,{mode='report',academic,map,experience,subject='Mathematics',mapSubject='Mathematics',window='F26'}){
+export function evidenceValue(student,{mode='report',academic,map,experience,maia,maiaDimension:dim=MAIA_DEFAULT_DIMENSION,maiaWindow='F26',subject='Mathematics',mapSubject='Mathematics',window='F26'}){
+ if(mode==='flourishing'){
+  if(!maiaEligible(student))return {text:'—',detail:'Secondary only',available:false};
+  const value=maiaValue(maia,student.id,dim,maiaWindow);
+  return value===null?{text:'—',detail:'No example response',available:false}:
+   {text:value.toFixed(1)+' / 10',detail:(MAIA_PERIODS.find(x=>x.key===maiaPeriod(maiaWindow))?.label||'Fall 2026')+' · illustrative PERMA value',available:true};
+ }
  if(pending.has(mode))return {text:'—',detail:'Source not connected',available:false};
  if(mode==='map'){
   if(!evidenceModesForGrade(student.grade).includes('map'))return {text:'—',detail:'Not assessed for grade',available:false};
@@ -104,12 +113,12 @@ const modeHelp={
  ixl:'Illustrative IXL Mathematics diagnostic levels, not SmartScores, percentages or report-card grades.',
  core:'Fictional 50-item classroom decoding checks; not an official CORE Phonics Survey total or benchmark.',
  fp:'Fictional Fountas & Pinnell text levels describe text complexity, not a percentage, grade or a measure of the whole reader.',
- engagement:'Fictional AISG-style student check-in index out of 100. Not a percentage or validated score. Maia Flourishing can provide separate context once connected.',
- belonging:'Fictional AISG-style student check-in index out of 100. Not a percentage or validated score. Maia Flourishing can provide separate context once connected.',
- flourishing:'MaiaLearning Flourishing is a PERMA-based wellbeing assessment. It is a separate instrument, not an engagement or belonging score. No Maia results are connected to this public demonstration.'
+ engagement:'Fictional AISG-style check-in index out of 100, not a percentage. Maia uses a separate fictional PERMA example and different scale.',
+ belonging:'Fictional AISG-style check-in index out of 100, not a percentage. Maia uses a separate fictional PERMA example and different scale.',
+ flourishing:'Synthetic MaiaLearning-style PERMA dimensions. The 0–10 display scale is illustrative, NOT confirmed Maia scoring. This is not a real Maia export, benchmark, diagnosis or combined wellbeing score.'
 };
 export function renderClassEvidencePanel(students,{
- academic,map,experience,mode='report',compare='none',subject='Mathematics',mapSubject='Mathematics',window='F26'
+ academic,map,experience,maia,mode='report',compare='none',subject='Mathematics',mapSubject='Mathematics',window='F26',maiaDimension:dim=MAIA_DEFAULT_DIMENSION,maiaWindow='F26'
 }={}){
  const grade=students[0]?.grade||'';
  const modes=evidenceModesForGrade(grade);
@@ -120,7 +129,7 @@ export function renderClassEvidencePanel(students,{
  const chosenSubject=reportSubject(students,academic,subject);
  const subjects=academicFor(academic,students[0]?.id).reports?.[0]?.subjects||[];
  const sample=academicFor(academic,students[0]?.id).reports?.[0];
- const ctx={academic,map,experience,subject:chosenSubject,mapSubject,window:selectedWindow};
+ const ctx={academic,map,experience,maia,subject:chosenSubject,mapSubject,window:selectedWindow,maiaDimension:dim,maiaWindow};
  const tabs=['Learning','Experience'].map(category=>{
   const group=EVIDENCE_MODES.filter(m=>m.category===category&&modes.includes(m.id));
   if(!group.length)return '';
@@ -132,10 +141,15 @@ export function renderClassEvidencePanel(students,{
  }).join('');
  const countFor=mode=>{
   const coverage=students.filter(s=>evidenceValue(s,{...ctx,mode}).available).length;
-  const eligible=pending.has(mode)?0:mode==='report'?academicCoverage(students,academic,'report',chosenSubject).eligible:
+  const eligible=mode==='flourishing'?students.filter(maiaEligible).length:pending.has(mode)?0:mode==='report'?academicCoverage(students,academic,'report',chosenSubject).eligible:
    students.filter(s=>mode==='map'?(gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10):
     (mode==='engagement'||mode==='belonging')?experienceEligible(s):
      academicModesFor(s.grade).includes(mode)).length;
+  if(mode==='flourishing'){
+   const result=maiaClassSummary(students,maia,dim,maiaWindow);
+   return '<strong>'+(result.average===null?'—':result.average.toFixed(1)+' / 10')+'</strong>'+
+    '<span>'+result.available+' of '+result.eligible+' fictional responses · '+esc(MAIA_PERIODS.find(w=>w.key===maiaPeriod(maiaWindow))?.label||'Fall 2026')+'</span>';
+  }
   if(pending.has(mode))return '<strong>Not connected</strong><span>No student results available in this demonstration</span>';
   if(mode==='engagement'||mode==='belonging'){
    const result=summarizeExperience(experience,students,mode,selectedWindow);
@@ -166,6 +180,12 @@ export function renderClassEvidencePanel(students,{
    MAP_SUBJECTS.map(x=>'<option value="'+esc(x)+'"'+(mapSubject===x?' selected':'')+'>'+esc(x)+'</option>').join('')+
    '</select></label>');
  }
+ if(displayed.includes('flourishing')){
+  filters.push('<label class="class-evidence-filter">Maia dimension <select data-maia-dimension aria-label="Maia PERMA dimension">'+
+   MAIA_DIMENSIONS.map(d=>'<option value="'+d.key+'"'+(d.key===maiaDimension(dim)?' selected':'')+'>'+esc(d.label)+'</option>').join('')+'</select></label>');
+  filters.push('<label class="class-evidence-filter">Maia window <select data-maia-window aria-label="Maia assessment window">'+
+   MAIA_PERIODS.map(w=>'<option value="'+w.key+'"'+(w.key===maiaPeriod(maiaWindow)?' selected':'')+'>'+esc(w.label)+'</option>').join('')+'</select></label>');
+ }
  if(displayed.some(id=>id==='engagement'||id==='belonging')){
   filters.push('<label class="class-evidence-filter">Check-in period <select data-class-window aria-label="Student check-in period">'+
    EXPERIENCE_WINDOWS.map(w=>'<option value="'+w.key+'"'+(w.key===selectedWindow?' selected':'')+'>'+esc(w.label)+'</option>').join('')+
@@ -174,8 +194,10 @@ export function renderClassEvidencePanel(students,{
  const breakdown=selected==='report'?
   '<details class="class-evidence-breakdown"><summary>View class results breakdown</summary>'+
   reportBreakdown(students,academic,chosenSubject)+'</details>':'';
- const note=(selected==='engagement'||selected==='belonging')?
-  '<p class="class-evidence-secondary">MaiaLearning Flourishing: not connected. It is separate from these AISG-style check-in indices.</p>':'';
+ const note=displayed.includes('flourishing')?
+  '<p class="class-evidence-secondary"><strong>Fictional Maia example · Secondary only.</strong> Five PERMA dimensions on an illustrative 0–10 display scale. No official Maia score fields or scoring scale verified; no personal records are used.</p>':
+  (selected==='engagement'||selected==='belonging')?
+  '<p class="class-evidence-secondary">Maia-style PERMA examples are available separately in Secondary classes; the two measures use different instruments and scales.</p>':'';
  return '<section class="class-evidence-panel" aria-label="Select learning and wellbeing evidence for the class roster">'+
   '<div class="class-evidence-heading"><div><span class="academic-eyebrow">CLASS DATA</span>'+
   '<h3>Learning &amp; wellbeing evidence</h3><p>Choose a measure. Compare two columns if useful.</p></div></div>'+
