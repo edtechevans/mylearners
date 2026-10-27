@@ -125,9 +125,7 @@ export function renderBoardDP(state){
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
  '<div class="board-dp-inspector" aria-live="polite"><p>Hover or select a year to see the result and what it means.</p></div>'+
  '<p class="board-chart-caption">Scores are measured out of 45 points, or as a percentage awarded the full Diploma. The full scale avoids exaggerating small annual differences.</p></section>'+
- '<details class="board-details board-dp-pathway-summary"><summary>Explore Grade 12 learning pathways <span>+</span></summary>'+
- '<p>Participation in a Diploma pathway is not the same as the number of examination candidates.</p>'+
- dpPathways()+'</details>'+
+ dpPathways()+
  dpOutcomesTable()+
  '<details class="board-details board-dp-method"><summary>Understanding Diploma results <span>+</span></summary>'+
  '<p>'+safe(DP_METHODS.quality)+'</p><p>'+safe(DP_METHODS.limits)+'</p>'+
