@@ -6,6 +6,7 @@ import {BOARD_DATA,BOARD_SUBJECTS,BOARD_GRADE_LIST,BOARD_SCHOOL_YEARS,
  BOARD_METHODS,boardRows,boardSummary,boardWindowFor} from './board-map-data.mjs';
 import {esc} from './v2-ui.mjs';
 import {renderBoardOverview} from './board-map-overview.mjs';
+import {renderBoardDP} from './board-dp-view.mjs';
 const safe=v=>esc(v??'');
 const n1=n=>Number.isFinite(n)?Number(n).toFixed(1):'—';
 const diff=n=>Number.isFinite(n)?(n>0?'+':'')+Number(n).toFixed(1):'—';
@@ -84,7 +85,8 @@ function sourceDetails(window){
   window==='fall2025'?BOARD_METHODS.fall:BOARD_METHODS.history;
  return '<details class="board-details board-source"><summary>Sources, definitions and missing data <span>+</span></summary>'+
  '<p><strong>Source:</strong> '+safe(source.source)+'</p>'+
- (window==='fall2026'?'<p><a href="https://www.nwea.org/resource-center/fact-sheet/87992/MAP-Growth-2025-norms-quick-reference_NWEA_onesheet.pdf" target="_blank" rel="noopener noreferrer">NWEA 2025 Norms quick reference · Fall school achievement benchmarks, page 3</a></p>':'')+
+ (source.usNormType==='2025-school'?'<p><a href="https://www.nwea.org/resource-center/fact-sheet/87992/MAP-Growth-2025-norms-quick-reference_NWEA_onesheet.pdf" target="_blank" rel="noopener noreferrer">NWEA 2025 Norms quick reference · school achievement norms, page 3</a></p>':'')+
+ (source.usNormType==='historical-unverified'?'<p><strong>Historical U.S. comparison:</strong> archived reference mean; the norm type and edition could not be confirmed. Do not treat older U.S. gaps as a consistent national trend.</p>':'')+
  '<p>'+safe(description)+'</p>'+
  '<p>'+safe(BOARD_METHODS.achievement)+'</p>'+
  '<p>'+safe(BOARD_METHODS.growth)+'</p>'+
@@ -132,21 +134,27 @@ export function renderBoard(state){
   ['Meeting projected growth',summary.growthPct===null?'—':summary.growthPct+'%',
    matched?'Of '+matched+' matched students · Spring-to-Spring':'Matched subject growth not available']
  ];
- const note=active==='fall2026'?
-  'Fall 2026 AISG mean RIT scores now use student report aggregates and NWEA 2025 Fall U.S. school norms (week 4). Exact RIT gaps are available. EARCOS Fall 2026 data remain unavailable (—).':
-  active==='spring2026'?
-  'Spring 2026 EARCOS values are from the supplied Spring 2025/26 international comparison and are now available for all three subjects.':
-  'Historical grade means are available; cohort composition and norm editions may change over time.';
- const explore=state.boardView==='explore';
+ const normIsSchool=source.usNormType==='2025-school';
+ const note=(normIsSchool?
+  'U.S. reference: NWEA 2025 '+(active.startsWith('spring')?'Spring':'Fall')+
+  ' SCHOOL achievement norms, matching grade-mean comparisons. ':
+  'U.S. reference: archived grade mean; norm type/edition not independently verified. ')+
+  (active==='fall2026'?'EARCOS Fall 2026 comparison unavailable (—). ':
+   active==='spring2026'?'EARCOS Spring 2026 values from supplied regional report. ':
+   'EARCOS mean matches the reported testing season. ')+
+  'Grade mean gaps describe achievement, not individual student growth.';
+ const explore=state.boardView==='explore',diploma=state.boardView==='dp';
  const header='<section class="board-view">'+
  '<div class="heading board-heading"><div><div class="eyebrow">AISG · BOARD · NWEA MAP GROWTH</div>'+
- '<h1>Achievement &amp; growth</h1><p>A clear view of schoolwide patterns, with grade-level detail when you need it.</p></div>'+
+ '<h1>Learning outcomes over time</h1><p>MAP achievement and growth, alongside Diploma Programme outcomes.</p></div>'+
  '<div class="board-provenance-badge"><strong>AISG AGGREGATED DATA</strong><small>No student records</small></div></div>'+
  '<div class="board-nav-row"><nav class="board-nav-tabs" aria-label="Board dashboard sections">'+
  '<button type="button" data-board-view="overview" aria-current="'+(!explore?'page':'false')+'" class="'+(!explore?'active':'')+'">Overview</button>'+
- '<button type="button" data-board-view="explore" aria-current="'+(explore?'page':'false')+'" class="'+(explore?'active':'')+'">Explore by Year</button>'+
+ '<button type="button" data-board-view="explore" aria-current="'+(explore?'page':'false')+'" class="'+(explore?'active':'')+'">MAP by Year</button>'+
+ '<button type="button" data-board-view="dp" aria-current="'+(diploma?'page':'false')+'" class="'+(diploma?'active':'')+'">IB Diploma</button>'+
  '</nav><div class="board-share-area"><button type="button" class="board-copy-link" data-board-share="true" aria-label="Copy link to this Board view">Copy link to this view</button>'+
  '<span class="board-share-feedback" id="board-share-feedback" role="status" aria-live="polite"></span></div></div>';
+ if(diploma)return header+renderBoardDP(state)+'</section>';
  if(!explore)return header+renderBoardOverview(state)+'</section>';
  return header+
  '<div class="board-controls">'+
@@ -164,6 +172,7 @@ export function renderBoard(state){
  '<div class="board-context"><strong>'+safe(subjectName)+' · '+safe(source.label)+'</strong><span>'+safe(area)+'</span></div>'+
  '<div class="board-stats">'+metrics.map(m=>indicator(...m)).join('')+'</div>'+
  '<p class="board-benchmark-note">'+safe(note)+'</p>'+
+ (active==='fall2026'?'<p class="board-source-date">AISG NWEA student report snapshot: 20 September 2026 · Aggregates only · Latest dashboard update: 27 October 2026</p>':'')+
  gradeComparison(rows,summary)+schoolwideHighlight(active)+exactTable(rows,summary)+sourceDetails(active)+
  '</section>';
 }
