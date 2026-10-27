@@ -68,7 +68,7 @@ test('Board Overview communicates four defensible strengths in a clear schoolwid
 test('Diploma switch shows one DP timeline instead of a second MAP visualization',()=>{
  const html=renderBoardOverview({boardOverviewChart:'dp',boardDpMetric:'passRate',boardTrendTerm:'fall',boardTrendFocus:'all'});
  assert.equal((html.match(/class="board-strength-card"/g)||[]).length,4);
- assert.match(html,/IB Diploma outcomes over time/);
+ assert.match(html,/Diploma outcomes over time/);
  assert.match(html,/data-board-dp-point="passRate:2026"/);
  assert.match(html,/data-board-dp-metric="average"/);
  assert.match(html,/data-board-dp-metric="passRate"/);
