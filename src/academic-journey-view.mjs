@@ -41,7 +41,9 @@ export function renderClassAcademicPanel(students,records,mode='report',subject=
  const coverage=academicCoverage(students,records,selectedMode,selectedSubject);
  const recent=academicFor(records,students[0]?.id);
  const sample=latestAcademic(recent,selectedMode,selectedSubject);
- const latestDate=selectedMode==='report'?'latest issued report':sample?.label||'no recorded check-in';
+ const latestDate=selectedMode==='report'?
+  (recent.reports?.[0]?recent.reports[0].year+' · '+recent.reports[0].grade+' (last issued)':'no issued report'):
+  sample?.label||'no recorded check-in';
  const note=selectedMode==='report'?
   'Choose a subject to see each learner’s most recent issued report result. Open a learner for up to three report years.':
   selectedMode==='ixl'?
