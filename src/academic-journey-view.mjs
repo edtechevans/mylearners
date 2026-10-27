@@ -49,8 +49,9 @@ export function renderClassAcademicPanel(students,records,mode='report',subject=
   selectedMode==='core'?
   'Illustrative 50-item decoding check; not an official Core Phonics Survey total. Open a learner for context.':
   'F&P letters refer to text complexity, not a grade, percentile or overall reading ability.';
- const distribution=selectedMode==='report'&&selectedSubject?
-  renderReportDistribution(students,records,selectedSubject):'';
+ const distribution=selectedMode==='report'?
+  (selectedSubject?renderReportDistribution(students,records,selectedSubject):
+   '<p class="academic-no-data">No completed reports yet for this class.</p>'):'';
  return '<section class="academic-class-panel" aria-label="Class academic snapshots">'+
  '<div class="academic-class-heading"><div><span class="academic-eyebrow">SUBJECT RESULTS · CLASS VIEW</span>'+
  '<h2>Academic snapshot</h2><p>Choose the evidence you need. Student-level detail stays one click away.</p></div>'+
