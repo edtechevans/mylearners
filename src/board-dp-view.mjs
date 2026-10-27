@@ -1,5 +1,5 @@
 /** Board-only IB Diploma outcomes; distinct from MAP grades and growth. */
-import {DP_RECORDS,DP_GRADE12_PATHWAYS,DP_METRICS,DP_METHODS,dpMetricSeries,dpPoint,dpParticipation,dpPassCount} from './board-dp-data.mjs';
+import {DP_RECORDS,DP_GRADE12_PATHWAYS,DP_METRICS,DP_METHODS,dpMetricSeries,dpPoint,dpParticipation,dpPassCount} from './board-dp-data.mjs?v=20261028exam1';
 const safe=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const metricMeta=id=>DP_METRICS.find(m=>m.id===id)||DP_METRICS[0];
 const valueText=(v,metric)=>v===null||v===undefined?'—':metric==='passRate'?v+'%':
