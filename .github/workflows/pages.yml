@@ -50,7 +50,8 @@ jobs:
           grep -q 'board-view' /tmp/mylearners-board-dom.html
           grep -q 'AISG AGGREGATED DATA' /tmp/mylearners-board-dom.html
           grep -q 'board-strength-grid' /tmp/mylearners-board-dom.html
-          grep -q 'STRENGTHS AT A GLANCE' /tmp/mylearners-board-dom.html
+          grep -q 'OUR LEARNING STORY' /tmp/mylearners-board-dom.html
+          grep -q 'board-story-insight' /tmp/mylearners-board-dom.html
           grep -q 'data-board-overview-chart="dp"' /tmp/mylearners-board-dom.html
           grep -q 'board-trend-svg' /tmp/mylearners-board-dom.html
           grep -q 'data-board-view="explore"' /tmp/mylearners-board-dom.html
@@ -58,6 +59,7 @@ jobs:
           grep -q 'board-controls' /tmp/mylearners-board-explore-dom.html
           grep -q 'How does AISG compare?' /tmp/mylearners-board-explore-dom.html
           grep -q 'board-choose-prompt' /tmp/mylearners-board-explore-dom.html
+          grep -q 'board-comparison-subjects' /tmp/mylearners-board-explore-dom.html
           grep -q 'board-comparison-display' /tmp/mylearners-board-explore-dom.html
           grep -q 'vs regional schools' /tmp/mylearners-board-explore-dom.html
           grep -q '>MAP</button>' /tmp/mylearners-board-explore-dom.html
@@ -66,8 +68,15 @@ jobs:
           grep -q 'board-dp-graphic-grid' /tmp/mylearners-board-dp-dom.html
           grep -q 'data-board-dp-select="year"' /tmp/mylearners-board-dp-dom.html
           grep -q 'board-dp-graphic-consistency' /tmp/mylearners-board-dp-dom.html
+          grep -q 'board-chart-range-annotation' /tmp/mylearners-board-dp-dom.html
           if grep -q 'data-board-dp-select="range"' /tmp/mylearners-board-dp-dom.html; then echo "Diploma range filter not simplified"; exit 1; fi
           grep -q 'data-board-dp-point="average:2026"' /tmp/mylearners-board-dp-dom.html
+          timeout 45s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --virtual-time-budget=6000 --dump-dom 'http://127.0.0.1:8765/#/board?view=explore&window=fall2026&subject=math' > /tmp/mylearners-board-fall-dom.html 2>/tmp/mylearners-fall-chrome.log
+          grep -q 'board-availability-note' /tmp/mylearners-board-fall-dom.html
+          grep -q 'board-no-regional' /tmp/mylearners-board-fall-dom.html
+          timeout 45s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --virtual-time-budget=6000 --dump-dom 'http://127.0.0.1:8765/#/board?view=explore&window=fall2026&subject=math&details=1' > /tmp/mylearners-board-drawer-dom.html 2>/tmp/mylearners-drawer-chrome.log
+          grep -q 'board-map-drawer' /tmp/mylearners-board-drawer-dom.html
+          grep -q 'aria-modal="true"' /tmp/mylearners-board-drawer-dom.html
           timeout 45s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --virtual-time-budget=6000 --dump-dom 'http://127.0.0.1:8765/#/board?view=overview&chart=dp&metric=average' > /tmp/mylearners-board-story-dom.html 2>/tmp/mylearners-story-chrome.log
           grep -q 'board-strength-grid' /tmp/mylearners-board-story-dom.html
           grep -q 'board-dp-overview-trend' /tmp/mylearners-board-story-dom.html
