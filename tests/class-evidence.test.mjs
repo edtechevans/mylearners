@@ -5,7 +5,7 @@ import {applyFacultyDemo} from '../src/faculty-demo.mjs';
 import {createAcademicDemoRecords} from '../src/academic-journey-data.mjs';
 import {createExperienceRecords} from '../src/experience-data.mjs';
 import {evidenceModesForGrade,normalizeEvidenceMode,evidenceValue,
- renderClassEvidencePanel,evidenceRosterColumn} from '../src/class-evidence.mjs';
+ renderClassEvidencePanel,evidenceRosterColumn,evidenceLabel,normalizeComparison} from '../src/class-evidence.mjs';
 
 const DATA=applyFacultyDemo(generateDemoData());
 const academic=createAcademicDemoRecords(DATA.students);
@@ -86,4 +86,72 @@ test('Maia stays unconnected and never fabricates student results',()=>{
    assert.deepEqual(value,{text:'—',detail:'Source not connected',available:false});
   }
  }
+});
+
+test('optional comparison shows two independent measures and no invented relationship',()=>{
+ const learners=group('G7');
+ const html=renderClassEvidencePanel(learners,{...ctx,mode:'map',compare:'belonging'});
+ assert.match(html,/data-class-compare/);
+ assert.match(html,/value="belonging" selected/);
+ assert.match(html,/class-evidence-selection has-comparison/);
+ assert.match(html,/Two measures shown separately/);
+ assert.match(html,/No combined score/);
+ assert.match(html,/data-map-subject/);
+ assert.match(html,/data-class-window/);
+ assert.match(html,/MAP Mathematics growth/);
+ assert.match(html,/Belonging/);
+ assert.equal((html.match(/class="class-evidence-selected"/g)||[]).length,2);
+ assert.doesNotMatch(html,/correlat|intervention recommended|at.risk/i);
+ const one=learners[0];
+ const growth=evidenceRosterColumn(one,{...ctx,mode:'map'});
+ const belonging=evidenceRosterColumn(one,{...ctx,mode:'belonging'});
+ assert.match(growth,/RIT|No comparable|No current/);
+ assert.match(belonging,/check-in index|No check-in/);
+ assert.notEqual(growth,belonging);
+});
+test('comparison options respect grade availability and exclude the selected measure',()=>{
+ const primary='report';
+ const kindergarten=renderClassEvidencePanel(group('K'),{...ctx,mode:primary,compare:'belonging'});
+ assert.match(kindergarten,/data-class-compare/);
+ assert.match(kindergarten,/value="core"/);
+ assert.match(kindergarten,/value="fp"/);
+ assert.doesNotMatch(kindergarten,/value="belonging"/);
+ assert.doesNotMatch(kindergarten,/data-class-evidence="map"/);
+ const secondary=renderClassEvidencePanel(group('G7'),{...ctx,mode:'map',compare:'map'});
+ assert.doesNotMatch(secondary,/class-evidence-selection has-comparison/);
+ assert.match(secondary,/value="none" selected/);
+ const elementary=renderClassEvidencePanel(group('G3'),{...ctx,mode:'report',compare:'core'});
+ assert.match(elementary,/class-evidence-selection has-comparison/);
+ assert.equal(normalizeComparison('G7','map','core'),'none');
+ assert.equal(normalizeComparison('G7','map','map'),'none');
+ assert.equal(normalizeComparison('G7','map','belonging'),'belonging');
+ assert.equal(evidenceLabel('engagement',{window:'S26'}),'Engagement · Spring 2026');
+});
+test('a second report or MAP measure keeps its own subject selector',()=>{
+ const learners=group('G7');
+ const mapAndReport=renderClassEvidencePanel(learners,{...ctx,mode:'map',compare:'report'});
+ assert.match(mapAndReport,/data-map-subject/);
+ assert.match(mapAndReport,/data-academic-subject/);
+ const reportAndMap=renderClassEvidencePanel(learners,{...ctx,mode:'report',compare:'map'});
+ assert.match(reportAndMap,/data-map-subject/);
+ assert.match(reportAndMap,/data-academic-subject/);
+ const none=renderClassEvidencePanel(learners,{...ctx,mode:'report',compare:'none'});
+ assert.doesNotMatch(none,/class-evidence-selection has-comparison/);
+ assert.doesNotMatch(none,/No combined score/);
+});
+test('teachers can choose real check-in windows without treating an index as a percentage',()=>{
+ const learners=group('G7');
+ const spring=renderClassEvidencePanel(learners,{
+  ...ctx,mode:'engagement',compare:'map',window:'S26'
+ });
+ assert.match(spring,/data-class-window/);
+ assert.match(spring,/value="S26" selected/);
+ assert.match(spring,/Spring 2026/);
+ assert.match(spring,/index out of 100/);
+ assert.match(spring,/not a percentage or validated score/i);
+ const first=learners[0];
+ const a=evidenceValue(first,{...ctx,mode:'engagement',window:'F25'});
+ const b=evidenceValue(first,{...ctx,mode:'engagement',window:'F26'});
+ if(a.available)assert.match(a.detail,/Fall 2025/);
+ if(b.available)assert.match(b.detail,/Fall 2026/);
 });
