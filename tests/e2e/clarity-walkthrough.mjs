@@ -157,8 +157,8 @@ try{
    await click('[data-class-evidence="engagement"]');
    assert(await evaluate("document.querySelector('.roster-daily thead')?.textContent.includes('Engagement')"),
     'Engagement tab did not update roster');
-   assert(await evaluate("document.querySelector('.class-evidence-panel')?.textContent.includes('MaiaLearning Flourishing: not connected')"),
-    'Maia contextual evidence missing');
+   assert(await evaluate("document.querySelector('.class-evidence-panel')?.textContent.includes('Maia-style PERMA examples')"),
+    'Maia context missing');
   });
  await run('faculty-belonging-tab-1440','faculty','.faculty-daily-toolbar',1440,900,
   async()=>{
@@ -166,13 +166,42 @@ try{
    assert(await evaluate("document.querySelector('.roster-daily thead')?.textContent.includes('Belonging')"),
     'Belonging tab did not update roster');
   });
- await run('faculty-maia-pending-1440','faculty','.faculty-daily-toolbar',1440,900,
+ await run('faculty-maia-perma-1440','faculty','.faculty-daily-toolbar',1440,900,
   async()=>{
    await click('[data-class-evidence="flourishing"]');
-   assert(await evaluate("document.querySelector('.class-evidence-panel')?.textContent.includes('Not connected')"),
-    'Maia pending data boundary not displayed');
-   assert(await evaluate("document.querySelector('.roster-daily tbody')?.textContent.includes('Source not connected')"),
-    'Maia pending student column must not contain fake scores');
+   assert(await evaluate("!!document.querySelector('[data-maia-dimension]')"),
+    'Maia domain selector missing');
+   assert(await evaluate("document.querySelector('.roster-daily thead')?.textContent.includes('Maia · Relationships · Fall 2026')"),
+    'Maia Relationships example not shown in roster');
+   assert(await evaluate("document.querySelector('.roster-daily tbody')?.textContent.includes('illustrative PERMA value')"),
+    'Synthetic per-student Maia dimension values missing');
+   assert(await evaluate("document.querySelector('.class-evidence-panel')?.textContent.includes('Fictional Maia example')"),
+    'Synthetic vendor example disclosure missing');
+   const ok=await evaluate("(function(){const s=document.querySelector('[data-maia-dimension]');s.value='meaning';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
+   assert(ok,'Could not change Maia PERMA domain');await sleep(140);
+   assert(await evaluate("document.querySelector('.roster-daily thead')?.textContent.includes('Maia · Meaning')"),
+    'Maia dimension change did not reach roster');
+  });
+ await run('faculty-maia-comparison-1440','faculty','.faculty-daily-toolbar',1440,900,
+  async()=>{
+   await click('[data-class-evidence="map"]');
+   const ok=await evaluate("(function(){const s=document.querySelector('[data-class-compare]');s.value='flourishing';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
+   assert(ok,'Maia comparison selector unavailable');await sleep(160);
+   assert(await evaluate("document.querySelector('.roster-daily thead')?.textContent.includes('MAP')&&document.querySelector('.roster-daily thead')?.textContent.includes('Maia')"),
+    'MAP and Maia should appear as separate columns');
+   assert(await evaluate("!!document.querySelector('[data-maia-window]')&&!!document.querySelector('[data-maia-dimension]')"),
+    'Maia comparison dimension/time selectors unavailable');
+  });
+ await run('faculty-maia-profile-1440','faculty','.faculty-daily-toolbar',1440,900,
+  async()=>{
+   await click('.student-link');
+   assert(await evaluate("!!document.querySelector('[data-maia-profile]')"),
+    'Secondary learner profile missing Maia dimensions');
+   await click('[data-maia-profile] summary');
+   assert(await evaluate("document.querySelector('[data-maia-profile]')?.open===true"),
+    'Maia dimension details did not expand');
+   assert(await evaluate("document.querySelectorAll('.maia-dimension').length===5"),
+    'Five PERMA domain values required');
   });
  await run('faculty-elementary-only-evidence-1440','faculty','.faculty-daily-toolbar',1440,900,
   async()=>{
