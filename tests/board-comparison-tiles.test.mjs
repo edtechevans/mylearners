@@ -117,7 +117,7 @@ test('Diploma preserves spreadsheet historic pass rates and plots the full nine-
  assert.equal((missing.match(/<g class="board-dp-point/g)||[]).length,9);
  const latest=renderBoardDP({boardDpYear:'2026',boardDpMetric:'average',boardDpRange:'recent'});
  assert.equal((latest.match(/<g class="board-dp-point/g)||[]).length,9);
- assert.match(latest,/awaiting final confirmation/);
+ assert.match(latest,/confirmation pending/);
 });
 test('Board presentation and optional details are sharable without changing other roles',()=>{
  const opts={boardView:'explore',boardWindow:'fall2026',boardSubject:'math',boardDivision:'all',boardGrade:'all',
