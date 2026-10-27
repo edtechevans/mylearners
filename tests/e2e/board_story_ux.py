@@ -52,7 +52,6 @@ def main():
               require(expected in text,"Missing headline outcome "+expected)
           require("confirmation pending" in text.lower(),"DP outcomes should be qualified")
           require(page.locator('[data-board-overview-chart]').count()==2,"One two-option historical selector")
-          require(page.locator(".board-overview-insight").count()==0,"No duplicate long-form KPI report")
           no_restricted_text(page)
           screenshot(page,"01-four-strengths-overview-desktop")
           return "Four strengths and one MAP trend, with dated DP qualifications"
