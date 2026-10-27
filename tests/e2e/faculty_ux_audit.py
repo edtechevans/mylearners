@@ -65,7 +65,7 @@ def daily_student(pg):
     check(count(pg,".profile-head")>0,"No profile identity")
     check("Academic overview" in pg.locator("main").inner_text(),"Missing academic snapshot")
     check("Classroom guidance" in pg.locator("main").inner_text(),"Missing classroom guidance")
-    check("MAP Mathematics growth" in pg.locator("main").inner_text(),"Missing MAP growth")
+    check("map mathematics growth" in pg.locator("main").inner_text().lower(),"Missing MAP growth")
     screenshot(pg,"02-faculty-student-profile")
     pg.locator('[data-action="back"]').first.click()
     check(count(pg,"table tbody tr")==20,"Cannot return to class roster")
@@ -138,6 +138,10 @@ def student_role(pg):
     pg.locator('[data-action="save-reflection"]').click()
     check("saved" in pg.locator("#save-status").inner_text().lower(),"Reflection save not acknowledged")
     screenshot(pg,"07-student-view")
+    before=pg.locator("main h1").first.inner_text()
+    pg.locator('[data-action="studenthome"]').click()
+    if pg.locator("main h1").first.inner_text()==before:
+        flag("P2 misleading control","The Student view 'My dashboard' back link does not navigate anywhere; it only resets the score explainer.")
     pg.reload(wait_until="domcontentloaded")
     check("I learn best" in pg.locator("#reflection").input_value(),"Reflection not retained in demo session")
     return "Student-only view, explainable measures and browser-session reflection survive reload"
@@ -149,6 +153,7 @@ def leader_role(pg):
     pg.locator('[data-select="grade"]').select_option("G10")
     pg.locator('[data-select="leader-class"]').select_option("G10-A")
     check("20" in pg.locator(".kpi").first.inner_text(),"Selected 20-person class not reflected in leader summary")
+    if count(pg,".card table tbody tr")==0:flag("P2 empty state","Leader view's 'Patterns by class' table becomes empty when a specific class is selected, with no useful message.")
     pg.locator('[data-action="explain:engagement"]').click()
     check(count(pg,".explain-items > div")==3,"Leader explanation missing item breakdown")
     screenshot(pg,"08-leader-drilldown")
@@ -196,6 +201,9 @@ def responsive(browser):
                 }""")
                 good=values["overflow"]<=2 and values["roleVisible"] and values["headings"]>0 and not errors
                 record(f"Responsive {role} {width}px",good,values,time.monotonic()-t)
+                if width==390 and role=="faculty":
+                    roster_y=pg.locator("table").first.evaluate("e=>e.getBoundingClientRect().top+window.scrollY")
+                    if roster_y>800:flag("P1 mobile journey",f"Student roster starts {round(roster_y)}px below page top on 390px phone; student lookup is buried below five cards.")
                 if width in [390,1440] and role in ["faculty","student","leader"]:
                     screenshot(pg,f"responsive-{role}-{width}")
             except Exception as exc:record(f"Responsive {role} {width}px",False,str(exc),time.monotonic()-t)
