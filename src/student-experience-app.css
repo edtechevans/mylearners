@@ -1645,3 +1645,283 @@ body.board-drawer-open{overflow:hidden}
  margin:17px 0 8px;color:#58768a;background:#edf5f9;
  border-radius:10px;padding:12px 16px;font-size:12px;line-height:1.6
 }
+
+
+/* FACULTY & STUDENT DAILY-FIRST REFINEMENT — CHROME PRIORITY
+ * Faculty: learner lookup before analysis. Student: personal learning over
+ * tables, with age-appropriate copy and progressive disclosure.
+ * Classroom guidance stays in its existing BELOW-EVIDENCE position.
+ */
+.faculty-daily-toolbar{
+ display:grid;grid-template-columns:minmax(160px,1fr) minmax(285px,1.7fr) minmax(180px,1.15fr);
+ gap:14px;align-items:end;margin:14px 0 12px
+}
+.faculty-daily-toolbar label{min-width:0}
+.faculty-daily-toolbar .search-label{min-width:0}
+.faculty-daily-toolbar input[data-query]{
+ width:100%;min-height:44px;border-radius:10px;border:1px solid #bbd7e5;
+ background:#fff;font-size:14px;padding:10px 14px;
+ box-shadow:0 1px 5px #164a6810
+}
+.faculty-daily-toolbar input[data-query]:focus{outline:2px solid #5ca2cc;outline-offset:2px}
+.faculty-daily-summary{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;
+ margin:10px 0 15px
+}
+.faculty-daily-summary .quick-tile,.faculty-daily-summary .quick-note{
+ min-height:90px;padding:13px 15px;border-radius:12px;
+ box-shadow:none;background:linear-gradient(145deg,#fff,#f7fbfd);
+ border:1px solid #dce8f0
+}
+.faculty-daily-summary .quick-tile span{font-size:11px;font-weight:800;color:#527188}
+.faculty-daily-summary .quick-tile strong{font-size:25px;line-height:1.25;color:#123f5e}
+.faculty-daily-summary .quick-tile small{font-size:10.5px;line-height:1.4;color:#647e8b}
+.roster-daily{
+ background:#fff;border:1px solid #d9e7ee;border-radius:17px;
+ box-shadow:0 9px 26px #153c5a0c;
+ padding:19px 19px 15px;margin-top:13px
+}
+.roster-daily>.sectionhead{margin:0 0 13px}
+.roster-daily>.sectionhead h2{
+ font-size:clamp(20px,2vw,25px);font-weight:850;letter-spacing:-.04em;
+ color:#143e61;margin:0 0 3px
+}
+.roster-daily>.sectionhead .tiny{font-size:12px;color:#628094}
+.roster-clear-search{
+ background:#ecf5fa;border:1px solid #bdd9e8;border-radius:9px;
+ color:#205b81;font-size:12px;font-weight:800;min-height:38px;
+ padding:7px 13px
+}
+.roster-daily .tablewrap{
+ margin-top:13px;border-radius:11px;border:1px solid #e1ebf1;overflow-x:auto
+}
+.roster-daily table{margin:0;width:100%;border-collapse:collapse}
+.roster-daily th{
+ background:#f2f7fa;font-size:11px;letter-spacing:.01em;
+ font-weight:850;color:#42657c;white-space:nowrap
+}
+.roster-daily td{font-size:12px;line-height:1.45;vertical-align:middle}
+.roster-daily tbody tr:hover{background:#f7fbfd}
+.roster-class-label{
+ color:#37617d;background:#edf5f9;border:1px solid #d8e9f1;
+ border-radius:8px;padding:4px 7px;white-space:nowrap;font-weight:750
+}
+.roster-mixed-academic{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:125px}
+.roster-mixed-academic small{font-size:10px;color:#5b7b8c;line-height:1.45}
+.roster-caption{line-height:1.55;color:#657e8c;padding-top:10px}
+.academic-class-panel.academic-class-compact{
+ margin:0;padding:12px 13px 10px;border-radius:11px;
+ background:linear-gradient(110deg,#f6fafc,#fff);
+ border:1px solid #e1eaf0;box-shadow:none
+}
+.academic-compact-heading{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:10px;flex-wrap:wrap;margin-bottom:9px
+}
+.academic-compact-heading h3{font-size:14px;color:#173f5e;font-weight:850;margin:2px 0;line-height:1.25}
+.academic-compact-freshness{
+ color:#577488;font-size:10.5px;font-weight:750;line-height:1.4
+}
+.academic-compact-actions{
+ display:flex;align-items:end;justify-content:space-between;gap:13px;
+ flex-wrap:wrap
+}
+.academic-class-compact .academic-mode-tabs{
+ display:flex;flex-wrap:wrap;gap:3px;margin:0;width:max-content;
+ max-width:100%;padding:3px;border-radius:10px
+}
+.academic-class-compact .academic-mode-tabs button{
+ min-height:35px;padding:7px 12px;font-size:11.5px;
+ border-radius:8px
+}
+.academic-class-compact .academic-subject-picker{
+ min-width:150px;max-width:280px;flex:1 1 170px;
+ font-size:11px;align-self:center
+}
+.academic-class-compact .academic-subject-picker select{min-height:36px;padding:6px 10px}
+.academic-class-compact .academic-compact-footnote{
+ margin:9px 0 0;font-size:10.5px;color:#6a8090;line-height:1.5
+}
+.academic-class-breakdown{
+ margin:10px 0 0;padding:8px 10px 0;
+ border-top:1px solid #e0eaf0;color:#42677f
+}
+.academic-class-breakdown summary{
+ cursor:pointer;font-size:11.5px;font-weight:850;
+ list-style:disclosure-closed
+}
+.academic-class-breakdown summary span{
+ color:#72909f;font-weight:650
+}
+.academic-class-breakdown[open]{padding-bottom:10px}
+.academic-class-breakdown .academic-distribution{padding-top:11px}
+.academic-class-breakdown .academic-guidance{font-size:11px}
+.student-landing{
+ --student-navy:#123c60;--student-muted:#59788a;
+ margin:19px 0 18px
+}
+.student-landing-intro{
+ display:flex;align-items:flex-start;justify-content:space-between;gap:15px;
+ flex-wrap:wrap;margin:0 0 16px
+}
+.student-overline{
+ font-size:10px;letter-spacing:.13em;font-weight:850;color:#4b7394
+}
+.student-landing-intro h2{
+ font-size:clamp(26px,3vw,35px);line-height:1.2;color:var(--student-navy);
+ font-weight:850;letter-spacing:-.05em;margin:5px 0 3px
+}
+.student-landing-intro p{
+ font-size:13px;line-height:1.65;color:#5b798b;margin:0
+}
+.student-demo-label{
+ padding:7px 10px;border:1px solid #d4e5ef;
+ background:#eef5fa;border-radius:99px;font-size:10px;
+ color:#517589;font-weight:800;white-space:nowrap
+}
+.student-landing-grid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px
+}
+.student-today-tile{
+ --student-accent:#2b7ea9;--student-tint:#e9f5fc;--student-edge:#d1e6f3;
+ min-width:0;min-height:238px;display:flex;flex-direction:column;align-items:flex-start;
+ background:radial-gradient(ellipse at 100% 0%,var(--student-tint),transparent 80%),#fff;
+ border:1px solid var(--student-edge);border-radius:17px;
+ padding:18px 19px;box-shadow:0 8px 22px #173c5610
+}
+.student-today-progress{
+ --student-accent:#218975;--student-tint:#e6f6ee;--student-edge:#d2e9dd
+}
+.student-today-goal{
+ --student-accent:#745ab6;--student-tint:#f3eefd;--student-edge:#e3dcf6
+}
+.student-today-kicker{
+ display:inline-flex;gap:9px;align-items:center;
+ font-size:12px;font-weight:850;color:#265170;line-height:1.3
+}
+.student-symbol{
+ display:grid;place-items:center;background:var(--student-tint);
+ color:var(--student-accent);width:32px;height:32px;
+ font-size:20px;font-weight:850;border-radius:10px
+}
+.student-today-title{
+ font-size:16px;line-height:1.38;color:#1c4562;
+ letter-spacing:-.02em;margin:17px 0 7px
+}
+.student-today-score{
+ font-size:clamp(22px,2.1vw,32px);
+ font-weight:850;letter-spacing:-.04em;line-height:1.18;
+ color:var(--student-accent);margin:0 0 6px;
+ font-variant-numeric:tabular-nums
+}
+.student-today-tile p{
+ font-size:12px;color:#557487;line-height:1.55;margin:2px 0 7px
+}
+.student-today-tile small{
+ font-size:11px;line-height:1.45;color:#6e8494;margin-top:auto
+}
+.student-today-goal .student-goal-label{
+ margin:14px 0 7px;font-size:12px;color:#3c5975;font-weight:750;line-height:1.5
+}
+.student-today-goal textarea{
+ font:inherit;border:1px solid #d5cde9;border-radius:10px;
+ background:#fff;color:#1f415b;resize:vertical;min-height:78px;
+ width:100%;padding:10px 12px;font-size:12px;line-height:1.5
+}
+.student-goal-actions{
+ display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:10px
+}
+.student-save-goal{
+ border:1px solid #6952a8;background:#7359b3;color:#fff;
+ border-radius:9px;padding:8px 13px;min-height:37px;
+ font-size:11.5px;font-weight:850;cursor:pointer
+}
+.student-save-goal:hover{background:#63499e}
+.student-goal-actions #save-status{font-size:10px;color:#6a7489;line-height:1.4}
+.student-landing-foot{
+ display:flex;align-items:center;justify-content:space-between;
+ flex-wrap:wrap;gap:8px 20px;margin:10px 2px 0;
+ color:#638092;font-size:11px;line-height:1.55
+}
+.student-landing-foot strong{color:#345875}
+.student-stage-early .student-landing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.student-stage-early .student-today-goal{
+ grid-column:1/-1;min-height:174px
+}
+.student-stage-early .student-today-title{font-size:17px}
+.student-stage-early .student-today-score{font-size:29px}
+.student-stage-early .student-today-tile{min-height:188px}
+.student-stage-early .student-today-goal{min-height:185px}
+.student-stage-early .student-landing-intro h2{font-size:37px}
+.student-stage-early .student-today-kicker{font-size:14px}
+.student-detail-section{
+ background:#fff;border:1px solid #d7e6ef;border-radius:15px;
+ box-shadow:0 5px 17px #19446008;margin:12px 0;overflow:hidden
+}
+.student-detail-section>summary{
+ display:flex;align-items:center;gap:14px;
+ cursor:pointer;list-style:none;min-height:84px;
+ padding:17px 20px;color:#1e4d69
+}
+.student-detail-section>summary::-webkit-details-marker{display:none}
+.student-detail-section>summary:hover{background:#f5f9fc}
+.student-detail-section>summary:focus-visible{outline:3px solid #5fa4c8;outline-offset:-3px}
+.student-panel-symbol{
+ display:grid;place-items:center;border-radius:12px;
+ background:#edf6fb;color:#2a76a6;flex:0 0 42px;
+ width:42px;height:42px;font-size:24px
+}
+.student-detail-section>summary>span:nth-child(2){
+ flex:1;display:flex;flex-direction:column;gap:4px
+}
+.student-detail-section>summary strong{
+ font-size:16px;line-height:1.3;color:#1b4766;font-weight:850
+}
+.student-detail-section>summary small{
+ font-size:11.5px;line-height:1.45;color:#648193
+}
+.student-panel-chevron{
+ font-size:23px;color:#6a90a6;
+ transition:transform .17s
+}
+.student-detail-section[open] .student-panel-chevron{transform:rotate(180deg)}
+.student-detail-section[open]>summary{
+ border-bottom:1px solid #e3edf2;background:#f6fafc
+}
+.student-detail-section .academic-profile{
+ border:0;background:transparent;box-shadow:none;
+ padding:18px 19px 24px;margin:0
+}
+.student-detail-section .academic-profile-heading h2{font-size:20px}
+.student-wellbeing-content{padding:20px}
+.student-wellbeing-content .sectionhead{margin:0 0 12px}
+.student-wellbeing-content .student-checkin-history{
+ margin-top:19px;box-shadow:none
+}
+.student-wellbeing-content .metrics{margin-bottom:12px}
+.student-detail-section .academic-evidence-card{box-shadow:none}
+@media(max-width:1180px){
+ .faculty-daily-toolbar{grid-template-columns:1fr minmax(230px,1.4fr);gap:11px}
+ .faculty-daily-toolbar .faculty-demo-picker{grid-column:1/-1;max-width:380px}
+ .student-landing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .student-landing-grid .student-today-goal{grid-column:1/-1;min-height:178px}
+}
+@media(max-width:760px){
+ .faculty-daily-toolbar{grid-template-columns:1fr}
+ .faculty-daily-toolbar .faculty-demo-picker{grid-column:auto;max-width:none}
+ .faculty-daily-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .roster-daily{padding:14px 12px}
+ .academic-class-panel.academic-class-compact{padding:11px}
+ .academic-class-compact .academic-mode-tabs{width:100%}
+ .academic-class-compact .academic-mode-tabs button{flex:1 1 auto}
+ .student-landing-grid,.student-stage-early .student-landing-grid{grid-template-columns:1fr}
+ .student-landing-grid .student-today-goal,.student-stage-early .student-today-goal{grid-column:auto}
+ .student-today-tile,.student-stage-early .student-today-tile{min-height:175px}
+ .student-landing-intro h2,.student-stage-early .student-landing-intro h2{font-size:29px}
+ .student-detail-section>summary{padding:12px 13px;min-height:75px}
+ .student-detail-section .academic-profile{padding:15px 12px}
+ .student-wellbeing-content{padding:13px 12px}
+}
+@media(prefers-reduced-motion:reduce){
+ .student-panel-chevron{transition:none}
+}
