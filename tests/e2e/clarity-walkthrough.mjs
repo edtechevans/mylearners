@@ -148,6 +148,8 @@ try{
   });
  await run('board-dp-2026-provenance-1440','board?view=dp&metric=average','.board-dp',1440,900,
   async()=>{
+   const select=await evaluate("(function(){const s=document.querySelector('[data-board-dp-select=\"year\"]');s.value='2026';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
+   assert(select,'Could not select Class of 2026');await sleep(170);
    assert(await evaluate("document.querySelector('.board-dp-status')?.textContent.includes('confirmation pending')"),
     '2026 AISG school results must remain clearly unconfirmed');
    assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('30.88')"),
