@@ -140,7 +140,7 @@ function roster(ss,options={}){
   report:'Report · '+(subject||'last issued'),map:'MAP '+state.classMapSubject+' growth',
   ixl:'IXL Math · level',core:'Core Phonics · items',fp:'F&P · text level',
   engagement:'Engagement · check-in',belonging:'Belonging · check-in',
-  flourishing:'Maia Flourishing',commoncore:'Common Core evidence'}[mode]||'Learning evidence';
+  flourishing:'Maia Flourishing'}[mode]||'Learning evidence';
  const query=state.query.trim().toLowerCase();
  const rows=ss.filter(s=>!query||s.name.toLowerCase().includes(query));
  const showMap=across&&rows.some(s=>gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10);
