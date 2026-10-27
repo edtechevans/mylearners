@@ -33,7 +33,7 @@ test('Fall 2026 MAP cards show actual grade-mean differences and honest missing 
  assert.equal(gapText(compareGradeMeans('fall2026','math','us')),'+22.2 MAP pts');
  for(const {id} of BOARD_SUBJECTS)assert.equal(compareGradeMeans('fall2026',id,'earcos').value,null);
  const html=renderMapComparisonTiles({schoolYear:2026,selectedWindow:'fall2026',selectedSubject:'math'});
- assert.equal((html.match(/class="board-comparison-window"/g)||[]).length,1);
+ assert.equal((html.match(/class="board-comparison-window(?: |")/g)||[]).length,1);
  assert.equal((html.match(/class="board-comparison-subject /g)||[]).length,3);
  assert.equal((html.match(/class="board-comparison-mini unavailable"/g)||[]).length,0);
  assert.equal((html.match(/class="board-comparison-mini"/g)||[]).length,3);
