@@ -70,7 +70,7 @@ async function screenshot(name){
 const inspect='('+function(){
  const $=s=>document.querySelector(s);
  const rect=e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}};
- const nav=$('.top'),main=$('#main'),heading=$('.heading h1')||$('.board-heading h1');
+ const nav=$('.top'),main=$('#main'),heading=$('.heading h1')||$('.board-heading h1')||$('.profile-head h1');
  const rail=nav?getComputedStyle(nav).position:'none';
  const buttons=[...document.querySelectorAll('.roles [data-role]')];
  const navRect=nav&&rect(nav),mainRect=main&&rect(main);
