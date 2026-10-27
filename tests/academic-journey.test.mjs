@@ -110,7 +110,7 @@ test('Report-card subject selection changes teacher roster values from the same 
  assert.match(html,/data-academic-subject/);
  assert.match(html,/option value="Science" selected/);
  assert.match(html,/Academic snapshot/);
- assert.match(html,/20 <small>of 20 learners with a result/);
+ assert.match(html,/80 <small>of 80 learners with a result/);
  assert.match(html,/academic-distribution-track/);
  assert.match(html,/data-academic-mode="ixl"/);
  assert.match(html,/data-academic-mode="core"/);
@@ -140,7 +140,7 @@ test('Student profile displays all latest report subjects and 2–3 year history
   assert.match(html,/Fictional demonstration/);
   assert.equal((html.match(/data-academic-report-year="/g)||[]).length,rec.reports.length,g);
   if(rec.reports.length){
-   for(const subject of rec.reports[0].subjects)assert.ok(html.includes(subject.subject),g+': '+subject.subject);
+   for(const subject of rec.reports[0].subjects)assert.ok(html.includes(subject.subject.replaceAll('&','&amp;')),g+': '+subject.subject);
    assert.match(html,/Reporting frameworks may change/);
   }else assert.match(html,/No issued reports yet/);
   if(gradeNumber(g)>=1&&gradeNumber(g)<=10)assert.match(html,/IXL Mathematics/);
