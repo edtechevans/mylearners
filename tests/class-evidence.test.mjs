@@ -4,28 +4,33 @@ import {generateDemoData} from '../src/data.mjs';
 import {applyFacultyDemo} from '../src/faculty-demo.mjs';
 import {createAcademicDemoRecords} from '../src/academic-journey-data.mjs';
 import {createExperienceRecords} from '../src/experience-data.mjs';
+import {createMaiaDemoRecords,maiaClassSummary,maiaFor,maiaEligible,MAIA_DIMENSIONS,renderMaiaFacultyProfile} from '../src/maia-demo.mjs';
 import {evidenceModesForGrade,normalizeEvidenceMode,evidenceValue,
  renderClassEvidencePanel,evidenceRosterColumn,evidenceLabel,normalizeComparison} from '../src/class-evidence.mjs';
 
 const DATA=applyFacultyDemo(generateDemoData());
 const academic=createAcademicDemoRecords(DATA.students);
 const experience=createExperienceRecords(DATA.students);
+const maia=createMaiaDemoRecords(DATA.students);
 const group=grade=>{
  const c=DATA.classes.find(x=>x.grade===grade);
  assert.ok(c,'Grade fixture available '+grade);
  return c.studentIds.map(id=>DATA.userIndex.get(id));
 };
-const ctx={academic,map:DATA.map,experience,subject:'Mathematics',mapSubject:'Mathematics',window:'F26'};
+const ctx={academic,map:DATA.map,experience,maia,maiaDimension:'relationships',maiaWindow:'F26',subject:'Mathematics',mapSubject:'Mathematics',window:'F26'};
 test('grade-specific tabs avoid inapplicable measures',()=>{
  assert.deepEqual(evidenceModesForGrade('PK3'),['report']);
  assert.deepEqual(evidenceModesForGrade('K'),['report','core','fp']);
  const g3=evidenceModesForGrade('G3');
- for(const id of ['report','map','ixl','core','fp','engagement','belonging','flourishing'])
+ for(const id of ['report','map','ixl','core','fp','engagement','belonging'])
   assert.ok(g3.includes(id),'Grade 3 tab '+id);
  const g7=evidenceModesForGrade('G7');
  for(const id of ['report','map','ixl','engagement','belonging','flourishing'])
   assert.ok(g7.includes(id),'Grade 7 tab '+id);
  assert.ok(!g7.includes('core')&&!g7.includes('fp'));
+ assert.ok(g7.includes('flourishing'));
+ assert.ok(!evidenceModesForGrade('G5').includes('flourishing'));
+ assert.ok(evidenceModesForGrade('G6').includes('flourishing'));
  assert.deepEqual(evidenceModesForGrade('G12'),
   ['report','engagement','belonging','flourishing']);
  // Core Phonics and F&P are Elementary (K–G5) only; never show in Secondary.
@@ -69,23 +74,60 @@ test('class MAP and wellbeing tabs read distinct fictional sources',()=>{
   assert.match(result.text,/RIT|—/);
  }
  const engagement=renderClassEvidencePanel(students,{...ctx,mode:'engagement'});
- assert.match(engagement,/MaiaLearning Flourishing: not connected/);
+ assert.match(engagement,/Maia-style PERMA examples are available separately/);
  assert.match(engagement,/check-in index out of 100/);
  const belonging=renderClassEvidencePanel(students,{...ctx,mode:'belonging'});
  assert.match(belonging,/Belonging/);
  assert.match(evidenceRosterColumn(student,{...ctx,mode:'engagement'}),/class-evidence-result/);
 });
-test('Maia stays unconnected and never fabricates student results',()=>{
- const students=group('G7');
- for(const mode of ['flourishing']){
-  const html=renderClassEvidencePanel(students,{...ctx,mode});
-  assert.match(html,/Not connected/);
-  assert.match(html,/No student results available/);
-  for(const student of students){
-   const value=evidenceValue(student,{...ctx,mode});
-   assert.deepEqual(value,{text:'—',detail:'Source not connected',available:false});
-  }
+test('Maia example populates only Secondary learners with five fictional PERMA dimensions',()=>{
+ const secondary=group('G7');
+ const example=renderClassEvidencePanel(secondary,{...ctx,mode:'flourishing'});
+ assert.match(example,/data-maia-dimension/);
+ assert.match(example,/data-maia-window/);
+ assert.match(example,/illustrative 0–10 display scale/);
+ assert.match(example,/Fictional Maia example/);
+ assert.match(example,/5 PERMA dimensions|Five PERMA dimensions/);
+ assert.doesNotMatch(example,/Not connected|No student results available/);
+ const summary=maiaClassSummary(secondary,maia,'relationships','F26');
+ assert.ok(summary.available>0&&summary.available<=summary.eligible);
+ assert.ok(summary.average>=0&&summary.average<=10);
+ const one=secondary.find(s=>maiaFor(maia,s.id));
+ assert.ok(one);
+ assert.equal(Object.keys(maiaFor(maia,one.id).dimensions).length,5);
+ for(const dim of MAIA_DIMENSIONS){
+  const score=maiaFor(maia,one.id).dimensions[dim.key];
+  assert.ok(score>=0&&score<=10);
  }
+ const cell=evidenceRosterColumn(one,{...ctx,mode:'flourishing'});
+ assert.match(cell,/Fall 2026/);
+ assert.match(cell,/illustrative PERMA value/);
+ const profile=renderMaiaFacultyProfile(one,maia);
+ assert.match(profile,/data-maia-profile/);
+ assert.match(profile,/Positive Emotion/);
+ assert.match(profile,/Accomplishment/);
+ for(const grade of ['PK3','K','G3','G5']){
+  for(const student of group(grade)){
+   assert.equal(maiaEligible(student),false);
+   assert.equal(maia.has(student.id),false);
+   assert.equal(renderMaiaFacultyProfile(student,maia),'');
+  }
+  assert.doesNotMatch(renderClassEvidencePanel(group(grade),{...ctx,mode:'report'}),/data-class-evidence="flourishing"/);
+ }
+});
+test('Maia PERMA can appear beside MAP or Belonging without inventing blended scores',()=>{
+ const students=group('G7');
+ const panel=renderClassEvidencePanel(students,{...ctx,mode:'map',compare:'flourishing',maiaDimension:'meaning'});
+ assert.match(panel,/Maia dimension/);
+ assert.match(panel,/Maia window/);
+ assert.match(panel,/value="meaning" selected/);
+ assert.match(panel,/Two measures shown separately/);
+ assert.match(panel,/No combined score/);
+ assert.match(panel,/0–10 display scale/);
+ const older=renderClassEvidencePanel(group('G6'),{...ctx,mode:'flourishing',maiaWindow:'F25'});
+ assert.match(older,/0 of 20 fictional responses/);
+ const recent=renderClassEvidencePanel(group('G6'),{...ctx,mode:'flourishing',maiaWindow:'F26'});
+ assert.match(recent,/fictional responses/);
 });
 
 test('optional comparison shows two independent measures and no invented relationship',()=>{
