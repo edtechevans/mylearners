@@ -91,7 +91,7 @@ export function renderBoard(state){
  '<div class="board-control-group"><span class="board-filter-label">Assessment window</span>'+
  segmented('window',BOARD_WINDOWS,window)+'</div>'+
  '<div class="board-filter-selects"><label>Division <select data-board-select="division" aria-label="Board MAP division">'+
- option('all','Whole school · G3–10',div)+option('elementary','Elementary · G3–5',div)+option('secondary','Secondary · G6–10',div)+'</select></label>'+
+ option('all','Whole school',div)+option('elementary','Elementary',div)+option('secondary','Secondary',div)+'</select></label>'+
  '<label>Grade <select data-board-select="grade" aria-label="Board MAP grade">'+
  option('all','All grades',grade)+allowed.map(g=>option(String(g),'Grade '+g,grade)).join('')+'</select></label></div></div>'+
  '<div class="board-context"><strong>'+safe(subjectName)+' · '+safe(formatWindow(window))+'</strong><span>'+safe(area)+'</span></div>'+
