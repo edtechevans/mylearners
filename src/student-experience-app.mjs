@@ -306,6 +306,12 @@ function leader(){
  const classes=DATA.classes.filter(c=>divisions.includes(c.division)&&
   (state.grade==='All'||c.grade===state.grade));
  const selectedClass=classes.find(c=>c.id===state.classId);
+ const scopeLabel=selectedClass?.name||
+  (state.grade!=='All'?
+   (state.grade==='K'?'Kindergarten':
+    state.grade.startsWith('PK')?'Pre-K '+state.grade.slice(2):
+    state.grade.startsWith('G')?'Grade '+state.grade.slice(1):state.grade):
+   state.division==='All'?'Whole school':state.division);
  const rows=state.classId?[[selectedClass?.name||state.classId,group]]:
   state.grade==='All'?grades.filter(g=>group.some(s=>s.grade===g))
    .map(g=>[g,group.filter(s=>s.grade===g)]):
@@ -321,9 +327,9 @@ function leader(){
   '<small>'+safe(meta)+'</small></div><strong>'+safe(value)+'</strong>'+
   '<p>'+safe(detail)+'</p></article>';
  const growthTile=(name,measure)=>stat(name,measure.rate===null?'—':measure.rate+'%',
-  measure.rate===null?'No comparable tests in this group.':
-  measure.met+' of '+measure.compared+' comparable learners met the illustrative projection.',
-  'Fall 2026 · G3–G10');
+  measure.rate===null?'No comparable MAP tests for this selection.':
+  measure.met+' of '+measure.compared+' with comparable tests met the illustrative growth target.',
+  'MAP · Grades 3–10');
  const experienceBlock=(ss,scope,title,subtitle)=>{
   const available=ss.filter(experienceEligible);
   const titleRow=title?'<div class="leader-experience-heading"><h3>'+safe(title)+'</h3>'+
@@ -361,6 +367,17 @@ function leader(){
   {mode:'core',name:'Core Phonics',grades:'K–Grade 5',description:'Illustrative 50-item decoding check'},
   {mode:'fp',name:'F&P reading',grades:'K–Grade 5',description:'Text complexity level, not a grade or percentage'}
  ];
+ const quickChecks=checkConfig.map(check=>({
+  label:check.name,coverage:leaderAcademicCoverage(group,ACADEMIC_RECORDS,check.mode)
+ })).filter(check=>check.coverage.eligible>0);
+ const quickEvidence=quickChecks.length?
+  '<div class="leader-evidence-strip" role="group" aria-label="Additional academic assessment availability">'+
+   '<div class="leader-evidence-intro"><strong>Other learning checks</strong>'+
+   '<span>Records available / eligible · demo</span></div>'+
+   '<div class="leader-evidence-items">'+quickChecks.map(check=>
+    '<span class="leader-evidence-item"><b>'+safe(check.label)+'</b>'+
+    '<span>'+check.coverage.available+' / '+check.coverage.eligible+'</span></span>'
+   ).join('')+'</div></div>':'';
  const academicChecks=checkConfig.map(check=>{
   const snapshot=leaderCheckSnapshot(group,ACADEMIC_RECORDS,check.mode);
   const coverage=snapshot.eligible?
@@ -414,7 +431,7 @@ function leader(){
   trendFor(group.filter(s=>s.division==='Elementary'),'Elementary')+
   trendFor(group.filter(s=>s.division==='Secondary'),'Secondary'):
   trendFor(group,'Selected group');
- return heading('Leadership overview','A clear view of learning, growth and student experience. Choose a group to explore further.')+
+ return heading('Leadership overview','Growth, learning evidence and student experience. Choose a division, grade or class.')+
   '<div class="leader-view">'+
   '<div class="toolbar leader-controls"><label>Division '+
   selector('division',[['All','Whole school'],['Elementary','Elementary'],['Secondary','Secondary']],state.division)+
@@ -425,21 +442,21 @@ function leader(){
   '<section class="leader-section" aria-labelledby="leader-learning-title">'+
   '<div class="leader-sectionhead"><div><div class="eyebrow">LEARNING SNAPSHOT</div>'+
   '<h2 id="leader-learning-title">At a glance</h2></div>'+
-  '<span class="leader-period">Fictional data · Fall 2026</span></div>'+
+  '<span class="leader-period">'+safe(scopeLabel)+' · Fictional data · Fall 2026</span></div>'+
   '<div class="leader-learning-grid">'+
-  stat('Learners',String(group.length),'Students in this selection','PK3–Grade 12')+
+  stat('Learners',String(group.length),'Students included in this selection','Demo cohort')+
   growthTile('MAP Mathematics growth',math)+
   growthTile('MAP Reading growth',reading)+
-  stat('Issued report cards',reports.rate===null?'—':reports.rate+'%',
+  stat('Report card coverage',reports.rate===null?'—':reports.rate+'%',
    reports.available+' of '+reports.eligible+' learners have a previously issued report.',
-   'Historical reports only')+'</div>'+
+   'Previous school years')+'</div>'+quickEvidence+
   '<p class="leader-data-note">MAP growth compares learners with valid, comparable tests to '+
   'illustrative projected growth. It is not an achievement percentile or an official NWEA projection. '+
   'MAP is shown for Grades 3–10 only.</p></section>'+
   '<section class="leader-section" aria-labelledby="leader-experience-title">'+
   '<div class="leader-sectionhead"><div><div class="eyebrow">STUDENT VOICE</div>'+
   '<h2 id="leader-experience-title">Student experience</h2>'+
-  '<p>Engagement and belonging, with the response count alongside every index.</p></div>'+
+  '<p>Engagement and belonging · '+safe(selectedWindow)+' · response counts included.</p></div>'+
   '<label class="leader-window-select">Check-in period '+
   selector('window',EXPERIENCE_WINDOWS.map(w=>[w.key,w.label]),state.window)+
   '</label></div>'+experience+
@@ -447,8 +464,8 @@ function leader(){
   '</section>'+
   '<details class="leader-detail" data-leader-panel="academics"'+
   (state.leaderAcademicOpen?' open':'')+'>'+
-  '<summary><span><strong>Explore academic measures</strong>'+
-  '<small>Report-card distributions and IXL, phonics and reading checks</small></span>'+
+  '<summary><span><strong>Explore academic evidence</strong>'+
+  '<small>Historical subject reports and assessment details</small></span>'+
   '<span class="leader-detail-chevron" aria-hidden="true">⌄</span></summary>'+
   '<div class="leader-detail-body"><h3>Assessment coverage</h3>'+
   '<p class="leader-inline-note">Each measure has its own scale and grade range. '+
@@ -457,8 +474,8 @@ function leader(){
   '<h3>Most recent issued report outcomes</h3>'+reportDetail+'</div></details>'+
   '<details class="leader-detail" data-leader-panel="patterns"'+
   (state.leaderPatternsOpen?' open':'')+'>'+
-  '<summary><span><strong>Explore student experience patterns</strong>'+
-  '<small>Group comparisons and three check-in windows</small></span>'+
+  '<summary><span><strong>Explore experience patterns</strong>'+
+  '<small>Grade or class comparisons and three check-in windows</small></span>'+
   '<span class="leader-detail-chevron" aria-hidden="true">⌄</span></summary>'+
   '<div class="leader-detail-body"><h3>Patterns by '+
   (state.classId?'selected class':state.grade==='All'?'grade':'class')+'</h3>'+

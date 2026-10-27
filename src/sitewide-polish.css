@@ -272,3 +272,82 @@ body{
  .top .roles button{transition:none}
  .student-today-tile{transition:none}
 }
+
+
+/* Leaders · 28 Oct 2026: compact, daily-first evidence in the shared design system.
+   Styling only; no changes to eligibility, denominators or scoring scales. */
+#app .leader-view{
+ --leader-ink:var(--ui-navy);
+ --leader-muted:var(--ui-muted);
+ --leader-line:var(--ui-line);
+}
+.leader-view .leader-controls{gap:12px;margin-bottom:20px}
+.leader-view .leader-controls label,.leader-view .leader-window-select{color:#3e5c71;font-size:13px}
+.leader-view .leader-section{margin-bottom:24px}
+.leader-view .leader-sectionhead{align-items:center;margin-bottom:13px}
+.leader-view .leader-sectionhead h2{font-size:clamp(20px,1.9vw,24px);font-weight:750}
+.leader-view .leader-period{white-space:normal;text-align:right;font-size:12px;color:var(--ui-muted)}
+.leader-view .leader-learning-grid{gap:12px}
+.leader-view .leader-stat{
+ padding:18px 18px 16px;gap:8px;min-height:160px;
+ box-shadow:var(--ui-shadow);border-radius:var(--ui-radius);
+}
+.leader-view .leader-stat-heading>span{font-size:13px;color:#254b66}
+.leader-view .leader-stat-heading>small{font-size:12px;color:var(--ui-muted)}
+.leader-view .leader-stat>strong{font-size:clamp(29px,2.5vw,36px)}
+.leader-view .leader-stat>p{
+ max-width:none;font-size:12.5px;line-height:1.55;color:var(--ui-muted)
+}
+.leader-view .leader-data-note{font-size:12px;max-width:105ch}
+.leader-evidence-strip{
+ display:flex;align-items:center;gap:12px 24px;flex-wrap:wrap;
+ padding:12px 15px;margin-top:12px;border:1px solid var(--ui-line);
+ border-radius:12px;background:#f1f7fa;
+}
+.leader-evidence-intro{display:grid;gap:1px;flex:0 0 auto}
+.leader-evidence-intro strong{font-size:12.5px;color:var(--ui-navy);font-weight:750}
+.leader-evidence-intro>span{font-size:11.5px;color:var(--ui-muted);line-height:1.5}
+.leader-evidence-items{
+ display:flex;align-items:center;justify-content:flex-start;
+ gap:9px 16px;flex:1 1 auto;flex-wrap:wrap;
+}
+.leader-evidence-item{
+ display:inline-flex;align-items:baseline;gap:8px;min-width:0;
+ padding-left:14px;border-left:1px solid #cbdfe9;
+ font-size:12.5px;line-height:1.5;
+}
+.leader-evidence-item b{font-weight:700;color:#2b526c}
+.leader-evidence-item>span{
+ color:#135d78;font-weight:750;font-variant-numeric:tabular-nums;
+ white-space:nowrap;
+}
+.leader-view .leader-experience-card{
+ padding:16px 17px;border-radius:var(--ui-radius);
+ box-shadow:var(--ui-shadow);
+}
+.leader-view .leader-experience-value{font-size:clamp(28px,2.4vw,34px)}
+.leader-view .leader-experience-change,.leader-view .leader-experience-count{
+ font-size:12.5px;color:var(--ui-muted)
+}
+.leader-view .leader-detail{border-radius:var(--ui-radius)}
+.leader-view .leader-detail>summary{min-height:73px;padding:15px 19px}
+.leader-view .leader-detail>summary strong{font-size:15px;font-weight:750}
+.leader-view .leader-detail>summary small{font-size:12px}
+.leader-view .leader-check-row strong,.leader-view .leader-report-subject>strong{font-size:13px}
+.leader-view .leader-check-row>div:first-child span,
+.leader-view .leader-check-evidence b,.leader-view .leader-report-values span{font-size:12.5px}
+@media(max-width:900px){
+ .leader-view .leader-sectionhead{align-items:flex-start}
+ .leader-evidence-items{flex-basis:100%}
+ .leader-evidence-item:first-child{padding-left:0;border-left:0}
+}
+@media(max-width:760px){
+ .leader-view .leader-period{text-align:left}
+ .leader-evidence-strip{gap:11px}
+ .leader-evidence-items{display:grid;grid-template-columns:1fr;gap:7px}
+ .leader-evidence-item{padding-left:0;border-left:0;justify-content:space-between}
+ .leader-view .leader-stat{min-height:0}
+}
+@media(prefers-reduced-motion:reduce){
+ .leader-view .leader-detail-chevron{transition:none}
+}

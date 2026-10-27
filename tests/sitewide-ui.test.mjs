@@ -88,3 +88,24 @@ test('sitewide polish keeps accessible system fallback and scope of data-safe vi
  assert.match(js,/return profileStart\+header\+profileKpis\+academics\+wellbeing\+guidance/);
  assert.match(js,/SSS_RECORDS=createSSSDemoRecords\(DATA\.students\)/);
 });
+
+
+test('Leaders use a simple four-metric overview with grade-eligible academic checks',()=>{
+ click('[data-role]',{role:'leader'});
+ assert.match(node.innerHTML,/Leadership overview/);
+ assert.match(node.innerHTML,/Whole school · Fictional data · Fall 2026/);
+ assert.equal((node.innerHTML.match(/<article class="leader-stat">/g)||[]).length,4);
+ assert.match(node.innerHTML,/Report card coverage/);
+ assert.match(node.innerHTML,/leader-evidence-strip/);
+ for(const name of ['IXL Mathematics','Core Phonics','F&P reading'])
+  assert.ok(node.innerHTML.includes(name));
+ assert.match(node.innerHTML,/Records available \/ eligible/);
+ assert.match(node.innerHTML,/data-leader-panel="academics"/);
+ assert.match(node.innerHTML,/data-leader-panel="patterns"/);
+ events.change({target:{closest(query){
+  return query==='[data-select]'?{dataset:{select:'grade'},value:'G12'}:null;
+ }}});
+ assert.match(node.innerHTML,/Grade 12 · Fictional data · Fall 2026/);
+ assert.doesNotMatch(node.innerHTML,/leader-evidence-strip/);
+ assert.equal((node.innerHTML.match(/<article class="leader-stat">/g)||[]).length,4);
+});
