@@ -111,8 +111,11 @@ export function experienceQuestionSummary(records,students,metric,window='F26'){
    favorable:values.length?Math.round(values.filter(x=>x.response>=2).length/values.length*100):null};
  });
 }
-export function experienceChange(records,students,metric){
- const current=summarizeExperience(records,students,metric,'F26');
- const previous=summarizeExperience(records,students,metric,'S26');
- return {current,previous,delta:current.value===null||previous.value===null?null:current.value-previous.value};
+export function experienceChange(records,students,metric,window='F26'){
+ const index=EXPERIENCE_WINDOWS.findIndex(item=>item.key===window);
+ const current=summarizeExperience(records,students,metric,window);
+ const previousWindow=index>0?EXPERIENCE_WINDOWS[index-1]:null;
+ const previous=previousWindow?summarizeExperience(records,students,metric,previousWindow.key):null;
+ return {current,previous,previousLabel:previousWindow?.label||null,
+  delta:current.value===null||previous?.value===null||!previous?null:current.value-previous.value};
 }
