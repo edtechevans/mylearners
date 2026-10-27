@@ -20,6 +20,7 @@ export function parseBoardHash(hash){
  const window=params.get('window');
  return {
   boardView:clean(params.get('view'),views,'overview'),
+  boardOverviewChart:params.get('chart')==='dp'?'dp':'map',
   boardDpMetric:clean(params.get('metric'),dpMetrics,'average'),
   boardTrendTerm:clean(params.get('term'),trends,'fall'),
   boardTrendFocus:params.get('focus')==='both'?'all':clean(params.get('focus'),focuses,'all'),
@@ -35,8 +36,13 @@ export function boardHash(state){
  if(view==='dp'){
   params.set('metric',clean(state.boardDpMetric,dpMetrics,'average'));
  }else if(view==='overview'){
-  params.set('term',clean(state.boardTrendTerm,trends,'fall'));
-  params.set('focus',clean(state.boardTrendFocus,focuses,'all'));
+  if(state.boardOverviewChart==='dp'){
+   params.set('chart','dp');
+   params.set('metric',clean(state.boardDpMetric,dpMetrics,'average'));
+  }else{
+   params.set('term',clean(state.boardTrendTerm,trends,'fall'));
+   params.set('focus',clean(state.boardTrendFocus,focuses,'all'));
+  }
  }else{
   params.set('window',BOARD_DATA[state.boardWindow]?state.boardWindow:'fall2026');
   params.set('subject',clean(state.boardSubject,subjects,'math'));
