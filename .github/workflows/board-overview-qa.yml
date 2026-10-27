@@ -1,0 +1,47 @@
+name: Board overview usability and historical integrity
+on:
+  push:
+    branches: [board-overview-ux-20261027]
+permissions:
+  contents: read
+jobs:
+  board-ux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate Board-only modules
+        run: |
+          node --check src/board-map-overview.mjs
+          node --check src/board-map-view.mjs
+          node --check src/board-map-links.mjs
+          node --check src/student-experience-app.mjs
+      - name: Validate current and historical indicators
+        run: |
+          node --test tests/board-map.test.mjs tests/board-overview.test.mjs tests/student-experience.test.mjs tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Chromium browser test tooling
+        run: python -m pip install playwright==1.57.0
+      - name: Test historical overview, grade detail, shareable links and devices
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/board-ux-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          sleep 2
+          export MYLEARNERS_URL=http://127.0.0.1:8765
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          python tests/e2e/board_overview_ux.py
+      - name: Save Board UX screenshots and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: board-overview-ux
+          path: qa-board-overview/
+          retention-days: 14
+          if-no-files-found: warn
