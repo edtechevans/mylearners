@@ -8,7 +8,7 @@ import {DP_RECORDS} from './board-dp-data.mjs';
 import {renderDPOverviewTrend} from './board-dp-view.mjs';
 const SUBJECT_KEYS=['math','reading','language'];
 const NAME={math:'Mathematics',reading:'Reading',language:'Language Usage'};
-const COLOR={math:'#176c94',reading:'#a65d29',language:'#7755a4'};
+const COLOR={math:'#2479bd',reading:'#7558c5',language:'#13906c'};
 const yearsBySeason=Object.freeze({
  fall:Array.from({length:13},(_,i)=>2014+i),
  spring:Array.from({length:12},(_,i)=>2015+i)
@@ -171,8 +171,11 @@ export function renderBoardOverview(state){
  const rawFocus=state.boardTrendFocus==='both'?'all':state.boardTrendFocus;
  const focus=['all',...SUBJECT_KEYS].includes(rawFocus)?rawFocus:'all';
  const chartMode=state.boardOverviewChart==='dp'?'dp':'map';
- const data=historicalTrend(season);
+ const fullData=historicalTrend(season);
  const selectedKeys=focus==='all'?SUBJECT_KEYS:[focus];
+ const range=state.boardTrendRange==='all'?'all':'recent';
+ const comparable=fullData.filter(r=>selectedKeys.every(k=>r[k]!==null));
+ const data=range==='recent'?comparable.slice(-5):fullData;
  const nWindows=data.filter(r=>selectedKeys.every(k=>r[k]!==null)).length;
  const mostRecent=season==='fall'?'Fall 2025':'Spring 2026';
  const current=DP_RECORDS.at(-1);
@@ -189,27 +192,31 @@ export function renderBoardOverview(state){
  '<div class="board-overview-charthead"><div><span class="eyebrow">MAP · HISTORICAL ACHIEVEMENT</span>'+
  '<h2 id="board-trend-heading">Our position relative to EARCOS</h2>'+
  '<p>Number of AISG grade averages above the EARCOS mean · Grades 3–10</p></div>'+
- '<div class="board-overview-filterarea"><div class="board-overview-control"><span>Window</span>'+
+ '<div class="board-overview-filterarea"><div class="board-overview-control"><span>Testing window</span>'+
  '<div class="board-segmented">'+tabButton('fall','Fall',season,'data-board-trend')+
  tabButton('spring','Spring',season,'data-board-trend')+'</div></div>'+
- '<div class="board-overview-control"><span>Show</span>'+
- '<div class="board-segmented">'+tabButton('all','All three',focus,'data-board-focus')+
- tabButton('math','Math',focus,'data-board-focus')+
- tabButton('reading','Reading',focus,'data-board-focus')+
- tabButton('language','Language',focus,'data-board-focus')+'</div></div></div></div>'+
+ '<div class="board-overview-control"><span>Time period</span>'+
+ '<div class="board-segmented">'+tabButton('recent','Recent 5 years',range,'data-board-trend-range')+
+ tabButton('all','All years',range,'data-board-trend-range')+'</div></div></div></div>'+
  '<div class="board-overview-chartmeta"><span class="board-trend-series-legend">'+
  selectedKeys.map(key=>'<span><i class="board-dot '+key+'"></i> '+NAME[key]+'</span>').join('')+
  '</span><span>'+nWindows+' fully comparable '+(season==='fall'?'Fall':'Spring')+
  ' windows · latest '+mostRecent+'</span></div>'+
- '<p class="board-mobile-swipe">Swipe for earlier years; select a point to see grade-level RIT differences.</p>'+
+ '<p class="board-mobile-swipe">Hover a point to see which grades are included and their MAP score differences.</p>'+
  '<div class="board-trend-scroller" tabindex="0" aria-label="Scroll horizontally through MAP comparisons">'+
  chartSvg(data,focus,season)+'</div>'+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
  '<section class="board-trend-inspector" aria-live="polite" aria-atomic="true">'+
  '<p>Hover, tap or focus a point to see which grades are above EARCOS and by how much.</p></section>'+
- chartSummary(data,season,selectedKeys)+chartTable(data,season)+
+ chartSummary(data,season,selectedKeys)+
+ '<details class="board-details board-focus-more"><summary>Focus on one subject <span>+</span></summary>'+
+ '<div class="board-segmented">'+tabButton('all','All three',focus,'data-board-focus')+
+ tabButton('math','Mathematics',focus,'data-board-focus')+
+ tabButton('reading','Reading',focus,'data-board-focus')+
+ tabButton('language','Language Usage',focus,'data-board-focus')+'</div></details>'+
+ chartTable(data,season)+
  '<div class="board-overview-chartfoot"><span>Grade averages describe achievement, not matched student growth. Missing benchmarks are not plotted as zero.</span>'+
- '<button type="button" data-board-view="explore" class="board-inline-link">Explore MAP by Year ›</button></div></div>';
+ '<button type="button" data-board-view="explore" class="board-inline-link">Explore MAP results ›</button></div></div>';
  return '<div class="board-overview board-story">'+
  '<div class="board-overview-intro"><div><span class="eyebrow">STRENGTHS AT A GLANCE</span>'+
  '<h2>Strong learning outcomes, from Grade 3 to graduation</h2>'+
