@@ -26,8 +26,11 @@ def setup(browser,width=1440,height=900):
     pg=ctx.new_page()
     errors=[]
     pg.on("pageerror",lambda err:errors.append(str(err)))
-    pg.goto(BASE+"/#/overview",wait_until="domcontentloaded",timeout=30000)
-    pg.locator("header.top").wait_for(timeout=15000)
+    pg.goto(BASE+"/#/overview",wait_until="domcontentloaded",timeout=20000)
+    pg.wait_for_timeout(900)
+    if not pg.locator("header.top").count():
+        raise AssertionError("App did not render; page errors: "+str(errors)+"; body: "+pg.locator("body").inner_text()[:350])
+    pg.locator("header.top").wait_for(timeout=6000)
     return ctx,pg,errors
 def check(cond,msg):
     if not cond:raise AssertionError(msg)
