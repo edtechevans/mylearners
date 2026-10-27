@@ -86,8 +86,8 @@ test('Fall 2026 AISG grade averages use verified NWEA 2025 Fall US SCHOOL norms'
  assert.equal(BOARD_DATA.fall2026.schoolwide.aboveUSComparisons,24);
  assert.equal(BOARD_DATA.fall2026.schoolwide.returningGrowthInOneOrMoreAreasPct,95);
  assert.ok(BOARD_METHODS.fall2026.includes('NWEA 2025 Fall SCHOOL achievement norms'));
- assert.ok(BOARD_METHODS.fall2026.includes('student-level data remain private')||
-   BOARD_METHODS.fall2026.includes('Student-level data remain private'));
+ assert.ok(BOARD_METHODS.caution.includes('school-level aggregates'));
+ assert.ok(BOARD_METHODS.fall2026.includes('95%'));
 });
 
 test('Partial historical EARCOS data are missing, never mistakenly zero',()=>{
