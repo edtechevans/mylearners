@@ -66,7 +66,7 @@ test('Compact Faculty academic selector retains all grade-specific measures and 
   const ss=cls.studentIds.map(id=>DATA.userIndex.get(id));
   const html=renderClassAcademicPanel(ss,ACADEMIC,'report','Mathematics',{compact:true});
   assert.match(html,/academic-class-compact/);
-  assert.match(html,/Show in my roster/);
+  assert.match(html,/Show in My Roster/);
   assert.match(html,/<details class="academic-class-breakdown">/);
   assert.match(html,/Class results breakdown/);
   assert.match(html,/data-academic-mode="report"/);
