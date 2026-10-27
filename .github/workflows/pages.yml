@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: 22
       - name: Verify fictional data model and transparent indicators
-        run: node --test tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs tests/student-experience.test.mjs tests/board-map.test.mjs tests/board-overview.test.mjs
+        run: node --test tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs tests/student-experience.test.mjs tests/board-map.test.mjs tests/board-overview.test.mjs tests/board-dp.test.mjs
       - name: Validate entry point and Javascript syntax
         run: |
           node --check src/student-experience-app.mjs
@@ -29,6 +29,8 @@ jobs:
           node --check src/board-map-view.mjs
           node --check src/board-map-overview.mjs
           node --check src/board-map-links.mjs
+          node --check src/board-dp-data.mjs
+          node --check src/board-dp-view.mjs
           grep -q 'student-experience-app.mjs' index.html
       - name: Browser rendering and role toggle smoke test
         run: |
@@ -53,6 +55,9 @@ jobs:
           grep -q 'board-controls' /tmp/mylearners-board-explore-dom.html
           grep -q 'Grade 10' /tmp/mylearners-board-explore-dom.html
           grep -q '6 / 8' /tmp/mylearners-board-explore-dom.html
+          timeout 45s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --virtual-time-budget=6000 --dump-dom 'http://127.0.0.1:8765/#/board?view=dp&metric=average' > /tmp/mylearners-board-dp-dom.html 2>/tmp/mylearners-dp-chrome.log
+          grep -q 'IB Diploma outcomes over time' /tmp/mylearners-board-dp-dom.html
+          grep -q 'data-board-dp-point="average:2026"' /tmp/mylearners-board-dp-dom.html
   deploy:
     needs: validate
     runs-on: ubuntu-latest
