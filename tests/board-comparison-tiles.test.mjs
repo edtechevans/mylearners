@@ -35,9 +35,12 @@ test('Fall 2026 MAP cards show actual grade-mean differences and honest missing 
  const html=renderMapComparisonTiles({schoolYear:2026,selectedWindow:'fall2026',selectedSubject:'math'});
  assert.equal((html.match(/class="board-comparison-window"/g)||[]).length,1);
  assert.equal((html.match(/class="board-comparison-subject /g)||[]).length,3);
- assert.equal((html.match(/class="board-comparison-mini unavailable"/g)||[]).length,3);
+ assert.equal((html.match(/class="board-comparison-mini unavailable"/g)||[]).length,0);
+ assert.equal((html.match(/class="board-comparison-mini"/g)||[]).length,3);
+ assert.match(html,/board-no-regional/);
+ assert.match(html,/EARCOS regional comparisons are not available/);
  assert.match(html,/vs U.S. schools/);
- assert.match(html,/vs regional schools \(EARCOS\)/);
+ assert.match(html,/EARCOS regional comparisons/);
  assert.match(html,/What do these numbers mean/);
  assert.doesNotMatch(html,/Spring 2027|\.xlsx|\.csv|\.pdf|Source:/i);
 });
@@ -76,11 +79,14 @@ test('MAP Board starts with one compact filter row, three cards and no grade cha
  assert.doesNotMatch(initial,/class="board-grade-row"/);
  assert.doesNotMatch(initial,/data-board-subject="math"/);
  const selected=renderBoard({...state,boardMapDetailsOpen:true});
- assert.match(selected,/board-map-drilldown/);
+ assert.match(selected,/board-map-drawer/);
+ assert.match(selected,/role="dialog"/);
+ assert.match(selected,/aria-modal="true"/);
+ assert.match(selected,/board-drawer-backdrop/);
  assert.match(selected,/Grade 10/);
  assert.match(selected,/data-board-select="grade"/);
  assert.match(selected,/View exact grade-level results/);
- assert.match(selected,/Close details/);
+ assert.match(selected,/Close grade evidence panel/);
 });
 test('Growth explanation is explicitly different from achievement and projected growth',()=>{
  const html=renderBoard({boardView:'explore',boardWindow:'fall2026',
