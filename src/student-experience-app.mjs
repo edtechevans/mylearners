@@ -122,7 +122,7 @@ function learnerProfile(s,studentRole=false){
  const latest=academic.reports?.[0];
  const math=latest?.subjects.find(x=>x.subject==='Mathematics'||x.subject==='Early Mathematics')||null;
  const profileStart=(studentRole?'':'<div class="row-between"><button class="back" data-action="back">← Back to my class</button></div>');
- const history=studentRole?'<section class="card"><h2>My check-ins over time</h2><div class="trend">'+EXPERIENCE_WINDOWS.map(w=>{
+ const history=studentRole&&experienceEligible(s)?'<section class="card"><h2>My check-ins over time</h2><div class="trend">'+EXPERIENCE_WINDOWS.map(w=>{
   const e=experienceFor(RECORDS,s.id,'engagement',w.key)?.value;
   const b=experienceFor(RECORDS,s.id,'belonging',w.key)?.value;
   return '<div><span>'+w.label+'</span><strong>Engagement '+fmt(e)+'</strong><strong>Belonging '+fmt(b)+'</strong></div>';
@@ -135,8 +135,10 @@ function learnerProfile(s,studentRole=false){
  mg.status==='comparable'?'RIT points · illustrative projection '+fmt(mg.projected):'Not assessed or no comparable test')+
  kpi('Latest Mathematics report',math?.value||'—',latest?'Issued '+safe(latest.year)+' · '+safe(latest.framework):'No issued report yet')+'</div>'+
  renderAcademicProfile(s,ACADEMIC_RECORDS,studentRole,state.academicReportYear)+
+ (experienceEligible(s)?
  '<div class="sectionhead"><h2>'+(studentRole?'How I experience learning':'Student experience')+'</h2><span class="tiny">Fictional Fall 2026 check-ins</span></div>'+
- metrics([s],s,studentRole?'student':'profile')+history+
+ metrics([s],s,studentRole?'student':'profile')+history:
+ '<p class="academic-early-checkin-note">Student engagement and belonging check-ins begin in Grade 3 in this demonstration.</p>')+
  '<section class="card academic-next-step"><h2>'+(studentRole?'My next step':'Classroom guidance')+'</h2>'+
  (studentRole?'<p>What could help me feel more connected and engaged in learning?</p><label class="label" for="reflection">My reflection (this browser only)</label>'+
  '<textarea id="reflection" placeholder="One thing that helps me learn is...">'+safe(saved('reflection-'+s.id,''))+'</textarea>'+
