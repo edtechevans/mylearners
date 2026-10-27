@@ -36,7 +36,7 @@ test('Hover breakdown identifies exact included grade averages rather than stude
  assert.match(panel,/GRADES INCLUDED IN THIS POINT/);
  assert.match(panel,/7 \/ 8/);
  assert.match(panel,/G8/);
- assert.match(panel,/Not above/);
+ assert.match(panel,/Not above/);assert.match(panel,/-1.0 RIT/);
  assert.equal((panel.match(/class="board-trend-grade /g)||[]).length,8);
  assert.equal(gradeBreakdown('fall',2026,'math').compared,0);
  assert.match(renderTrendPointDetails('fall:2026:math'),/No complete EARCOS/);
@@ -55,11 +55,11 @@ test('Overview includes Language Usage on every headline card, the historic char
  assert.match(html,/data-board-series="language"/);
  assert.match(html,/data-board-point="fall:2025:math"/);
  assert.match(html,/data-board-point="fall:2025:language"/);
- assert.match(html,/hover, tap or keyboard-focus/i);
+ assert.match(html,/Hover to open a tile/i);
  assert.match(html,/board-trend-inspector/);
  assert.match(html,/View the annual values/);
  assert.match(html,/not individual student growth/);
- assert.match(html,/data-board-view="explore"/);
+ assert.match(html,/data-board-view="explore"/);assert.match(html,/data-board-view="dp"/);
 });
 
 test('Focused Language Usage renders exactly one interactive trend and visible point values',()=>{
