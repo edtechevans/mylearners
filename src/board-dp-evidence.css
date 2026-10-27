@@ -1,0 +1,85 @@
+/* AISG Board · Diploma evidence integration
+   International comparisons are neutral reference values, not rankings.
+   Default presentation remains three headlines and a single chart.
+*/
+.board-view .board-dp-world-strip{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:12px;margin-top:14px;
+}
+.board-view .board-dp-evidence-item{
+ display:flex;flex-direction:column;gap:5px;
+ background:#f5f9fb;border:1px solid #e0ebf1;
+ border-radius:11px;padding:14px 16px;min-width:0;
+}
+.board-view .board-dp-evidence-item>span{
+ color:#526f83;font-size:11.5px;font-weight:720;
+}
+.board-view .board-dp-evidence-item strong{
+ color:#123e5d;font-size:22px;font-weight:780;letter-spacing:-.035em;
+ font-variant-numeric:tabular-nums;
+}
+.board-view .board-dp-evidence-item small{
+ color:#607b8e;font-size:11px;line-height:1.5;
+}
+.board-view .board-dp-status{
+ background:#eef5f9;color:#426980;border:1px solid #d2e5ef;
+ font-size:11px;font-weight:750;line-height:1.5;
+ border-radius:8px;padding:8px 11px;
+}
+.board-view .board-dp-trend-controls{
+ display:flex;align-items:center;justify-content:space-between;
+ flex-wrap:wrap;gap:12px;margin-top:18px;
+}
+.board-view .board-dp-legend{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:#4c6b80}
+.board-view .board-dp-key-aisg,.board-view .board-dp-key-world{width:24px;display:inline-block;height:0;border-top:3px solid #176397}
+.board-view .board-dp-key-world{border-top:3px dashed #13847c;margin-left:15px}
+.board-view .board-dp-global-toggle{
+ min-height:38px;border-radius:9px;border:1px solid #cedee8;
+ background:#fff;color:#2a6485;
+ padding:8px 13px;font-size:12px;font-weight:750;
+}
+.board-view .board-dp-global-toggle:hover{background:#f0f7fb;border-color:#9dc7d7}
+.board-view .board-dp-global-toggle:focus-visible{outline:3px solid #287ca8;outline-offset:2px}
+.board-view .board-dp-chart-scroll{max-width:100%;overflow-x:auto}
+.board-view .board-dp-svg{min-width:680px;width:100%;height:auto}
+.board-view .board-dp-achievement,.board-view .board-dp-table{margin:16px 0;border-radius:11px}
+.board-view .board-dp-extra-grid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:10px;margin-top:14px;
+}
+.board-view .board-dp-detail-table{
+ width:max-content;min-width:100%;
+ font-size:12px;white-space:nowrap;
+}
+.board-view .board-dp-detail-table td,
+.board-view .board-dp-detail-table th{padding:11px 12px}
+.board-view .board-dp-table>.tablewrap{max-width:100%;overflow-x:auto;margin-top:10px}
+.board-view .board-dp-table>p{font-size:11.5px;color:#5e788a;line-height:1.55}
+.board-view .board-dp-global-point{
+ font-weight:730;color:#256c87;
+}
+.board-view .board-dp-comparison-panel .board-dp-graphic-card{
+ background:#fff;border:1px solid #dce8ef;box-shadow:0 3px 15px rgba(21,65,95,.045);
+ border-radius:14px;min-height:145px
+}
+.board-view .board-dp-comparison-panel .board-dp-graphic-icon{
+ background:#edf5f8;color:#246b8a
+}
+.board-view .board-dp-graphic-pass .board-dp-graphic-icon{background:#f1eff7;color:#6c5ca0}
+.board-view .board-dp-graphic-consistency .board-dp-graphic-icon{background:#edf7f4;color:#287c74}
+.board-view .board-dp-graphic-footnote{max-width:105ch}
+@media(max-width:1120px){
+ .board-view .board-dp-world-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .board-view .board-dp-world-strip .board-dp-evidence-item:last-child:nth-child(odd){grid-column:1/-1}
+ .board-view .board-dp-extra-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+ .board-view .board-dp-world-strip,.board-view .board-dp-extra-grid{grid-template-columns:1fr}
+ .board-view .board-dp-world-strip .board-dp-evidence-item:last-child:nth-child(odd){grid-column:auto}
+ .board-view .board-dp-trend-controls{align-items:flex-start}
+ .board-view .board-dp-svg{min-width:630px}
+}
+@media print{
+ .board-view .board-dp-global-toggle{display:none}
+ .board-view .board-dp-world-strip{break-inside:avoid}
+}
