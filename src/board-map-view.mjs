@@ -145,7 +145,7 @@ export function renderBoard(state){
   'Grade mean gaps describe achievement, not individual student growth.';
  const explore=state.boardView==='explore',diploma=state.boardView==='dp';
  const header='<section class="board-view">'+
- '<div class="heading board-heading"><div><div class="eyebrow">AISG · BOARD · NWEA MAP GROWTH</div>'+
+ '<div class="heading board-heading"><div><div class="eyebrow">AISG · BOARD · LEARNING EVIDENCE</div>'+
  '<h1>Learning outcomes over time</h1><p>MAP achievement and growth, alongside Diploma Programme outcomes.</p></div>'+
  '<div class="board-provenance-badge"><strong>AISG AGGREGATED DATA</strong><small>No student records</small></div></div>'+
  '<div class="board-nav-row"><nav class="board-nav-tabs" aria-label="Board dashboard sections">'+
