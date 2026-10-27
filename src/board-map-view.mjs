@@ -5,6 +5,7 @@
 import {BOARD_DATA,BOARD_SUBJECTS,BOARD_GRADE_LIST,BOARD_SCHOOL_YEARS,
  BOARD_METHODS,boardRows,boardSummary,boardWindowFor} from './board-map-data.mjs';
 import {esc} from './v2-ui.mjs';
+import {renderBoardOverview} from './board-map-overview.mjs';
 const safe=v=>esc(v??'');
 const n1=n=>Number.isFinite(n)?Number(n).toFixed(1):'—';
 const diff=n=>Number.isFinite(n)?(n>0?'+':'')+Number(n).toFixed(1):'—';
@@ -18,7 +19,7 @@ function segmented(kind,options,selected){
  ' class="'+(o.id===selected?'active':'')+'" aria-pressed="'+(o.id===selected?'true':'false')+'">'+safe(o.label)+'</button>').join('')+'</div>';
 }
 function indicator(label,value,detail){
- return '<article class="board-indicator"><span class="board-indicator-label">'+safe(label)+'</span>'+
+ return '<article class="board-indicator'+(value==='—'?' is-unavailable':'')+'"><span class="board-indicator-label">'+safe(label)+'</span>'+
  '<strong>'+safe(value)+'</strong><span class="board-indicator-detail">'+safe(detail)+'</span></article>';
 }
 function difference(row,benchmark){
@@ -45,7 +46,17 @@ function comparisonSeries(row,benchmark){
  '<i class="board-bar-zero"></i>'+track+'</div>'+
  '<strong class="board-bar-value'+(value!==null&&value<0?' below':'')+(isDirectional?' directional':'')+'">'+safe(result)+'</strong></div>';
 }
-function gradeComparison(rows){
+function gradeComparison(rows,summary){
+ if(summary.source?.evidence==='direction-only'){
+  return '<section class="board-panel board-chart-panel board-direction-panel">'+
+   '<div class="board-chart-top"><div><span class="eyebrow">GRADE-LEVEL ACHIEVEMENT</span>'+
+   '<h2>Above the U.S. mean in every reported grade</h2>'+
+   '<p>The Fall 2026 summary reports the direction of achievement, but not exact RIT differences.</p></div></div>'+
+   '<div class="board-achievement-grade-grid">'+rows.map(r=>'<div class="board-achievement-grade">'+
+   '<strong>Grade '+r.grade+'</strong><span>Above U.S. norm</span></div>').join('')+'</div>'+
+   '<div class="board-not-available"><strong>EARCOS comparison —</strong><span>No Fall 2026 EARCOS benchmark has been supplied.</span></div>'+
+   '<p class="board-chart-caption">An above-norm grade average does not mean every student scored above the norm. Exact RIT gaps are not available for this window.</p></section>';
+ }
  return '<section class="board-panel board-chart-panel"><div class="board-chart-top"><div>'+
  '<span class="eyebrow">GRADE-LEVEL ACHIEVEMENT</span><h2>AISG compared with U.S. and EARCOS</h2>'+
  '<p>Differences in mean RIT points. Right of zero = AISG above the comparison average.</p>'+
@@ -54,7 +65,7 @@ function gradeComparison(rows){
  '<div class="board-axis"><span>Below reference</span><span>0 RIT</span><span>Above reference</span></div>'+
  '<div class="board-grade-plot">'+rows.map(r=>'<div class="board-grade-row"><div class="board-grade-name">Grade '+r.grade+'</div>'+
  '<div class="board-grade-series">'+comparisonSeries(r,'us')+comparisonSeries(r,'earcos')+'</div></div>').join('')+'</div>'+
- '<p class="board-chart-caption">— means unavailable, not zero. Where only an “above norm” statement is supplied, no numerical RIT gap is inferred. Different grade snapshots do not measure individual growth.</p></section>';
+ '<p class="board-chart-caption">— means unavailable, not zero. Different grade snapshots do not measure individual growth.</p></section>';
 }
 function growthCell(row){
  return Number.isFinite(row.growthEligible)&&row.growthEligible>0?
@@ -110,7 +121,7 @@ export function renderBoard(state){
  const springKey=boardWindowFor(selectedYear,'spring');
  const seasonTabs=[{id:fallKey||'unavailable-fall',label:'Fall',disabled:!fallKey},
                    {id:springKey||'unavailable-spring',label:'Spring',disabled:!springKey}];
- const area=selectedGrade!=='all'?'Grade '+selectedGrade:selectedDiv==='all'?'Grades 3–10':
+ const area=selectedGrade!=='all'?'Grade '+selectedGrade:selectedDiv==='all'?'All tested grades (G3–10)':
   selectedDiv==='elementary'?'Elementary · Grades 3–5':'Secondary · Grades 6–10';
  const eu=summary.earcosAvailable,us=summary.usAvailable,total=summary.gradeCount;
  const eLabel=eu?summary.aboveEarcos+' / '+eu:'—';
@@ -121,8 +132,8 @@ export function renderBoard(state){
  const metrics=[
   ['Grades above U.S. norm',us?summary.aboveUS+' / '+us:'—',usNote],
   ['Grades above EARCOS mean',eLabel,eNote],
-  ['Mean grade gap vs U.S.',summary.gapUS===null?'—':diff(summary.gapUS)+' RIT',
-   summary.gapUS===null?'Exact RIT means unavailable':'Mean of '+total+' selected grade differences'],
+  ['Avg grade gap vs U.S.',summary.gapUS===null?'—':diff(summary.gapUS)+' RIT',
+   summary.gapUS===null?'Exact RIT means unavailable':'Unweighted mean of '+total+' grade-level gaps'],
   ['Meeting projected growth',summary.growthPct===null?'—':summary.growthPct+'%',
    matched?'Of '+matched+' matched students · Spring-to-Spring':'Matched subject growth not available']
  ];
@@ -131,10 +142,18 @@ export function renderBoard(state){
   active==='spring2026'?
   'Spring 2026 EARCOS values are from the supplied Spring 2025/26 international comparison and are now available for all three subjects.':
   'Historical grade means are available; cohort composition and norm editions may change over time.';
- return '<section class="board-view">'+
- '<div class="heading board-heading"><div><div class="eyebrow">AISG · BOARD OVERVIEW · NWEA MAP GROWTH</div>'+
- '<h1>Achievement &amp; growth</h1><p>Clear comparisons for Mathematics, Reading and Language Usage, from Fall 2014 to Fall 2026.</p></div>'+
+ const explore=state.boardView==='explore';
+ const header='<section class="board-view">'+
+ '<div class="heading board-heading"><div><div class="eyebrow">AISG · BOARD · NWEA MAP GROWTH</div>'+
+ '<h1>Achievement &amp; growth</h1><p>A clear view of schoolwide patterns, with grade-level detail when you need it.</p></div>'+
  '<div class="board-provenance-badge"><strong>AISG AGGREGATED DATA</strong><small>No student records</small></div></div>'+
+ '<div class="board-nav-row"><nav class="board-nav-tabs" aria-label="Board dashboard sections">'+
+ '<button type="button" data-board-view="overview" aria-current="'+(!explore?'page':'false')+'" class="'+(!explore?'active':'')+'">Overview</button>'+
+ '<button type="button" data-board-view="explore" aria-current="'+(explore?'page':'false')+'" class="'+(explore?'active':'')+'">Explore by Year</button>'+
+ '</nav><div class="board-share-area"><button type="button" class="board-copy-link" data-board-share="true" aria-label="Copy link to this Board view">Copy link to this view</button>'+
+ '<span class="board-share-feedback" id="board-share-feedback" role="status" aria-live="polite"></span></div></div>';
+ if(!explore)return header+renderBoardOverview(state)+'</section>';
+ return header+
  '<div class="board-controls">'+
  '<div class="board-control-group"><span class="board-filter-label">Subject</span>'+
  segmented('subject',BOARD_SUBJECTS,selectedSubject)+'</div>'+
@@ -144,12 +163,12 @@ export function renderBoard(state){
  '<div class="board-control-group"><span class="board-filter-label">Window</span>'+
  segmented('window',seasonTabs,active)+'</div>'+
  '<div class="board-filter-selects"><label>Division <select data-board-select="division" aria-label="Board MAP division">'+
- option('all','Whole school',selectedDiv)+option('elementary','Elementary',selectedDiv)+option('secondary','Secondary',selectedDiv)+'</select></label>'+
+ option('all','All tested grades (G3–10)',selectedDiv)+option('elementary','Elementary',selectedDiv)+option('secondary','Secondary',selectedDiv)+'</select></label>'+
  '<label>Grade <select data-board-select="grade" aria-label="Board MAP grade">'+
  option('all','All grades',selectedGrade)+allowed.map(g=>option(String(g),'Grade '+g,selectedGrade)).join('')+'</select></label></div></div>'+
  '<div class="board-context"><strong>'+safe(subjectName)+' · '+safe(source.label)+'</strong><span>'+safe(area)+'</span></div>'+
  '<div class="board-stats">'+metrics.map(m=>indicator(...m)).join('')+'</div>'+
  '<p class="board-benchmark-note">'+safe(note)+'</p>'+
- gradeComparison(rows)+schoolwideHighlight(active)+exactTable(rows,summary)+sourceDetails(active)+
+ gradeComparison(rows,summary)+schoolwideHighlight(active)+exactTable(rows,summary)+sourceDetails(active)+
  '</section>';
 }
