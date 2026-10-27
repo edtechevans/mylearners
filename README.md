@@ -1,4 +1,14 @@
-# AISG | My Learners — First Release
+# AISG | My Learners — Academic and Whole-Learner Demo
+
+## Faculty and Student academic snapshots (October 2026)
+
+The Faculty class roster can switch its academic result column between **issued report-card outcomes by subject** and, where grade-eligible, **IXL Mathematics diagnostic levels (G1–10)**, **Core Phonics illustrative checks (K–G5)**, and **Fountas & Pinnell text levels (K–G5)**.
+
+Opening a student shows all subjects in an issued report card, with up to three completed school years (2023–24, 2024–25 and 2025–26 when the learner's fictional enrolment history permits), as well as up to three recent assessment snapshots. School-year and programme labels prevent grade scales from being treated as interchangeable. Student demo navigation includes Kindergarten–Grade 2 as well as older learners.
+
+**All named learner profiles and these academic records are synthetic.** The IXL data are simulated *diagnostic levels*, not practice SmartScores or exports. The Core Phonics display is a *fictional 50-item classroom decoding check*, not an official CORE Phonics Survey total or normative score. F&P letters indicate text difficulty, not percentages or overall ability. Current 2026–27 report-card grades are not presented as issued results. This public GitHub Pages demo must never contain identifiable AISG student assessment or survey data.
+
+## Original demo introduction
 
 **[Open the My Learners demonstration](https://edtechevans.github.io/mylearners/)**
 
