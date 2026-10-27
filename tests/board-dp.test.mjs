@@ -45,7 +45,7 @@ test('Nine-year Diploma chart keeps full scale and supports actual global refere
  assert.match(html,/board-dp-world-point/);
  assert.match(html,/data-board-dp-global/);
  assert.match(html,/30\.88/);
- assert.match(html,/world IB reference/);
+ assert.match(html,/global IB reference/);
  assert.match(html,/32\.0–37\.0/);
  assert.match(html,/2026 school results/);
  assert.match(html,/Detailed results by graduating year/);
