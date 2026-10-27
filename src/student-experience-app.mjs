@@ -21,7 +21,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  division:'All',grade:'All',classId:'',studentId:'',query:'',metric:'engagement',window:'F26',details:false,checkin:false,
  boardWindow:saved('my-board-window-v2','fall2026'),boardSubject:saved('my-board-subject','math'),
  boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all'),
- boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardDpMetric:'average'};
+ boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardOverviewChart:'map',boardDpMetric:'average'};
 const boardDeepLink=parseBoardHash(globalThis.location?.hash);
 if(boardDeepLink&&state.role==='board')Object.assign(state,boardDeepLink);
 const safe=(v)=>esc(v??'');
@@ -187,7 +187,8 @@ function render(){
  'My Learners demonstration · Learners, assessments and student check-ins fictional')+
  '</footer>';
  if(state.role==='board'&&globalThis.window?.innerWidth<700){
-  const scroller=root.querySelector?.(state.boardView==='dp'?'.board-dp-chart-scroll':'.board-trend-scroller');
+  const useDp=(state.boardView==='dp')||(state.boardView==='overview'&&state.boardOverviewChart==='dp');
+  const scroller=root.querySelector?.(useDp?'.board-dp-chart-scroll':'.board-trend-scroller');
   if(scroller)scroller.scrollLeft=scroller.scrollWidth;
  }
  try{sessionStorage.setItem('my-role',state.role);sessionStorage.setItem('my-teacher',state.teacher);
@@ -262,7 +263,7 @@ root.addEventListener('focusin',e=>{
  const point=e.target.closest?.('[data-board-point],[data-board-dp-point]');
  if(point&&state.role==='board'){
   if(point.dataset.boardPoint&&state.boardView==='overview')showBoardPoint(point);
-  if(point.dataset.boardDpPoint&&state.boardView==='dp')showDPPoint(point);
+  if(point.dataset.boardDpPoint&&(state.boardView==='dp'||(state.boardView==='overview'&&state.boardOverviewChart==='dp')))showDPPoint(point);
   placeBoardFloat(point);
  }
 });
@@ -302,6 +303,17 @@ root.addEventListener('click',e=>{
   state.boardView=['overview','explore','dp'].includes(boardView.dataset.boardView)?
   boardView.dataset.boardView:'overview';
   render();globalThis.window?.scrollTo?.(0,0);return;
+ }
+ const dpGo=e.target.closest('[data-board-dp-go]');
+ if(dpGo){
+  state.boardView='dp';
+  state.boardDpMetric=dpGo.dataset.boardDpGo==='passRate'?'passRate':'average';
+  render();globalThis.window?.scrollTo?.(0,0);return;
+ }
+ const boardChart=e.target.closest('[data-board-overview-chart]');
+ if(boardChart){
+  state.boardOverviewChart=boardChart.dataset.boardOverviewChart==='dp'?'dp':'map';
+  render();return;
  }
  const boardGo=e.target.closest('[data-board-go]');
  if(boardGo){
