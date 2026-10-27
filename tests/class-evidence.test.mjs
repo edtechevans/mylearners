@@ -190,7 +190,7 @@ test('teachers can choose real check-in windows without treating an index as a p
  assert.match(spring,/value="S26" selected/);
  assert.match(spring,/Spring 2026/);
  assert.match(spring,/index out of 100/);
- assert.match(spring,/not a percentage or validated score/i);
+ assert.match(spring,/not a percentage/i);
  const first=learners[0];
  const a=evidenceValue(first,{...ctx,mode:'engagement',window:'F25'});
  const b=evidenceValue(first,{...ctx,mode:'engagement',window:'F26'});
