@@ -195,7 +195,7 @@ export function renderBoardOverview(state){
     'Reported Diploma pass rate · confirmation pending','passRate','dp');
  const mapPanel='<div class="board-overview-chartbody">'+
  '<div class="board-overview-charthead"><div><span class="eyebrow">MAP · HISTORICAL ACHIEVEMENT</span>'+
- '<h2 id="board-trend-heading">Learning over time · regional comparisons</h2>'+
+ '<h2 id="board-trend-heading">Learning Over Time · Regional Comparisons</h2>'+
  '<p>Number of AISG grade averages above the EARCOS mean · Grades 3–10</p></div>'+
  '<div class="board-overview-filterarea"><div class="board-overview-control"><span>Testing window</span>'+
  '<div class="board-segmented">'+tabButton('fall','Fall',season,'data-board-trend')+
@@ -224,12 +224,12 @@ export function renderBoardOverview(state){
  '<button type="button" data-board-view="explore" class="board-inline-link">Explore MAP results ›</button></div></div>';
  return '<div class="board-overview board-story">'+
  '<div class="board-overview-intro"><div><span class="eyebrow">OUR LEARNING STORY · AT A GLANCE</span>'+
- '<h2>From Grade 3 to graduation</h2>'+
+ '<h2>From Grade 3 to Graduation</h2>'+
  '<p>Four meaningful measures of achievement, progress and graduation outcomes.</p></div></div>'+
  '<div class="board-strength-grid">'+strengthCards+'</div>'+
  '<p class="board-strength-interpretation"><strong>The picture:</strong> AISG’s latest MAP grade averages exceed U.S. school norms in all 24 grade-subject comparisons, and 95% of returning students grew in at least one MAP area. Reported Diploma results add a complementary graduation perspective. <span>These reflect different learners and measures; 2025–26 Diploma outcomes await final confirmation.</span></p>'+
  '<div class="board-history-switch"><div><span class="eyebrow">EXPLORE THE EVIDENCE</span>'+
- '<h3>How results have changed</h3></div>'+
+ '<h3>How Results Have Changed</h3></div>'+
  '<div class="board-segmented" role="group" aria-label="Historical outcomes view">'+
  tabButton('map','MAP achievement',chartMode,'data-board-overview-chart')+
  tabButton('dp','IB Diploma',chartMode,'data-board-overview-chart')+'</div></div>'+
