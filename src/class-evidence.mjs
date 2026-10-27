@@ -32,6 +32,18 @@ export function evidenceModesForGrade(grade){
 export function normalizeEvidenceMode(grade,selected){
  return evidenceModesForGrade(grade).includes(selected)?selected:'report';
 }
+/** Do not compare the same view with itself or show measures outside this grade. */
+export function normalizeComparison(grade,primary,compare='none'){
+ return compare!==primary&&evidenceModesForGrade(grade).includes(compare)?compare:'none';
+}
+/** Each source has its own label and unit; never combine incompatible scores. */
+export function evidenceLabel(mode,{subject='Mathematics',mapSubject='Mathematics',window='F26'}={}){
+ const period=EXPERIENCE_WINDOWS.find(x=>x.key===window)?.label||'Fall 2026';
+ if(mode==='report')return 'Report · '+subject;
+ if(mode==='map')return 'MAP '+mapSubject+' growth';
+ if(mode==='engagement'||mode==='belonging')return labels[mode]+' · '+period;
+ return labels[mode]||'Learning evidence';
+}
 function reportSubject(students,academic,subject){
  const report=academicFor(academic,students[0]?.id).reports?.[0];
  const choices=report?.subjects||[];
@@ -50,7 +62,7 @@ export function evidenceValue(student,{mode='report',academic,map,experience,sub
  }
  if(mode==='engagement'||mode==='belonging'){
   const entry=experienceEligible(student)?experienceFor(experience,student.id,mode,window):null;
-  return entry?{text:String(entry.value)+' / 100',detail:'Exploratory check-in index',available:true}:
+  return entry?{text:String(entry.value)+' / 100',detail:(EXPERIENCE_WINDOWS.find(x=>x.key===window)?.label||window)+' · check-in index',available:true}:
    {text:'—',detail:'No check-in',available:false};
  }
  if(!academicModesFor(student.grade).includes(mode))
@@ -96,25 +108,21 @@ const modeHelp={
  belonging:'Fictional AISG-style student check-in index out of 100. Not a percentage or validated score. Maia Flourishing can provide separate context once connected.',
  flourishing:'MaiaLearning Flourishing is a PERMA-based wellbeing assessment. It is a separate instrument, not an engagement or belonging score. No Maia results are connected to this public demonstration.'
 };
-export function renderClassEvidencePanel(students,{academic,map,experience,mode='report',subject='Mathematics',mapSubject='Mathematics',window='F26'}={}){
+export function renderClassEvidencePanel(students,{
+ academic,map,experience,mode='report',compare='none',subject='Mathematics',mapSubject='Mathematics',window='F26'
+}={}){
  const grade=students[0]?.grade||'';
- const availableModes=evidenceModesForGrade(grade);
+ const modes=evidenceModesForGrade(grade);
  const selected=normalizeEvidenceMode(grade,mode);
+ const paired=normalizeComparison(grade,selected,compare);
+ const selectedWindow=EXPERIENCE_WINDOWS.some(w=>w.key===window)?window:'F26';
+ const recentWindow=EXPERIENCE_WINDOWS.find(w=>w.key===selectedWindow)?.label||'Fall 2026';
  const chosenSubject=reportSubject(students,academic,subject);
  const subjects=academicFor(academic,students[0]?.id).reports?.[0]?.subjects||[];
  const sample=academicFor(academic,students[0]?.id).reports?.[0];
- const recentWindow=EXPERIENCE_WINDOWS.find(w=>w.key===window)?.label||window;
- const ctx={academic,map,experience,mode:selected,subject:chosenSubject,mapSubject,window};
- const coverage=students.map(s=>evidenceValue(s,ctx)).filter(v=>v.available).length;
- const eligible=pending.has(selected)?0:selected==='report'?academicCoverage(students,academic,'report',chosenSubject).eligible:
-  students.filter(s=>selected==='map'?(gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10):
-   (selected==='engagement'||selected==='belonging')?experienceEligible(s):
-    academicModesFor(s.grade).includes(selected)).length;
- const summary=(selected==='engagement'||selected==='belonging')?
-  summarizeExperience(experience,students,selected,window):null;
- const modeTabs=EVIDENCE_MODES.filter(m=>availableModes.includes(m.id));
- const tabGroups=['Learning','Experience'].map(category=>{
-  const group=modeTabs.filter(m=>m.category===category);
+ const ctx={academic,map,experience,subject:chosenSubject,mapSubject,window:selectedWindow};
+ const tabs=['Learning','Experience'].map(category=>{
+  const group=EVIDENCE_MODES.filter(m=>m.category===category&&modes.includes(m.id));
   if(!group.length)return '';
   return '<div class="class-evidence-tab-group"><span class="class-evidence-group-label">'+category+'</span>'+
    '<div class="class-evidence-tabs" role="group" aria-label="'+category+' evidence">'+
@@ -122,33 +130,61 @@ export function renderClassEvidencePanel(students,{academic,map,experience,mode=
    '" class="'+(selected===m.id?'active':'')+'">'+esc(m.label)+'</button>').join('')+
    '</div></div>';
  }).join('');
- const options=selected==='report'&&subjects.length?
-  '<label class="class-evidence-filter">Subject <select data-academic-subject aria-label="Report card subject">'+
-  subjects.map(s=>'<option value="'+esc(s.subject)+'"'+(s.subject===chosenSubject?' selected':'')+'>'+esc(s.subject)+'</option>').join('')+'</select></label>':
-  selected==='map'?
-  '<label class="class-evidence-filter">MAP subject <select data-map-subject aria-label="MAP growth subject">'+
-  MAP_SUBJECTS.map(x=>'<option value="'+esc(x)+'"'+(mapSubject===x?' selected':'')+'>'+esc(x)+'</option>').join('')+
-  '</select></label>':'';
- const total=selected==='engagement'||selected==='belonging'?
-  '<strong>'+ (summary?.value===null?'—':summary.value+' / 100')+'</strong>'+
-  '<span>'+summary.n+' of '+summary.eligible+' student check-ins · '+esc(recentWindow)+'</span>':
-  pending.has(selected)?
-  '<strong>Not connected</strong><span>No student results available in this demonstration</span>':
-  '<strong>'+coverage+' of '+eligible+'</strong><span>learners with evidence'+
-  (selected==='report'&&sample?' · '+esc(sample.year)+' · '+esc(sample.grade)+' (last issued)':'')+
-  (selected==='map'?' · Fall 2026':'')+'</span>';
- const details=selected==='report'?
+ const countFor=mode=>{
+  const coverage=students.filter(s=>evidenceValue(s,{...ctx,mode}).available).length;
+  const eligible=pending.has(mode)?0:mode==='report'?academicCoverage(students,academic,'report',chosenSubject).eligible:
+   students.filter(s=>mode==='map'?(gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10):
+    (mode==='engagement'||mode==='belonging')?experienceEligible(s):
+     academicModesFor(s.grade).includes(mode)).length;
+  if(pending.has(mode))return '<strong>Not connected</strong><span>No student results available in this demonstration</span>';
+  if(mode==='engagement'||mode==='belonging'){
+   const result=summarizeExperience(experience,students,mode,selectedWindow);
+   return '<strong>'+(result.value===null?'—':result.value+' / 100')+'</strong>'+
+    '<span>'+result.n+' of '+result.eligible+' check-ins · '+esc(recentWindow)+'</span>';
+  }
+  return '<strong>'+coverage+' of '+eligible+'</strong><span>learners with evidence'+
+   (mode==='report'&&sample?' · '+esc(sample.year)+' · '+esc(sample.grade)+' (last issued)':'')+
+   (mode==='map'?' · Fall 2026':'')+'</span>';
+ };
+ const summary=mode=>'<div class="class-evidence-selected"><span>'+esc(evidenceLabel(mode,ctx))+
+  '</span>'+countFor(mode)+'</div>';
+ const compareSelect='<label class="class-evidence-filter class-compare-filter">Compare with '+
+  '<select data-class-compare aria-label="Compare roster evidence with">'+
+  '<option value="none"'+(paired==='none'?' selected':'')+'>None · one measure</option>'+
+  EVIDENCE_MODES.filter(m=>modes.includes(m.id)&&m.id!==selected).map(m=>
+   '<option value="'+m.id+'"'+(paired===m.id?' selected':'')+'>'+esc(m.label)+'</option>').join('')+
+  '</select></label>';
+ const displayed=[selected,...(paired==='none'?[]:[paired])];
+ const filters=[];
+ if(displayed.includes('report')&&subjects.length){
+  filters.push('<label class="class-evidence-filter">Report subject <select data-academic-subject aria-label="Report card subject">'+
+   subjects.map(s=>'<option value="'+esc(s.subject)+'"'+(s.subject===chosenSubject?' selected':'')+'>'+
+    esc(s.subject)+'</option>').join('')+'</select></label>');
+ }
+ if(displayed.includes('map')){
+  filters.push('<label class="class-evidence-filter">MAP subject <select data-map-subject aria-label="MAP growth subject">'+
+   MAP_SUBJECTS.map(x=>'<option value="'+esc(x)+'"'+(mapSubject===x?' selected':'')+'>'+esc(x)+'</option>').join('')+
+   '</select></label>');
+ }
+ if(displayed.some(id=>id==='engagement'||id==='belonging')){
+  filters.push('<label class="class-evidence-filter">Check-in period <select data-class-window aria-label="Student check-in period">'+
+   EXPERIENCE_WINDOWS.map(w=>'<option value="'+w.key+'"'+(w.key===selectedWindow?' selected':'')+'>'+esc(w.label)+'</option>').join('')+
+   '</select></label>');
+ }
+ const breakdown=selected==='report'?
   '<details class="class-evidence-breakdown"><summary>View class results breakdown</summary>'+
   reportBreakdown(students,academic,chosenSubject)+'</details>':'';
  const note=(selected==='engagement'||selected==='belonging')?
-  '<p class="class-evidence-secondary">MaiaLearning Flourishing: not connected. Its PERMA dimensions would be separate context, not a substitute for this index.</p>':'';
+  '<p class="class-evidence-secondary">MaiaLearning Flourishing: not connected. It is separate from these AISG-style check-in indices.</p>':'';
  return '<section class="class-evidence-panel" aria-label="Select learning and wellbeing evidence for the class roster">'+
-  '<div class="class-evidence-heading"><div><span class="academic-eyebrow">CLASS VIEW</span>'+
-  '<h3>Learning &amp; wellbeing evidence</h3><p>Choose one measure to show in your roster.</p></div>'+
-  '</div>'+
-  '<div class="class-evidence-navigation">'+tabGroups+'</div>'+
-  '<div class="class-evidence-selection"><div class="class-evidence-selected">'+
-  '<span>'+esc(labels[selected])+'</span>'+total+'</div>'+options+'</div>'+
-  '<p class="class-evidence-help">'+esc(modeHelp[selected])+'</p>'+note+details+
+  '<div class="class-evidence-heading"><div><span class="academic-eyebrow">CLASS DATA</span>'+
+  '<h3>Learning &amp; wellbeing evidence</h3><p>Choose a measure. Compare two columns if useful.</p></div></div>'+
+  '<div class="class-evidence-navigation">'+tabs+'</div>'+
+  '<div class="class-evidence-controls">'+compareSelect+(filters.length?
+   '<div class="class-evidence-filter-row">'+filters.join('')+'</div>':'')+'</div>'+
+  '<div class="class-evidence-selection'+(paired!=='none'?' has-comparison':'')+'">'+
+  summary(selected)+(paired!=='none'?summary(paired):'')+'</div>'+
+  (paired!=='none'?'<p class="class-evidence-comparison-note">Two measures shown separately, with their own units and dates. No combined score.</p>':'')+
+  '<p class="class-evidence-help">'+esc(modeHelp[selected])+'</p>'+note+breakdown+
   '</section>';
 }
