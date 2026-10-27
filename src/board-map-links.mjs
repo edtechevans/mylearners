@@ -4,7 +4,7 @@ const views=new Set(['overview','explore']);
 const subjects=new Set(['math','reading','language']);
 const divisions=new Set(['all','elementary','secondary']);
 const trends=new Set(['fall','spring']);
-const focuses=new Set(['both','math','reading']);
+const focuses=new Set(['all','math','reading','language']);
 const clean=(value,accepted,fallback)=>accepted.has(value)?value:fallback;
 export function parseBoardHash(hash){
  const value=String(hash||'').replace(/^#\/?/,'');
@@ -20,7 +20,7 @@ export function parseBoardHash(hash){
  return {
   boardView:clean(params.get('view'),views,'overview'),
   boardTrendTerm:clean(params.get('term'),trends,'fall'),
-  boardTrendFocus:clean(params.get('focus'),focuses,'both'),
+  boardTrendFocus:params.get('focus')==='both'?'all':clean(params.get('focus'),focuses,'all'),
   boardWindow:window&&BOARD_DATA[window]?window:'fall2026',
   boardSubject:clean(params.get('subject'),subjects,'math'),
   boardDivision:division,boardGrade:validGrade?String(gradeInt):'all'
@@ -32,7 +32,7 @@ export function boardHash(state){
  params.set('view',view);
  if(view==='overview'){
   params.set('term',clean(state.boardTrendTerm,trends,'fall'));
-  params.set('focus',clean(state.boardTrendFocus,focuses,'both'));
+  params.set('focus',clean(state.boardTrendFocus,focuses,'all'));
  }else{
   params.set('window',BOARD_DATA[state.boardWindow]?state.boardWindow:'fall2026');
   params.set('subject',clean(state.boardSubject,subjects,'math'));
