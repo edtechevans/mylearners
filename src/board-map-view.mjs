@@ -173,7 +173,7 @@ export function renderBoard(state){
  '<div class="board-context"><strong>'+safe(subjectName)+' · '+safe(source.label)+'</strong><span>'+safe(area)+'</span></div>'+
  '<div class="board-stats">'+metrics.map(m=>indicator(...m)).join('')+'</div>'+
  '<p class="board-benchmark-note">'+safe(note)+'</p>'+
- (active==='fall2026'?'<p class="board-source-date">AISG NWEA student report snapshot: 20 September 2026 · Aggregates only · Latest dashboard update: 27 October 2026</p>':'')+
+ (active==='fall2026'?'<p class="board-source-date">Fall 2026 assessment snapshot: 20 September 2026 · Aggregated data · Updated 27 October 2026</p>':'')+
  gradeComparison(rows,summary)+schoolwideHighlight(active)+exactTable(rows,summary)+sourceDetails(active)+
  '</section>';
 }
