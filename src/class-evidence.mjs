@@ -1,7 +1,8 @@
 /**
  * Faculty class homepage: one evidence selector, one roster column.
  * Every displayed number comes from existing, synthetic demo records.
- * Maia Flourishing and Common Core are integration placeholders ONLY.
+ * Maia Flourishing is a not-connected integration placeholder.
+ * Core Phonics and F&P reading are limited to Kindergarten–Grade 5.
  */
 import {academicModesFor,academicFor,latestAcademic,academicCoverage} from './academic-journey-data.mjs';
 import {latestMapGrowth,MAP_SUBJECTS} from './map-growth.mjs';
@@ -14,19 +15,17 @@ export const EVIDENCE_MODES=Object.freeze([
  {id:'ixl',label:'IXL Math',category:'Learning'},
  {id:'core',label:'Core Phonics',category:'Learning'},
  {id:'fp',label:'F&P reading',category:'Learning'},
- {id:'commoncore',label:'Common Core',category:'Learning'},
  {id:'engagement',label:'Engagement',category:'Experience'},
  {id:'belonging',label:'Belonging',category:'Experience'},
  {id:'flourishing',label:'Maia Flourishing',category:'Experience'}
 ]);
 const labels=Object.fromEntries(EVIDENCE_MODES.map(x=>[x.id,x.label]));
-const pending=new Set(['commoncore','flourishing']);
+const pending=new Set(['flourishing']);
 export function evidenceModesForGrade(grade){
  const n=gradeNumber(grade),academic=academicModesFor(grade);
  return EVIDENCE_MODES.filter(m=>
   academic.includes(m.id)||
   (m.id==='map'&&n>=3&&n<=10)||
-  (m.id==='commoncore'&&n>=0)||
   ((m.id==='engagement'||m.id==='belonging'||m.id==='flourishing')&&n>=3)
  ).map(m=>m.id);
 }
@@ -93,7 +92,6 @@ const modeHelp={
  ixl:'Illustrative IXL Mathematics diagnostic levels, not SmartScores, percentages or report-card grades.',
  core:'Fictional 50-item classroom decoding checks; not an official CORE Phonics Survey total or benchmark.',
  fp:'Fictional Fountas & Pinnell text levels describe text complexity, not a percentage, grade or a measure of the whole reader.',
- commoncore:'Standards-level evidence is not connected. Future Common Core alignment must come from approved, mapped standards-level records, not inferred report-card results.',
  engagement:'Fictional AISG-style student check-in index out of 100. Not a percentage or validated score. Maia Flourishing can provide separate context once connected.',
  belonging:'Fictional AISG-style student check-in index out of 100. Not a percentage or validated score. Maia Flourishing can provide separate context once connected.',
  flourishing:'MaiaLearning Flourishing is a PERMA-based wellbeing assessment. It is a separate instrument, not an engagement or belonging score. No Maia results are connected to this public demonstration.'
