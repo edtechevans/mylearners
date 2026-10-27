@@ -178,7 +178,7 @@ function roster(ss,options={}){
    eng:engagement,bel:belonging,academics,compared,tags:demoTagsForStudent(student),
    sss:SSS_RECORDS.has(student.id)};
  });
- const heading=across?'Students matching “'+safe(state.query.trim())+'”':'My students';
+ const heading=across?'Students matching “'+safe(state.query.trim())+'”':'My Students';
  const context=across?rows.length+' of '+ss.length+' assigned students across all classes':
   rows.length+' of '+ss.length+' learners in '+safe(activeClass()?.name||'this class');
  const table='<div class="tablewrap roster-desktop"><table><thead><tr><th>Learner</th>'+
@@ -228,7 +228,7 @@ function learnerProfile(s,studentRole=false){
   '<h1>'+safe(s.name)+'</h1><p>'+safe(s.grade)+' · '+safe(s.classId)+' · '+safe(s.campus)+'</p>'+
   (!studentRole&&SSS_RECORDS.has(s.id)?'<span class="sss-faculty-profile-tag">SSS · fictional cohort</span>':'')+'</div></div>';
  const history=studentRole&&experienceEligible(s)?
-  '<section class="card student-checkin-history"><h3>How my check-ins have changed</h3><div class="trend">'+
+  '<section class="card student-checkin-history"><h3>How My Check-ins Have Changed</h3><div class="trend">'+
   EXPERIENCE_WINDOWS.map(w=>{
    const e=experienceFor(RECORDS,s.id,'engagement',w.key)?.value;
    const b=experienceFor(RECORDS,s.id,'belonging',w.key)?.value;
@@ -237,7 +237,7 @@ function learnerProfile(s,studentRole=false){
   }).join('')+'</div><p class="tiny">My check-ins describe my experience of learning, not my ability or a school grade.</p></section>':'';
  const maiaFaculty=studentRole?'':renderMaiaFacultyProfile(s,MAIA_RECORDS);
  const wellbeing=experienceEligible(s)?
-  '<div class="sectionhead"><h2>'+(studentRole?'How I feel about learning':'Student experience')+
+  '<div class="sectionhead"><h2>'+(studentRole?'How I feel about learning':'Student Experience')+
   '</h2><span class="tiny">Fictional Fall 2026 check-ins</span></div>'+
   metrics([s],s,studentRole?'student':'profile')+history:
   '<p class="academic-early-checkin-note">Student engagement and belonging check-ins begin in Grade 3 in this demonstration.</p>';
@@ -271,7 +271,7 @@ function learnerProfile(s,studentRole=false){
    mg.status==='comparable'?'RIT points · latest comparable MAP tests':'Not yet comparable'):'')+
   (math?kpi('Latest Mathematics report',math.value,issued?'Issued '+safe(issued.year)+
    ' · Grade '+safe(issued.grade)+' · '+safe(issued.framework):''):'')+'</div>';
- const guidance='<section class="card academic-next-step"><h2>Classroom guidance</h2>'+
+ const guidance='<section class="card academic-next-step"><h2>Classroom Guidance</h2>'+
   (tags.length?tags.map(t=>'<div class="guide"><strong>'+safe(t.fullName)+'</strong><p>'+
    safe(t.strategies[0])+'</p></div>').join(' '):
   '<p class="muted">No additional classroom guidance tags in this fictional example.</p>')+
@@ -305,7 +305,7 @@ function faculty(){
    '" aria-label="Search for a student across all assigned classes"></label>'+
   '<label class="faculty-demo-picker">Faculty demo '+selector('teacher',DATA.teachers.map(t=>[t.id,t.name]),state.teacher)+'</label></div>';
  const summary=searching?'':'<div class="quick-summary faculty-daily-summary">'+
-  quickStat('My class',ss.length,'Learners in '+safe(activeClass()?.name||'this class'))+
+  quickStat('My Class',ss.length,'Learners in '+safe(activeClass()?.name||'this class'))+
   quickStat('Attendance',fmt(meanAttendance)+'%','Through 8 Oct 2026')+
   (gradeHasCheckins?score('engagement')+score('belonging'):
    '<div class="quick-note">Student-reported experience indices start at Grade 3 in this demo.</div>')+'</div>';
@@ -455,7 +455,7 @@ function leader(){
   trendFor(group.filter(s=>s.division==='Elementary'),'Elementary')+
   trendFor(group.filter(s=>s.division==='Secondary'),'Secondary'):
   trendFor(group,'Selected group');
- return heading('Leadership overview','Growth, learning evidence and student experience. Choose a division, grade or class.')+
+ return heading('Leadership Overview','Growth, learning evidence and student experience. Choose a division, grade or class.')+
   '<div class="leader-view">'+
   '<div class="toolbar leader-controls"><label>Division '+
   selector('division',[['All','Whole school'],['Elementary','Elementary'],['Secondary','Secondary']],state.division)+
@@ -465,7 +465,7 @@ function leader(){
   '</label></div>'+
   '<section class="leader-section" aria-labelledby="leader-learning-title">'+
   '<div class="leader-sectionhead"><div><div class="eyebrow">LEARNING SNAPSHOT</div>'+
-  '<h2 id="leader-learning-title">At a glance</h2></div>'+
+  '<h2 id="leader-learning-title">At a Glance</h2></div>'+
   '<span class="leader-period">'+safe(scopeLabel)+' · Fictional data · Fall 2026</span></div>'+
   '<div class="leader-learning-grid">'+
   stat('Learners',String(group.length),'Students included in this selection','Demo cohort')+
@@ -479,7 +479,7 @@ function leader(){
   'MAP is shown for Grades 3–10 only.</p></section>'+
   '<section class="leader-section" aria-labelledby="leader-experience-title">'+
   '<div class="leader-sectionhead"><div><div class="eyebrow">STUDENT VOICE</div>'+
-  '<h2 id="leader-experience-title">Student experience</h2>'+
+  '<h2 id="leader-experience-title">Student Experience</h2>'+
   '<p>Engagement and belonging · '+safe(selectedWindow)+' · response counts included.</p></div>'+
   '<label class="leader-window-select">Check-in period '+
   selector('window',EXPERIENCE_WINDOWS.map(w=>[w.key,w.label]),state.window)+
@@ -491,11 +491,11 @@ function leader(){
   '<summary><span><strong>Explore academic evidence</strong>'+
   '<small>Historical subject reports and assessment details</small></span>'+
   '<span class="leader-detail-chevron" aria-hidden="true">⌄</span></summary>'+
-  '<div class="leader-detail-body"><h3>Assessment coverage</h3>'+
+  '<div class="leader-detail-body"><h3>Assessment Coverage</h3>'+
   '<p class="leader-inline-note">Each measure has its own scale and grade range. '+
   'Only eligible learners are counted.</p>'+
   '<div class="leader-check-list">'+academicChecks+'</div>'+
-  '<h3>Most recent issued report outcomes</h3>'+reportDetail+'</div></details>'+
+  '<h3>Most Recent Issued Report Outcomes</h3>'+reportDetail+'</div></details>'+
   '<details class="leader-detail" data-leader-panel="patterns"'+
   (state.leaderPatternsOpen?' open':'')+'>'+
   '<summary><span><strong>Explore experience patterns</strong>'+
@@ -506,7 +506,7 @@ function leader(){
   detailTable+
   '<p class="leader-inline-note">Indices are out of 100, based on fictional student check-ins. '+
   'They do not rank learners or indicate academic achievement.</p>'+
-  '<h3>Over time</h3>'+trends+'</div></details></div>'+info();
+  '<h3>Over Time</h3>'+trends+'</div></details></div>'+info();
 }
 function sss(){
  const banner=heading('Student Support Services',
@@ -530,7 +530,7 @@ function student(){
  const ss=DATA.students.filter(s=>s.grade===current);
  const chosen=ss.find(s=>s.id===state.studentId)||ss[0];
  if(chosen&&!ss.some(x=>x.id===state.studentId))state.studentId=chosen.id;
- return heading('My learning, my story.','Explore my school reports, skills and wellbeing in one place.')+
+ return heading('My Learning, My Story.','Explore my school reports, skills and wellbeing in one place.')+
  '<div class="toolbar academic-student-picker"><label>Demo grade '+selector('student-grade',
  grades.map(g=>[g,g==='K'?'Kindergarten':g]),current)+'</label>'+
  '<label>Student demo '+selector('student',ss.map(s=>[s.id,s.name]),state.studentId)+'</label></div>'+
