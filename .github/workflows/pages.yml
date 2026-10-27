@@ -19,11 +19,13 @@ jobs:
         with:
           node-version: 22
       - name: Verify fictional data model and transparent indicators
-        run: node --test tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs tests/student-experience.test.mjs
+        run: node --test tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs tests/student-experience.test.mjs tests/board-map.test.mjs
       - name: Validate entry point and Javascript syntax
         run: |
           node --check src/student-experience-app.mjs
           node --check src/experience-data.mjs
+          node --check src/board-map-data.mjs
+          node --check src/board-map-view.mjs
           grep -q 'student-experience-app.mjs' index.html
       - name: Browser rendering and role toggle smoke test
         run: |
@@ -38,6 +40,10 @@ jobs:
           grep -q 'data-role="student"' /tmp/mylearners-dom.html
           grep -q 'data-role="leader"' /tmp/mylearners-dom.html
           grep -q 'How is this calculated' /tmp/mylearners-dom.html
+          timeout 45s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --virtual-time-budget=6000 --dump-dom 'http://127.0.0.1:8765/#/board' > /tmp/mylearners-board-dom.html 2>/tmp/mylearners-chrome-board.log
+          grep -q 'board-view' /tmp/mylearners-board-dom.html
+          grep -q 'ACTUAL AISG AGGREGATES' /tmp/mylearners-board-dom.html
+          grep -q 'Grade 10' /tmp/mylearners-board-dom.html
   deploy:
     needs: validate
     runs-on: ubuntu-latest
