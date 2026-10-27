@@ -183,6 +183,43 @@ try{
    assert(await evaluate("!document.querySelector('[data-class-evidence=\"fp\"]')"),
     'F&P Reading must not appear for Grade 7');
   });
+
+ await run('faculty-side-by-side-map-belonging-1440','faculty','.faculty-daily-toolbar',1440,900,
+  async()=>{
+   await click('[data-class-evidence="map"]');
+   const chosen=await evaluate("(function(){const s=document.querySelector('[data-class-compare]');if(!s)return false;s.value='belonging';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
+   assert(chosen,'Compare with selector missing');
+   await sleep(150);
+   assert(await evaluate("document.querySelectorAll('.roster-daily thead th').length===5"),
+    'Expected learner, attendance, MAP, belonging, support columns');
+   assert(await evaluate("document.querySelector('.roster-daily thead')?.textContent.includes('MAP')&&document.querySelector('.roster-daily thead')?.textContent.includes('Belonging')"),
+    'Both selected measures must appear as independent roster columns');
+   assert(await evaluate("document.querySelectorAll('.class-evidence-selection.has-comparison .class-evidence-selected').length===2"),
+    'Two measure coverage summaries should be visible');
+  });
+ await run('faculty-checkin-period-compare-1440','faculty','.faculty-daily-toolbar',1440,900,
+  async()=>{
+   await click('[data-class-evidence="engagement"]');
+   const chosen=await evaluate("(function(){const s=document.querySelector('[data-class-compare]');if(!s)return false;s.value='belonging';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
+   assert(chosen,'Cannot choose a second wellbeing measure');
+   const period=await evaluate("(function(){const s=document.querySelector('[data-class-window]');if(!s)return false;s.value='S26';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
+   assert(period,'Check-in period picker missing');
+   await sleep(160);
+   assert(await evaluate("document.querySelector('.roster-daily thead')?.textContent.includes('Engagement · Spring 2026')"),
+    'Selected check-in period not shown in first column');
+   assert(await evaluate("document.querySelector('.roster-daily thead')?.textContent.includes('Belonging · Spring 2026')"),
+    'Selected check-in period not shown in second column');
+   assert(await evaluate("document.querySelector('.roster-daily tbody')?.textContent.includes('Spring 2026')"),
+    'Comparison cells should show their source period');
+  });
+ await run('faculty-one-measure-reset-960','faculty','.faculty-daily-toolbar',960,850,
+  async()=>{
+   const switched=await evaluate("(function(){const s=document.querySelector('[data-class-compare]');if(!s)return false;s.value='none';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
+   assert(switched,'Cannot turn comparison off');
+   await sleep(150);
+   assert(await evaluate("!document.querySelector('.class-evidence-selection.has-comparison')"),
+    'Default view should return to one simple measure');
+  });
 }finally{
  await writeFile(path.join(OUT,'walkthrough-report.json'),JSON.stringify({
   executedAt:new Date().toISOString(),root:ROOT,cases,browserExceptions:client.exceptions
