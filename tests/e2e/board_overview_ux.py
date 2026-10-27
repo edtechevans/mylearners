@@ -195,7 +195,7 @@ def main():
                         check(info["scroll"]>info["client"],"History should scroll horizontally on a phone")
                         check(info["left"]>0,"Mobile should start near most recent years")
                     if width==390:screenshot(mobile,"05-board-overview-mobile-390")
-                    mobile.locator('[data-board-view="explore"]').click()
+                    mobile.locator('.board-nav-tabs [data-board-view="explore"]').click()
                     check(mobile.evaluate("document.documentElement.scrollWidth<=window.innerWidth+2"),"Explorer overflow")
                     if width==390:screenshot(mobile,"06-board-explore-mobile-390")
                     mobile.locator('[data-board-view="overview"]').click()
