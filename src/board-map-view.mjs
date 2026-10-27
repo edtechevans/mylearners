@@ -149,7 +149,7 @@ export function renderBoard(state){
  '<h1>Learning outcomes over time</h1><p>MAP achievement and growth, alongside Diploma Programme outcomes.</p></div>'+
  '<div class="board-provenance-badge"><strong>AISG AGGREGATED DATA</strong><small>No student records</small></div></div>'+
  '<div class="board-nav-row"><nav class="board-nav-tabs" aria-label="Board dashboard sections">'+
- '<button type="button" data-board-view="overview" aria-current="'+(!explore?'page':'false')+'" class="'+(!explore?'active':'')+'">Overview</button>'+
+ '<button type="button" data-board-view="overview" aria-current="'+(!explore&&!diploma?'page':'false')+'" class="'+(!explore&&!diploma?'active':'')+'">Overview</button>'+
  '<button type="button" data-board-view="explore" aria-current="'+(explore?'page':'false')+'" class="'+(explore?'active':'')+'">MAP by Year</button>'+
  '<button type="button" data-board-view="dp" aria-current="'+(diploma?'page':'false')+'" class="'+(diploma?'active':'')+'">IB Diploma</button>'+
  '</nav><div class="board-share-area"><button type="button" class="board-copy-link" data-board-share="true" aria-label="Copy link to this Board view">Copy link to this view</button>'+
