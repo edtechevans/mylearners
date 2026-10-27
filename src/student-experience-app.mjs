@@ -5,8 +5,9 @@ import {demoTagsForStudent} from './learner-tags.mjs';
 import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs';
 import {esc} from './v2-ui.mjs';
-import {createAcademicDemoRecords,academicFor,academicModesFor} from './academic-journey-data.mjs';
+import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic} from './academic-journey-data.mjs';
 import {renderClassAcademicPanel,renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs';
+import {renderStudentOverview} from './student-daily-overview.mjs';
 import {renderBoard} from './board-map-view.mjs';
 import {renderTrendPointDetails} from './board-map-overview.mjs';
 import {renderDPPointDetails} from './board-dp-view.mjs';
@@ -17,6 +18,21 @@ const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(
  ACADEMIC_RECORDS=createAcademicDemoRecords(DATA.students);
 const root=document.getElementById('app');
 const saved=(k,d)=>{try{return sessionStorage.getItem(k)||d}catch{return d}};
+const facultyPref=(teacherId,field,fallback='')=>{
+ try{return localStorage.getItem('mylearners-demo-'+teacherId+'-'+field)||fallback}catch{return fallback}
+};
+const rememberFaculty=()=>{
+ try{
+  localStorage.setItem('mylearners-demo-'+state.teacher+'-class',state.classId);
+  localStorage.setItem('mylearners-demo-'+state.teacher+'-mode',state.academicMode);
+  localStorage.setItem('mylearners-demo-'+state.teacher+'-subject',state.academicSubject)
+ }catch{}
+};
+const recallFaculty=()=>{
+ state.classId=facultyPref(state.teacher,'class','');
+ state.academicMode=facultyPref(state.teacher,'mode','report');
+ state.academicSubject=facultyPref(state.teacher,'subject','Mathematics');
+};
 const ROLE_IDS=['faculty','student','leader','board'];
 const initialHash=String(globalThis.location?.hash||'').replace(/^#\//,'').split('?')[0];
 const initialRole=ROLE_IDS.includes(initialHash)?initialHash:saved('my-role','faculty');
@@ -24,12 +40,14 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  teacher:saved('my-teacher',DEFAULT_TEACHER_ID),
  division:'All',grade:'All',classId:'',studentId:'',query:'',metric:'engagement',window:'F26',details:false,checkin:false,
  academicMode:'report',academicSubject:'Mathematics',academicReportYear:'',studentGrade:'G7',
+ studentReportsOpen:false,studentWellbeingOpen:false,
  boardWindow:saved('my-board-window-v2','fall2026'),boardSubject:saved('my-board-subject','math'),
  boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all'),
  boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardTrendRange:'recent',boardOverviewChart:'map',
  boardMapDetailsOpen:false,boardMapCompareSeasons:false,boardMapGrowthOpen:false,boardPresentation:false,
  boardDpMetric:'average',
  boardDpYear:String(DP_RECORDS.at(-1).end),boardDpRange:'all'};
+recallFaculty();
 const boardDeepLink=parseBoardHash(globalThis.location?.hash);
 if(boardDeepLink&&state.role==='board')Object.assign(state,boardDeepLink);
 const safe=(v)=>esc(v??'');
@@ -83,36 +101,70 @@ function metrics(ss,student,scope='main'){
  return '<div class="metrics">'+METRIC_IDS.map(id=>metricCard(student?[student]:ss,id,state.window,scope)).join('')+'</div>'+
  (detail?scoreExplanation(detail,ss,student):'');
 }
-function roster(ss){
- const grade=ss[0]?.grade||'';
+function roster(ss,options={}){
+ const across=!!options.across;
+ const grade=ss[0]?.grade||activeClass()?.grade||'';
  const allowed=academicModesFor(grade);
- const mode=allowed.includes(state.academicMode)?state.academicMode:'report';
+ const mode=across?'report':allowed.includes(state.academicMode)?state.academicMode:'report';
  const reportSubjects=academicFor(ACADEMIC_RECORDS,ss[0]?.id).reports?.[0]?.subjects||[];
  const subject=reportSubjects.some(x=>x.subject===state.academicSubject)?
   state.academicSubject:reportSubjects[0]?.subject||'';
- const modeLabel={report:'Report · '+(subject||'last issued'),ixl:'IXL Math · level',
+ const modeLabel=across?'Last issued report':{
+  report:'Report · '+(subject||'last issued'),ixl:'IXL Math · level',
   core:'Core Phonics · items',fp:'F&P · text level'}[mode]||'Academic result';
- const rows=ss.filter(s=>s.name.toLowerCase().includes(state.query.trim().toLowerCase()));
- const data=rows.map(s=>{
-  const e=experienceFor(RECORDS,s.id,'engagement'),b=experienceFor(RECORDS,s.id,'belonging'),
-    a=attendanceSummary(DATA.attendance[s.id]),g=latestMapGrowth(DATA.map[s.id]||[]);
-  const growth=g.status==='comparable'?(g.actual>=0?'+':'')+g.actual+' RIT':'Not assessed';
-  return {s,eng:fmt(e?.value),bel:fmt(b?.value),attendance:fmt(a.rate)+'%',growth,
-    academic:classAcademicCell(s,ACADEMIC_RECORDS,mode,subject),
-    tags:demoTagsForStudent(s)};
+ const query=state.query.trim().toLowerCase();
+ const rows=ss.filter(s=>!query||s.name.toLowerCase().includes(query));
+ const showMap=rows.some(s=>gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10);
+ const showSEL=rows.some(s=>experienceEligible(s));
+ const data=rows.map(student=>{
+  const engagement=experienceEligible(student)?fmt(experienceFor(RECORDS,student.id,'engagement')?.value):'—';
+  const belonging=experienceEligible(student)?fmt(experienceFor(RECORDS,student.id,'belonging')?.value):'—';
+  const attendance=attendanceSummary(DATA.attendance[student.id]);
+  const growth=latestMapGrowth(DATA.map[student.id]||[]);
+  const eligibleMap=gradeNumber(student.grade)>=3&&gradeNumber(student.grade)<=10;
+  const growthText=eligibleMap?(growth.status==='comparable'?(growth.actual>=0?'+':'')+growth.actual+' RIT':'Not yet comparable'):'—';
+  const rec=academicFor(ACADEMIC_RECORDS,student.id);
+  const latest=rec.reports?.[0]||null;
+  const mixSubject=latest?.subjects.find(x=>x.subject==='Mathematics'||x.subject==='Early Mathematics')?.subject
+   ||latest?.subjects[0]?.subject||'';
+  const academics=across?
+   '<span class="roster-mixed-academic">'+classAcademicCell(student,ACADEMIC_RECORDS,'report',mixSubject)+
+   (latest?'<small>'+safe(mixSubject)+' · '+safe(latest.year)+' ('+safe(latest.grade)+')</small>':'<small>No issued report</small>')+'</span>':
+   classAcademicCell(student,ACADEMIC_RECORDS,mode,subject);
+  return {student,attendance:fmt(attendance.rate)+'%',growth:growthText,
+   eng:engagement,bel:belonging,academics,tags:demoTagsForStudent(student)};
  });
- return '<section class="roster"><div class="sectionhead"><h2>My students</h2><span class="tiny">'+rows.length+' of '+ss.length+' learners</span></div>'+
- '<div class="tablewrap roster-desktop"><table><thead><tr><th>Learner</th><th>Attendance</th>'+
- '<th>'+safe(modeLabel)+'</th><th>MAP Math growth</th><th>Engagement</th><th>Belonging</th><th>Classroom guidance</th></tr></thead><tbody>'+
- data.map(x=>'<tr><td><button class="student-link" data-student="'+x.s.id+'"><img src="'+portrait(x.s.portraitSeed)+'" alt="">'+safe(x.s.name)+'</button></td>'+
- '<td>'+x.attendance+'</td><td>'+x.academic+'</td><td>'+safe(x.growth)+'</td><td>'+x.eng+
- '</td><td>'+x.bel+'</td><td>'+x.tags.map(t=>pill(t.label)).join(' ')+'</td></tr>').join('')+'</tbody></table></div>'+
- '<div class="roster-mobile">'+data.map(x=>'<button class="roster-item" data-student="'+x.s.id+'" aria-label="Open learner '+safe(x.s.name)+'"><img src="'+portrait(x.s.portraitSeed)+'" alt=""><span class="roster-item-body"><strong>'+safe(x.s.name)+'</strong><span>'+
- safe(modeLabel)+': '+x.academic.replace(/<[^>]*>/g,'')+'</span><span>Attendance '+x.attendance+' · MAP '+safe(x.growth)+'</span>'+
- (experienceEligible(x.s)?'<span>Engagement '+x.eng+' · Belonging '+x.bel+'</span>':'')+
- '</span><span class="roster-arrow" aria-hidden="true">›</span></button>').join('')+'</div>'+
- (rows.length?'':'<p class="empty-message">No students match that search.</p>')+
- '<p class="tiny roster-caption">Academic evidence reflects fictional latest issued reports or check-ins; metrics use different scales. MAP growth is a RIT-point change where comparable tests exist. Select a learner for their history.</p></section>';
+ const heading=across?'Students matching “'+safe(state.query.trim())+'”':'My students';
+ const context=across?rows.length+' of '+ss.length+' assigned students across all classes':
+  rows.length+' of '+ss.length+' learners in '+safe(activeClass()?.name||'this class');
+ const table='<div class="tablewrap roster-desktop"><table><thead><tr><th>Learner</th>'+
+  (across?'<th>Class</th>':'')+'<th>Attendance</th><th>'+safe(modeLabel)+'</th>'+
+  (showMap?'<th>MAP Math growth</th>':'')+
+  (showSEL?'<th>Engagement</th><th>Belonging</th>':'')+
+  '<th>Support information</th></tr></thead><tbody>'+
+  data.map(x=>'<tr><td><button class="student-link" data-student="'+x.student.id+
+   '"><img src="'+portrait(x.student.portraitSeed)+'" alt="">'+safe(x.student.name)+'</button></td>'+
+   (across?'<td><span class="roster-class-label">'+safe(x.student.classId)+'</span></td>':'')+
+   '<td>'+x.attendance+'</td><td>'+x.academics+'</td>'+
+   (showMap?'<td>'+safe(x.growth)+'</td>':'')+
+   (showSEL?'<td>'+x.eng+'</td><td>'+x.bel+'</td>':'')+
+   '<td>'+x.tags.map(t=>pill(t.label)).join(' ')+'</td></tr>').join('')+'</tbody></table></div>';
+ const mobile='<div class="roster-mobile">'+data.map(x=>
+  '<button class="roster-item" data-student="'+x.student.id+'" aria-label="Open learner '+safe(x.student.name)+'">'+
+  '<img src="'+portrait(x.student.portraitSeed)+'" alt=""><span class="roster-item-body"><strong>'+
+  safe(x.student.name)+'</strong>'+
+  (across?'<span>Class '+safe(x.student.classId)+'</span>':'')+
+  '<span>'+safe(modeLabel)+': '+x.academics.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()+'</span>'+
+  '<span>Attendance '+x.attendance+(showMap?' · MAP '+safe(x.growth):'')+'</span>'+
+  (experienceEligible(x.student)?'<span>Engagement '+x.eng+' · Belonging '+x.bel+'</span>':'')+
+  '</span><span class="roster-arrow" aria-hidden="true">›</span></button>').join('')+'</div>';
+ return '<section class="roster roster-daily" aria-label="'+(across?'Search across assigned students':'My class roster')+'">'+
+  '<div class="sectionhead"><div><h2>'+heading+'</h2><span class="tiny">'+context+'</span></div>'+
+  (across?'<button type="button" class="roster-clear-search" data-clear-search>Clear search</button>':'')+'</div>'+
+  (options.controls||'')+table+mobile+
+  (rows.length?'':'<p class="empty-message">No matching students in your assigned classes. Try a different name.</p>')+
+  '<p class="tiny roster-caption">Latest issued reports and assessments are historical, not current-year grades. Each measure uses its own scale. Select a learner to view the date, programme and history.</p>'+
+  '</section>';
 }
 
 function learnerProfile(s,studentRole=false){
