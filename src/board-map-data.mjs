@@ -5,7 +5,7 @@
  * Spring 2026 EARCOS: user-supplied screenshot, "Spring - 2025/26
  * International Comparison" (EARCOS-Spring grade means).
  * Spring 2026 Language Usage AISG/US: AISG.csv archive.
- * Fall 2026: AISG family summary; direction-only until grade RIT is supplied.
+ * Fall 2026: grade-mean RIT reaggregated from NWEA 2026 Student Progress reports;\n * matched to official 2025 NWEA Fall SCHOOL achievement norms (4 weeks),\n * plus AISG family summary. Only grade summaries are committed (no learner rows).
  */
 import {BOARD_HISTORICAL} from './board-map-history.mjs';
 
@@ -51,15 +51,35 @@ const springReading=[
  [7,225,214.8,86,69,48,67],[8,225.6,217.8,87,61,38,69],
  [9,233.5,217.2,65,57,25,49],[10,234.7,218.5,61,54,16,42]
 ];
-// Fall 2026 is reported as direction above U.S. norms for 24/24
-// grade-subject comparisons. Exact AISG/US RITs not provided.
+// Grade, AISG student RIT mean (to 0.1), U.S. 2025 Fall SCHOOL
+// achievement norm mean, unique tested students.
+// AISG: September 2026 NWEA Student Progress PDF, valid FA26 RIT center
+// per distinct student/grade/subject; aggregated privately, only these
+// school-level results are placed in the public website.
+// U.S.: official NWEA 2025 Norms quick reference, p.3, week 4.
+// https://www.nwea.org/resource-center/fact-sheet/87992/MAP-Growth-2025-norms-quick-reference_NWEA_onesheet.pdf
+const fall2026Math=[
+ [3,200.7,184,75],[4,215.7,196,68],[5,224.8,206,72],
+ [6,225.6,210,81],[7,238.3,217,86],[8,248.0,220,91],
+ [9,251.8,224,77],[10,254.5,225,65]
+];
+const fall2026Reading=[
+ [3,187.4,184,73],[4,198.8,195,64],[5,205.8,203,60],
+ [6,215.7,208,77],[7,216.9,212,83],[8,225.9,215,86],
+ [9,225.1,216,78],[10,226.8,217,65]
+];
+const fall2026Language=[
+ [3,192.6,184,76],[4,204.6,194,68],[5,210.2,202,73],
+ [6,215.2,206,80],[7,218.7,209,86],[8,225.8,213,90],
+ [9,225.7,215,80],[10,229.7,216,64]
+];
 const fall2026Grades=[3,4,5,6,7,8,9,10];
 const fallRow=([grade,aisg,us,earcos,aboveUsPct,aboveEarcosPct])=>
  ({grade,aisg,us,earcos,aboveUsPct,aboveEarcosPct});
 const springRow=([grade,aisg,us,n,aboveUsN,growthMet,growthEligible],i,earcos)=>
  ({grade,aisg,us,earcos:earcos[i],n,aboveUsN,growthMet,growthEligible});
 const meansRow=([grade,aisg,us,earcos])=>({grade,aisg,us,earcos});
-const directionRow=grade=>({grade,aisg:null,us:null,earcos:null,aboveUsMean:true});
+const fall2026Row=([grade,aisg,us,n])=>({grade,aisg,us,earcos:null,n,aboveUsMean:aisg>us});
 // EARCOS Spring 2025/26 international comparison screenshot (Grades 3-10).
 const springEarcos={
  math:[213.47,225.55,233.12,237.70,247.00,253.32,256.20,260.55],
@@ -105,16 +125,16 @@ export const BOARD_DATA=Object.freeze({
   }
  },
  fall2026:{
-  label:'Fall 2026',hasEarcos:false,hasMatchedGrowth:false,evidence:'direction-only',
-  source:'AISG MAP Fall 2026–27 Family Highlights: Positive Highlights for Families (Grades 3–10)',
+  label:'Fall 2026',hasEarcos:false,hasMatchedGrowth:false,evidence:'grade-means',
+  source:'AISG Fall 2026–27 NWEA Student Progress Report (aggregated valid FA26 student scores by grade and subject); 2025 NWEA Fall school achievement norms (week 4); AISG Fall 2026–27 Family Highlights',
   schoolwide:{
    aboveUSComparisons:24,totalComparisons:24,
    returningGrowthInOneOrMoreAreasPct:95,
    projectedGroupGrowthExceeded:['Mathematics','Reading','Language Usage'],
    gradesReported:fall2026Grades
   },
-  subjects:{math:fall2026Grades.map(directionRow),reading:fall2026Grades.map(directionRow),
-   language:fall2026Grades.map(directionRow)}
+  subjects:{math:fall2026Math.map(fall2026Row),reading:fall2026Reading.map(fall2026Row),
+   language:fall2026Language.map(fall2026Row)}
  }
 });
 export const BOARD_WINDOWS=Object.freeze(Object.keys(BOARD_DATA).sort((a,b)=>{
@@ -132,7 +152,7 @@ export const BOARD_METHODS=Object.freeze({
  fall:'Fall 2025 U.S. and EARCOS references are from the same Fall 2025 window. Published per-grade above-reference student percentages are available for Mathematics and Reading, but underlying Fall sample sizes are not.',
  spring:'Spring 2026 EARCOS benchmarks come from the supplied Spring 2025/26 EARCOS comparison screenshot and match the same season. Mathematics and Reading AISG means were reaggregated from the NWEA assessment export, not from the historical CSV, which differs slightly for several grades. The Language Usage means are from AISG.csv.',
  growth:'Spring-to-spring growth is calculated from matched students with valid NWEA projected-growth records in Mathematics or Reading. There is no matched previous Spring grade-3 cohort in that export. Language Usage matched growth counts were not supplied.',
- fall2026:'AISG Fall 2026 family highlights reports all 24 grade-subject means above U.S. norms across Mathematics, Reading and Language Usage. It does not publish numeric grade RIT means or EARCOS grade means, so no numerical gaps can be calculated. The 95% figure is for returning learners who grew in at least one MAP subject, not a Mathematics or Reading projected-growth rate. Groupwide projected growth exceeded expectations in all three subjects.',
+ fall2026:'AISG Fall 2026 grade averages are calculated from the September 2026 NWEA Student Progress report, using the central RIT of each valid FA26 record, one result per distinct student/grade/subject; reported sample sizes vary by grade and subject. U.S. benchmarks are NWEA 2025 Fall SCHOOL achievement norms at 4 weeks of instruction (NWEA 2025 Norms Quick Reference, page 3). The same 2025 norm edition is identified in the school NWEA report for 2026. Fall 2026 EARCOS grade means are not available. Student-level data remain private and are not published. The 95% statistic refers to returning students growing in one or more MAP areas, not a subject-specific projected-growth rate.',
  missing:'A dash (—) means the comparison or measure is not available from the supplied source. It never means a zero score or zero progress.',
  caution:'Only anonymised aggregated real school data appears in Board view. Other My Learners demo roles use fictional students. Distinct grade snapshots are not individual student growth.'
 });
