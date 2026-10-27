@@ -719,15 +719,6 @@ root.addEventListener('click',e=>{
   root.querySelector('[data-class-evidence="'+next+'"]')?.focus({preventScroll:true});
   return;
  }
- const compareSelect=e.target.closest('[data-class-compare]');
- if(compareSelect&&state.role==='faculty'){
-  const grade=activeClass()?.grade||'';
-  state.classCompare=normalizeComparison(grade,
-   normalizeEvidenceMode(grade,state.classEvidence),compareSelect.value);
-  rememberFaculty();render();
-  root.querySelector('[data-class-compare]')?.focus({preventScroll:true});
-  return;
- }
  const academicMode=e.target.closest('[data-academic-mode]');
  if(academicMode){
   const options=academicModesFor(activeClass()?.grade||'');
@@ -879,6 +870,15 @@ root.addEventListener('click',e=>{
  const link=e.target.closest('[data-student]');if(link){state.studentId=link.dataset.student;state.details=false;state.academicReportYear='';render();window.scrollTo(0,0)}
 });
 root.addEventListener('change',e=>{
+ const compareSelect=e.target.closest('[data-class-compare]');
+ if(compareSelect&&state.role==='faculty'){
+  const grade=activeClass()?.grade||'';
+  state.classCompare=normalizeComparison(grade,
+   normalizeEvidenceMode(grade,state.classEvidence),compareSelect.value);
+  rememberFaculty();render();
+  root.querySelector('[data-class-compare]')?.focus({preventScroll:true});
+  return;
+ }
  const classWindow=e.target.closest('[data-class-window]');
  if(classWindow&&state.role==='faculty'){
   if(EXPERIENCE_WINDOWS.some(w=>w.key===classWindow.value)){
