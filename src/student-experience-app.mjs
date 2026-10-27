@@ -6,6 +6,7 @@ import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs';
 import {esc} from './v2-ui.mjs';
 import {renderBoard} from './board-map-view.mjs';
+import {renderTrendPointDetails} from './board-map-overview.mjs';
 import {boardWindowFor} from './board-map-data.mjs';
 import {parseBoardHash,boardShareUrl} from './board-map-links.mjs';
 const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(DATA.students);
@@ -19,7 +20,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  division:'All',grade:'All',classId:'',studentId:'',query:'',metric:'engagement',window:'F26',details:false,checkin:false,
  boardWindow:saved('my-board-window-v2','fall2026'),boardSubject:saved('my-board-subject','math'),
  boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all'),
- boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'both'};
+ boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all'};
 const boardDeepLink=parseBoardHash(globalThis.location?.hash);
 if(boardDeepLink&&state.role==='board')Object.assign(state,boardDeepLink);
 const safe=(v)=>esc(v??'');
@@ -192,12 +193,35 @@ function render(){
  sessionStorage.setItem('my-board-window-v2',state.boardWindow);sessionStorage.setItem('my-board-subject',state.boardSubject);
  sessionStorage.setItem('my-board-division',state.boardDivision);sessionStorage.setItem('my-board-grade',state.boardGrade)}catch{}
 }
+function showBoardPoint(point){
+ const key=point?.dataset?.boardPoint;
+ const inspector=root.querySelector('.board-trend-inspector');
+ if(!inspector||!key||inspector.dataset.activePoint===key)return;
+ inspector.innerHTML=renderTrendPointDetails(key);
+ inspector.dataset.activePoint=key;
+ root.querySelectorAll('.board-trend-point.is-active').forEach(x=>x.classList.remove('is-active'));
+ point.classList.add('is-active');
+}
+root.addEventListener('pointerover',e=>{
+ const point=e.target.closest?.('[data-board-point]');
+ if(point&&state.role==='board'&&state.boardView==='overview')showBoardPoint(point);
+});
+root.addEventListener('focusin',e=>{
+ const point=e.target.closest?.('[data-board-point]');
+ if(point&&state.role==='board'&&state.boardView==='overview')showBoardPoint(point);
+});
+root.addEventListener('keydown',e=>{
+ const point=e.target.closest?.('[data-board-point]');
+ if(point&&(e.key==='Enter'||e.key===' ')){e.preventDefault();showBoardPoint(point)}
+});
 root.addEventListener('click',e=>{
  const role=e.target.closest('[data-role]');if(role){if(!ROLE_IDS.includes(role.dataset.role))return;
  if(role.dataset.role==='board')state.boardView='overview';
  state.role=role.dataset.role;state.details=false;state.studentId='';state.classId='';state.query='';
  if(globalThis.location?.hash!=='#/'+state.role)globalThis.location.hash='#/'+state.role;
  render();return}
+ const point=e.target.closest('[data-board-point]');
+ if(point){showBoardPoint(point);return}
  const boardView=e.target.closest('[data-board-view]');
  if(boardView){
   state.boardView=boardView.dataset.boardView==='explore'?'explore':'overview';
@@ -216,7 +240,10 @@ root.addEventListener('click',e=>{
  const boardTerm=e.target.closest('[data-board-trend]');
  if(boardTerm){state.boardTrendTerm=boardTerm.dataset.boardTrend==='spring'?'spring':'fall';render();return}
  const boardFocus=e.target.closest('[data-board-focus]');
- if(boardFocus){state.boardTrendFocus=['both','math','reading'].includes(boardFocus.dataset.boardFocus)?boardFocus.dataset.boardFocus:'both';render();return}
+ if(boardFocus){
+  state.boardTrendFocus=['all','math','reading','language'].includes(boardFocus.dataset.boardFocus)?
+   boardFocus.dataset.boardFocus:'all';render();return
+ }
  const share=e.target.closest('[data-board-share]');
  if(share){
   const url=boardShareUrl(globalThis.location,state);
