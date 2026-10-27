@@ -9,7 +9,7 @@ import {sssCohort,sssRecordFor} from './sss-demo-data.mjs';
 import {academicFor,latestAcademic} from './academic-journey-data.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
 import {experienceFor,experienceEligible} from './experience-data.mjs';
-import {renderAcademicProfile} from './academic-journey-view.mjs';
+import {renderAcademicProfile} from './academic-journey-view.mjs?v=20261028titles1';
 
 const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
  .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
