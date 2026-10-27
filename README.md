@@ -16,6 +16,17 @@ Opening a student shows all subjects in an issued report card, with up to three 
 
 These are interface demonstrations using **entirely fictional** student records. They do not import real grades, attainment, attendance or wellbeing data, and the role selector is not production-level authorisation. Do not use the public GitHub Pages site for genuine student records.
 
+
+## Leadership overview (October 2026)
+
+The Leaders role now uses the same accessible Noto Sans and calm navy/blue presentation as the Faculty, Student and Board experiences. Its first screen shows only four indicators: fictional learner count (PK3–G12), the share of learners meeting **illustrative** MAP Mathematics and Reading growth projections (only comparable G3–10 tests), and coverage of previously **issued** report cards. These MAP figures are **not** official NWEA norms, and this view does not import or blend the genuine aggregated results available in the Board role.
+
+Student experience presents Engagement and Belonging as concise index cards with response counts and comparisons to the previous check-in. Elementary (G3–5) and Secondary (G6–12) results remain separate when both are present because their questions differ; PK–G2 has no simulated check-in scores.
+
+Two **closed-by-default** sections provide extra depth when needed. *Explore academic measures* shows grade-eligible availability of IXL diagnostic levels (G1–10), fictional Core Phonics decoding checks (K–G5) and F&P reading text levels (K–G5). When a **single grade** is selected, it adds the median **Fall 2026 fictional** check-in value and a distribution of the last issued Mathematics and Literacy report outcomes, grouped only within one issued grade/year/programme scale. It never averages incompatible grading frameworks. *Explore student experience patterns* shows group response counts and the three historical check-in windows. Both sections remain expanded when the leader changes filters.
+
+**These are fictional learning examples, not schoolwide attainment claims.** The public GitHub Pages site has no live student connection, authentication, or approved access controls for individual student data.
+
 ## Original demo introduction
 
 **[Open the My Learners demonstration](https://edtechevans.github.io/mylearners/)**

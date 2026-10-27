@@ -19,10 +19,11 @@ jobs:
         with:
           node-version: 22
       - name: Verify fictional data model and transparent indicators
-        run: node --test tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs tests/student-experience.test.mjs tests/academic-journey.test.mjs tests/faculty-student-daily.test.mjs tests/board-map.test.mjs tests/board-overview.test.mjs tests/board-dp.test.mjs tests/board-comparison-tiles.test.mjs
+        run: node --test tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs tests/student-experience.test.mjs tests/academic-journey.test.mjs tests/faculty-student-daily.test.mjs tests/leader-summary.test.mjs tests/board-map.test.mjs tests/board-overview.test.mjs tests/board-dp.test.mjs tests/board-comparison-tiles.test.mjs
       - name: Validate entry point and Javascript syntax
         run: |
           node --check src/student-experience-app.mjs
+          node --check src/leader-summary.mjs
           node --check src/experience-data.mjs
           node --check src/academic-journey-data.mjs
           node --check src/academic-journey-view.mjs
@@ -62,6 +63,14 @@ jobs:
           grep -q 'data-select="student-grade"' /tmp/mylearners-student-academic-dom.html
           grep -q 'My school reports' /tmp/mylearners-student-academic-dom.html
           grep -q 'IXL Mathematics' /tmp/mylearners-student-academic-dom.html
+          timeout 45s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --virtual-time-budget=6000 --dump-dom 'http://127.0.0.1:8765/#/leader' > /tmp/mylearners-leader-dom.html 2>/tmp/mylearners-chrome-leader.log
+          grep -q 'leader-learning-grid' /tmp/mylearners-leader-dom.html
+          grep -q 'MAP Mathematics growth' /tmp/mylearners-leader-dom.html
+          grep -q 'MAP Reading growth' /tmp/mylearners-leader-dom.html
+          grep -q 'Issued report cards' /tmp/mylearners-leader-dom.html
+          grep -q 'data-leader-panel="academics"' /tmp/mylearners-leader-dom.html
+          grep -q 'data-leader-panel="patterns"' /tmp/mylearners-leader-dom.html
+          grep -q 'Core Phonics' /tmp/mylearners-leader-dom.html
           timeout 45s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --virtual-time-budget=6000 --dump-dom 'http://127.0.0.1:8765/#/board' > /tmp/mylearners-board-dom.html 2>/tmp/mylearners-chrome-board.log
           grep -q 'board-view' /tmp/mylearners-board-dom.html
           grep -q 'AISG AGGREGATED DATA' /tmp/mylearners-board-dom.html

@@ -1,6 +1,7 @@
 import {generateDemoData,attendanceSummary,gradeNumber,GRADES} from './data.mjs';
 import {applyFacultyDemo,DEFAULT_TEACHER_ID} from './faculty-demo.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
+import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
 import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs';
@@ -40,7 +41,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  teacher:saved('my-teacher',DEFAULT_TEACHER_ID),
  division:'All',grade:'All',classId:'',studentId:'',query:'',metric:'engagement',window:'F26',details:false,checkin:false,
  academicMode:'report',academicSubject:'Mathematics',academicReportYear:'',studentGrade:'G7',
- studentReportsOpen:false,studentWellbeingOpen:false,
+ studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
  boardWindow:saved('my-board-window-v2','fall2026'),boardSubject:saved('my-board-subject','math'),
  boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all'),
  boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardTrendRange:'recent',boardOverviewChart:'map',
@@ -48,6 +49,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  boardDpMetric:'average',
  boardDpYear:String(DP_RECORDS.at(-1).end),boardDpRange:'all'};
 recallFaculty();
+if(state.role==='leader')state.classId='';
 const boardDeepLink=parseBoardHash(globalThis.location?.hash);
 if(boardDeepLink&&state.role==='board')Object.assign(state,boardDeepLink);
 const safe=(v)=>esc(v??'');
@@ -272,40 +274,173 @@ function faculty(){
 }
 
 function leader(){
- const grades=GRADES.filter(x=>gradeNumber(x)>=3);
+ const grades=GRADES;
  const divisions=state.division==='All'?['Elementary','Secondary']:[state.division];
- const group=DATA.students.filter(s=>experienceEligible(s)&&divisions.includes(s.division)&&
-   (state.grade==='All'||s.grade===state.grade)&&(!state.classId||s.classId===state.classId));
- const options=DATA.classes.filter(c=>divisions.includes(c.division)&&(state.grade==='All'||c.grade===state.grade));
- const selectedClass=options.find(c=>c.id===state.classId);
- const groups=state.classId?[[selectedClass?.name||state.classId,group]]:
-  (state.grade==='All'?grades.filter(g=>group.some(s=>s.grade===g)).map(g=>[g,group.filter(s=>s.grade===g)]):
-   options.map(c=>[c.name,group.filter(s=>s.classId===c.id)]));
- const splitSchool=state.division==='All'&&state.grade==='All'&&!state.classId;
- const panels=splitSchool?['Elementary','Secondary'].map(div=>{
-  const ss=group.filter(s=>s.division===div);
-  return '<div class="sectionhead"><h2>'+div+' student experience</h2><span class="tiny">'+(div==='Elementary'?'Grades 3–5':'Grades 6–12')+' · different age-appropriate questions</span></div>'+
-   metrics(ss,null,div.toLowerCase());
- }).join(''):metrics(group,null,'leader');
- const trendFor=(ss,label)=>'<section class="card"><h2>'+safe(label)+'</h2><div class="trend">'+EXPERIENCE_WINDOWS.map(w=>{
-  const e=summarizeExperience(RECORDS,ss,'engagement',w.key),b=summarizeExperience(RECORDS,ss,'belonging',w.key);
-  return '<div><span>'+w.label+'</span><strong>Engagement '+fmt(e.value)+'</strong><strong>Belonging '+fmt(b.value)+'</strong><small>Responses '+e.n+'/'+e.eligible+'</small></div>';
- }).join('')+'</div></section>';
- return heading('Where are experiences improving?','Choose a division or grade to see patterns and changes, with response counts alongside every index.')+
- '<div class="toolbar"><label>Division '+selector('division',[['All','Whole School'],['Elementary','Elementary'],['Secondary','Secondary']],state.division)+'</label>'+
- '<label>Grade '+selector('grade',[['All','All Grades'],...grades.filter(g=>divisions.includes(gradeNumber(g)<=5?'Elementary':'Secondary')).map(g=>[g,g])],state.grade)+'</label>'+
- '<label>Class (fictional) '+selector('leader-class',[['','All classes'],...options.map(c=>[c.id,c.name])],state.classId)+'</label></div>'+
- '<div class="kpis leader-kpis">'+kpi('Students in selected group',group.length,'Grades 3–12 · fictional profiles')+
- kpi('Responses',group.filter(s=>!!experienceFor(RECORDS,s.id,'engagement',state.window)).length,'Of '+group.length+' eligible students')+
- kpi('Survey window',EXPERIENCE_WINDOWS.find(w=>w.key===state.window)?.label||'—','Simulated student check-in')+'</div>'+
- '<div class="sectionhead"><h2>'+ (splitSchool?'Divisional experience':'Student experience')+'</h2><label>Window '+selector('window',EXPERIENCE_WINDOWS.map(w=>[w.key,w.label]),state.window)+'</label></div>'+
- panels+(splitSchool?'<p class="tiny">Elementary and Secondary indices use different questions. They are shown separately rather than combined into one schoolwide score.</p>':'')+
- '<section class="card"><div class="row-between"><h2>Patterns by '+(state.classId?'selected class':state.grade==='All'?'grade':'class')+'</h2><span class="tiny">Scores out of 100 · show response counts</span></div>'+
- '<div class="tablewrap"><table><thead><tr><th>Group</th><th>Students</th><th>Responses</th><th>Engagement</th><th>Belonging</th></tr></thead><tbody>'+
- groups.map(([name,ss])=>{const e=summarizeExperience(RECORDS,ss,'engagement',state.window),b=summarizeExperience(RECORDS,ss,'belonging',state.window);
- return '<tr><td>'+safe(name)+'</td><td>'+ss.length+'</td><td>'+e.n+'/'+e.eligible+'</td><td>'+fmt(e.value)+'</td><td>'+fmt(b.value)+'</td></tr>'}).join('')+
- '</tbody></table></div><p class="tiny">These are patterns in fictional student self-reports, not individual progress or labels. Use other classroom and learning evidence before deciding what to change.</p></section>'+
- (splitSchool?trendFor(group.filter(s=>s.division==='Elementary'),'Elementary · over time')+trendFor(group.filter(s=>s.division==='Secondary'),'Secondary · over time'):trendFor(group,'Over time'))+info();
+ const group=DATA.students.filter(s=>divisions.includes(s.division)&&
+  (state.grade==='All'||s.grade===state.grade)&&(!state.classId||s.classId===state.classId));
+ const classes=DATA.classes.filter(c=>divisions.includes(c.division)&&
+  (state.grade==='All'||c.grade===state.grade));
+ const selectedClass=classes.find(c=>c.id===state.classId);
+ const rows=state.classId?[[selectedClass?.name||state.classId,group]]:
+  state.grade==='All'?grades.filter(g=>group.some(s=>s.grade===g))
+   .map(g=>[g,group.filter(s=>s.grade===g)]):
+   classes.map(c=>[c.name,group.filter(s=>s.classId===c.id)]);
+ const math=leaderMapSummary(group,DATA.map,'Mathematics');
+ const reading=leaderMapSummary(group,DATA.map,'Reading');
+ const reports=leaderAcademicCoverage(group,ACADEMIC_RECORDS,'report');
+ const checkedDivisions=new Set(group.filter(experienceEligible).map(s=>s.division));
+ const splitExperience=checkedDivisions.size>1;
+ const selectedWindow=EXPERIENCE_WINDOWS.find(w=>w.key===state.window)?.label||'Fall 2026';
+ const stat=(title,value,detail,meta)=>'<article class="leader-stat">'+
+  '<div class="leader-stat-heading"><span>'+safe(title)+'</span>'+
+  '<small>'+safe(meta)+'</small></div><strong>'+safe(value)+'</strong>'+
+  '<p>'+safe(detail)+'</p></article>';
+ const growthTile=(name,measure)=>stat(name,measure.rate===null?'—':measure.rate+'%',
+  measure.rate===null?'No comparable tests in this group.':
+  measure.met+' of '+measure.compared+' comparable learners met the illustrative projection.',
+  'Fall 2026 · G3–G10');
+ const experienceBlock=(ss,scope,title,subtitle)=>{
+  const available=ss.filter(experienceEligible);
+  const titleRow=title?'<div class="leader-experience-heading"><h3>'+safe(title)+'</h3>'+
+    '<span>'+safe(subtitle)+'</span></div>':'';
+  if(!available.length)return '<section class="leader-experience-group">'+titleRow+
+   '<p class="leader-empty">Student experience check-ins begin in Grade 3; none are available for this selection.</p></section>';
+  const cards=METRIC_IDS.map(id=>{
+   const summary=summarizeExperience(RECORDS,ss,id,state.window);
+   const change=experienceChange(RECORDS,ss,id,state.window);
+   const comparison=change.delta===null?'No earlier comparable check-in':
+    (change.delta>0?'+':'')+change.delta+' index points vs '+change.previousLabel;
+   return '<article class="leader-experience-card"><span class="leader-measure-label">'+
+    safe(EXPERIENCE_METRICS[id].label)+'</span><div class="leader-experience-value">'+
+    fmt(summary.value)+(summary.value===null?'':'<small> / 100</small>')+'</div>'+
+    '<p class="leader-experience-change">'+safe(comparison)+'</p>'+
+    '<p class="leader-experience-count">'+summary.n+' of '+summary.eligible+
+    ' eligible students responded</p>'+
+    (summary.value===null?'':btn('explain:'+scope+':'+id,'How calculated','quiet'))+
+    '</article>';
+  }).join('');
+  const chosen=METRIC_IDS.find(id=>state.details===scope+':'+id);
+  return '<section class="leader-experience-group">'+titleRow+
+   '<div class="leader-experience-pair">'+cards+'</div>'+
+   (chosen?scoreExplanation(chosen,ss,null):'')+'</section>';
+ };
+ const experience=splitExperience?
+  '<div class="leader-experience-sections">'+
+  experienceBlock(group.filter(s=>s.division==='Elementary'),'elementary',
+   'Elementary','Grades 3–5 · age-appropriate questions')+
+  experienceBlock(group.filter(s=>s.division==='Secondary'),'secondary',
+   'Secondary','Grades 6–12 · age-appropriate questions')+'</div>':
+  experienceBlock(group,'leader','','');
+ const checkConfig=[
+  {mode:'ixl',name:'IXL Mathematics',grades:'Grades 1–10',description:'Diagnostic level, not a SmartScore or percentage'},
+  {mode:'core',name:'Core Phonics',grades:'K–Grade 5',description:'Illustrative 50-item decoding check'},
+  {mode:'fp',name:'F&P reading',grades:'K–Grade 5',description:'Text complexity level, not a grade or percentage'}
+ ];
+ const academicChecks=checkConfig.map(check=>{
+  const snapshot=leaderCheckSnapshot(group,ACADEMIC_RECORDS,check.mode);
+  const coverage=snapshot.eligible?
+   snapshot.available+' of '+snapshot.eligible+' eligible learners have a check-in':
+   'Not used in this selected grade range';
+  const typical=snapshot.typical?
+   '<span class="leader-check-typical">'+safe(snapshot.typical)+' · Fall 2026 ('+
+    snapshot.recent+' results)</span>':'';
+  return '<div class="leader-check-row"><div><strong>'+safe(check.name)+'</strong>'+
+   '<span>'+safe(check.grades)+' · '+safe(check.description)+'</span></div>'+
+   '<div class="leader-check-evidence"><b>'+safe(coverage)+'</b>'+typical+'</div></div>';
+ }).join('');
+ const reportMix=leaderReportBreakdown(group,ACADEMIC_RECORDS);
+ const reportDetail=reportMix===null?
+  '<p class="leader-inline-note">Select one grade or class above to see issued report outcomes. '+
+  'Developmental descriptors and 1–7 grades are never combined into a schoolwide average.</p>':
+  !reportMix.rows.length?
+  '<p class="leader-inline-note">No issued reports are available yet for this fictional grade group.</p>':
+  '<p class="leader-report-context">Latest issued '+safe(reportMix.year)+' · '+
+   safe(reportMix.issuedGrade)+' · '+safe(reportMix.framework)+' · '+
+   reportMix.included+' reports on the same scale'+
+   (reportMix.excluded?' ('+reportMix.excluded+' others have a different report context)':'')+'</p>'+
+  '<div class="leader-report-subjects">'+reportMix.rows.map(row=>
+   '<div class="leader-report-subject"><strong>'+safe(row.subject)+'</strong>'+
+   '<div class="leader-report-values">'+row.values.filter(item=>item.count>0).map(item=>
+    '<span>'+safe(item.value)+' <b>'+item.count+'</b></span>').join('')+
+   '</div></div>').join('')+'</div>'+
+  '<p class="leader-inline-note">Counts describe the last issued report, not current 2026–27 grades. '+
+  'Outcomes are only comparable within the same year, grade and programme.</p>';
+ const detailTable='<div class="tablewrap leader-pattern-table"><table><thead><tr>'+
+  '<th scope="col">Group</th><th scope="col">Learners</th>'+
+  '<th scope="col">Responses (G3+)</th>'+
+  '<th scope="col">Engagement / 100</th><th scope="col">Belonging / 100</th>'+
+  '</tr></thead><tbody>'+rows.map(([name,ss])=>{
+   const e=summarizeExperience(RECORDS,ss,'engagement',state.window);
+   const b=summarizeExperience(RECORDS,ss,'belonging',state.window);
+   return '<tr><th scope="row">'+safe(name)+'</th><td>'+ss.length+
+    '</td><td>'+(e.eligible?e.n+' / '+e.eligible:'Not collected')+
+    '</td><td>'+fmt(e.value)+'</td><td>'+fmt(b.value)+'</td></tr>';
+  }).join('')+'</tbody></table></div>';
+ const trendFor=(ss,title)=>'<div class="leader-trend-group"><h4>'+safe(title)+'</h4>'+
+  '<div class="leader-trend-grid">'+EXPERIENCE_WINDOWS.map(w=>{
+   const e=summarizeExperience(RECORDS,ss,'engagement',w.key);
+   const b=summarizeExperience(RECORDS,ss,'belonging',w.key);
+   return '<div class="leader-trend-period"><strong>'+safe(w.label)+'</strong>'+
+    '<span>Engagement <b>'+fmt(e.value)+'</b></span>'+
+    '<span>Belonging <b>'+fmt(b.value)+'</b></span>'+
+    '<small>'+e.n+' of '+e.eligible+' responses</small></div>';
+  }).join('')+'</div></div>';
+ const trends=splitExperience?
+  trendFor(group.filter(s=>s.division==='Elementary'),'Elementary')+
+  trendFor(group.filter(s=>s.division==='Secondary'),'Secondary'):
+  trendFor(group,'Selected group');
+ return heading('Leadership overview','A clear view of learning, growth and student experience. Choose a group to explore further.')+
+  '<div class="leader-view">'+
+  '<div class="toolbar leader-controls"><label>Division '+
+  selector('division',[['All','Whole school'],['Elementary','Elementary'],['Secondary','Secondary']],state.division)+
+  '</label><label>Grade '+selector('grade',[['All','All grades'],...grades.filter(g=>
+   divisions.includes(gradeNumber(g)<=5?'Elementary':'Secondary')).map(g=>[g,g==='K'?'Kindergarten':g])],state.grade)+
+  '</label><label>Class '+selector('leader-class',[['','All classes'],...classes.map(c=>[c.id,c.name])],state.classId)+
+  '</label></div>'+
+  '<section class="leader-section" aria-labelledby="leader-learning-title">'+
+  '<div class="leader-sectionhead"><div><div class="eyebrow">LEARNING SNAPSHOT</div>'+
+  '<h2 id="leader-learning-title">At a glance</h2></div>'+
+  '<span class="leader-period">Fictional data · Fall 2026</span></div>'+
+  '<div class="leader-learning-grid">'+
+  stat('Learners',String(group.length),'Students in this selection','PK3–Grade 12')+
+  growthTile('MAP Mathematics growth',math)+
+  growthTile('MAP Reading growth',reading)+
+  stat('Issued report cards',reports.rate===null?'—':reports.rate+'%',
+   reports.available+' of '+reports.eligible+' learners have a previously issued report.',
+   'Historical reports only')+'</div>'+
+  '<p class="leader-data-note">MAP growth compares learners with valid, comparable tests to '+
+  'illustrative projected growth. It is not an achievement percentile or an official NWEA projection. '+
+  'MAP is shown for Grades 3–10 only.</p></section>'+
+  '<section class="leader-section" aria-labelledby="leader-experience-title">'+
+  '<div class="leader-sectionhead"><div><div class="eyebrow">STUDENT VOICE</div>'+
+  '<h2 id="leader-experience-title">Student experience</h2>'+
+  '<p>Engagement and belonging, with the response count alongside every index.</p></div>'+
+  '<label class="leader-window-select">Check-in period '+
+  selector('window',EXPERIENCE_WINDOWS.map(w=>[w.key,w.label]),state.window)+
+  '</label></div>'+experience+
+  (splitExperience?'<p class="leader-data-note">Elementary and Secondary students answer different questions; their indices are intentionally shown separately.</p>':'')+
+  '</section>'+
+  '<details class="leader-detail" data-leader-panel="academics"'+
+  (state.leaderAcademicOpen?' open':'')+'>'+
+  '<summary><span><strong>Explore academic measures</strong>'+
+  '<small>Report-card distributions and IXL, phonics and reading checks</small></span>'+
+  '<span class="leader-detail-chevron" aria-hidden="true">⌄</span></summary>'+
+  '<div class="leader-detail-body"><h3>Assessment coverage</h3>'+
+  '<p class="leader-inline-note">Each measure has its own scale and grade range. '+
+  'Only eligible learners are counted.</p>'+
+  '<div class="leader-check-list">'+academicChecks+'</div>'+
+  '<h3>Most recent issued report outcomes</h3>'+reportDetail+'</div></details>'+
+  '<details class="leader-detail" data-leader-panel="patterns"'+
+  (state.leaderPatternsOpen?' open':'')+'>'+
+  '<summary><span><strong>Explore student experience patterns</strong>'+
+  '<small>Group comparisons and three check-in windows</small></span>'+
+  '<span class="leader-detail-chevron" aria-hidden="true">⌄</span></summary>'+
+  '<div class="leader-detail-body"><h3>Patterns by '+
+  (state.classId?'selected class':state.grade==='All'?'grade':'class')+'</h3>'+
+  detailTable+
+  '<p class="leader-inline-note">Indices are out of 100, based on fictional student check-ins. '+
+  'They do not rank learners or indicate academic achievement.</p>'+
+  '<h3>Over time</h3>'+trends+'</div></details></div>'+info();
 }
 function student(){
  const grades=GRADES;
@@ -688,6 +823,12 @@ root.addEventListener('change',e=>{
  render()
 });
 root.addEventListener('toggle',e=>{
+ const leaderPanel=e.target.closest?.('details[data-leader-panel]');
+ if(leaderPanel&&state.role==='leader'){
+  if(leaderPanel.dataset.leaderPanel==='academics')state.leaderAcademicOpen=leaderPanel.open;
+  if(leaderPanel.dataset.leaderPanel==='patterns')state.leaderPatternsOpen=leaderPanel.open;
+  return;
+ }
  const panel=e.target.closest?.('details[data-student-panel]');
  if(!panel||state.role!=='student')return;
  if(panel.dataset.studentPanel==='reports')state.studentReportsOpen=panel.open;
