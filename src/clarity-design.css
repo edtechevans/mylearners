@@ -1,0 +1,413 @@
+/* AISG My Learners | Clarity 2026
+   The fifth dashboard is not a fifth visual language.
+   One quiet system; depth is available when the user asks for it.
+   UI-only: preserve all sources, comparators, eligibility and role behaviour.
+*/
+:root{
+  --clarity-navy:#123a5a;
+  --clarity-ink:#24465f;
+  --clarity-muted:#587185;
+  --clarity-line:#dfe9f0;
+  --clarity-canvas:#f6f9fb;
+  --clarity-soft:#eef5f9;
+  --clarity-blue:#287ca8;
+  --clarity-teal:#158077;
+  --clarity-white:#fff;
+  --clarity-radius:14px;
+  --clarity-shadow:0 3px 15px rgba(19,58,84,.037);
+  --ui-ink:var(--clarity-ink);
+  --ui-navy:var(--clarity-navy);
+  --ui-muted:var(--clarity-muted);
+  --ui-line:var(--clarity-line);
+  --ui-soft:var(--clarity-soft);
+  --ui-panel:var(--clarity-white);
+  --ui-focus:#287ca8;
+  --ui-radius:var(--clarity-radius);
+  --ui-shadow:var(--clarity-shadow);
+}
+html{scroll-padding-top:100px}
+body{
+  background:var(--clarity-canvas);
+  color:var(--clarity-ink);
+  font-family:'Noto Sans','Segoe UI','Helvetica Neue','PingFang SC','Microsoft YaHei',Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility
+}
+#app{background:var(--clarity-canvas)}
+#app .top{background:#fff;border-bottom:1px solid var(--clarity-line);box-shadow:none}
+#app .top .brand strong{color:var(--clarity-navy);font-size:19px;letter-spacing:-.035em}
+#app .top .brand span{color:var(--clarity-muted);font-size:11.5px;line-height:1.6}
+#app .top .roles{border:0;background:#f0f5f9;box-shadow:none}
+#app .top .roles button{
+  font-size:13px;font-weight:700;letter-spacing:0;
+  color:#4b687c;transition:background .15s,color .15s,box-shadow .15s
+}
+#app .top .roles button.selected{
+  color:var(--clarity-navy);background:#fff;
+  box-shadow:0 2px 6px rgba(22,65,93,.08)
+}
+#app .top .roles button:hover:not(.selected){color:var(--clarity-navy);background:#e6f0f7}
+#app .top .roles button:focus-visible{outline:3px solid #287ca8;outline-offset:2px}
+#app>main.container{
+  max-width:1510px;
+  padding-top:34px;
+  padding-bottom:66px
+}
+#app .heading{margin-bottom:22px;align-items:center;gap:16px 26px}
+#app .heading .eyebrow{
+  color:#648093;font-weight:750;letter-spacing:.1em;font-size:10.5px
+}
+#app .heading h1{
+  color:var(--clarity-navy);
+  font-size:clamp(28px,2.7vw,37px);
+  font-weight:760;letter-spacing:-.045em;line-height:1.22;
+  margin:6px 0
+}
+#app .heading p{color:var(--clarity-muted);font-size:13.5px;max-width:72ch;line-height:1.65}
+#app .heading-meta .demo{background:#eef4f8;color:#4a697c;border:1px solid #d7e4eb;font-weight:750}
+#app .heading-meta .asof{color:#6a8192;font-size:11.5px}
+#app h2,#app h3{letter-spacing:-.025em}
+#app .eyebrow{color:#5d7b90;letter-spacing:.09em}
+#app :is(.kpi,.metric,.card,.quick-tile,.academic-class-panel,.academic-profile,
+  .leader-stat,.leader-experience-card,.leader-detail,
+  .sss-number,.sss-brief-card,.sss-evidence-tile,.sss-grade-section,
+  .student-today-tile,.student-detail-section,
+  .board-panel,.board-indicator,.board-overview-card,.board-dp-tile){
+  background-color:#fff;
+  border-color:var(--clarity-line);
+  border-radius:var(--clarity-radius);
+  box-shadow:var(--clarity-shadow)
+}
+#app :is(.kpi,.metric,.quick-tile,.leader-stat,.sss-number,.board-indicator) strong{
+  color:var(--clarity-navy);
+  font-variant-numeric:tabular-nums
+}
+#app :is(.kpi,.metric,.quick-tile,.leader-stat,.sss-number) :is(small,p,.muted){
+  color:var(--clarity-muted);line-height:1.55
+}
+#app button{font-family:inherit}
+#app :is(button,a,summary){-webkit-tap-highlight-color:transparent}
+#app :is(button,select,input,textarea,a,summary,[tabindex]):focus-visible{
+  outline:3px solid var(--ui-focus);outline-offset:3px
+}
+#app :is(input,select,textarea){
+  border-color:#cbdce7;border-radius:9px;
+  color:#23455c;background-color:#fff;
+  font-size:13px;min-height:43px
+}
+#app :is(input,select,textarea):hover{border-color:#a5c3d3}
+#app input::placeholder,#app textarea::placeholder{color:#788d9b}
+#app :is(.toolbar,.board-controls,.board-overview-filterarea) label{
+  color:#4e6d80;font-weight:700;font-size:12px
+}
+#app :is(.toolbar,.leader-controls,.board-controls){gap:12px 15px}
+#app :is(.action,.board-copy-link,.board-presentation-button,
+  .student-save-goal,.sss-back,.back){
+  border-radius:9px;min-height:40px;font-size:12.5px;
+  font-weight:720;transition:background .15s,border-color .15s,color .15s,box-shadow .15s
+}
+#app :is(.action,.board-copy-link,.board-presentation-button,.back,.sss-back):hover{
+  border-color:#a7c9da;background-color:#f2f8fc;color:#164e72
+}
+#app .action.primary{background:#174f79;color:#fff}
+#app .action.primary:hover{background:#0f3f63}
+#app .quick-score:hover,#app .board-overview-card:hover{
+  border-color:#92bdcf;box-shadow:0 7px 23px rgba(29,83,117,.09);
+  transform:translateY(-1px)
+}
+#app :is(.tablewrap,.roster-daily,.academic-class-panel){border-radius:12px}
+#app th{
+  font-size:11px;letter-spacing:.035em;
+  color:#526e80;background:#f4f8fa;
+  font-weight:750;text-transform:none
+}
+#app td{font-size:12.5px;color:#35566d;border-top-color:#e8eef3}
+#app tbody tr:hover td{background:#f7fbfd}
+#app .student-link{color:#215d82;font-size:13px}
+#app .student-link:hover{text-decoration:underline;text-underline-offset:3px}
+#app .pill{
+  background:#edf4f8;color:#496a7e;border-radius:7px;
+  font-size:11px;font-weight:650
+}
+#app .notice{
+  background:transparent;border-color:#dbe7ee;border-width:1px;
+  color:#60798b;font-size:11.5px;line-height:1.65;
+  box-shadow:none
+}
+#app .demo{letter-spacing:.01em}
+#app footer{border-top-color:#e6edf2;background:transparent;color:#6b8292;font-size:11.5px}
+
+/* Desktop reference: a permanent, quiet workspace rail.
+   Only five destination buttons; no nested menus or charts in navigation. */
+@media(min-width:1180px){
+  html{scroll-padding-top:28px}
+  #app .top{
+    position:fixed!important;inset:0 auto 0 0;
+    width:224px;height:100vh;min-height:0;
+    padding:29px 14px 22px;z-index:110;
+    display:flex;flex-direction:column;justify-content:flex-start;
+    align-items:stretch;flex-wrap:nowrap;gap:27px;
+    border-right:1px solid #e4ebf0;border-bottom:0;
+    overflow-y:auto;background:#fff;backdrop-filter:none;
+    -webkit-backdrop-filter:none
+  }
+  #app .top .brand{
+    display:flex;align-items:center;gap:10px;min-width:0;
+    padding:3px 6px 25px;border-bottom:1px solid #e8eef3
+  }
+  #app .top .brand img{width:42px;height:42px}
+  #app .top .brand strong{font-size:17px;white-space:nowrap}
+  #app .top .brand span{font-size:10px}
+  #app .top .roles{
+    display:flex;flex-direction:column;align-items:stretch;
+    justify-content:flex-start;flex-wrap:nowrap;
+    gap:5px;width:100%;max-width:none;padding:0;
+    background:transparent;border:0;border-radius:0
+  }
+  #app .top .roles-label{
+    display:block;margin:0 10px 10px;padding:0;
+    color:#7a8e9d;font-size:10px;font-weight:750;
+    letter-spacing:.105em
+  }
+  #app .top .roles button{
+    position:relative;width:100%;min-height:45px;
+    border:1px solid transparent;border-radius:10px;
+    text-align:left;padding:12px 13px;
+    color:#526c7e;font-size:13.5px;font-weight:650;
+    box-shadow:none;white-space:nowrap
+  }
+  #app .top .roles button.selected{
+    color:#144b70;font-weight:760;
+    background:#ebf4fa;border-color:#d7e7f1;box-shadow:none
+  }
+  #app .top .roles button.selected:before{
+    content:'';position:absolute;left:-1px;top:10px;bottom:10px;
+    width:3px;border-radius:3px;background:var(--clarity-blue)
+  }
+  #app>main.container{
+    box-sizing:border-box;width:auto;max-width:1560px;
+    margin-left:224px;margin-right:auto;
+    padding:37px clamp(24px,3.2vw,52px) 70px
+  }
+  #app footer{margin-left:224px}
+  #app .board-view{max-width:1360px}
+  #app.board-presentation-mode .top{
+    position:relative!important;inset:auto;
+    height:auto;min-height:65px;width:100%;padding:10px 44px;
+    display:flex;flex-direction:row;align-items:center;gap:16px;
+    border-right:0;border-bottom:1px solid var(--clarity-line);
+    overflow:visible
+  }
+  #app.board-presentation-mode .top .brand{
+    padding:0;border:0
+  }
+  #app.board-presentation-mode>main.container{
+    margin-left:auto;max-width:1450px;
+    padding-inline:clamp(24px,3vw,50px)
+  }
+  #app.board-presentation-mode footer{margin-left:0}
+}
+/* Compact header for smaller Chrome windows; no hidden destinations. */
+@media(min-width:801px) and (max-width:1179px){
+  #app .top{padding:12px 25px;gap:12px}
+  #app .top .brand img{width:44px;height:44px}
+  #app .top .brand{min-width:0}
+  #app .top .roles button{padding:9px 12px;min-height:40px}
+  #app .top .roles-label{display:none}
+  #app>main.container{padding-inline:clamp(23px,3vw,40px)}
+}
+@media(max-width:800px){
+  #app .top{position:relative;gap:12px;padding:13px 18px}
+  #app .top .brand img{width:42px;height:42px}
+  #app .top .roles{
+    justify-content:flex-start;flex-wrap:wrap;
+    gap:3px;border-radius:11px;padding:4px
+  }
+  #app .top .roles button{min-height:40px;padding:9px 12px}
+  #app>main.container{padding-top:22px}
+}
+@media(max-width:540px){
+  #app .top .roles button{font-size:12px;padding:9px 10px}
+  #app .heading{align-items:flex-start}
+  #app .heading h1{font-size:27px}
+  #app .heading-meta{justify-items:start}
+}
+
+/* FACULTY: class, search, roster, then optional analytics. */
+#app .faculty-daily-toolbar{
+  padding:14px 16px;margin-bottom:13px;background:white;
+  border:1px solid var(--clarity-line);border-radius:12px;
+  align-items:flex-end
+}
+#app .faculty-daily-toolbar .search-label{flex:1 1 270px}
+#app .faculty-daily-toolbar .search-label input{width:100%}
+#app .faculty-daily-toolbar select{max-width:min(100%,360px)}
+#app .faculty-daily-summary{gap:10px;margin:0 0 14px}
+#app .faculty-daily-summary .quick-tile{
+  padding:14px 16px;gap:5px;box-shadow:none
+}
+#app .faculty-daily-summary .quick-tile strong{font-size:26px;letter-spacing:-.04em}
+#app .faculty-daily-summary .quick-tile small{font-size:11.5px}
+#app .roster .sectionhead{margin:13px 0}
+#app .roster-daily td,#app .roster-daily th{padding:13px 12px}
+#app .roster-daily td{font-size:13px}
+#app .roster-daily .roster-mixed-academic small{font-size:11.5px}
+#app .academic-class-compact{
+  background:#f8fbfd;border:1px solid var(--clarity-line);
+  box-shadow:none
+}
+#app .academic-class-compact .academic-mode-tabs{background:#ecf3f8}
+#app .academic-class-compact .academic-mode-tabs button{font-size:12px}
+#app .academic-class-compact .academic-mode-tabs button.active{background:#fff}
+#app .academic-class-breakdown{
+  border-color:var(--clarity-line);background:#fff;border-radius:10px
+}
+#app .academic-class-breakdown summary{min-height:40px;color:#275d7d}
+
+/* STUDENT: friendly, direct; the deeper history stays collapsible. */
+#app .student-landing{margin-top:11px}
+#app .student-landing-intro{margin-bottom:15px}
+#app .student-landing-intro h2{font-size:clamp(23px,2.4vw,30px);letter-spacing:-.035em}
+#app .student-landing-grid{gap:12px}
+#app .student-today-tile{
+  min-height:200px;padding:20px;border:1px solid var(--clarity-line);
+  background:#fff!important;box-shadow:var(--clarity-shadow)
+}
+#app .student-today-tile:hover{box-shadow:0 6px 18px rgba(20,72,105,.065)}
+#app .student-today-kicker{color:#40718f;font-size:11px;letter-spacing:.04em}
+#app .student-today-title{font-size:17px;color:var(--clarity-navy);font-weight:760}
+#app .student-today-tile p,#app .student-today-tile small{font-size:12.5px;line-height:1.65}
+#app .student-today-goal textarea{background:#fbfdfe;min-height:95px}
+#app .student-detail-section{background:white;border-color:var(--clarity-line)}
+#app .student-detail-section>summary{min-height:67px}
+#app .academic-student-picker{
+  padding:14px 16px;background:white;border:1px solid var(--clarity-line);
+  border-radius:12px;align-items:end
+}
+
+/* LEADERS: four numbers are the visual anchor. */
+#app .leader-view .leader-controls{
+  background:#fff;border:1px solid var(--clarity-line);
+  border-radius:12px;padding:14px 16px;
+  margin-bottom:24px
+}
+#app .leader-view .leader-stat{
+  min-height:145px;padding:18px;gap:7px
+}
+#app .leader-view .leader-stat>strong{font-size:clamp(28px,2.4vw,35px)}
+#app .leader-view .leader-stat-heading>span{font-size:12.5px;font-weight:730}
+#app .leader-view .leader-section{margin-bottom:22px}
+#app .leader-view .leader-sectionhead h2{font-size:21px}
+#app .leader-view .leader-experience-card{padding:18px}
+#app .leader-view .leader-evidence-strip{
+  background:#f8fafc;border-color:var(--clarity-line);box-shadow:none
+}
+#app .leader-view .leader-detail{
+  box-shadow:none;border-color:var(--clarity-line)
+}
+#app .leader-view .leader-detail>summary{min-height:65px}
+#app .leader-view .leader-data-note{font-size:11.5px;line-height:1.65}
+
+/* SUPPORT: grade-first roster, reassuring and legible hierarchy. */
+#app .sss-boundary{
+  background:#f4f9fc;border:1px solid #d6e7f0;
+  border-left:3px solid #5995b9;border-radius:10px;
+  font-size:12px
+}
+#app .sss-count-grid{gap:11px}
+#app .sss-number{padding:16px 18px}
+#app .sss-number>strong{font-size:30px}
+#app .sss-grade-section{border-color:var(--clarity-line);box-shadow:none}
+#app .sss-roster-row{border-color:#e8eef3}
+#app .sss-roster-name strong{color:#224d6d;font-size:13.5px}
+#app .sss-service,#app .sss-support-flag{
+  font-size:11px;background:#edf5f8;border-radius:7px
+}
+#app .sss-evidence-tile{box-shadow:none}
+
+/* BOARD: strategic story first, precise evidence on demand.
+   Colour semantics of Mathematics, Reading and comparisons remain unchanged. */
+#app .board-view .board-heading{margin-bottom:12px}
+#app .board-view .board-nav-row{margin-bottom:13px;padding-bottom:12px}
+#app .board-view .board-nav-tabs{
+  display:flex;background:#edf4f8;border:1px solid #dce8ef;
+  padding:4px;border-radius:10px
+}
+#app .board-view .board-nav-tabs button{
+  min-height:39px;padding:8px 14px;font-size:12.5px;
+  border-radius:8px
+}
+#app .board-view .board-nav-tabs button.active{
+  color:var(--clarity-navy);box-shadow:0 1px 4px rgba(20,65,95,.10)
+}
+#app .board-view .board-overview-intro{margin-bottom:13px}
+#app .board-view .board-overview-intro h2{font-size:21px}
+#app .board-view .board-overview-cards{gap:12px;margin-bottom:18px}
+#app .board-view .board-overview-card{
+  padding:18px;gap:8px;min-height:187px;
+  box-shadow:var(--clarity-shadow)
+}
+#app .board-view .board-overview-card .board-card-headline{
+  font-size:clamp(19px,1.9vw,25px);line-height:1.28
+}
+#app .board-view .board-overview-three-metrics{gap:6px}
+#app .board-view .board-overview-subject{
+  border-color:#e1ebf1;background:#f7fafc;border-radius:8px;padding:8px 5px
+}
+#app .board-view .board-overview-subject strong{font-size:19px}
+#app .board-view .board-overview-card-note{font-size:11.5px;line-height:1.55}
+#app .board-view .board-overview-charthead h2{font-size:21px}
+#app .board-view .board-overview-insight{
+  border-radius:10px;background:#f2f8fb;
+  border-color:#e0edf4;color:#315a73;padding:13px 16px
+}
+#app .board-view .board-overview-chartmeta{margin-top:12px}
+#app .board-view .board-provenance-badge{
+  background:#f0f7fa;border:1px solid #d4e6ef
+}
+#app .board-view .board-overview-source{font-size:11.5px}
+#app .board-view .board-controls{
+  padding:16px;background:#fff;border-color:var(--clarity-line);
+  box-shadow:none
+}
+#app .board-view .board-panel{padding:22px}
+#app .board-view .board-indicator{padding:17px;min-height:128px}
+#app .board-view .board-indicator strong{font-size:29px}
+#app .board-view .board-legend{color:#547083}
+#app .board-view .board-details{
+  border-color:var(--clarity-line);border-radius:10px;background:#fff
+}
+#app .board-view .board-dp-tile{padding:17px}
+#app .board-view .board-dp-panel{padding:22px}
+@media(min-width:1180px) and (max-width:1420px){
+ #app .board-view .board-overview-card{padding:14px;gap:6px}
+ #app .board-view .board-overview-subject strong{font-size:17px}
+ #app .board-view .board-overview-subject small{font-size:10px}
+}
+@media(max-width:900px){
+ #app .board-view .board-overview-cards{grid-template-columns:1fr}
+ #app .student-landing-grid{grid-template-columns:1fr}
+ #app .leader-view .leader-controls{grid-template-columns:1fr 1fr}
+ #app .sss-count-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:540px){
+ #app .leader-view .leader-controls{grid-template-columns:1fr}
+ #app .board-view .board-panel{padding:15px}
+ #app .faculty-daily-toolbar{padding:12px}
+ #app .student-today-tile{min-height:0;padding:16px}
+}
+@media(prefers-reduced-motion:reduce){
+ #app *,#app *:before,#app *:after{
+   transition-duration:.01ms!important;
+   animation-duration:.01ms!important;
+   scroll-behavior:auto!important
+ }
+}
+@media print{
+ #app .top{position:static!important;width:auto!important;height:auto!important}
+ #app .top .roles{display:none!important}
+ #app>main.container{margin:0!important;max-width:none!important}
+ #app footer{margin:0!important}
+ #app :is(.card,.board-panel,.leader-stat){box-shadow:none!important}
+ body,#app{background:#fff!important}
+}
