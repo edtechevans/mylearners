@@ -830,3 +830,181 @@
  .board-view .board-dp-control-group .board-segmented{width:100%}
  .board-view .board-dp-control-group .board-segmented button{flex:1}
 }
+
+
+/* BOARD CHROME SIMPLIFICATION · 2026-10-27
+ * Minimise cognitive load. All styles are Board-scoped, leaving other roles as-is.
+ * Subject colors consistently mean Math=blue, Reading=lilac, Language=mint.
+ */
+.board-view{
+ --board-math:#2479bd;--board-reading:#7558c5;--board-language:#13906c
+}
+.board-view .board-dot.math{background:#2479bd}
+.board-view .board-dot.reading{background:#7558c5}
+.board-view .board-dot.language{background:#13906c}
+.board-view .board-presentation-button{
+ background:#eff5fa;border:1px solid #c8dce9;border-radius:10px;
+ font:800 12px/1.4 'Noto Sans',Arial,sans-serif;
+ min-height:43px;padding:10px 14px;color:#175077;white-space:nowrap
+}
+.board-view .board-presentation-button:hover{background:#e2f0fa;border-color:#93bed9}
+.board-view .board-presentation-button[aria-pressed="true"]{
+ color:#fff;background:#145982;border-color:#145982
+}
+.board-view .board-share-area{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.board-view .board-simple-controls{
+ display:flex;align-items:flex-end;gap:14px 24px;
+ padding:15px 18px;margin:13px 0 16px
+}
+.board-view .board-simple-controls .board-filter-selects{align-self:flex-end}
+.board-view .board-simple-controls .board-filter-selects label{min-width:235px}
+.board-view .board-simple-controls .board-control-group select,
+.board-view .board-simple-controls .board-filter-selects select{min-height:46px;font-size:13px}
+.board-view .board-comparison-display{margin-top:12px}
+.board-view .board-comparison-intro{margin-bottom:15px}
+.board-view .board-comparison-intro h2{font-size:25px}
+.board-view .board-comparison-intro p{font-size:13px}
+.board-view .board-comparison-window{padding:16px}
+.board-view .board-comparison-window-head p{font-size:12.5px}
+.board-view .board-comparison-subjects{grid-template-columns:repeat(3,minmax(0,1fr))}
+.board-view .board-comparison-subject{padding:15px 13px 12px}
+.board-view .board-comparison-subject-head strong{font-size:16px}
+.board-view .board-comparison-mini{padding:12px 10px;min-height:128px}
+.board-view .board-comparison-mini-label{font-size:11.5px;line-height:1.45}
+.board-view .board-comparison-mini-value{
+ display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 5px;
+ font-size:clamp(22px,2.15vw,31px);white-space:normal;overflow-wrap:normal
+}
+.board-view .board-comparison-mini-value small{
+ color:#526e86;font-size:11px;letter-spacing:0;white-space:nowrap;font-weight:850
+}
+.board-view .board-comparison-mini-detail{font-size:11px;line-height:1.5}
+.board-view .board-comparison-mini.unavailable .board-comparison-mini-value{font-size:30px}
+.board-view .board-tile-hint{
+ color:var(--tile-accent);font-size:11px;font-weight:850;
+ display:flex;justify-content:flex-end;margin-top:9px
+}
+.board-view .board-compare-toggle{
+ border:1px solid #b7d7e9;background:#f4f9fc;color:#17587b;
+ border-radius:11px;min-height:43px;padding:9px 14px;
+ font:800 12px 'Noto Sans',Arial,sans-serif;white-space:nowrap
+}
+.board-view .board-compare-toggle[aria-pressed="true"]{background:#e6f2fb}
+.board-view .board-understanding{margin:13px 0 0;padding:0}
+.board-view .board-understanding summary{font-size:12px}
+.board-view .board-understanding p{font-size:12px;max-width:950px;line-height:1.7;color:#4a697d}
+.board-view .board-choose-prompt{
+ border:1px dashed #b5d1e0;background:#f2f8fc;color:#496c80;
+ border-radius:12px;padding:17px 19px;margin:15px 0 17px;
+ font-size:13px;line-height:1.6
+}
+.board-view .board-choose-prompt strong{color:#164c70}
+.board-view .board-map-drilldown{
+ background:#fff;border:1px solid #d2e3ed;border-radius:17px;
+ padding:clamp(18px,2.5vw,28px);margin:20px 0 23px;scroll-margin-top:18px
+}
+.board-view .board-map-drilldown-heading{
+ display:flex;align-items:flex-start;justify-content:space-between;gap:20px;
+ border-bottom:1px solid #e5edf2;padding-bottom:14px;margin-bottom:15px
+}
+.board-view .board-map-drilldown-heading h2{
+ font-size:clamp(21px,2vw,27px);color:#123e60;margin:4px 0
+}
+.board-view .board-map-drilldown-heading p{font-size:13px;color:#52748a;margin:2px 0}
+.board-view .board-close-drilldown,.board-view [data-board-dismiss-growth]{
+ border:1px solid #c7dce9;background:#f7fbfd;
+ color:#1a597b;border-radius:9px;min-height:41px;min-width:115px;
+ padding:8px 12px;font-weight:800;font-size:12px;white-space:nowrap
+}
+.board-view .board-map-grade-controls{
+ display:flex;align-items:center;gap:10px;padding:0 0 13px
+}
+.board-view .board-map-grade-controls label{
+ color:#48677b;font-size:12px;font-weight:800;display:flex;align-items:center;gap:10px
+}
+.board-view .board-map-grade-controls select{
+ border:1px solid #bfd5e5;background:#fff;color:#143d59;
+ border-radius:9px;min-height:42px;padding:8px 27px 8px 10px;font-size:12px
+}
+.board-view .board-map-drilldown .board-chart-panel{margin:8px 0 18px}
+.board-view .board-matched-growth{
+ border-left:3px solid #59a6ad;background:#f1fafb;
+ padding:12px 14px;border-radius:7px;color:#315e69;font-size:13px;line-height:1.65
+}
+.board-view .board-growth-explainer{
+ display:flex;align-items:flex-start;justify-content:space-between;gap:18px;
+ margin:10px 0;background:#f1f9fb;border:1px solid #c8e3eb;
+ border-radius:12px;padding:17px 20px
+}
+.board-view .board-growth-explainer h2{font-size:20px;line-height:1.4;color:#164c67;margin:5px 0}
+.board-view .board-growth-explainer p{font-size:13px;line-height:1.7;color:#466a79;margin:0;max-width:870px}
+.board-view .board-dp-year-simple{
+ display:flex;flex-direction:column;gap:6px;color:#42617b;font-weight:850;
+ font-size:12px;min-width:175px;align-self:center
+}
+.board-view .board-dp-year-simple select{
+ min-height:46px;border:1px solid #c5dae8;border-radius:10px;
+ background:#fff;color:#174563;font:800 14px 'Noto Sans',Arial,sans-serif;
+ padding:9px 32px 9px 12px
+}
+.board-view .board-dp-graphic-consistency{
+ --dp-accent:#13906c;--dp-tint:#eaf8f2;--dp-border:#cce9df
+}
+.board-view .board-dp-graphic-value small{font-size:14px}
+.board-view .board-dp-simplified .board-dp-comparison-panel{
+ margin-top:14px;padding:20px 23px
+}
+.board-view .board-dp-simplified .board-dp-graphic-card{min-height:135px}
+.board-view .board-dp-simplified .board-dp-panel{margin-top:17px}
+.board-view .board-dp-simplified .board-dp-chart-top .board-segmented{
+ align-self:center
+}
+.board-view .board-dp-pathway-summary{margin-top:18px}
+.board-view .board-dp-pathway-summary .board-dp-pathways{
+ margin-top:10px;border:0;padding:0
+}
+.board-view .board-focus-more{margin:8px 0 10px}
+.board-view .board-focus-more summary{font-size:12px}
+.board-view .board-focus-more .board-segmented{margin:10px 0}
+.board-view .board-overview-filterarea{gap:12px}
+.board-view .board-history-switch{margin-top:5px}
+.board-view .board-historical-chart{max-width:100%}
+/* Presentation is a reversible, deep-linkable Chrome-first mode.
+ * The global role selector is deliberately absent while presenting Board data.
+ */
+#app.board-presentation-mode .top .roles{display:none!important}
+#app.board-presentation-mode .top{min-height:65px;padding-top:10px;padding-bottom:10px}
+#app.board-presentation-mode .board-view .board-strength-card{min-height:190px}
+#app.board-presentation-mode .board-view .board-strength-number{font-size:43px}
+#app.board-presentation-mode .board-view .board-strength-caption{font-size:14px}
+#app.board-presentation-mode .board-view .board-comparison-mini-label{font-size:14px}
+#app.board-presentation-mode .board-view .board-comparison-mini-detail{font-size:12px}
+#app.board-presentation-mode .board-view .board-comparison-mini-value{font-size:clamp(23px,2.35vw,35px)}
+#app.board-presentation-mode .board-view .board-dp-graphic-label{font-size:15px}
+#app.board-presentation-mode .board-view .board-overview-intro p{font-size:15px}
+@media(max-width:1240px){
+ .board-view .board-comparison-subjects{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .board-view .board-comparison-subject:last-child:nth-child(odd){grid-column:1/-1}
+ .board-view .board-comparison-mini-value{font-size:26px}
+}
+@media(max-width:780px){
+ .board-view .board-comparison-subjects{grid-template-columns:1fr}
+ .board-view .board-comparison-subject:last-child:nth-child(odd){grid-column:auto}
+ .board-view .board-map-drilldown-heading{display:block}
+ .board-view .board-close-drilldown{margin-top:9px}
+ .board-view .board-growth-explainer{display:block}
+ .board-view .board-growth-explainer button{margin-top:9px}
+ .board-view .board-dp-intro{display:block}
+ .board-view .board-dp-year-simple{margin-top:12px;width:180px}
+}
+@media(max-width:550px){
+ .board-view .board-simple-controls{padding:11px;gap:10px}
+ .board-view .board-simple-controls .board-filter-selects label{min-width:0}
+ .board-view .board-simple-controls .board-filter-selects{width:100%}
+ .board-view .board-nav-row{gap:7px}
+ .board-view .board-share-area{gap:6px}
+ .board-view .board-presentation-button{font-size:11px;padding:9px 9px}
+ .board-view .board-comparison-subject{padding:12px}
+ .board-view .board-comparison-mini-value{font-size:24px}
+ .board-view .board-dp-graphic-card{min-height:106px}
+}
