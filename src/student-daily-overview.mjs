@@ -39,7 +39,7 @@ function recentCheckin(record,growth){
  if(gradeNumber(growth?.grade||'')>=3&&gradeNumber(growth?.grade||'')<=10&&growth?.status==='comparable')
   return {title:'MAP Mathematics growth',value:(growth.actual>=0?'+':'')+growth.actual+' RIT',
    detail:'Maths score-point change between comparable MAP tests',date:'Latest eligible MAP tests'};
- return {title:'My learning journey',value:'Keep exploring',
+ return {title:'My Learning Journey',value:'Keep exploring',
   detail:'My subject reports and learning evidence are available below.',date:'Recent learning'};
 }
 export function renderStudentOverview(student,records,{attendance,mathGrowth,reflectionDraft=''}={}){
