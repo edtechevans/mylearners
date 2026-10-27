@@ -1,0 +1,44 @@
+name: Board MAP QA before deployment
+on:
+  push:
+    branches: [board-map-view-20261027]
+permissions:
+  contents: read
+jobs:
+  board:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate application and real aggregated MAP model
+        run: |
+          node --check src/student-experience-app.mjs
+          node --check src/board-map-view.mjs
+          node --check src/board-map-data.mjs
+          node --test tests/board-map.test.mjs tests/student-experience.test.mjs tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prepare Chrome automation
+        run: python -m pip install playwright==1.57.0
+      - name: Test Board navigation, historical comparisons and mobile experience
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/mylearners-board-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          sleep 2
+          export MYLEARNERS_URL=http://127.0.0.1:8765
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          python tests/e2e/board_view_qa.py
+      - name: Save Board QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aisg-board-map-qa
+          path: qa-board/
+          retention-days: 10
+          if-no-files-found: warn
