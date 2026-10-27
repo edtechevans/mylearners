@@ -141,6 +141,11 @@ def main():
              "Student list limited to one grade "+grade)
      require("· "+grade in page.locator(".profile-head").inner_text(),
              "Selected student matches grade "+grade)
+     if grade in ('K','G1'):
+      require(page.locator(".academic-early-checkin-note").count()==1,
+              "Young learners should see a short age-appropriate check-in note")
+      require(page.locator(".trend").count()==0,
+              "Do not show empty K–G2 SEL history")
      for mode in ['ixl','core','fp']:
       expect=mode in expected
       require((page.locator(".academic-evidence-"+mode).count()==1)==expect,
