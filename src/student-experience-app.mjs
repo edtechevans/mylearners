@@ -15,7 +15,7 @@ const initialRole=ROLE_IDS.includes(initialHash)?initialHash:saved('my-role','fa
 const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  teacher:saved('my-teacher',DEFAULT_TEACHER_ID),
  division:'All',grade:'All',classId:'',studentId:'',query:'',metric:'engagement',window:'F26',details:false,checkin:false,
- boardWindow:saved('my-board-window','fall2025'),boardSubject:saved('my-board-subject','math'),
+ boardWindow:saved('my-board-window-v2','fall2026'),boardSubject:saved('my-board-subject','math'),
  boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all')};
 const safe=(v)=>esc(v??'');
 const teacher=()=>DATA.teachers.find(t=>t.id===state.teacher)||DATA.teachers.find(t=>t.id===DEFAULT_TEACHER_ID);
@@ -180,7 +180,7 @@ function render(){
  'My Learners demonstration · Learners, assessments and student check-ins fictional')+
  '</footer>';
  try{sessionStorage.setItem('my-role',state.role);sessionStorage.setItem('my-teacher',state.teacher);
- sessionStorage.setItem('my-board-window',state.boardWindow);sessionStorage.setItem('my-board-subject',state.boardSubject);
+ sessionStorage.setItem('my-board-window-v2',state.boardWindow);sessionStorage.setItem('my-board-subject',state.boardSubject);
  sessionStorage.setItem('my-board-division',state.boardDivision);sessionStorage.setItem('my-board-grade',state.boardGrade)}catch{}
 }
 root.addEventListener('click',e=>{
