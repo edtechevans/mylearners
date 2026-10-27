@@ -19,11 +19,13 @@ jobs:
         with:
           node-version: 22
       - name: Verify fictional data model and transparent indicators
-        run: node --test tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs tests/student-experience.test.mjs tests/board-map.test.mjs tests/board-overview.test.mjs tests/board-dp.test.mjs tests/board-comparison-tiles.test.mjs
+        run: node --test tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs tests/student-experience.test.mjs tests/academic-journey.test.mjs tests/board-map.test.mjs tests/board-overview.test.mjs tests/board-dp.test.mjs tests/board-comparison-tiles.test.mjs
       - name: Validate entry point and Javascript syntax
         run: |
           node --check src/student-experience-app.mjs
           node --check src/experience-data.mjs
+          node --check src/academic-journey-data.mjs
+          node --check src/academic-journey-view.mjs
           node --check src/board-map-data.mjs
           node --check src/board-map-history.mjs
           node --check src/board-map-view.mjs
@@ -46,6 +48,14 @@ jobs:
           grep -q 'data-role="student"' /tmp/mylearners-dom.html
           grep -q 'data-role="leader"' /tmp/mylearners-dom.html
           grep -q 'How is this calculated' /tmp/mylearners-dom.html
+          grep -q 'academic-class-panel' /tmp/mylearners-dom.html
+          grep -q 'data-academic-mode="report"' /tmp/mylearners-dom.html
+          grep -q 'data-academic-subject' /tmp/mylearners-dom.html
+          timeout 45s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --virtual-time-budget=6000 --dump-dom 'http://127.0.0.1:8765/#/student' > /tmp/mylearners-student-academic-dom.html 2>/tmp/mylearners-student-academic-chrome.log
+          grep -q 'academic-profile' /tmp/mylearners-student-academic-dom.html
+          grep -q 'data-select="student-grade"' /tmp/mylearners-student-academic-dom.html
+          grep -q 'My school reports' /tmp/mylearners-student-academic-dom.html
+          grep -q 'IXL Mathematics' /tmp/mylearners-student-academic-dom.html
           timeout 45s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --virtual-time-budget=6000 --dump-dom 'http://127.0.0.1:8765/#/board' > /tmp/mylearners-board-dom.html 2>/tmp/mylearners-chrome-board.log
           grep -q 'board-view' /tmp/mylearners-board-dom.html
           grep -q 'AISG AGGREGATED DATA' /tmp/mylearners-board-dom.html
