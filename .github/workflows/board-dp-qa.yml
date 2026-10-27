@@ -1,0 +1,50 @@
+name: Board decision-usefulness and IB Diploma QA
+on:
+  push:
+    branches: [board-interpretation-dp-20261027]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check all Board code syntax
+        run: |
+          node --check src/student-experience-app.mjs
+          node --check src/board-map-data.mjs
+          node --check src/board-map-overview.mjs
+          node --check src/board-map-view.mjs
+          node --check src/board-map-links.mjs
+          node --check src/board-dp-data.mjs
+          node --check src/board-dp-view.mjs
+      - name: Run school-data tests and no-regression tests
+        run: |
+          node --test tests/board-map.test.mjs tests/board-overview.test.mjs tests/board-dp.test.mjs tests/data.test.mjs tests/student-experience.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Chrome automation
+        run: python -m pip install playwright==1.57.0
+      - name: Audit Board hover tiles, school norms, Diploma, accessibility and responsive layouts
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/mylearners-audit.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          sleep 2
+          export MYLEARNERS_URL=http://127.0.0.1:8765
+          export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+          python tests/e2e/board_dp_ux.py
+      - name: Save Board QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: board-dp-decision-qa
+          path: qa-board-dp/
+          retention-days: 14
+          if-no-files-found: warn
