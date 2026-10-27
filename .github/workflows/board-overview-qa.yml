@@ -1,7 +1,7 @@
 name: Board overview usability and historical integrity
 on:
   push:
-    branches: [board-overview-ux-20261027]
+    branches: [board-overview-ux-20261027, board-fall26-us-language-tooltip-20261027]
 permissions:
   contents: read
 jobs:
