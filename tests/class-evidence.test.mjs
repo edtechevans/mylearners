@@ -51,7 +51,7 @@ test('every grade class renders a single selector and correctly scoped tab group
  for(const g of ['PK3','K','G1','G3','G5','G7','G10','G11','G12']){
   const students=group(g);
   const html=renderClassEvidencePanel(students,{...ctx,mode:'report'});
-  assert.match(html,/Learning &amp; wellbeing evidence/);
+  assert.match(html,/Learning &amp; Wellbeing Evidence/);
   assert.match(html,/data-class-evidence="report"/);
   if(g!=='PK3')assert.match(html,/data-academic-subject/);
   else assert.doesNotMatch(html,/data-academic-subject/);
