@@ -66,7 +66,9 @@ jobs:
           grep -q 'data-class-evidence="engagement"' /tmp/mylearners-dom.html
           grep -q 'data-class-evidence="belonging"' /tmp/mylearners-dom.html
           grep -q 'data-class-evidence="flourishing"' /tmp/mylearners-dom.html
-          grep -q 'data-class-evidence="commoncore"' /tmp/mylearners-dom.html
+          if grep -q 'data-class-evidence="commoncore"' /tmp/mylearners-dom.html; then echo 'Common Core tab should be removed'; exit 1; fi
+          if grep -q 'data-class-evidence="core"' /tmp/mylearners-dom.html; then echo 'Core Phonics should not appear for Grade 7'; exit 1; fi
+          if grep -q 'data-class-evidence="fp"' /tmp/mylearners-dom.html; then echo 'F&P should not appear for Grade 7'; exit 1; fi
           grep -q 'data-academic-subject' /tmp/mylearners-dom.html
           timeout 45s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --virtual-time-budget=6000 --dump-dom 'http://127.0.0.1:8765/#/student' > /tmp/mylearners-student-academic-dom.html 2>/tmp/mylearners-student-academic-chrome.log
           grep -q 'student-landing' /tmp/mylearners-student-academic-dom.html
