@@ -481,8 +481,9 @@ root.addEventListener('click',e=>{
  const academicMode=e.target.closest('[data-academic-mode]');
  if(academicMode){
   const options=academicModesFor(activeClass()?.grade||'');
-  if(options.includes(academicMode.dataset.academicMode)){
+  if(state.role==='faculty'&&options.includes(academicMode.dataset.academicMode)){
    state.academicMode=academicMode.dataset.academicMode;
+   rememberFaculty();
    render();
    root.querySelector('[data-academic-mode="'+state.academicMode+'"]')?.focus({preventScroll:true});
   }
@@ -495,10 +496,17 @@ root.addEventListener('click',e=>{
   root.querySelector('[data-academic-report-year="'+state.academicReportYear+'"]')?.focus({preventScroll:true});
   return;
  }
+ const clearSearch=e.target.closest('[data-clear-search]');
+ if(clearSearch&&state.role==='faculty'){
+  state.query='';state.details=false;render();
+  root.querySelector('[data-query]')?.focus({preventScroll:true});return;
+ }
  const role=e.target.closest('[data-role]');if(role){if(!ROLE_IDS.includes(role.dataset.role))return;
  if(role.dataset.role==='board')state.boardView='overview';
  if(role.dataset.role==='student'&&state.studentId)state.studentGrade=DATA.userIndex.get(state.studentId)?.grade||'G7';
  state.role=role.dataset.role;state.details=false;state.studentId='';state.classId='';state.query='';state.academicReportYear='';
+ if(state.role==='faculty')recallFaculty();
+ if(state.role==='student'){state.studentReportsOpen=false;state.studentWellbeingOpen=false}
  if(globalThis.location?.hash!=='#/'+state.role)globalThis.location.hash='#/'+state.role;
  render();return}
  const point=e.target.closest('[data-board-point]');
@@ -619,7 +627,7 @@ root.addEventListener('click',e=>{
 root.addEventListener('change',e=>{
  const subjectSelect=e.target.closest('[data-academic-subject]');
  if(subjectSelect&&state.role==='faculty'){
-  state.academicSubject=subjectSelect.value;render();
+  state.academicSubject=subjectSelect.value;rememberFaculty();render();
   root.querySelector('[data-academic-subject]')?.focus({preventScroll:true});return;
  }
  const dpSelect=e.target.closest('[data-board-dp-select]');
@@ -653,22 +661,38 @@ root.addEventListener('change',e=>{
   return;
  }
  const el=e.target.closest('[data-select]');if(!el)return;const v=el.value;
- if(el.dataset.select==='teacher'){state.teacher=v;state.classId='';state.studentId='';state.query='';state.details=false;
-  state.academicMode='report';state.academicSubject='Mathematics';state.academicReportYear='';}
- if(el.dataset.select==='class'){state.classId=v;state.studentId='';state.query='';state.details=false;
-  state.academicMode='report';state.academicSubject='Mathematics';state.academicReportYear='';}
+ if(el.dataset.select==='teacher'){
+  state.teacher=v;recallFaculty();
+  state.studentId='';state.query='';state.details=false;state.academicReportYear='';
+  state.studentReportsOpen=false;state.studentWellbeingOpen=false;
+ }
+ if(el.dataset.select==='class'){
+  state.classId=v;state.studentId='';state.query='';state.details=false;
+  state.academicReportYear='';
+  if(!academicModesFor(DATA.classIndex.get(v)?.grade).includes(state.academicMode))
+   state.academicMode='report';
+  rememberFaculty();
+ }
  if(el.dataset.select==='division'){state.division=v;state.grade='All';state.classId='';state.details=false}
  if(el.dataset.select==='grade'){state.grade=v;state.classId='';state.details=false}
  if(el.dataset.select==='leader-class'){state.classId=v;state.details=false}
  if(el.dataset.select==='student'){state.studentId=v;state.details=false;state.academicReportYear='';
-  state.studentGrade=DATA.userIndex.get(v)?.grade||state.studentGrade;}
+  state.studentGrade=DATA.userIndex.get(v)?.grade||state.studentGrade;
+  state.studentReportsOpen=false;state.studentWellbeingOpen=false;}
  if(el.dataset.select==='student-grade'){
   state.studentGrade=v;state.studentId=DATA.students.find(s=>s.grade===v)?.id||'';
   state.academicReportYear='';state.details=false;
+  state.studentReportsOpen=false;state.studentWellbeingOpen=false;
  }
  if(el.dataset.select==='window'){state.window=v;state.details=false}
  render()
 });
+root.addEventListener('toggle',e=>{
+ const panel=e.target.closest?.('details[data-student-panel]');
+ if(!panel||state.role!=='student')return;
+ if(panel.dataset.studentPanel==='reports')state.studentReportsOpen=panel.open;
+ if(panel.dataset.studentPanel==='wellbeing')state.studentWellbeingOpen=panel.open;
+},true);
 root.addEventListener('input',e=>{if(e.target.matches('[data-query]')){const p=e.target.selectionStart;state.query=e.target.value;render();const input=document.querySelector('[data-query]');input?.focus();input?.setSelectionRange(p,p)}});
 try{globalThis.window?.addEventListener?.('hashchange',()=>{
  const hash=String(globalThis.location?.hash||'');
