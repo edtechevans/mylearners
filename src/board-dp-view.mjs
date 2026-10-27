@@ -81,6 +81,7 @@ export function renderBoardDP(state){
  '<div class="board-segmented" role="group" aria-label="IB Diploma measure">'+
  '<button type="button" data-board-dp-metric="average" aria-pressed="'+(selected==='average')+'" class="'+(selected==='average'?'active':'')+'">Average points</button>'+
  '<button type="button" data-board-dp-metric="passRate" aria-pressed="'+(selected==='passRate')+'" class="'+(selected==='passRate'?'active':'')+'">Pass rate</button></div></div>'+
+ '<p class="board-dp-swipe">Most recent years shown first on phones · swipe to see earlier cohorts.</p>'+
  '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Scroll to inspect annual Diploma outcomes">'+dpLineChart(selected)+'</div>'+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
  '<div class="board-dp-inspector" aria-live="polite"><p><strong>Select a year</strong> to see its reported result and source.</p></div>'+
