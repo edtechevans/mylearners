@@ -49,8 +49,8 @@ def main():
            "Distinct section heading")
     ensure(pg.locator(".board-historical-chart").count()==1,"One history only")
     ensure(pg.locator(".board-story-insight").count()==1,"Evidence-based chart takeaway")
-    ensure("Fall 2025" in pg.locator(".board-story-insight").inner_text(),"Right EARCOS window")
-    ensure("Mathematics 7/8" in pg.locator(".board-story-insight").inner_text(),"Dynamic exact grades")
+    ensure("fall 2025" in pg.locator(".board-story-insight").text_content().lower(),"Right EARCOS window")
+    ensure("mathematics 7/8" in pg.locator(".board-story-insight").text_content().lower(),"Dynamic exact grades")
     ensure(pg.locator(".board-trend-series").count()==3,"All three subjects")
     ensure(pg.locator('[data-board-trend-range="recent"]').get_attribute("aria-pressed")=="true",
            "Five-year view default")
@@ -192,7 +192,7 @@ def main():
      tab.goto(BASE+"/#/board?view=explore&window=spring2026&subject=math&details=1",
               wait_until="domcontentloaded")
      tab.locator(".board-map-drawer").wait_for(timeout=15000)
-     ensure("Mathematics" in tab.locator(".board-map-drawer h2").inner_text(),"Deep-linked subject")
+     ensure("Mathematics" in tab.locator("#board-drawer-heading").inner_text(),"Deep-linked subject")
      ensure(tab.locator("body").evaluate("e=>e.classList.contains('board-drawer-open')"),
             "Direct-link drawer should lock the page")
      tab.keyboard.press("Escape")
