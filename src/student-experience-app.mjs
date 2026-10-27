@@ -65,7 +65,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all'),
  boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardTrendRange:'recent',boardOverviewChart:'map',
  boardMapDetailsOpen:false,boardMapCompareSeasons:false,boardMapGrowthOpen:false,boardPresentation:false,
- boardDpMetric:'average',
+ boardDpMetric:'average',boardDpGlobal:true,
  boardDpYear:String(DP_RECORDS.at(-1).end),boardDpRange:'all'};
 recallFaculty();
 if(state.role==='leader')state.classId='';
@@ -844,6 +844,8 @@ root.addEventListener('click',e=>{
   }
   return;
  }
+ const worldToggle=e.target.closest('[data-board-dp-global]');
+ if(worldToggle&&state.role==='board'){state.boardDpGlobal=state.boardDpGlobal===false;render();return;}
  const dpMetric=e.target.closest('[data-board-dp-metric]');
  if(dpMetric){state.boardDpMetric=dpMetric.dataset.boardDpMetric==='passRate'?'passRate':'average';render();return;}
  const boardTerm=e.target.closest('[data-board-trend]');
