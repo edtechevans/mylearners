@@ -175,3 +175,40 @@
 
 .board-stats.board-stats-latest{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(max-width:650px){.board-stats.board-stats-latest{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* Board uniform-history update · Fall/Spring share identical layout */
+.board-year-picker{min-height:43px;min-width:125px;max-width:180px;font-size:12px;font-weight:800}
+.board-segmented button:disabled{cursor:not-allowed;opacity:.45}
+.board-bar-no-value{background:linear-gradient(to right,#f4f6f8 0%,#f4f6f8 50%,#f3f6f9 50%,#f3f6f9 100%)}
+.board-bar-value.directional{color:#127667;font-size:11px}
+.board-direction-label{position:absolute;left:52%;top:0;display:flex;align-items:center;height:100%;
+ color:#117567;font-size:11px;font-weight:800;white-space:nowrap}
+.board-schoolwide-fact .eyebrow{display:block;margin-bottom:9px;color:#305e73}
+.board-schoolwide-inner{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.board-schoolwide-inner>div{display:flex;flex-direction:column;gap:2px}
+.board-schoolwide-inner strong{font-size:26px;font-weight:800;color:#123c5b;line-height:1.2}
+.board-schoolwide-inner span{font-size:12px;color:#4f6b7e;line-height:1.55}
+.board-schoolwide-fact p{margin:12px 0 0;font-size:11px;color:#536e80}
+.board-context strong{font-size:18px}
+.board-benchmark-note{min-height:22px}
+@media(max-width:840px){
+ .board-year-picker{width:100%;max-width:100%}
+ .board-controls{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+ .board-controls .board-control-group:first-child{grid-column:1 / -1}
+ .board-controls .board-filter-selects{grid-column:1 / -1}
+}
+@media(max-width:650px){
+ .board-controls{grid-template-columns:1fr 1fr;gap:10px}
+ .board-controls .board-control-group:first-child{grid-column:1 / -1}
+ .board-controls .board-filter-selects{grid-column:1 / -1}
+ .board-controls .board-segmented{width:100%}
+ .board-controls .board-segmented button{font-size:11px;padding:9px 6px}
+ .board-schoolwide-inner{gap:8px}
+ .board-schoolwide-inner strong{font-size:22px}
+ .board-direction-label{font-size:10px}
+}
+@media(max-width:380px){
+ .board-direction-label{font-size:9px}
+ .board-schoolwide-inner{grid-template-columns:1fr}
+}
