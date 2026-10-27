@@ -110,7 +110,7 @@ export function renderSSSOverview({data,academicRecords,sssRecords,grade='All',q
   const students=selected.filter(s=>s.grade===g);
   return gradeGroup(students,g,sssRecords,academicRecords,!!query||openGrades.includes(g),grade==='All');
  }).join('');
- const empty='<section class="sss-empty"><h3>No matching SSS learners</h3>'+
+ const empty='<section class="sss-empty"><h3>No Matching SSS Learners</h3>'+
   '<p>Try another grade or clear the name search. Only fictional programme members appear here.</p></section>';
  return '<div class="sss-view">'+
   '<div class="sss-boundary"><strong>Prototype, not an authorised SSS system.</strong> All names, programme flags, '+
@@ -119,7 +119,7 @@ export function renderSSSOverview({data,academicRecords,sssRecords,grade='All',q
   overview+
   '<section class="sss-roster" aria-label="Fictional Student Support Services roster">'+
   '<div class="sss-section-head"><div><div class="eyebrow">PROGRAMME ROSTER</div>'+
-  '<h2>My SSS learners</h2><p>Sorted by grade, then surname A–Z. Only students '+
+  '<h2>My SSS Learners</h2><p>Sorted by grade, then surname A–Z. Only students '+
   'in the fictional SSS cohort are shown.</p></div></div>'+picker+
   (groups||empty)+
   '<p class="sss-footnote">EAL, SS and IEP tags are illustrative classroom signals. '+
@@ -144,7 +144,7 @@ function renderWida(record){
    '<strong>'+row.level.toFixed(1)+'</strong></div>';
  }).join('');
  return '<div class="sss-wida"><div class="sss-wida-intro"><div><span class="eyebrow">ENGLISH LANGUAGE PROFICIENCY</span>'+
-  '<h3>WIDA screening snapshot</h3><p>'+esc(record.measure)+' · '+esc(record.format)+
+  '<h3>WIDA Screening Snapshot</h3><p>'+esc(record.measure)+' · '+esc(record.format)+
   ' · '+date(record.date)+'</p></div>'+
   '<div class="sss-wida-composite"><span>'+esc(record.compositeLabel)+' composite</span>'+
   '<strong>'+record.compositeLevel.toFixed(1)+' <small>/ 6.0</small></strong></div></div>'+
@@ -162,7 +162,7 @@ export function renderSSSStudentProfile({
  const record=sssRecordFor(sssRecords,studentId);
  const student=record?data.userIndex.get(studentId):null;
  if(!student)return '<div class="sss-view">'+actionBack+
-  '<section class="sss-empty"><h2>No SSS record available</h2>'+
+  '<section class="sss-empty"><h2>No SSS Record Available</h2>'+
   '<p>Only members of the fictional SSS programme can be opened in this prototype.</p></section></div>';
  const academic=academicFor(academicRecords,student.id);
  const attendance=attendanceSummary(data.attendance[student.id]||[]);
@@ -192,7 +192,7 @@ export function renderSSSStudentProfile({
   'Illustrative reading complexity · '+latestReading.label));
  const studentExperience=experienceEligible(student)?
   '<section class="sss-profile-section"><div class="sss-section-head"><div>'+
-   '<div class="eyebrow">STUDENT VOICE</div><h2>Learning experience</h2>'+
+   '<div class="eyebrow">STUDENT VOICE</div><h2>Learning Experience</h2>'+
    '<p>Fall 2026 check-in indices, not grades or diagnostic indicators.</p></div></div>'+
    '<div class="sss-experience-summary">'+['engagement','belonging'].map(id=>{
     const value=experienceFor(experienceRecords,student.id,id,'F26')?.value;
@@ -202,7 +202,7 @@ export function renderSSSStudentProfile({
  const learningTags=demoTagsForStudent(student).filter(tag=>!tag.restricted);
  const restricted=demoTagsForStudent(student).filter(tag=>tag.restricted);
  const strategies='<section class="sss-profile-section"><div class="sss-section-head"><div>'+
-  '<div class="eyebrow">COLLABORATIVE SUPPORT</div><h2>Classroom approaches</h2>'+
+  '<div class="eyebrow">COLLABORATIVE SUPPORT</div><h2>Classroom Approaches</h2>'+
   '<p>Shared teacher-facing examples; authorised plans remain in approved school systems.</p>'+
   '</div></div><div class="sss-approach-grid">'+
   '<article><strong>Illustrative coordination focus</strong><p>'+esc(record.focus.strategy)+'</p></article>'+
@@ -224,17 +224,17 @@ export function renderSSSStudentProfile({
   '<span class="eyebrow">TEAM FOCUS</span><h3>'+esc(record.focus.title)+'</h3>'+
   '<p>'+esc(record.focus.goal)+'</p><small>Illustrative focus — not an individual learning plan</small></article>'+
   '<article class="sss-brief-card"><span class="eyebrow">COORDINATION</span>'+
-  '<h3>Shared review rhythm</h3><dl><div><dt>Last example review</dt><dd>'+
+  '<h3>Shared Review Rhythm</h3><dl><div><dt>Last example review</dt><dd>'+
   date(record.lastReviewed)+'</dd></div><div><dt>Next example review</dt><dd>'+
   date(record.reviewDate)+'</dd></div></dl>'+
   '<small>Dates are simulated; no real meetings are scheduled.</small></article>'+
   '<article class="sss-brief-card"><span class="eyebrow">LANGUAGE CONTEXT</span>'+
-  '<h3>Learning through languages</h3><p>Recorded language in demo: '+
+  '<h3>Learning Through Languages</h3><p>Recorded language in demo: '+
   esc(student.primaryLanguage||'Not provided')+'</p>'+
   '<small>Language background is not a disability or a measure of ability.</small></article></div>'+
   (showWida?'<section class="sss-profile-section">'+renderWida(record.wida)+'</section>':'')+
   '<section class="sss-profile-section"><div class="sss-section-head"><div>'+
-  '<div class="eyebrow">SHARED EVIDENCE</div><h2>Learning snapshot</h2>'+
+  '<div class="eyebrow">SHARED EVIDENCE</div><h2>Learning Snapshot</h2>'+
   '<p>The same academic and learning data shown in Faculty and Student profiles.</p>'+
   '</div></div><div class="sss-evidence-grid">'+measures.join('')+'</div>'+
   '<p class="sss-footnote">Report-card outcomes are previously issued. '+
