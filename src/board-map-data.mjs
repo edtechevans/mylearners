@@ -1,13 +1,6 @@
-/** AISG MAP Board data. All records are aggregated grade means, never learner records.
- * Historical: uploaded AISG.csv, Fall 2014 - Spring 2026 (archive, original norms);
- * verified Fall 2025: AISG Fall 2025 report; verified Spring 2026
- * Mathematics/Reading: separately reaggregated NWEA student outcomes;
- * Spring 2026 EARCOS: user-supplied screenshot, "Spring - 2025/26
- * International Comparison" (EARCOS-Spring grade means).
- * Spring 2026 Language Usage AISG/US: AISG.csv archive.
- * Fall 2026: grade-mean RIT reaggregated from NWEA 2026 Student Progress reports;
- * matched to official 2025 NWEA Fall SCHOOL achievement norms (4 weeks),
- * plus AISG family summary. Only grade summaries are committed (no learner rows).
+/** AISG MAP Board: aggregated grade-average achievement, benchmarks and growth.
+ * Distinct test windows and comparison populations are labelled explicitly.
+ * No identifiable learner records are included in the public dashboard.
  */
 import {BOARD_HISTORICAL} from './board-map-history.mjs';
 
@@ -30,7 +23,7 @@ const fallReading=[
  [7,222.4,212.3,220.2,80,58],[8,223.3,215.7,224.8,78,44],
  [9,227.9,216.2,226.6,84,55],[10,232,217.8,228.9,87,58]
 ];
-// Grade, AISG, U.S., EARCOS. Source AISG.csv, Fall 2025.
+// Grade, AISG, U.S., EARCOS. Fall 2025 reported aggregate comparisons.
 const fallLanguage=[
  [3,194.7,184.4,196.9],[4,206.1,194.7,205.9],
  [5,213.4,201.9,211.4],[6,215,206.5,217],
@@ -55,11 +48,11 @@ const springReading=[
 ];
 // Grade, AISG student RIT mean (to 0.1), U.S. 2025 Fall SCHOOL
 // achievement norm mean, unique tested students.
-// AISG: September 2026 NWEA Student Progress PDF, valid FA26 RIT center
+// AISG: Fall 2026 valid RIT results aggregated by grade and subject
 // per distinct student/grade/subject; aggregated privately, only these
 // school-level results are placed in the public website.
 // U.S.: official NWEA 2025 Norms quick reference, p.3, week 4.
-// https://www.nwea.org/resource-center/fact-sheet/87992/MAP-Growth-2025-norms-quick-reference_NWEA_onesheet.pdf
+// NWEA 2025 Fall school achievement norms
 const fall2026Math=[
  [3,200.7,184,75],[4,215.7,196,68],[5,224.8,206,72],
  [6,225.6,210,81],[7,238.3,217,86],[8,248.0,220,91],
@@ -77,7 +70,7 @@ const fall2026Language=[
 ];
 const fall2026Grades=[3,4,5,6,7,8,9,10];
 // NWEA 2025 SCHOOL achievement norms (unweighted school grade-mean reference).
-// Verified against NWEA 2025 Norms Quick Reference, physical page 3.
+// Verified against NWEA 2025 school-achievement benchmarks.
 // Historical archive uses mixed/unverified norms: do not rebase older years.
 export const BOARD_US_SCHOOL_NORMS_2025=Object.freeze({
  fall:{
@@ -101,7 +94,7 @@ const meansRow=([grade,aisg,us,earcos],i,subject,season='fall')=>
  ({grade,aisg,us:BOARD_US_SCHOOL_NORMS_2025[season][subject][i],
   usOriginal:us,earcos});
 const fall2026Row=([grade,aisg,us,n])=>({grade,aisg,us,earcos:null,n,aboveUsMean:aisg>us});
-// EARCOS Spring 2025/26 international comparison screenshot (Grades 3-10).
+// EARCOS Spring 2025/26 regional grade-average comparisons (Grades 3-10).
 const springEarcos={
  math:[213.47,225.55,233.12,237.70,247.00,253.32,256.20,260.55],
  reading:[201.60,209.29,216.21,219.60,223.99,227.78,227.15,229.17],
@@ -125,7 +118,7 @@ for(const [key,subjects] of Object.entries(BOARD_HISTORICAL)){
  const season=key.startsWith('fall')?'Fall':'Spring',year=Number(key.slice(season.length===4?4:6));
  historical[key]={
   label:season+' '+year,hasEarcos:true,hasMatchedGrowth:false,evidence:'grade-means',
-  source:'AISG.csv · historical grade-level MAP mean RIT archive · '+season+' '+year,
+  source:'Historical MAP grade-average comparisons · '+season+' '+year,
   usNormType:'historical-unverified',
   subjects:historicalSubjects
  };
@@ -134,14 +127,14 @@ export const BOARD_DATA=Object.freeze({
  ...historical,
  fall2025:{
   label:'Fall 2025',hasEarcos:true,hasMatchedGrowth:false,evidence:'grade-means',usNormType:'2025-school',
-  source:'AISG MAP Data Fall 2025 (Mathematics p.4; Reading p.8); Language Usage from AISG.csv archive',
+  source:'AISG Fall 2025 grade-average MAP achievement',
   subjects:{math:fallMath.map((r,i)=>fallRow(r,i,'math')),
    reading:fallReading.map((r,i)=>fallRow(r,i,'reading')),
    language:fallLanguage.map((r,i)=>meansRow(r,i,'language'))}
  },
  spring2026:{
   label:'Spring 2026',hasEarcos:true,hasMatchedGrowth:true,evidence:'grade-means',usNormType:'2025-school',
-  source:'AISG Spring 2026 NWEA exports (Math/Reading), AISG.csv (Language Usage); Spring 2025/26 EARCOS International Comparison screenshot',
+  source:'AISG Spring 2026 grade-average MAP achievement and EARCOS regional comparisons',
   subjects:{
    math:springMath.map((r,i)=>springRow(r,i,springEarcos.math,'math')),
    reading:springReading.map((r,i)=>springRow(r,i,springEarcos.reading,'reading')),
@@ -150,7 +143,7 @@ export const BOARD_DATA=Object.freeze({
  },
  fall2026:{
   label:'Fall 2026',hasEarcos:false,hasMatchedGrowth:false,evidence:'grade-means',usNormType:'2025-school',
-  source:'AISG Fall 2026–27 NWEA Student Progress Report (aggregated valid FA26 student scores by grade and subject); 2025 NWEA Fall school achievement norms (week 4); AISG Fall 2026–27 Family Highlights',
+  source:'AISG Fall 2026 grade-average MAP achievement and NWEA 2025 U.S. school norms',
   schoolwide:{
    aboveUSComparisons:24,totalComparisons:24,
    returningGrowthInOneOrMoreAreasPct:95,
@@ -171,14 +164,14 @@ export function boardWindowFor(schoolYear,season){
  return BOARD_DATA[key]?key:null;
 }
 export const BOARD_METHODS=Object.freeze({
- achievement:'Grade-level achievement comparisons use mean RIT: AISG grade mean minus the corresponding U.S. or EARCOS grade mean. A positive difference means the AISG average is higher. It does not mean every learner scored above the benchmark.',
- history:'Historical windows from Fall 2014 to Spring 2025 come from AISG.csv. Their U.S. reference norm type or edition is not confirmed and is preserved as originally supplied. It must not be read as a consistent national time series. The corrupted Spring 2016 Grade 8 Mathematics EARCOS figure was omitted.',
- fall:'Fall 2025 grade-average comparisons have been rebased to NWEA 2025 FALL SCHOOL achievement norm means (4 instructional weeks), retaining original archived U.S. values separately. The reported Fall 2025 above-reference STUDENT percentages use their original student-level benchmark and are not directly comparable to school-mean gaps. EARCOS grade means are from the same Fall 2025 testing season.',
- spring:'Spring 2026 U.S. grade-mean references have been rebased to NWEA 2025 SPRING SCHOOL achievement norm means (32 instructional weeks). EARCOS values are from the Spring 2025/26 screenshot. Mathematics and Reading AISG means were reaggregated from NWEA assessments, while Language Usage AISG means are from AISG.csv. Existing count-above-student-norm figures are retained from their original student-level benchmark and are not school-mean counts.',
- growth:'Spring-to-spring growth is calculated from matched students with valid NWEA projected-growth records in Mathematics or Reading. There is no matched previous Spring grade-3 cohort in that export. Language Usage matched growth counts were not supplied.',
- fall2026:'AISG Fall 2026 grade averages are calculated from the September 2026 NWEA Student Progress report, using the central RIT of each valid FA26 record, one result per distinct student/grade/subject; reported sample sizes vary by grade and subject. U.S. benchmarks are NWEA 2025 Fall SCHOOL achievement norms at 4 weeks of instruction (NWEA 2025 Norms Quick Reference, page 3). The same 2025 norm edition is identified in the school NWEA report for 2026. Fall 2026 EARCOS grade means are not available. Student-level data remain private and are not published. The 95% statistic refers to returning students growing in one or more MAP areas, not a subject-specific projected-growth rate.',
- missing:'A dash (—) means the comparison or measure is not available from the supplied source. It never means a zero score or zero progress.',
- caution:'Only anonymised aggregated real school data appears in Board view. Other My Learners demo roles use fictional students. Distinct grade snapshots are not individual student growth.'
+ achievement:'Grade-level achievement compares AISG mean RIT with the corresponding U.S. or EARCOS grade mean. A positive difference means the AISG grade average is higher; it does not imply every student scored above the benchmark.',
+ history:'Historical MAP windows retain their reported U.S. mean. The historical U.S. norm type and edition cannot be independently confirmed, so these gaps are not a consistent national time series. The invalid Spring 2016 Grade 8 Mathematics EARCOS mean was omitted.',
+ fall:'Fall 2025 U.S. grade-mean comparisons use NWEA 2025 Fall school achievement norms at 4 weeks of instruction. Student-level percentages used a different student-level reference and cannot be directly equated with school-mean gaps. The EARCOS reference is matched to Fall.',
+ spring:'Spring 2026 U.S. grade-mean comparisons use NWEA 2025 Spring school achievement norms at 32 weeks. EARCOS grade means are for the same Spring testing period. Matched Mathematics and Reading growth should not be confused with achievement comparisons.',
+ growth:'Spring-to-spring growth includes only students with valid matched projected-growth comparisons. Grade 3 lacks the required matched previous Spring cohort. Language Usage matched growth rates are not available.',
+ fall2026:'Fall 2026 grade-average results include one valid assessment per tested student, grade and subject. U.S. grade means use NWEA 2025 Fall SCHOOL achievement norms at 4 instructional weeks. Sample sizes differ across grades and subjects. Fall 2026 EARCOS comparisons are unavailable. The reported 95% growth statistic means returning students who grew in at least one MAP area, not students who met projected growth in every subject.',
+ missing:'A dash (—) means the comparison is unavailable; it never indicates zero achievement or growth.',
+ caution:'All Board MAP results are school-level aggregates. Historical grade snapshots are not evidence of individual student growth. Other My Learners role views use fictional learners.'
 });
 export function boardRows(window='fall2026',subject='math',division='all',grade='all'){
  const source=BOARD_DATA[window];
