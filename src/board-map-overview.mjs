@@ -58,6 +58,7 @@ function chartSvg(data,selected,season){
  const width=980,height=326,left=55,right=34,top=43,bottom=258;
  const xStep=(width-left-right)/Math.max(1,data.length-1);
  const point=(i,n)=>[left+xStep*i,bottom-(n/8)*(bottom-top)];
+ const offset={math:-10,reading:0,language:10}; // separate coincident series
  const seriesKeys=SUBJECT_KEYS.includes(selected)?[selected]:SUBJECT_KEYS;
  const horizontal=[0,2,4,6,8].map(y=>{
   const yPx=point(0,y)[1].toFixed(1);
@@ -70,13 +71,15 @@ function chartSvg(data,selected,season){
   return '<text x="'+x.toFixed(1)+'" y="293" text-anchor="middle" class="board-trend-year">'+r.year+'</text>';
  }).join('');
  const series=seriesKeys.map(key=>{
-  const paths=pathSegments(data.map((x,i)=>({...x,i})),key,(r,v)=>point(r.i,v))
+  const paths=pathSegments(data.map((x,i)=>({...x,i})),key,(r,v)=>{
+   const [x,y]=point(r.i,v);return [x+offset[key],y];
+  })
    .map(d=>'<path d="'+d+'" fill="none" stroke="'+COLOR[key]+
     '" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>').join('');
   const markers=data.map((r,i)=>{
    const v=r[key];if(!Number.isInteger(v))return '';
    const info=gradeBreakdown(season,r.year,key);
-   const [x,y]=point(i,v),label=NAME[key], above=info.above.map(g=>'G'+g).join(', ')||'none';
+   const [rawX,y]=point(i,v),x=rawX+offset[key],label=NAME[key], above=info.above.map(g=>'G'+g).join(', ')||'none';
    const notAbove=info.notAbove.map(g=>'G'+g).join(', ')||'none';
    const description=label+', '+info.label+': '+v+' of 8 grade averages above EARCOS. '+
     'Above: '+above+'. Not above: '+notAbove+'. Hover, focus or select for grades.';
@@ -84,6 +87,7 @@ function chartSvg(data,selected,season){
     '" text-anchor="middle" class="board-trend-value" fill="'+COLOR[key]+'">'+v+'</text>';
    return '<g class="board-trend-point" role="button" tabindex="0" focusable="true"'+
     ' data-board-point="'+season+':'+r.year+':'+key+'" aria-label="'+safe(description)+'">'+
+    '<circle class="board-point-hit" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="16" fill="transparent"/>'+
     '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="7.6" fill="'+COLOR[key]+
     '" stroke="white" stroke-width="2.4"><title>'+safe(description)+'</title></circle>'+
     labelText+'</g>';
@@ -107,8 +111,9 @@ function trendStats(data,key){
 }
 function chartSummary(data,season,keys){
  const ranges=keys.map(k=>{const s=trendStats(data,k);return s?NAME[k]+' '+s.min+'–'+s.max:' '+NAME[k]+' unavailable'}).join('; ');
- return '<p class="board-overview-insight"><strong>What this tells us:</strong> Number of grades above EARCOS across comparable '+
- (season==='fall'?'Fall':'Spring')+' windows: '+safe(ranges)+'. These are grade-level achievement snapshots, <strong>not</strong> growth for the same students.</p>';
+ return '<p class="board-overview-insight"><strong>What this tells us:</strong> Mathematics has generally been strong relative to EARCOS; Reading and Language Usage vary more. Across comparable '+
+ (season==='fall'?'Fall':'Spring')+' windows, grades above EARCOS ranged from '+safe(ranges)+'. '+
+ '<strong>Inquiry:</strong> Which grades show recurring differences, and what other evidence would help explain them? These are achievement snapshots, not individual student growth.</p>';
 }
 function chartTable(data,season){
  return '<details class="board-details board-overview-table"><summary>View the annual values <span>+</span></summary>'+
@@ -143,8 +148,9 @@ export function renderTrendPointDetails(pointKey){
  '<div class="board-trend-grade-chips">'+info.grades.map(item=>
  '<span class="board-trend-grade '+(item.status==='above'?'is-above':item.status==='below'?'is-below':'is-missing')+
  '" aria-label="Grade '+item.grade+(item.status==='above'?' above EARCOS':item.status==='below'?' not above EARCOS':' unavailable')+
- '"><b>G'+item.grade+'</b><small>'+(item.status==='above'?'Above':item.status==='below'?'Not above':'—')+'</small></span>').join('')+
- '</div><p class="board-trend-inspector-note">Highlighted grades are those whose <strong>average RIT</strong> is above the EARCOS grade mean. Unhighlighted grades were at or below it. This does not describe every student.</p>';
+ '"><b>G'+item.grade+'</b><small>'+(item.status==='above'?'Above':item.status==='below'?'Not above':'—')+'</small>'+
+ (item.difference===null?'':'<em>'+(item.difference>0?'+':'')+item.difference.toFixed(1)+' RIT</em>')+'</span>').join('')+
+ '</div><p class="board-trend-inspector-note">Signed differences are AISG mean minus EARCOS mean. Small margins alone do not prove a meaningful difference; these are averages, not individual student results.</p>';
 }
 export function renderBoardOverview(state){
  const season=state.boardTrendTerm==='spring'?'spring':'fall';
@@ -185,12 +191,17 @@ export function renderBoardOverview(state){
  selectedKeys.map(key=>'<span><i class="board-dot '+key+'"></i> '+NAME[key]+'</span>').join('')+
  '</span><span>'+nWindows+' fully comparable '+(season==='fall'?'Fall':'Spring')+
  ' windows · latest '+mostRecent+'</span></div>'+
- '<p class="board-mobile-swipe">Swipe for earlier years; tap a point to see its grades.</p>'+
+ '<p class="board-mobile-swipe">Swipe for earlier years; tap a point for grade-by-grade RIT differences.</p>'+
  '<div class="board-trend-scroller" tabindex="0" aria-label="Scroll horizontally to inspect historical comparison chart">'+
  chartSvg(data,focus,season)+'</div>'+
- '<section class="board-trend-inspector" aria-live="polite" aria-atomic="true"><p><strong>Which grades does a point include?</strong> Hover, tap or keyboard-focus a chart point to highlight Grades 3–10 that were above the EARCOS average.</p></section>'+
+ '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
+ '<section class="board-trend-inspector" aria-live="polite" aria-atomic="true"><p><strong>Explore the grade differences.</strong> Hover to open a tile by your pointer, or select a point to keep the grade details visible below.</p></section>'+
  chartSummary(data,season,selectedKeys)+chartTable(data,season)+
  '</section>'+
+ '<section class="board-dp-preview"><div><span class="eyebrow">BEYOND MAP · GRADUATION OUTCOMES</span>'+
+ '<h3>IB Diploma results are now available</h3>'+
+ '<p>Explore reported average Diploma points and pass rates over seven school years, separately from MAP.</p></div>'+
+ '<button type="button" data-board-view="dp" class="board-action-primary">Explore IB Diploma ›</button></section>'+
  '<div class="board-overview-next"><div><strong>Want to investigate a particular result?</strong>'+
  '<p>Explore one subject, year, division or grade, with exact RIT means where available.</p></div>'+
  '<button class="board-action-primary" type="button" data-board-view="explore">Explore by Year <span aria-hidden="true">›</span></button></div>'+
