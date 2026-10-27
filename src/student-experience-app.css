@@ -172,3 +172,6 @@
  .board-schoolwide-fact{padding:14px}
  .board-schoolwide-fact strong{font-size:14px}
 }
+
+.board-stats.board-stats-latest{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:650px){.board-stats.board-stats-latest{grid-template-columns:repeat(2,minmax(0,1fr))}}
