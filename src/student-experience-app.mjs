@@ -10,7 +10,7 @@ import {createExperienceRecords,experienceFor,summarizeExperience,experienceChan
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic} from './academic-journey-data.mjs';
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs';
-import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,evidenceRosterColumn} from './class-evidence.mjs';
+import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceRosterColumn} from './class-evidence.mjs';
 import {renderStudentOverview} from './student-daily-overview.mjs';
 import {renderBoard} from './board-map-view.mjs';
 import {renderTrendPointDetails} from './board-map-overview.mjs';
@@ -31,6 +31,8 @@ const rememberFaculty=()=>{
   localStorage.setItem('mylearners-demo-'+state.teacher+'-class',state.classId);
   localStorage.setItem('mylearners-demo-'+state.teacher+'-mode',state.academicMode);
   localStorage.setItem('mylearners-demo-'+state.teacher+'-evidence',state.classEvidence);
+  localStorage.setItem('mylearners-demo-'+state.teacher+'-compare',state.classCompare);
+  localStorage.setItem('mylearners-demo-'+state.teacher+'-checkin',state.classExperienceWindow);
   localStorage.setItem('mylearners-demo-'+state.teacher+'-subject',state.academicSubject)
  }catch{}
 };
@@ -38,6 +40,8 @@ const recallFaculty=()=>{
  state.classId=facultyPref(state.teacher,'class','');
  state.academicMode=facultyPref(state.teacher,'mode','report');
  state.classEvidence=facultyPref(state.teacher,'evidence','report');
+ state.classCompare=facultyPref(state.teacher,'compare','none');
+ state.classExperienceWindow=facultyPref(state.teacher,'checkin','F26');
  state.academicSubject=facultyPref(state.teacher,'subject','Mathematics');
 };
 const ROLE_IDS=['faculty','student','sss','leader','board'];
@@ -47,7 +51,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  teacher:saved('my-teacher',DEFAULT_TEACHER_ID),
  division:'All',grade:'All',classId:'',studentId:'',query:'',metric:'engagement',window:'F26',details:false,checkin:false,
  academicMode:'report',academicSubject:'Mathematics',academicReportYear:'',studentGrade:'G7',
- classEvidence:'report',classMapSubject:'Mathematics',
+ classEvidence:'report',classMapSubject:'Mathematics',classCompare:'none',classExperienceWindow:'F26',
  studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
  sssGrade:'All',sssQuery:'',sssStudentId:'',sssOpenGrades:['G3'],sssAcademicOpen:false,
  boardWindow:saved('my-board-window-v2','fall2026'),boardSubject:saved('my-board-subject','math'),
@@ -133,14 +137,15 @@ function roster(ss,options={}){
  const grade=ss[0]?.grade||activeClass()?.grade||'';
  const allowed=academicModesFor(grade);
  const mode=across?'report':normalizeEvidenceMode(grade,state.classEvidence);
+ const compare=across?'none':normalizeComparison(grade,mode,state.classCompare);
+ const evidenceCtx={academic:ACADEMIC_RECORDS,map:DATA.map,
+  experience:RECORDS,subject:state.academicSubject,mapSubject:state.classMapSubject,
+  window:state.classExperienceWindow};
  const reportSubjects=academicFor(ACADEMIC_RECORDS,ss[0]?.id).reports?.[0]?.subjects||[];
  const subject=reportSubjects.some(x=>x.subject===state.academicSubject)?
   state.academicSubject:reportSubjects[0]?.subject||'';
- const modeLabel=across?'Last issued report':{
-  report:'Report · '+(subject||'last issued'),map:'MAP '+state.classMapSubject+' growth',
-  ixl:'IXL Math · level',core:'Core Phonics · items',fp:'F&P · text level',
-  engagement:'Engagement · check-in',belonging:'Belonging · check-in',
-  flourishing:'Maia Flourishing'}[mode]||'Learning evidence';
+ const modeLabel=across?'Last issued report':evidenceLabel(mode,{...evidenceCtx,subject});
+ const compareLabel=compare==='none'?'':evidenceLabel(compare,{...evidenceCtx,subject});
  const query=state.query.trim().toLowerCase();
  const rows=ss.filter(s=>!query||s.name.toLowerCase().includes(query));
  const showMap=across&&rows.some(s=>gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10);
@@ -159,24 +164,24 @@ function roster(ss,options={}){
   const academics=across?
    '<span class="roster-mixed-academic">'+classAcademicCell(student,ACADEMIC_RECORDS,'report',mixSubject)+
    (latest?'<small>'+safe(mixSubject)+' · '+safe(latest.year)+' ('+safe(latest.grade)+')</small>':'<small>No issued report</small>')+'</span>':
-   evidenceRosterColumn(student,{mode,academic:ACADEMIC_RECORDS,map:DATA.map,
-    experience:RECORDS,subject,mapSubject:state.classMapSubject,window:'F26'});
+   evidenceRosterColumn(student,{...evidenceCtx,subject,mode});
+  const compared=compare==='none'?'':evidenceRosterColumn(student,{...evidenceCtx,subject,mode:compare});
   return {student,attendance:fmt(attendance.rate)+'%',growth:growthText,
-   eng:engagement,bel:belonging,academics,tags:demoTagsForStudent(student),
+   eng:engagement,bel:belonging,academics,compared,tags:demoTagsForStudent(student),
    sss:SSS_RECORDS.has(student.id)};
  });
  const heading=across?'Students matching “'+safe(state.query.trim())+'”':'My students';
  const context=across?rows.length+' of '+ss.length+' assigned students across all classes':
   rows.length+' of '+ss.length+' learners in '+safe(activeClass()?.name||'this class');
  const table='<div class="tablewrap roster-desktop"><table><thead><tr><th>Learner</th>'+
-  (across?'<th>Class</th>':'')+'<th>Attendance</th><th>'+safe(modeLabel)+'</th>'+
+  (across?'<th>Class</th>':'')+'<th>Attendance</th><th>'+safe(modeLabel)+'</th>'+  (compare==='none'?'':'<th>'+safe(compareLabel)+'</th>')+
   (showMap?'<th>MAP Math growth</th>':'')+
   (showSEL?'<th>Engagement</th><th>Belonging</th>':'')+
   '<th>Support information</th></tr></thead><tbody>'+
   data.map(x=>'<tr><td><button class="student-link" data-student="'+x.student.id+
    '"><img src="'+portrait(x.student.portraitSeed)+'" alt="">'+safe(x.student.name)+'</button></td>'+
    (across?'<td><span class="roster-class-label">'+safe(x.student.classId)+'</span></td>':'')+
-   '<td>'+x.attendance+'</td><td>'+x.academics+'</td>'+
+   '<td>'+x.attendance+'</td><td>'+x.academics+'</td>'+   (compare==='none'?'':'<td>'+x.compared+'</td>')+
    (showMap?'<td>'+safe(x.growth)+'</td>':'')+
    (showSEL?'<td>'+x.eng+'</td><td>'+x.bel+'</td>':'')+
    '<td>'+(x.sss?'<span class="pill sss-faculty-indicator" title="Fictional SSS programme membership">SSS</span> ':'')+
@@ -186,7 +191,7 @@ function roster(ss,options={}){
   '<img src="'+portrait(x.student.portraitSeed)+'" alt=""><span class="roster-item-body"><strong>'+
   safe(x.student.name)+'</strong>'+
   (across?'<span>Class '+safe(x.student.classId)+'</span>':'')+
-  '<span>'+safe(modeLabel)+': '+x.academics.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()+'</span>'+
+  '<span>'+safe(modeLabel)+': '+x.academics.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()+'</span>'+  (compare==='none'?'':'<span>'+safe(compareLabel)+': '+x.compared.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()+'</span>')+
   '<span>Attendance '+x.attendance+(showMap?' · MAP '+safe(x.growth):'')+'</span>'+
   (experienceEligible(x.student)?'<span>Engagement '+x.eng+' · Belonging '+x.bel+'</span>':'')+
   (x.sss?'<span>SSS programme · demonstration</span>':'')+
@@ -298,7 +303,7 @@ function faculty(){
  const reportControls=searching?'':renderClassEvidencePanel(ss,{
   academic:ACADEMIC_RECORDS,map:DATA.map,experience:RECORDS,
   mode:state.classEvidence,subject:state.academicSubject,
-  mapSubject:state.classMapSubject,window:'F26'});
+  mapSubject:state.classMapSubject,compare:state.classCompare,window:state.classExperienceWindow});
  return heading('My students','Find a learner, see essential information, or choose a class result.')+
   toolbar+summary+
   roster(searching?ownStudents():ss,{across:searching,controls:reportControls})+
@@ -708,8 +713,19 @@ root.addEventListener('click',e=>{
  if(evidenceTab&&state.role==='faculty'){
   const next=evidenceTab.dataset.classEvidence;
   if(!evidenceModesForGrade(activeClass()?.grade||'').includes(next))return;
-  state.classEvidence=next;rememberFaculty();render();
+  state.classEvidence=next;
+  state.classCompare=normalizeComparison(activeClass()?.grade||'',next,state.classCompare);
+  rememberFaculty();render();
   root.querySelector('[data-class-evidence="'+next+'"]')?.focus({preventScroll:true});
+  return;
+ }
+ const compareSelect=e.target.closest('[data-class-compare]');
+ if(compareSelect&&state.role==='faculty'){
+  const grade=activeClass()?.grade||'';
+  state.classCompare=normalizeComparison(grade,
+   normalizeEvidenceMode(grade,state.classEvidence),compareSelect.value);
+  rememberFaculty();render();
+  root.querySelector('[data-class-compare]')?.focus({preventScroll:true});
   return;
  }
  const academicMode=e.target.closest('[data-academic-mode]');
@@ -863,6 +879,14 @@ root.addEventListener('click',e=>{
  const link=e.target.closest('[data-student]');if(link){state.studentId=link.dataset.student;state.details=false;state.academicReportYear='';render();window.scrollTo(0,0)}
 });
 root.addEventListener('change',e=>{
+ const classWindow=e.target.closest('[data-class-window]');
+ if(classWindow&&state.role==='faculty'){
+  if(EXPERIENCE_WINDOWS.some(w=>w.key===classWindow.value)){
+   state.classExperienceWindow=classWindow.value;rememberFaculty();render();
+   root.querySelector('[data-class-window]')?.focus({preventScroll:true});
+  }
+  return;
+ }
  const mapSelect=e.target.closest('[data-map-subject]');
  if(mapSelect&&state.role==='faculty'){
   if(['Mathematics','Reading','Language Usage'].includes(mapSelect.value)){
@@ -918,6 +942,7 @@ root.addEventListener('change',e=>{
   if(!academicModesFor(DATA.classIndex.get(v)?.grade).includes(state.academicMode))
    state.academicMode='report';
   state.classEvidence=normalizeEvidenceMode(DATA.classIndex.get(v)?.grade,state.classEvidence);
+  state.classCompare=normalizeComparison(DATA.classIndex.get(v)?.grade,state.classEvidence,state.classCompare);
   rememberFaculty();
  }
  if(el.dataset.select==='division'){state.division=v;state.grade='All';state.classId='';state.details=false}
