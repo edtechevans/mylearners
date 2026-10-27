@@ -91,7 +91,7 @@ test('SSS student profile reuses Faculty academic, attendance, MAP and experienc
  assert.ok(student);
  const html=renderSSSStudentProfile({...context,studentId:student.id});
  assert.match(html,new RegExp(student.name));
- assert.match(html,/WIDA screening snapshot/);
+ assert.match(html,/WIDA Screening Snapshot/);
  assert.match(html,/Shared evidence/i);
  assert.match(html,/Latest Mathematics report/);
  assert.match(html,/MAP Mathematics growth/);
@@ -112,9 +112,9 @@ test('SSS student profile reuses Faculty academic, attendance, MAP and experienc
 test('non-members cannot be opened, and no case-note editing or raw student imports exist',()=>{
  const outsider=data.students.find(s=>!sssRecords.has(s.id));
  const html=renderSSSStudentProfile({...context,studentId:outsider.id});
- assert.match(html,/No SSS record available/);
+ assert.match(html,/No SSS Record Available/);
  assert.doesNotMatch(html,new RegExp(outsider.name));
- assert.doesNotMatch(html,/WIDA screening snapshot/);
+ assert.doesNotMatch(html,/WIDA Screening Snapshot/);
  const own=renderSSSStudentProfile({...context,studentId:cohort[0].id});
  assert.doesNotMatch(own,/<form|<textarea|data-save-case|data-edit-iep|cpoms incident/i);
  assert.match(own,/does not save referrals, case notes,/);
