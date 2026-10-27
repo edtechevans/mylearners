@@ -89,7 +89,7 @@ test('No filenames or underlying cell references are shown in any Diploma result
   const html=renderBoardDP({boardDpMetric:metric});
   const tooltip=renderDPPointDetails(metric+':2026');
   assert.doesNotMatch(html+tooltip,/\.xlsx|\.csv|\.pdf|Dashboard SY\d|KPIs!|Source:|workbook/i);
-  assert.match(html,/Data definitions and limitations/);
+  assert.match(html,/Understanding Diploma results/);
   assert.match(html,/verification|confirm/i);
  }
 });
