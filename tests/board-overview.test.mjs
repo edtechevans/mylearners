@@ -42,24 +42,40 @@ test('Hover breakdown identifies exact included grade averages rather than stude
  assert.match(renderTrendPointDetails('fall:2026:math'),/No complete EARCOS/);
 });
 
-test('Overview includes Language Usage on every headline card, the historic chart and annual table',()=>{
- const html=renderBoardOverview({boardTrendTerm:'fall',boardTrendFocus:'all'});
- assert.match(html,/board-overview-cards/);
- assert.equal((html.match(/data-board-go=/g)||[]).length,3);
- assert.equal((html.match(/class="board-overview-three-metrics"/g)||[]).length,3);
- assert.match(html,/24 \/ 24/);
- assert.match(html,/71%/);assert.match(html,/62%/);
- assert.match(html,/Language Usage/);
+test('Board Overview communicates four defensible strengths in a clear schoolwide learning story',()=>{
+ const html=renderBoardOverview({boardTrendTerm:'fall',boardTrendFocus:'all',boardOverviewChart:'map',boardDpMetric:'average'});
+ assert.match(html,/STRENGTHS AT A GLANCE/);
+ assert.match(html,/Strong learning outcomes, from Grade 3 to graduation/);
+ assert.equal((html.match(/class="board-strength-card"/g)||[]).length,4);
+ assert.equal((html.match(/data-board-go=/g)||[]).length,2);
+ assert.equal((html.match(/data-board-dp-go=/g)||[]).length,2);
+ assert.match(html,/24 \/ 24/);assert.match(html,/95%/);
+ assert.match(html,/IB Diploma · 2025–26/);assert.match(html,/93%/);
+ assert.match(html,/\/45/);assert.match(html,/confirmation pending/);
+ assert.match(html,/data-board-overview-chart="map"/);
+ assert.match(html,/data-board-overview-chart="dp"/);
  assert.match(html,/data-board-series="math"/);
  assert.match(html,/data-board-series="reading"/);
  assert.match(html,/data-board-series="language"/);
  assert.match(html,/data-board-point="fall:2025:math"/);
- assert.match(html,/data-board-point="fall:2025:language"/);
- assert.match(html,/Hover to open a tile/i);
  assert.match(html,/board-trend-inspector/);
  assert.match(html,/View the annual values/);
- assert.match(html,/not individual student growth/);
- assert.match(html,/data-board-view="explore"/);assert.match(html,/data-board-view="dp"/);
+ assert.match(html,/data-board-view="explore"/);
+ assert.equal((html.match(/board-historical-chart"/g)||[]).length,1,'One historical panel only');
+ assert.doesNotMatch(html,/data-board-dp-point=/,'Do not render the other history at the same time');
+ assert.doesNotMatch(html,/\.csv|\.xlsx|\.pdf|Source:|workbook|source records/i);
+});
+test('Diploma switch shows one DP timeline instead of a second MAP visualization',()=>{
+ const html=renderBoardOverview({boardOverviewChart:'dp',boardDpMetric:'passRate',boardTrendTerm:'fall',boardTrendFocus:'all'});
+ assert.equal((html.match(/class="board-strength-card"/g)||[]).length,4);
+ assert.match(html,/IB Diploma outcomes over time/);
+ assert.match(html,/data-board-dp-point="passRate:2026"/);
+ assert.match(html,/data-board-dp-metric="average"/);
+ assert.match(html,/data-board-dp-metric="passRate"/);
+ assert.match(html,/data-board-view="dp"/);
+ assert.doesNotMatch(html,/data-board-point="fall:/);
+ assert.equal((html.match(/board-historical-chart"/g)||[]).length,1);
+ assert.doesNotMatch(html,/\.csv|\.xlsx|\.pdf|Source:|workbook|source records/i);
 });
 
 test('Focused Language Usage renders exactly one interactive trend and visible point values',()=>{
@@ -124,4 +140,15 @@ test('Current Board facts remain aggregate, correctly windowed and privacy-safe'
  assert.equal(boardSummary('spring2026','reading').growthPct,62);
  assert.equal(boardSummary('spring2026','language').growthPct,null);
  assert.deepEqual(BOARD_GRADE_LIST,[3,4,5,6,7,8,9,10]);
+});
+
+test('Deep linking into the Diploma historical chart restores its selected measure',()=>{
+ const state={boardView:'overview',boardOverviewChart:'dp',boardDpMetric:'passRate'};
+ const hash=boardHash(state);
+ assert.equal(hash,'#/board?view=overview&chart=dp&metric=passRate');
+ const parsed=parseBoardHash(hash);
+ assert.equal(parsed.boardView,'overview');
+ assert.equal(parsed.boardOverviewChart,'dp');
+ assert.equal(parsed.boardDpMetric,'passRate');
+ assert.equal(parseBoardHash('#/board').boardOverviewChart,'map');
 });
