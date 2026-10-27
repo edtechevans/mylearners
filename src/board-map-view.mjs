@@ -53,10 +53,10 @@ function gradeComparison(rows,summary){
  return '<section class="board-panel board-chart-panel'+(!showEarcos?' board-us-only':'')+'">'+
  '<div class="board-chart-top"><div><span class="eyebrow">GRADE-LEVEL ACHIEVEMENT</span>'+
  '<h2>'+(!showEarcos?'AISG compared with U.S. school norms':'AISG compared with U.S. and EARCOS')+'</h2>'+
- '<p>Differences in mean RIT points. Right of zero = AISG above the comparison average.</p>'+
+ '<p>Differences in average MAP score points. Right of zero means AISG is above the comparison average.</p>'+
  '</div><div class="board-legend"><span><i class="board-dot us"></i>U.S. norm</span>'+
  (showEarcos?'<span><i class="board-dot earcos"></i>EARCOS mean</span>':'')+'</div></div>'+
- '<div class="board-axis"><span>Below reference</span><span>0 RIT</span><span>Above reference</span></div>'+
+ '<div class="board-axis"><span>Below comparison</span><span>0 MAP pts</span><span>Above comparison</span></div>'+
  '<div class="board-grade-plot">'+rows.map(r=>'<div class="board-grade-row"><div class="board-grade-name">Grade '+r.grade+'</div>'+
  '<div class="board-grade-series">'+comparisonSeries(r,'us')+
  (showEarcos?comparisonSeries(r,'earcos'):'')+'</div></div>').join('')+'</div>'+
@@ -165,7 +165,8 @@ export function renderBoard(state){
  '</section>':
  '<div class="board-choose-prompt" aria-live="polite"><strong>Want to look more closely?</strong> Select Mathematics, Reading or Language Usage above to explore individual grades.</div>';
  return header+filters+growth+
- renderMapComparisonTiles({schoolYear:year,selectedWindow:active,selectedSubject,
+ renderMapComparisonTiles({schoolYear:year,selectedWindow:active,
+  selectedSubject:state.boardMapDetailsOpen?selectedSubject:'',
   division,compareSeasons:!!state.boardMapCompareSeasons})+
  details+'</section>';
 }
