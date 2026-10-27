@@ -29,7 +29,8 @@ test('Diploma interactive measures preserve missing 2020 pass rate and full char
  const html=renderBoardDP({boardDpMetric:'average'});
  assert.match(html,/board-dp-graphic-grid/);
  assert.match(html,/IB Diploma results/);
- assert.match(html,/Grade 12 full DP pathway/);
+ assert.match(html,/Consistent results/);
+ assert.match(html,/7 \/ 7/);
  assert.match(html,/data-board-dp-point="average:2026"/);
  assert.match(html,/board-floating-tooltip/);
  assert.match(html,/Full Diploma pathway/);
@@ -93,16 +94,16 @@ test('No filenames or underlying cell references are shown in any Diploma result
  }
 });
 
-test('Diploma school-year and trend-range filters remain grounded and public-safe',()=>{
+test('Diploma year selection remains grounded; legacy range links remain accepted',()=>{
  const row=DP_RECORDS.find(r=>r.end===2025);
  assert.equal(row.average,34);
  assert.equal(row.passRate,93);
  const selected=renderBoardDP({boardDpYear:'2025',boardDpMetric:'passRate',boardDpRange:'recent'});
  assert.match(selected,/2024–25/);
  assert.match(selected,/data-board-dp-select="year"/);
- assert.match(selected,/data-board-dp-select="range"/);
+ assert.doesNotMatch(selected,/data-board-dp-select="range"/);
  assert.match(selected,/board-dp-graphic-pass/);
- assert.match(selected,/board-dp-graphic-pathways/);
+ assert.match(selected,/board-dp-graphic-consistency/);
  assert.equal(parseBoardHash('#/board?view=dp&year=2025&range=recent').boardDpYear,'2025');
  assert.equal(parseBoardHash('#/board?view=dp&year=2025&range=recent').boardDpRange,'recent');
 });
