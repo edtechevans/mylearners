@@ -183,12 +183,12 @@ function student(){
 function render(){
  const content=state.role==='board'?renderBoard(state):state.role==='leader'?leader():state.role==='student'?student():faculty();
  root.innerHTML=header()+'<main class="container" id="main">'+content+'</main><footer>'+
- (state.role==='board'?'AISG MAP Board view · Historical, aggregated AISG school data only · No individual scores published':
+ (state.role==='board'?'AISG Board · Aggregated MAP and IB Diploma outcomes · No individual student scores published':
  'My Learners demonstration · Learners, assessments and student check-ins fictional')+
  '</footer>';
- if(state.role==='board'&&state.boardView==='overview'){
-  const scroller=root.querySelector?.('.board-trend-scroller');
-  if(scroller&&globalThis.window?.innerWidth<700)scroller.scrollLeft=scroller.scrollWidth;
+ if(state.role==='board'&&globalThis.window?.innerWidth<700){
+  const scroller=root.querySelector?.(state.boardView==='dp'?'.board-dp-chart-scroll':'.board-trend-scroller');
+  if(scroller)scroller.scrollLeft=scroller.scrollWidth;
  }
  try{sessionStorage.setItem('my-role',state.role);sessionStorage.setItem('my-teacher',state.teacher);
  sessionStorage.setItem('my-board-window-v2',state.boardWindow);sessionStorage.setItem('my-board-subject',state.boardSubject);
@@ -245,9 +245,9 @@ root.addEventListener('pointerover',e=>{
  if(state.role!=='board')return;
  const point=e.target.closest?.('[data-board-point],[data-board-dp-point]');
  if(!point)return;
- if(point.dataset.boardPoint&&state.boardView==='overview')showBoardPoint(point);
- if(point.dataset.boardDpPoint&&state.boardView==='dp')showDPPoint(point);
- if(e.pointerType==='mouse'||e.pointerType==='pen')placeBoardFloat(point,e);
+ if(e.pointerType==='mouse'||e.pointerType==='pen'){placeBoardFloat(point,e);return}
+ // Touch users select a point; keyboard users retain the inline inspector.
+
 });
 root.addEventListener('pointermove',e=>{
  if(state.role!=='board'||(e.pointerType!=='mouse'&&e.pointerType!=='pen'))return;
