@@ -5,10 +5,18 @@ import {demoTagsForStudent} from './learner-tags.mjs';
 import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs';
 import {esc} from './v2-ui.mjs';
+import {renderBoard} from './board-map-view.mjs';
 const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(DATA.students);
 const root=document.getElementById('app');
 const saved=(k,d)=>{try{return sessionStorage.getItem(k)||d}catch{return d}};
-const state={role:saved('my-role','faculty'),teacher:saved('my-teacher',DEFAULT_TEACHER_ID),division:'All',grade:'All',classId:'',studentId:'',query:'',metric:'engagement',window:'F26',details:false,checkin:false};
+const ROLE_IDS=['faculty','student','leader','board'];
+const initialHash=String(globalThis.location?.hash||'').replace(/^#\//,'');
+const initialRole=ROLE_IDS.includes(initialHash)?initialHash:saved('my-role','faculty');
+const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
+ teacher:saved('my-teacher',DEFAULT_TEACHER_ID),
+ division:'All',grade:'All',classId:'',studentId:'',query:'',metric:'engagement',window:'F26',details:false,checkin:false,
+ boardWindow:saved('my-board-window','fall2025'),boardSubject:saved('my-board-subject','math'),
+ boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all')};
 const safe=(v)=>esc(v??'');
 const teacher=()=>DATA.teachers.find(t=>t.id===state.teacher)||DATA.teachers.find(t=>t.id===DEFAULT_TEACHER_ID);
 const ownClasses=()=>DATA.classes.filter(c=>teacher().classIds.includes(c.id));
@@ -34,7 +42,7 @@ function metricCard(ss,id,window='F26',scope='main'){
  (sum.value===null?'':btn('explain:'+scope+':'+id,'How is this calculated?','quiet'))+'</article>';
 }
 function info(){return '<div class="notice"><strong>Demonstration only.</strong> All learners, assessments, survey-style check-ins and class assignments are fictional. Actual confidential climate-survey responses are not linked to students. The indices are exploratory AISG-created descriptions, not validated scores or labels.</div>'}
-function header(){return '<header class="top"><div class="brand"><img src="assets/aisg-logo.webp" alt="AISG logo"><div><strong>My Learners</strong><span>Understand the whole learner</span></div></div><div class="roles"><span class="roles-label">DEMO VIEW</span>'+['faculty','student','leader'].map(r=>'<button data-role="'+r+'" aria-pressed="'+(state.role===r)+'" class="'+(state.role===r?'selected':'')+'">'+r[0].toUpperCase()+r.slice(1)+'</button>').join('')+'</div></header>'}
+function header(){return '<header class="top"><div class="brand"><img src="assets/aisg-logo.webp" alt="AISG logo"><div><strong>My Learners</strong><span>Understand the whole learner</span></div></div><div class="roles"><span class="roles-label">VIEW</span>'+ROLE_IDS.map(r=>'<button data-role="'+r+'" aria-pressed="'+(state.role===r)+'" class="'+(state.role===r?'selected':'')+'">'+r[0].toUpperCase()+r.slice(1)+'</button>').join('')+'</div></header>'}
 function heading(title,desc){
  const asOf=new Date(DATA.asOf+'T12:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
  return '<div class="heading"><div><div class="eyebrow">AISG · 2026–27</div><h1>'+safe(title)+'</h1><p>'+safe(desc)+'</p></div>'+
@@ -166,16 +174,34 @@ function student(){
  learnerProfile(chosen,true)+info();
 }
 function render(){
- const content=state.role==='leader'?leader():state.role==='student'?student():faculty();
- root.innerHTML=header()+'<main class="container" id="main">'+content+'</main><footer>My Learners · AISG demonstration · No actual student survey, health or support data</footer>';
- try{sessionStorage.setItem('my-role',state.role);sessionStorage.setItem('my-teacher',state.teacher)}catch{}
+ const content=state.role==='board'?renderBoard(state):state.role==='leader'?leader():state.role==='student'?student():faculty();
+ root.innerHTML=header()+'<main class="container" id="main">'+content+'</main><footer>'+
+ (state.role==='board'?'AISG MAP Board view · Historical, aggregated AISG school data only · No individual scores published':
+ 'My Learners demonstration · Learners, assessments and student check-ins fictional')+
+ '</footer>';
+ try{sessionStorage.setItem('my-role',state.role);sessionStorage.setItem('my-teacher',state.teacher);
+ sessionStorage.setItem('my-board-window',state.boardWindow);sessionStorage.setItem('my-board-subject',state.boardSubject);
+ sessionStorage.setItem('my-board-division',state.boardDivision);sessionStorage.setItem('my-board-grade',state.boardGrade)}catch{}
 }
 root.addEventListener('click',e=>{
- const role=e.target.closest('[data-role]');if(role){state.role=role.dataset.role;state.details=false;state.studentId='';state.classId='';state.query='';render();return}
+ const role=e.target.closest('[data-role]');if(role){if(!ROLE_IDS.includes(role.dataset.role))return;
+ state.role=role.dataset.role;state.details=false;state.studentId='';state.classId='';state.query='';
+ if(globalThis.location?.hash!=='#/'+state.role)globalThis.location.hash='#/'+state.role;
+ render();return}
+ const boardSubject=e.target.closest('[data-board-subject]');
+ if(boardSubject){state.boardSubject=boardSubject.dataset.boardSubject;render();return}
+ const boardWindow=e.target.closest('[data-board-window]');
+ if(boardWindow){state.boardWindow=boardWindow.dataset.boardWindow;render();return}
  const b=e.target.closest('[data-action]');if(b){const a=b.dataset.action;if(a.startsWith('explain:')){state.details=a.slice('explain:'.length)}else if(a==='close')state.details=false;else if(a==='back'){state.studentId='';state.details=false}else if(a==='save-reflection'){const t=document.querySelector('#reflection');try{sessionStorage.setItem('reflection-'+state.studentId,t?.value||'')}catch{}document.querySelector('#save-status').textContent='Draft saved in this browser session only.';return}render();return}
  const link=e.target.closest('[data-student]');if(link){state.studentId=link.dataset.student;state.details=false;render();window.scrollTo(0,0)}
 });
 root.addEventListener('change',e=>{
+ const boardSelect=e.target.closest('[data-board-select]');
+ if(boardSelect){
+  if(boardSelect.dataset.boardSelect==='division'){state.boardDivision=boardSelect.value;state.boardGrade='all'}
+  if(boardSelect.dataset.boardSelect==='grade')state.boardGrade=boardSelect.value;
+  render();return;
+ }
  const el=e.target.closest('[data-select]');if(!el)return;const v=el.value;
  if(el.dataset.select==='teacher'){state.teacher=v;state.classId='';state.studentId='';state.query='';state.details=false}
  if(el.dataset.select==='class'){state.classId=v;state.studentId='';state.query='';state.details=false}
@@ -187,4 +213,8 @@ root.addEventListener('change',e=>{
  render()
 });
 root.addEventListener('input',e=>{if(e.target.matches('[data-query]')){const p=e.target.selectionStart;state.query=e.target.value;render();const input=document.querySelector('[data-query]');input?.focus();input?.setSelectionRange(p,p)}});
+try{globalThis.window?.addEventListener?.('hashchange',()=>{
+ const id=String(globalThis.location?.hash||'').replace(/^#\//,'');
+ if(ROLE_IDS.includes(id)&&state.role!==id){state.role=id;render()}
+})}catch{}
 render();
