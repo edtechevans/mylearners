@@ -394,3 +394,11 @@
  .board-overview-control .board-segmented button{font-size:11px;padding:8px 9px}
  .board-overview-filterarea{gap:10px}
 }
+
+/* Keep the 7 / 8 comparison readable as one unit on narrow screens. */
+.board-trend-inspector-head>strong{white-space:nowrap;flex-shrink:0}
+@media(max-width:650px){
+ .board-trend-inspector-head{align-items:flex-start}
+ .board-trend-inspector-head>strong{font-size:21px;line-height:1.45}
+ .board-trend-inspector-head h3{font-size:15px}
+}
