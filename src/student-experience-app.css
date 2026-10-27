@@ -45,3 +45,107 @@
  .roster .sectionhead{margin:11px 0 8px}
  .profile-head h1{font-size:25px}
 }
+
+
+/* AISG Board MAP — deliberately high-level, season-matched, no student records */
+.board-view{max-width:1260px;margin:0 auto}
+.board-heading{margin-bottom:23px}
+.board-heading h1{font-size:clamp(29px,3.4vw,39px)}
+.board-heading p{max-width:770px}
+.board-provenance-badge{background:#eaf2f7;border:1px solid #bfd3e0;border-radius:11px;
+ display:flex;flex-direction:column;align-items:flex-end;padding:10px 13px;white-space:nowrap}
+.board-provenance-badge strong{font-size:10px;letter-spacing:.055em;color:#164d70}
+.board-provenance-badge small{font-size:11px;color:#60788a}
+.board-controls{display:flex;align-items:flex-end;gap:14px 25px;flex-wrap:wrap;
+ background:white;border:1px solid var(--border);padding:18px 19px;border-radius:14px;margin:14px 0 18px}
+.board-control-group{display:flex;flex-direction:column;gap:7px}
+.board-filter-label,.board-filter-selects label{font-size:11px;font-weight:800;color:#47647b}
+.board-segmented{display:inline-flex;gap:3px;background:#eaf1f6;border-radius:9px;padding:4px;min-height:43px}
+.board-segmented button{background:transparent;border:0;color:#385d75;padding:7px 14px;border-radius:7px;
+ font-weight:800;font-size:12px;white-space:nowrap}
+.board-segmented button.active{background:white;color:#073761;box-shadow:0 2px 7px #123d5718}
+.board-segmented button:focus-visible{outline:3px solid #75b3d5}
+.board-filter-selects{display:flex;align-items:end;gap:13px;flex-wrap:wrap}
+.board-filter-selects label{display:flex;flex-direction:column;gap:7px}
+.board-filter-selects select{min-width:125px;max-width:225px;width:auto;min-height:43px;font-size:12px}
+.board-context{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px 15px;margin:16px 1px}
+.board-context strong{font-size:16px;color:#123f60}
+.board-context span{color:#526c7f;font-size:12px}
+.board-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:11px}
+.board-indicator{background:#fff;border:1px solid var(--border);border-radius:13px;padding:18px 17px;
+ display:flex;flex-direction:column;gap:9px;min-height:143px}
+.board-indicator-label{font-weight:800;font-size:12px;color:#466780}
+.board-indicator strong{font-size:clamp(22px,2.7vw,31px);color:#113d5f;line-height:1.1;letter-spacing:-.045em}
+.board-indicator-detail{font-size:11px;color:#556e81;line-height:1.55}
+.board-benchmark-note{font-size:12px;color:#4e677b;margin:9px 0 19px}
+.board-panel{background:#fff;border:1px solid var(--border);border-radius:14px;padding:23px 28px}
+.board-chart-top{display:flex;justify-content:space-between;align-items:start;gap:15px}
+.board-chart-top h2{margin:5px 0 6px;font-size:20px}
+.board-chart-top p{font-size:12px;color:#536d80;margin:0;max-width:650px}
+.board-legend{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:11px;color:#506c7f;
+ white-space:nowrap;margin-top:15px}
+.board-legend span{display:flex;align-items:center;gap:5px}
+.board-dot{display:inline-block;border-radius:50%;width:9px;height:9px}
+.board-dot.us{background:#15749a}.board-dot.earcos{background:#b07131}
+.board-axis{display:flex;justify-content:space-between;color:#587185;font-size:11px;font-weight:600;
+ margin:18px 67px 12px 120px;padding:0 0 5px;border-bottom:1px solid #e6edf2}
+.board-grade-plot{display:flex;flex-direction:column;gap:0}
+.board-grade-row{display:grid;grid-template-columns:96px minmax(0,1fr);gap:14px;align-items:center;
+ padding:11px 0;border-bottom:1px solid #eef2f5}
+.board-grade-name{font-weight:800;font-size:13px;color:#274c66}
+.board-grade-series{display:grid;gap:6px}
+.board-bar-series{display:grid;grid-template-columns:51px minmax(0,1fr) 60px;gap:9px;align-items:center}
+.board-bar-name{font-size:11px;font-weight:700;color:#567487}
+.board-bar-track{height:16px;position:relative;border-radius:4px;
+ background:linear-gradient(to right,#f5f8fa 0%,#f5f8fa 50%,#f2f7f9 50%,#f2f7f9 100%)}
+.board-bar-zero{position:absolute;left:50%;height:23px;top:-3px;width:2px;background:#9ab0c0;z-index:1}
+.board-bar-fill{position:absolute;top:4px;height:8px;border-radius:4px;min-width:2px}
+.board-bar-fill.us{background:#15749a}.board-bar-fill.earcos{background:#b07131}
+.board-bar-value{text-align:right;font-size:12px;color:#245672;font-variant-numeric:tabular-nums}
+.board-bar-value.below{color:#a44735}
+.board-chart-caption{margin:16px 0 0;color:#576f82;font-size:11px}
+.board-details{background:#fff;border:1px solid var(--border);border-radius:12px;margin:13px 0;padding:0 20px}
+.board-details summary{list-style:none;cursor:pointer;padding:17px 2px;color:#1c5476;font-size:13px;
+ font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.board-details summary::-webkit-details-marker{display:none}
+.board-details summary span{color:#5f798e;font-size:17px}
+.board-details[open] summary span{transform:rotate(45deg)}
+.board-details .tablewrap{margin:2px 0 12px;border:0}
+.board-details p{color:#4f6a7e;font-size:12px;line-height:1.65}
+.board-table{min-width:740px;font-variant-numeric:tabular-nums}
+.board-table th{font-size:10px;white-space:normal}
+.board-table td{font-size:12px}
+.board-table-note{padding:1px 2px 13px;margin:0}
+.board-source{margin-bottom:25px}
+@media(max-width:1120px){
+ .board-controls{gap:14px}.board-filter-selects{width:100%}
+ .board-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .board-indicator{min-height:126px}
+}
+@media(max-width:650px){
+ .board-heading{gap:10px}
+ .board-provenance-badge{align-items:flex-start}
+ .board-controls{display:grid;gap:13px;padding:13px}
+ .board-control-group,.board-segmented{width:100%}
+ .board-segmented button{flex:1;padding:9px 6px;font-size:12px}
+ .board-filter-selects{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+ .board-filter-selects label{min-width:0}
+ .board-filter-selects select{min-width:0;max-width:100%;width:100%}
+ .board-stats{gap:9px}
+ .board-indicator{padding:13px;gap:6px;min-height:120px}
+ .board-indicator strong{font-size:23px}
+ .board-indicator-label{font-size:11px}
+ .board-indicator-detail{font-size:11px}
+ .board-panel{padding:16px 13px}
+ .board-chart-top{display:block}
+ .board-legend{margin-top:8px}
+ .board-axis{margin:14px 37px 12px 56px;font-size:10px}
+ .board-grade-row{grid-template-columns:45px minmax(0,1fr);gap:8px;padding:10px 0}
+ .board-grade-name{font-size:11px}
+ .board-bar-series{grid-template-columns:44px minmax(0,1fr) 45px;gap:5px}
+ .board-bar-name{font-size:10px}
+ .board-bar-value{font-size:11px}
+ .board-details{padding:0 11px}
+ .board-provenance-badge{white-space:normal}
+ .roles button{min-width:0;padding:10px 11px}
+}
