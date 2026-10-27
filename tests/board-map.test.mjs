@@ -27,7 +27,7 @@ test('Fall 2025 Mathematics, Reading and Language Usage are preserved',()=>{
  assert.equal(r.aboveUS,8);assert.equal(r.aboveEarcos,3);
  assert.equal(l.aboveUS,8);assert.equal(l.aboveEarcos,4);
  const g8=boardRows('fall2025','math','secondary',8)[0];
- assert.equal(g8.aisg,245.5);assert.equal(g8.earcos,246.5);
+ assert.equal(g8.aisg,245.5);assert.equal(g8.earcos,246.5);assert.equal(g8.us,220);assert.equal(g8.usOriginal,222);
  assert.equal(g8.aboveEarcosPct,46);
 });
 
@@ -116,5 +116,5 @@ test('Historical rows contain only school-level aggregates and source notes',()=
  const text=JSON.stringify(BOARD_DATA);
  assert.ok(!/StudentID|dateOfBirth|StudentFirstName|StudentLastName|@aisgz|DEMO-\d/.test(text));
  assert.ok(BOARD_METHODS.caution.includes('individual'));
- assert.ok(BOARD_METHODS.history.includes('norm editions'));
+ assert.ok(BOARD_METHODS.history.includes('norm type'));
 });
