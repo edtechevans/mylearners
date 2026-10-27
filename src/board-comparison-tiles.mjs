@@ -37,24 +37,32 @@ function miniCard(result,label){
 }
 function windowTiles(window,selectedWindow,selectedSubject,division){
  const period=BOARD_DATA[window].label;
- return '<section class="board-comparison-window" aria-label="'+escape(period)+' subject comparisons">'+
+ const subjects=BOARD_SUBJECTS.map(({id})=>({
+  id,us:compareGradeMeans(window,id,'us',division),
+  earcos:compareGradeMeans(window,id,'earcos',division)
+ }));
+ const regionalMissing=subjects.every(subject=>subject.earcos.count===0);
+ return '<section class="board-comparison-window'+(regionalMissing?' board-no-regional':'')+
+ '" aria-label="'+escape(period)+' subject comparisons">'+
  '<div class="board-comparison-window-head"><span class="board-window-icon" aria-hidden="true">'+
  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M7 2v6m10-6v6M4 11h16"/></svg></span>'+
- '<div><h3>'+escape(period)+'</h3><p>Choose a subject to explore how individual grades compare</p></div></div>'+
- '<div class="board-comparison-subjects">'+BOARD_SUBJECTS.map(({id})=>{
-  const us=compareGradeMeans(window,id,'us',division);
-  const earcos=compareGradeMeans(window,id,'earcos',division);
+ '<div><h3>'+escape(period)+'</h3><p>Select a subject to understand differences across individual grades</p></div></div>'+
+ (regionalMissing?'<p class="board-availability-note" role="note"><span class="board-availability-dot" aria-hidden="true"></span>'+
+  'EARCOS regional comparisons are not available for this testing window. U.S. school comparisons are shown below.</p>':'')+
+ '<div class="board-comparison-subjects">'+subjects.map(({id,us,earcos})=>{
   const active=window===selectedWindow&&selectedSubject===id;
-  return '<button class="board-comparison-subject board-comparison-'+id+(active?' is-selected':'')+
+  return '<button class="board-comparison-subject board-comparison-'+id+
+   (regionalMissing?' board-us-focus':'')+(active?' is-selected':'')+
    '" type="button" data-board-tile-window="'+window+'" data-board-tile-subject="'+id+
-   '" aria-pressed="'+active+'" title="Explore grades in '+escape(titles[id])+' · '+escape(period)+'"'+
-   ' aria-label="'+escape('Explore '+titles[id]+' in '+period+'. Average difference versus U.S. schools '+gapText(us)+
+   '" aria-pressed="'+active+
+   '" aria-label="'+escape('Explore '+titles[id]+' in '+period+'. Average difference versus U.S. schools '+gapText(us)+
    '; versus EARCOS regional schools '+gapText(earcos))+'.">'+
    '<span class="board-comparison-subject-head"><span class="board-comparison-icon">'+iconSVG(id)+
    '</span><strong>'+escape(titles[id])+'</strong><span class="board-tile-action" aria-hidden="true">↗</span></span>'+
    '<span class="board-comparison-pair">'+miniCard(us,'vs U.S. schools')+
-   miniCard(earcos,'vs regional schools (EARCOS)')+'</span>'+
-   '<span class="board-tile-hint">Explore grades <span aria-hidden="true">›</span></span></button>';
+   (regionalMissing?'':miniCard(earcos,'vs regional schools (EARCOS)'))+'</span>'+
+   '<span class="board-tile-hint"><span>Explore grade differences</span><span aria-hidden="true">›</span></span>'+
+   '</button>';
  }).join('')+'</div></section>';
 }
 export function renderMapComparisonTiles({schoolYear,selectedWindow,selectedSubject='math',division='all',compareSeasons=false}={}){
