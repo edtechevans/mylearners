@@ -7,6 +7,7 @@ import {createExperienceRecords,experienceFor,summarizeExperience,experienceChan
 import {esc} from './v2-ui.mjs';
 import {renderBoard} from './board-map-view.mjs';
 import {renderTrendPointDetails} from './board-map-overview.mjs';
+import {renderDPPointDetails} from './board-dp-view.mjs';
 import {boardWindowFor} from './board-map-data.mjs';
 import {parseBoardHash,boardShareUrl} from './board-map-links.mjs';
 const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(DATA.students);
@@ -20,7 +21,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  division:'All',grade:'All',classId:'',studentId:'',query:'',metric:'engagement',window:'F26',details:false,checkin:false,
  boardWindow:saved('my-board-window-v2','fall2026'),boardSubject:saved('my-board-subject','math'),
  boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all'),
- boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all'};
+ boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardDpMetric:'average'};
 const boardDeepLink=parseBoardHash(globalThis.location?.hash);
 if(boardDeepLink&&state.role==='board')Object.assign(state,boardDeepLink);
 const safe=(v)=>esc(v??'');
@@ -196,23 +197,87 @@ function render(){
 function showBoardPoint(point){
  const key=point?.dataset?.boardPoint;
  const inspector=root.querySelector('.board-trend-inspector');
- if(!inspector||!key||inspector.dataset.activePoint===key)return;
- inspector.innerHTML=renderTrendPointDetails(key);
- inspector.dataset.activePoint=key;
- root.querySelectorAll('.board-trend-point.is-active').forEach(x=>x.classList.remove('is-active'));
- point.classList.add('is-active');
+ if(!inspector||!key)return;
+ if(inspector.dataset.activePoint!==key){
+  inspector.innerHTML=renderTrendPointDetails(key);
+  inspector.dataset.activePoint=key;
+  root.querySelectorAll('.board-trend-point.is-active').forEach(x=>x.classList.remove('is-active'));
+  point.classList.add('is-active');
+ }
+}
+function showDPPoint(point){
+ const key=point?.dataset?.boardDpPoint,inspector=root.querySelector('.board-dp-inspector');
+ if(!inspector||!key)return;
+ if(inspector.dataset.activePoint!==key){
+  inspector.innerHTML=renderDPPointDetails(key);
+  inspector.dataset.activePoint=key;
+  root.querySelectorAll('.board-dp-point.is-active').forEach(x=>x.classList.remove('is-active'));
+  point.classList.add('is-active');
+ }
+}
+function placeBoardFloat(point,e){
+ const tooltip=root.querySelector('.board-floating-tooltip');
+ if(!tooltip||!point)return;
+ const dp=!!point.dataset.boardDpPoint;
+ const key=dp?point.dataset.boardDpPoint:point.dataset.boardPoint;
+ if(!key)return;
+ if(tooltip.dataset.activePoint!==key){
+  tooltip.innerHTML=dp?renderDPPointDetails(key):renderTrendPointDetails(key);
+  tooltip.dataset.activePoint=key;
+ }
+ tooltip.hidden=false;
+ const rect=point.getBoundingClientRect();
+ const x=Number.isFinite(e?.clientX)&&e.clientX>0?e.clientX:rect.left+rect.width/2;
+ const y=Number.isFinite(e?.clientY)&&e.clientY>0?e.clientY:rect.top;
+ const width=tooltip.offsetWidth||370,height=tooltip.offsetHeight||230;
+ const maxX=Math.max(10,window.innerWidth-width-14);
+ const maxY=Math.max(10,window.innerHeight-height-14);
+ const left=Math.min(maxX,Math.max(10,x+19));
+ const desiredTop=y+18+height>window.innerHeight?y-height-18:y+18;
+ tooltip.style.left=left+'px';
+ tooltip.style.top=Math.min(maxY,Math.max(10,desiredTop))+'px';
+}
+function hideBoardFloat(){
+ const tooltip=root.querySelector('.board-floating-tooltip');
+ if(tooltip){tooltip.hidden=true;tooltip.dataset.activePoint=''}
 }
 root.addEventListener('pointerover',e=>{
- const point=e.target.closest?.('[data-board-point]');
- if(point&&state.role==='board'&&state.boardView==='overview')showBoardPoint(point);
+ if(state.role!=='board')return;
+ const point=e.target.closest?.('[data-board-point],[data-board-dp-point]');
+ if(!point)return;
+ if(point.dataset.boardPoint&&state.boardView==='overview')showBoardPoint(point);
+ if(point.dataset.boardDpPoint&&state.boardView==='dp')showDPPoint(point);
+ if(e.pointerType==='mouse'||e.pointerType==='pen')placeBoardFloat(point,e);
+});
+root.addEventListener('pointermove',e=>{
+ if(state.role!=='board'||(e.pointerType!=='mouse'&&e.pointerType!=='pen'))return;
+ const point=e.target.closest?.('[data-board-point],[data-board-dp-point]');
+ if(point)placeBoardFloat(point,e);
+});
+root.addEventListener('pointerout',e=>{
+ const point=e.target.closest?.('[data-board-point],[data-board-dp-point]');
+ if(point&&!point.contains(e.relatedTarget))hideBoardFloat();
 });
 root.addEventListener('focusin',e=>{
- const point=e.target.closest?.('[data-board-point]');
- if(point&&state.role==='board'&&state.boardView==='overview')showBoardPoint(point);
+ const point=e.target.closest?.('[data-board-point],[data-board-dp-point]');
+ if(point&&state.role==='board'){
+  if(point.dataset.boardPoint&&state.boardView==='overview')showBoardPoint(point);
+  if(point.dataset.boardDpPoint&&state.boardView==='dp')showDPPoint(point);
+  placeBoardFloat(point);
+ }
+});
+root.addEventListener('focusout',e=>{
+ if(e.target.closest?.('[data-board-point],[data-board-dp-point]'))hideBoardFloat();
 });
 root.addEventListener('keydown',e=>{
- const point=e.target.closest?.('[data-board-point]');
- if(point&&(e.key==='Enter'||e.key===' ')){e.preventDefault();showBoardPoint(point)}
+ const point=e.target.closest?.('[data-board-point],[data-board-dp-point]');
+ if(point&&(e.key==='Enter'||e.key===' ')){
+  e.preventDefault();
+  if(point.dataset.boardPoint)showBoardPoint(point);
+  if(point.dataset.boardDpPoint)showDPPoint(point);
+  placeBoardFloat(point);
+ }
+ if(e.key==='Escape')hideBoardFloat();
 });
 root.addEventListener('click',e=>{
  const role=e.target.closest('[data-role]');if(role){if(!ROLE_IDS.includes(role.dataset.role))return;
@@ -221,10 +286,21 @@ root.addEventListener('click',e=>{
  if(globalThis.location?.hash!=='#/'+state.role)globalThis.location.hash='#/'+state.role;
  render();return}
  const point=e.target.closest('[data-board-point]');
- if(point){showBoardPoint(point);return}
+ if(point){showBoardPoint(point);
+  if(e.detail>0&&window.matchMedia?.('(pointer: coarse)').matches)
+   root.querySelector('.board-trend-inspector')?.scrollIntoView?.({block:'nearest',behavior:'smooth'});
+  return;
+ }
+ const dpPoint=e.target.closest('[data-board-dp-point]');
+ if(dpPoint){showDPPoint(dpPoint);
+  if(e.detail>0&&window.matchMedia?.('(pointer: coarse)').matches)
+   root.querySelector('.board-dp-inspector')?.scrollIntoView?.({block:'nearest',behavior:'smooth'});
+  return;
+ }
  const boardView=e.target.closest('[data-board-view]');
  if(boardView){
-  state.boardView=boardView.dataset.boardView==='explore'?'explore':'overview';
+  state.boardView=['overview','explore','dp'].includes(boardView.dataset.boardView)?
+  boardView.dataset.boardView:'overview';
   render();globalThis.window?.scrollTo?.(0,0);return;
  }
  const boardGo=e.target.closest('[data-board-go]');
@@ -237,6 +313,8 @@ root.addEventListener('click',e=>{
   }
   return;
  }
+ const dpMetric=e.target.closest('[data-board-dp-metric]');
+ if(dpMetric){state.boardDpMetric=dpMetric.dataset.boardDpMetric==='passRate'?'passRate':'average';render();return;}
  const boardTerm=e.target.closest('[data-board-trend]');
  if(boardTerm){state.boardTrendTerm=boardTerm.dataset.boardTrend==='spring'?'spring':'fall';render();return}
  const boardFocus=e.target.closest('[data-board-focus]');
