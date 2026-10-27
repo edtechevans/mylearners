@@ -36,7 +36,7 @@ function comparisonSeries(row,benchmark){
   track='<i class="board-bar-fill '+source+'" style="left:'+left.toFixed(2)+'%;width:'+width.toFixed(2)+'%"></i>';
   result=diff(value);
  }else if(isDirectional){
-  track='<span class="board-direction-label">Above norm · RIT gap unavailable</span>';
+  track='<span class="board-direction-label">Above norm</span>';
   result='Above';
  }
  return '<div class="board-bar-series"><span class="board-bar-name">'+(benchmark==='us'?'U.S.':'EARCOS')+'</span>'+
