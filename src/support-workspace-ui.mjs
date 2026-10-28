@@ -145,7 +145,12 @@ const fieldsByType={
   label('Person Communicating','owner','text','Staff role')+
   textField('Agreed Next Steps','nextStep'),
  action:()=>label('Assigned To','owner','text','Staff role or team')+
-  textField('Action Details','actionItems','Describe the agreed follow-up')
+  textField('Action Details','actionItems','Describe the agreed follow-up'),
+ review:()=>selectField('Team Decision','decision',['Continue','Adapt','Intensify','Fade Support'])+
+  textField('Evidence Reviewed','evidence','What evidence supports the decision?'),
+ voice:()=>textField('What Helps Me Learn','learnerHelps','A strength or helpful condition, in the learner’s words')+
+  textField('What Feels Difficult','learnerHard','A barrier to access described by the learner')+
+  textField('What I Would Like to Try','learnerTry','An approach the learner would like adults to consider')
 };
 export function renderSupportForm(form,student,entries){
  if(!form||!student)return '';
@@ -154,7 +159,7 @@ export function renderSupportForm(form,student,entries){
  const active=existing?.type||type;
  const role=form.role==='faculty'?'faculty':'sss';
  const choices=role==='faculty'?[['note','Classroom Note']]:Object.entries(SUPPORT_TYPES);
- const pref=(name,value)=>value?'': '';
+
  return '<div class="support-overlay" data-support-overlay>'+
   '<div class="support-dialog" role="dialog" aria-modal="true" aria-labelledby="support-dialog-title" tabindex="-1">'+
   '<div class="support-dialog-top"><div><span class="eyebrow">MY LEARNERS · FICTIONAL CASEWORK</span>'+
@@ -169,7 +174,7 @@ export function renderSupportForm(form,student,entries){
   '<label class="support-field"><span>Date</span><input type="date" name="date" value="'+clean(existing?.date||SUPPORT_AS_OF)+'" required></label></div>'+
   '<label class="support-field"><span>Title</span><input type="text" name="title" maxlength="160" required value="'+clean(existing?.title||'')+'" placeholder="'+clean(SUPPORT_TYPES[active])+'"></label>'+
   '<label class="support-field"><span>'+({note:'Classroom Note',referral:'Summary of Concern',meeting:'Meeting Summary',
-    plan:'Learner Profile & Support Focus',communication:'Communication Summary',action:'Action Summary'}[active])+
+    plan:'Learner Profile & Support Focus',communication:'Communication Summary',action:'Action Summary',review:'Intervention Review Summary',voice:'Learner Perspective Summary'}[active])+
   '</span><textarea name="summary" maxlength="2000" rows="4" required placeholder="Record factual, strengths-based information…">'+
   clean(existing?.summary||'')+'</textarea></label>'+
   '<div class="support-form-specific">'+fieldsByType[active]()+'</div>'+
