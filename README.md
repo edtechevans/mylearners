@@ -1,5 +1,20 @@
 # AISG | My Learners — Academic and Whole-Learner Demo
 
+## Student Support Hub — expanded SSS demonstration (28 October 2026)
+
+This public GitHub Pages site now demonstrates *fictional* SSS casework from an everyday Faculty profile through the specialist SSS workspace. The original academic, Faculty, Student, Leaders and Board dashboards remain separate. The new material is not a school data system.
+
+**SSS overview:** action-led summary with caseload, upcoming reviews, pending referrals, open actions, and the number of synthetic monitoring series reaching their illustration target. Filter the leadership triage by fictional case manager and open a corresponding learner profile directly.
+
+**Student profile:** four compact views — Summary, Plans & Progress, Support History, and Learning Evidence. The Summary surfaces the learner's strengths-and-access focus, classroom approach, learner perspective, next review, case manager and follow-up. The existing academic, WIDA, MAP and Student Experience measures remain in the Evidence view without inventing a diagnosis.
+
+**Plans & Progress:** six-week, fictional observational series with a stable five-opportunity denominator, target and accessible numerical labels. A specialist can record a sample **Continue / Adapt / Intensify / Fade Support** decision and rationale in session-only casework. Referrals advance through Submitted → Reviewed → Support Agreed → Progress Reviewed → Closed. A printable SST meeting brief assembles existing fictional goals, actions, evidence and voice. TLF/UDL-aligned strategy examples can create a shared sample classroom note; student/caregiver voice examples can be documented separately.
+
+**Scope:** new casework and changes exist only in the browser's temporary session storage and are not accessible on another device. No secure cross-user collaboration, real staff notifications, private student records, casework attachments, operational SST referrals or production permissions exist. The role selector is not an access boundary; never input genuine learner/family information. Production use requires school-approved secure hosting, Microsoft SSO, server-side student-level role checks, audit history, provenance, record retention, accessible consent workflows, and LAC/CPOMS ownership decisions.
+
+**Modules:** `src/sss-leadership-data.mjs`, `src/sss-leadership-ui.mjs`, and `src/sss-leadership.css`. `tests/sss-leadership.test.mjs` covers synthetic summary reconciliation, learner-scoped drafts and monitoring.
+
+
 ## Faculty and Student academic snapshots (October 2026)
 
 The Faculty class roster can switch its academic result column between **issued report-card outcomes by subject** and, where grade-eligible, **IXL Mathematics diagnostic levels (G1–10)**, **Core Phonics illustrative checks (K–G5)**, and **Fountas & Pinnell text levels (K–G5)**.
