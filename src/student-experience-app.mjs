@@ -522,8 +522,9 @@ function sss(){
   return banner+renderSSSStudentProfile({
    data:DATA,academicRecords:ACADEMIC_RECORDS,experienceRecords:RECORDS,
    sssRecords:SSS_RECORDS,studentId:state.sssStudentId,
-   reportYear:state.academicReportYear,academicOpen:state.sssAcademicOpen
-  })+renderSSSWorkspace(DATA.userIndex.get(state.sssStudentId),supportEntries(),SSS_RECORDS.get(state.sssStudentId),state.supportFilter,state.supportQuery)+info();
+   reportYear:state.academicReportYear,academicOpen:state.sssAcademicOpen,
+   supportWorkspace:renderSSSWorkspace(DATA.userIndex.get(state.sssStudentId),supportEntries(),SSS_RECORDS.get(state.sssStudentId),state.supportFilter,state.supportQuery)
+  })+info();
  }
  const cohort=DATA.students.filter(s=>SSS_RECORDS.has(s.id));
  return banner+renderSupportDashboard(DATA,SSS_RECORDS,supportEntries(),cohort)+renderSSSOverview({
