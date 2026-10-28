@@ -109,7 +109,7 @@ test('SSS student profile reuses Faculty academic, attendance, MAP and experienc
  const expanded=renderSSSStudentProfile({...context,studentId:student.id,academicOpen:true});
  assert.match(expanded,/data-sss-detail="academics" open/);
 });
-test('non-members cannot be opened, and no case-note editing or raw student imports exist',()=>{
+test('non-members remain unavailable and default SSS evidence contains no unrestricted case forms',()=>{
  const outsider=data.students.find(s=>!sssRecords.has(s.id));
  const html=renderSSSStudentProfile({...context,studentId:outsider.id});
  assert.match(html,/No SSS Record Available/);
@@ -117,6 +117,6 @@ test('non-members cannot be opened, and no case-note editing or raw student impo
  assert.doesNotMatch(html,/WIDA Screening Snapshot/);
  const own=renderSSSStudentProfile({...context,studentId:cohort[0].id});
  assert.doesNotMatch(own,/<form|<textarea|data-save-case|data-edit-iep|cpoms incident/i);
- assert.match(own,/does not save referrals, case notes,/);
+ assert.match(own,/New entries remain only in this browser session/);
  assert.match(own,/server-side row permissions/);
 });
