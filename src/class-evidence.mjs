@@ -199,14 +199,15 @@ export function renderClassEvidencePanel(students,{
   (selected==='engagement'||selected==='belonging')?
   '<p class="class-evidence-secondary">Maia-style PERMA examples are available separately in Secondary classes; the two measures use different instruments and scales.</p>':'';
  return '<section class="class-evidence-panel" aria-label="Select learning and wellbeing evidence for the class roster">'+
-  '<div class="class-evidence-heading"><div><span class="academic-eyebrow">CLASS DATA</span>'+
-  '<h3>Learning &amp; Wellbeing Evidence</h3><p>Choose a measure. Compare two columns if useful.</p></div></div>'+
+  '<div class="class-evidence-heading"><div><h3>Learning &amp; Wellbeing Evidence</h3>'+
+  '<p>Choose an evidence measure for your class.</p></div><span class="class-evidence-heading-tag" aria-hidden="true">CLASS VIEW</span></div>'+
   '<div class="class-evidence-navigation">'+tabs+'</div>'+
   '<div class="class-evidence-controls">'+compareSelect+(filters.length?
    '<div class="class-evidence-filter-row">'+filters.join('')+'</div>':'')+'</div>'+
   '<div class="class-evidence-selection'+(paired!=='none'?' has-comparison':'')+'">'+
   summary(selected)+(paired!=='none'?summary(paired):'')+'</div>'+
   (paired!=='none'?'<p class="class-evidence-comparison-note">Two measures shown separately, with their own units and dates. No combined score.</p>':'')+
-  '<p class="class-evidence-help">'+esc(modeHelp[selected])+'</p>'+note+breakdown+
+  '<details class="class-evidence-methodology"><summary>About this measure</summary>'+
+  '<p class="class-evidence-help">'+esc(modeHelp[selected])+'</p>'+note+'</details>'+breakdown+
   '</section>';
 }
