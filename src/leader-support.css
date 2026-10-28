@@ -1,0 +1,44 @@
+/* Leader dashboard: Student Support overview — compact, executive and aggregate-only. */
+.leader-support{margin-top:23px}
+.leader-support-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:17px 0 12px}
+.leader-support-metric{min-width:0;background:#fff;border:1px solid var(--ui-line,#d8e4eb);border-radius:13px;padding:17px 18px;box-shadow:0 2px 10px #123e6109}
+.leader-support-metric>span{display:block;font-size:12px;line-height:1.45;font-weight:750;color:#3d6178}
+.leader-support-metric>strong{display:block;font-size:29px;line-height:1.25;letter-spacing:-.045em;color:#103b61;margin:7px 0}
+.leader-support-metric>small{display:block;font-size:11px;color:#5d7889;line-height:1.55}
+.leader-support-caption,.leader-support-disclaimer{font-size:11px;color:#647d8e;line-height:1.7;margin:9px 0 0}
+.leader-support-detail{margin-top:17px}
+.leader-support-deep-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.leader-support-subpanel{border:1px solid #dce8ef;border-radius:12px;background:#fff;padding:19px 20px;min-width:0}
+.leader-support-subpanel h3,.leader-support-inquiry h3{font-size:16px;letter-spacing:-.025em;margin:0 0 5px;color:#103b61}
+.leader-support-subpanel h4{font-size:12px;margin:15px 0 8px;color:#35566c}
+.leader-support-subpanel p{font-size:11px;line-height:1.65;color:#60798b;margin:0 0 15px}
+.leader-support-subpanel>small{display:block;font-size:10.5px;color:#6e8492;line-height:1.65;margin:13px 0 0}
+.leader-support-weeks{display:grid;gap:12px;margin:15px 0 0}
+.leader-support-week{display:grid;grid-template-columns:55px minmax(0,1fr) 43px;align-items:center;gap:11px;font-size:11px;color:#4c687b}
+.leader-support-week strong{text-align:right;color:#174865;font-weight:750}
+.leader-support-track{height:9px;border-radius:20px;background:#eaf1f5;overflow:hidden;position:relative}
+.leader-support-track i{display:block;background:#1c6f8a;height:100%;border-radius:20px}
+.leader-support-bar-row{margin:12px 0 16px}
+.leader-support-bar-head{display:flex;align-items:baseline;justify-content:space-between;gap:9px;font-size:11px;margin:0 0 7px}
+.leader-support-bar-head strong{color:#315670}
+.leader-support-bar-head span{font-size:10px;color:#617a8a;text-align:right}
+.leader-support-process-list{display:grid;gap:10px;margin:13px 0}
+.leader-support-process-list>div,.leader-support-stages>div{display:flex;justify-content:space-between;align-items:center;gap:15px;border-bottom:1px solid #edf2f5;padding:8px 0;font-size:11px;color:#547186}
+.leader-support-process-list strong,.leader-support-stages strong{color:#103b61;font-size:13px;white-space:nowrap}
+.leader-support-stages{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+.leader-support-wide{grid-column:1/-1}
+.leader-support-division-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.leader-support-division-grid article{border-radius:10px;background:#f4f8fa;padding:15px}
+.leader-support-division-grid strong{font-size:13px;color:#103b61}
+.leader-support-division-grid p{font-size:11px;color:#617b8d;margin:8px 0}
+.leader-support-division-grid dl{margin:10px 0 0}
+.leader-support-division-grid dl>div{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11px;margin:7px 0}
+.leader-support-division-grid dt{color:#5f7888}
+.leader-support-division-grid dd{margin:0;color:#103b61;font-weight:700}
+.leader-support-inquiry{border-radius:11px;background:#f1f5f8;border:1px solid #d9e5ed;padding:17px 19px}
+.leader-support-inquiry ul{margin:10px 0 0;padding-left:19px;display:grid;gap:8px}
+.leader-support-inquiry li{font-size:12px;line-height:1.65;color:#426379}
+.leader-support-private{padding:17px;border:1px solid #d7e4ec;border-radius:11px;color:#526f81;background:#f7fafc;font-size:12px;line-height:1.65}
+@media(max-width:1060px){.leader-support-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:750px){.leader-support-deep-grid,.leader-support-division-grid{grid-template-columns:1fr}.leader-support-wide{grid-column:auto}}
+@media(max-width:530px){.leader-support-kpis{grid-template-columns:1fr}.leader-support-subpanel{padding:15px}.leader-support-stages{grid-template-columns:1fr}}
