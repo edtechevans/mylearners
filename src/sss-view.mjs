@@ -6,6 +6,7 @@
 import {GRADES,attendanceSummary,gradeNumber} from './data.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
 import {sssCohort,sssRecordFor} from './sss-demo-data.mjs';
+import {managerFor} from './sss-leadership-data.mjs';
 import {academicFor,latestAcademic} from './academic-journey-data.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
 import {experienceFor,experienceEligible} from './experience-data.mjs';
@@ -56,7 +57,7 @@ function studentRow(student,record,academics){
  return '<button type="button" class="sss-roster-row" data-sss-student="'+esc(student.id)+
   '" aria-label="Open SSS example for '+esc(student.name)+', '+esc(gradeTitle(student.grade))+'">'+
   '<span class="sss-roster-name"><strong>'+esc(student.last+', '+student.first)+'</strong>'+
-  '<small>'+esc(student.classId)+' · '+esc(student.campus)+'</small></span>'+
+  '<small>'+esc(student.classId)+' · '+esc(student.campus)+' · '+esc(managerFor(student))+'</small></span>'+
   '<span class="sss-roster-service">'+serviceChips(record)+
   '<span class="sss-roster-flags">'+supportChips(student)+'</span></span>'+
   '<span class="sss-roster-result">'+evidence+'</span>'+
@@ -80,9 +81,9 @@ function gradeGroup(students,grade,records,academics,open,collapsible=true){
   table+'</details>';
 }
 
-export function renderSSSOverview({data,academicRecords,sssRecords,grade='All',query='',openGrades=[]}){
+export function renderSSSOverview({data,academicRecords,sssRecords,grade='All',query='',openGrades=[],caseManager='All'}){
  const cohort=sssCohort(data.students,sssRecords);
- const selected=sssCohort(data.students,sssRecords,grade,query);
+ const selected=sssCohort(data.students,sssRecords,grade,query).filter(s=>caseManager==='All'||managerFor(s)===caseManager);
  const counts={
   language:selected.filter(s=>sssRecords.get(s.id).services.includes('EAL')).length,
   learning:selected.filter(s=>sssRecords.get(s.id).services.includes('Learning Support')).length,
