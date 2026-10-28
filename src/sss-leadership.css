@@ -1,0 +1,87 @@
+/* SSS leadership and intervention layer — retains the AISG navy, soft blue and muted red palette. */
+.support-leadership,.support-plans-panel,.support-summary-panel{margin:18px 0 28px}
+.support-lead-manager{display:grid;gap:4px;font-size:11px;font-weight:700;color:#49687c;min-width:195px}
+.support-lead-manager select{width:100%;max-width:none;font-weight:600}
+.support-lead-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:15px 0}
+.support-lead-metric{min-width:0;background:#fff;border:1px solid #d9e5ed;border-radius:12px;padding:16px;box-shadow:0 2px 8px #103b6106}
+.support-lead-metric>span{display:block;color:#47677c;font-size:11px;font-weight:750}
+.support-lead-metric>strong{display:block;font-size:27px;line-height:1.35;letter-spacing:-.03em;color:#103b61;margin:5px 0}
+.support-lead-metric>small{font-size:10px;line-height:1.4;color:#718697}
+.support-queue-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.support-queue{background:#fff;border:1px solid #d9e5ed;border-radius:13px;padding:17px;min-width:0}
+.support-queue-top{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #edf2f6;padding-bottom:11px}
+.support-queue-top h3,.support-intervention h3,.support-referrals h3,.support-learner-voice h3,.support-strategy-library h3{font-size:17px;color:#103b61;margin:0 0 4px}
+.support-queue-top p,.support-leadership p,.support-plans-panel p{line-height:1.6}
+.support-queue-top p{font-size:11px;color:#617c8e;margin:0}
+.support-queue-top>strong{font-size:23px;color:#103b61}
+.support-queue-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid #eff3f6}
+.support-queue-item:last-child{border:0}
+.support-queue-item b{display:block;font-size:12px;color:#27495e;overflow-wrap:anywhere}
+.support-queue-item small{display:block;font-size:10px;color:#6b8391;margin-top:3px}
+.support-queue-empty{font-size:11px;color:#7c8c99;margin:10px 0}
+.support-profile-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:20px 0}
+.support-profile-tabs button{min-width:0;background:#f3f7fa;border:1px solid #d6e3eb;color:#46657a;text-align:left;border-radius:11px;padding:13px 15px}
+.support-profile-tabs button.is-active{background:#103b61;border-color:#103b61;color:#fff}
+.support-profile-tabs strong,.support-profile-tabs small{display:block}
+.support-profile-tabs strong{font-size:12px}
+.support-profile-tabs small{font-size:10px;margin-top:3px;opacity:.83}
+.support-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+.support-snapshot-card,.support-voice-summary,.support-intervention,.support-referrals,.support-learner-voice,.support-strategy-library,.support-meeting-prep{background:#fff;border:1px solid #d9e5ed;border-radius:13px;padding:18px;min-width:0}
+.support-snapshot-card span{display:block;color:#5d7789;font-size:11px;font-weight:700;margin-bottom:8px}
+.support-snapshot-card strong{display:block;color:#103b61;font-size:14px;overflow-wrap:anywhere}
+.support-snapshot-card p{color:#5c7586;font-size:11px;margin:7px 0 0;line-height:1.65}
+.support-summary-bottom{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.support-voice-summary h3{font-size:15px;color:#103b61;margin:0 0 9px}
+.support-voice-summary p,.support-voice-summary li{font-size:12px;color:#48677b;line-height:1.6}
+.support-voice-summary small{display:block;color:#718697;font-size:10px;margin:9px 0}
+.support-voice-summary ul{padding-left:18px;margin:7px 0}
+.support-intervention,.support-referrals,.support-learner-voice,.support-strategy-library,.support-meeting-prep{margin:13px 0}
+.support-progress-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.support-progress-stats>div{background:#f1f6f9;border-radius:9px;padding:11px}
+.support-progress-stats small,.support-progress-stats strong{display:block}
+.support-progress-stats small{font-size:11px;color:#637d8e}
+.support-progress-stats strong{font-size:21px;color:#103b61}
+.support-progress-chart{width:100%;height:auto;max-height:245px;display:block;margin:10px auto}
+.support-progress-legend{display:flex;gap:20px;flex-wrap:wrap;color:#536f83;font-size:11px}
+.support-progress-legend span{display:flex;gap:8px;align-items:center}
+.support-progress-legend i{display:inline-block;width:24px;height:3px;background:#156b86}
+.support-progress-legend .is-target{background:#8f4552}
+.support-small-note{font-size:11px!important;color:#698092!important;line-height:1.65;margin:12px 0}
+.support-strategy-note{border-left:3px solid #2e718c;padding:9px 13px;margin:14px 0;background:#f4f8fa}
+.support-strategy-note b{font-size:12px;color:#103b61}
+.support-strategy-note p{font-size:12px;margin:6px 0;color:#4f697a}
+.support-strategy-note small{font-size:10px;color:#617f90}
+.support-decision-record{display:grid;gap:5px;border-radius:9px;background:#f7eff1;color:#803b49;padding:12px;font-size:12px}
+.support-decision-record span{color:#536d7e}
+.support-review-form{display:grid;grid-template-columns:1fr 2fr auto;gap:10px;align-items:end;border-top:1px solid #e4edf2;padding-top:14px;margin-top:14px}
+.support-review-form label{display:grid;gap:5px;min-width:0;color:#4b6577;font-size:11px;font-weight:700}
+.support-review-form select,.support-review-form textarea{max-width:none;width:100%;min-width:0;height:43px}
+.support-referral-stages{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0}
+.support-referral-stages span{background:#edf3f8;border-radius:7px;padding:7px 9px;color:#4d6c80;font-size:10px;font-weight:650}
+.support-referral-card{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #e6eef3;padding:14px 0}
+.support-referral-card strong{display:block;font-size:13px;color:#103b61}
+.support-referral-card small{display:block;font-size:10px;color:#6b8291}
+.support-referral-card p{font-size:11px;color:#587388;margin:8px 0}
+.support-mini-pill{display:inline-block;background:#edf3f8;color:#385d73;padding:4px 8px;font-size:10px;font-weight:700;border-radius:7px;margin:3px}
+.support-voice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.support-voice-grid article{background:#f4f8fa;border-radius:9px;padding:13px}
+.support-voice-grid small{font-size:11px;font-weight:700;color:#567183}
+.support-voice-grid p{font-size:12px;color:#274d63;margin:8px 0 0}
+.support-voice-footer{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;color:#607b8d;font-size:11px}
+.support-library-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-top:12px}
+.support-library-grid article{border:1px solid #e3ebf0;border-radius:10px;padding:15px;min-width:0}
+.support-library-grid article>small{font-size:10px;color:#6b8798}
+.support-library-grid h4{font-size:14px;color:#103b61;margin:6px 0}
+.support-library-grid p{font-size:11px;color:#4c6b7f}
+.support-library-check{border-top:1px solid #e7eff3;padding-top:9px}
+.support-meeting-prep>summary{cursor:pointer;list-style:none;display:flex;gap:12px;justify-content:space-between;color:#103b61}
+.support-meeting-prep summary::-webkit-details-marker{display:none}
+.support-meeting-prep small{color:#668092;font-size:11px}
+.support-briefprint{padding:16px 0;color:#23465b}
+.support-briefprint h3{font-size:18px}
+.support-briefprint dt{font-size:11px;font-weight:800;margin-top:12px;color:#103b61}
+.support-briefprint dd{font-size:12px;color:#4a6c7f;margin:4px 0 0;line-height:1.6}
+@media(max-width:1180px){.support-lead-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.support-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:900px){.support-queue-grid{grid-template-columns:1fr}.support-review-form{grid-template-columns:1fr 1fr}.support-review-form button{grid-column:1/-1}}
+@media(max-width:610px){.support-lead-metrics,.support-summary-grid,.support-summary-bottom,.support-voice-grid,.support-library-grid{grid-template-columns:1fr}.support-profile-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.support-review-form{grid-template-columns:1fr}.support-referral-card{align-items:flex-start;flex-direction:column}}
+@media print{body *{visibility:hidden!important}.support-briefprint,.support-briefprint *{visibility:visible!important}.support-briefprint{position:absolute;left:18px;top:10px;width:calc(100% - 36px);background:#fff!important} }
