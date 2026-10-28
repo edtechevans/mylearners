@@ -1,5 +1,18 @@
 # AISG | My Learners — Academic and Whole-Learner Demo
 
+## Leaders — Student Support Overview (28 October 2026)
+
+The **Leaders** dashboard now includes a third visible section, **Student Support**, immediately below the academic and student-experience snapshots. It preserves the four original leadership headline metrics and uses the existing school / division / grade / class filters.
+
+**Top-level measures** come from the same entirely fictional SSS cohort and session-only casework as the SSS role: learners included in the demo support cohort, support reviews due within the next 30 days, completed actions (with numerator and denominator), and synthetic intervention monitoring series meeting their own sample goals (with numerator and denominator). The section does not present diagnosis, severity, effectiveness, case names, student notes or a ranking.
+
+**Optional deeper analysis:** six example monitoring weeks, SST referral stages, open follow-ups, documentation of plans / team decisions / learner voice / caregiver communication, EAL and Learning Support service membership (which can overlap), and division-level comparisons where large enough. It ends with questions for professional inquiry, not prescriptive judgments. Expanded state is preserved while leaders change filters.
+
+**Access and interpretation:** this public prototype has only fictional learners, and the dashboard *also* suppresses aggregate displays for fewer than 10 students or 5 supported learners. Detailed casework remains in the SSS demonstration. The client-side role switch is not production security. Never import actual student records or staff case notes into GitHub Pages. Real deployment needs approved private hosting, Microsoft SSO, server-enforced permissions, safeguarding separation and audit logs.
+
+Code: `src/leader-support-summary.mjs`, `src/leader-support-view.mjs`, `src/leader-support.css`; checks: `tests/leader-support.test.mjs`.
+
+
 ## Student Support Hub — expanded SSS demonstration (28 October 2026)
 
 This public GitHub Pages site now demonstrates *fictional* SSS casework from an everyday Faculty profile through the specialist SSS workspace. The original academic, Faculty, Student, Leaders and Board dashboards remain separate. The new material is not a school data system.
