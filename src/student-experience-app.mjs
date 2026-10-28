@@ -2,6 +2,7 @@ import {generateDemoData,attendanceSummary,gradeNumber,GRADES} from './data.mjs'
 import {applyFacultyDemo,DEFAULT_TEACHER_ID} from './faculty-demo.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs';
+import {renderLeaderSupportSection} from './leader-support-view.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
 import {createSSSDemoRecords} from './sss-demo-data.mjs';
 import {seedSupportDemo,loadDraftEntries,storeDraftEntries,createDraftEntry} from './support-workspace-data.mjs';
@@ -67,6 +68,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  classEvidence:'report',classMapSubject:'Mathematics',classCompare:'none',classExperienceWindow:'F26',
  maiaDimension:'relationships',maiaWindow:'F26',
  studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
+  leaderSupportOpen:false,
  sssGrade:'All',sssQuery:'',sssStudentId:'',sssOpenGrades:['G3'],sssAcademicOpen:false,
   supportForm:null,supportFilter:'all',supportQuery:'',
   sssManager:'All',sssPanel:'summary',supportBarrier:'All',
@@ -496,6 +498,7 @@ function leader(){
   '</label></div>'+experience+
   (splitExperience?'<p class="leader-data-note">Elementary and Secondary students answer different questions; their indices are intentionally shown separately.</p>':'')+
   '</section>'+
+  renderLeaderSupportSection({students:group,sssRecords:SSS_RECORDS,entries:supportEntries(),open:state.leaderSupportOpen})+
   '<details class="leader-detail" data-leader-panel="academics"'+
   (state.leaderAcademicOpen?' open':'')+'>'+
   '<summary><span><strong>Explore academic evidence</strong>'+
@@ -1127,6 +1130,7 @@ root.addEventListener('toggle',e=>{
  const leaderPanel=e.target.closest?.('details[data-leader-panel]');
  if(leaderPanel&&state.role==='leader'){
   if(leaderPanel.dataset.leaderPanel==='academics')state.leaderAcademicOpen=leaderPanel.open;
+   if(leaderPanel.dataset.leaderPanel==='support')state.leaderSupportOpen=leaderPanel.open;
   if(leaderPanel.dataset.leaderPanel==='patterns')state.leaderPatternsOpen=leaderPanel.open;
   return;
  }
