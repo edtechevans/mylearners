@@ -5,7 +5,9 @@ import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReport
 import {demoTagsForStudent} from './learner-tags.mjs';
 import {createSSSDemoRecords} from './sss-demo-data.mjs';
 import {seedSupportDemo,loadDraftEntries,storeDraftEntries,createDraftEntry} from './support-workspace-data.mjs';
-import {renderFacultySupportPanel,renderSupportDashboard,renderSSSWorkspace,renderSupportForm} from './support-workspace-ui.mjs';
+import {renderFacultySupportPanel,renderSSSWorkspace,renderSupportForm} from './support-workspace-ui.mjs';
+import {CASE_MANAGERS,REFERRAL_STAGES,STRATEGIES,lastReferralStage} from './sss-leadership-data.mjs';
+import {renderSSSLeadershipDashboard,renderSSSProfileNavigation,renderSSSSummary,renderSSSPlans} from './sss-leadership-ui.mjs';
 import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=20261028titles1';
 import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs';
@@ -67,6 +69,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
  sssGrade:'All',sssQuery:'',sssStudentId:'',sssOpenGrades:['G3'],sssAcademicOpen:false,
   supportForm:null,supportFilter:'all',supportQuery:'',
+  sssManager:'All',sssPanel:'summary',supportBarrier:'All',
  boardWindow:saved('my-board-window-v2','fall2026'),boardSubject:saved('my-board-subject','math'),
  boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all'),
  boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardTrendRange:'recent',boardOverviewChart:'map',
@@ -517,17 +520,22 @@ function leader(){
 }
 function sss(){
  const banner=heading('Student Support Services',
-  'Coordinated learning support, review cycles and case histories. All records are fictional.');
+  'Coordinated interventions, timely reviews and learner-centred decisions. All records are fictional.');
  if(state.sssStudentId){
+  const student=DATA.userIndex.get(state.sssStudentId),record=SSS_RECORDS.get(state.sssStudentId);
+  const entries=supportEntries();
   return banner+renderSSSStudentProfile({
    data:DATA,academicRecords:ACADEMIC_RECORDS,experienceRecords:RECORDS,
    sssRecords:SSS_RECORDS,studentId:state.sssStudentId,
    reportYear:state.academicReportYear,academicOpen:state.sssAcademicOpen,
-   supportWorkspace:renderSSSWorkspace(DATA.userIndex.get(state.sssStudentId),supportEntries(),SSS_RECORDS.get(state.sssStudentId),state.supportFilter,state.supportQuery)
+   panel:state.sssPanel,tabNavigation:renderSSSProfileNavigation(state.sssPanel),
+   summaryWorkspace:renderSSSSummary(student,record,entries),
+   plansWorkspace:renderSSSPlans(student,record,entries,state.supportBarrier),
+   supportWorkspace:renderSSSWorkspace(student,entries,record,state.supportFilter,state.supportQuery)
   })+info();
  }
- const cohort=DATA.students.filter(s=>SSS_RECORDS.has(s.id));
- return banner+renderSupportDashboard(DATA,SSS_RECORDS,supportEntries(),cohort)+renderSSSOverview({
+ const cohort=DATA.students.filter(x=>SSS_RECORDS.has(x.id));
+ return banner+renderSSSLeadershipDashboard(cohort,SSS_RECORDS,supportEntries(),state.sssManager)+renderSSSOverview({
   data:DATA,academicRecords:ACADEMIC_RECORDS,sssRecords:SSS_RECORDS,
   grade:state.sssGrade,query:state.sssQuery,openGrades:state.sssOpenGrades
  })+info();
@@ -736,11 +744,53 @@ root.addEventListener('click',e=>{
   const item=supportEntries().find(x=>x.id===st.dataset.supportToggle&&x.studentId===state.sssStudentId&&x.type==='action');
   if(item){SUPPORT_DRAFTS=[...SUPPORT_DRAFTS.filter(x=>x.id!==item.id),{...item,status:item.status==='Completed'?'Open':'Completed',source:'session'}];storeDraftEntries(SUPPORT_DRAFTS);render()}return;
  }
+ const sssNavigation=e.target.closest('[data-sss-panel]');
+ if(sssNavigation&&state.role==='sss'&&state.sssStudentId){
+  const next=sssNavigation.dataset.sssPanel;
+  if(['summary','plans','history','evidence'].includes(next)){
+   state.sssPanel=next;render();
+   root.querySelector('[data-sss-panel="'+next+'"]')?.focus?.({preventScroll:true});
+  }
+  return;
+ }
+ const leadOpen=e.target.closest('[data-sss-open]');
+ if(leadOpen&&state.role==='sss'){
+  const id=leadOpen.dataset.sssOpen;
+  if(!SSS_RECORDS.has(id))return;
+  state.sssStudentId=id;state.sssPanel=leadOpen.dataset.sssOpenPanel||'summary';
+  state.supportQuery='';state.supportFilter='all';render();
+  globalThis.window?.scrollTo?.(0,0);return;
+ }
+ const referralNext=e.target.closest('[data-support-referral-next]');
+ if(referralNext&&state.role==='sss'&&state.sssStudentId){
+  const item=supportEntries().find(x=>x.id===referralNext.dataset.supportReferralNext&&
+   x.type==='referral'&&x.studentId===state.sssStudentId);
+  if(!item)return;
+  const index=REFERRAL_STAGES.indexOf(lastReferralStage(item));
+  if(index<0||index>=REFERRAL_STAGES.length-1)return;
+  const next=REFERRAL_STAGES[index+1];
+  SUPPORT_DRAFTS=[...SUPPORT_DRAFTS.filter(x=>x.id!==item.id),
+   {...item,source:'session',status:next,referralStage:next}];
+  storeDraftEntries(SUPPORT_DRAFTS);render();return;
+ }
+ const strategyAdd=e.target.closest('[data-support-use-strategy]');
+ if(strategyAdd&&state.role==='sss'&&state.sssStudentId){
+  const strategy=STRATEGIES.find(x=>x.id===strategyAdd.dataset.supportUseStrategy);
+  if(!strategy||strategyAdd.dataset.supportStrategyStudent!==state.sssStudentId)return;
+  const entry=createDraftEntry({
+   type:'note',date:'2026-10-28',title:'Classroom strategy · '+strategy.title,
+   summary:strategy.how,category:'Strategy Review',nextStep:strategy.check,
+   visibility:'shared'
+  },state.sssStudentId,'sss');
+  SUPPORT_DRAFTS=[...SUPPORT_DRAFTS,entry];storeDraftEntries(SUPPORT_DRAFTS);render();return;
+ }
+ const printBrief=e.target.closest('[data-support-print]');
+ if(printBrief&&state.role==='sss'){globalThis.window?.print?.();return}
  const sssStudent=e.target.closest('[data-sss-student]');
  if(sssStudent&&state.role==='sss'){
   const id=sssStudent.dataset.sssStudent;
   if(!SSS_RECORDS.has(id))return;
-  state.sssStudentId=id;state.sssAcademicOpen=false;
+  state.sssStudentId=id;state.sssAcademicOpen=false;state.sssPanel='summary';
   state.academicReportYear='';render();
   globalThis.window?.scrollTo?.(0,0);
   return;
@@ -791,7 +841,7 @@ root.addEventListener('click',e=>{
  state.role=role.dataset.role;state.details=false;state.studentId='';state.classId='';state.query='';state.academicReportYear='';
  if(state.role==='faculty')recallFaculty();
  if(state.role==='student'){state.studentReportsOpen=false;state.studentWellbeingOpen=false}
- if(state.role==='sss'){state.sssStudentId='';state.sssAcademicOpen=false}
+ if(state.role==='sss'){state.sssStudentId='';state.sssAcademicOpen=false;state.sssPanel='summary'}
  if(globalThis.location?.hash!=='#/'+state.role)globalThis.location.hash='#/'+state.role;
  render();
  root.querySelector('[data-role="'+state.role+'"]')?.focus({preventScroll:true});
@@ -915,6 +965,14 @@ root.addEventListener('click',e=>{
  const link=e.target.closest('[data-student]');if(link){state.studentId=link.dataset.student;state.details=false;state.academicReportYear='';render();window.scrollTo(0,0)}
 });
 root.addEventListener('change',e=>{
+ const manager=e.target.closest('[data-sss-manager]');
+ if(manager&&state.role==='sss'){
+  state.sssManager=CASE_MANAGERS.includes(manager.value)?manager.value:'All';render();return;
+ }
+ const barrier=e.target.closest('[data-support-barrier]');
+ if(barrier&&state.role==='sss'){
+  state.supportBarrier=barrier.value;render();return;
+ }
  const supportType=e.target.closest('[data-support-form-type]');
  if(supportType&&state.supportForm){state.supportForm.type=supportType.value;render();return}
  const supportFilter=e.target.closest('[data-support-filter]');
@@ -1027,7 +1085,21 @@ root.addEventListener('change',e=>{
  render()
 });
 root.addEventListener('submit',e=>{
- if(!e.target.matches('[data-support-form]'))return;
+ if(e.target.matches?.('[data-support-review-form]')&&state.role==='sss'){
+  e.preventDefault();
+  const id=e.target.dataset.supportStudent;
+  if(id!==state.sssStudentId||!SSS_RECORDS.has(id))return;
+  const values=Object.fromEntries(new FormData(e.target).entries());
+  if(!['Continue','Adapt','Intensify','Fade Support'].includes(values.decision)||
+   !String(values.summary||'').trim())return;
+  const entry=createDraftEntry({
+   type:'review',date:'2026-10-28',title:'Collaborative Intervention Review',
+   summary:values.summary,decision:values.decision,visibility:'restricted',
+   reviewDate:SSS_RECORDS.get(id).reviewDate
+  },id,'sss');
+  SUPPORT_DRAFTS.push(entry);storeDraftEntries(SUPPORT_DRAFTS);render();return;
+ }
+ if(!e.target.matches?.('[data-support-form]'))return;
  e.preventDefault();const form=e.target,role=form.dataset.supportRole,id=form.dataset.supportStudent;
  if(!DATA.userIndex.has(id)||(role==='faculty'&&!ownStudents().some(s=>s.id===id))||(role==='sss'&&!SSS_RECORDS.has(id)))return;
  const values=Object.fromEntries(new FormData(form).entries());
@@ -1094,7 +1166,7 @@ try{globalThis.window?.addEventListener?.('hashchange',()=>{
   state.query='';state.academicReportYear='';
   if(id==='faculty')recallFaculty();
   if(id==='student'){state.studentReportsOpen=false;state.studentWellbeingOpen=false}
-  if(id==='sss'){state.sssStudentId='';state.sssAcademicOpen=false}
+  if(id==='sss'){state.sssStudentId='';state.sssAcademicOpen=false;state.sssPanel='summary'}
   render();globalThis.window?.scrollTo?.(0,0)
  }
 })}catch{}
