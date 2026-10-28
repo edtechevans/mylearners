@@ -157,7 +157,7 @@ function renderWida(record){
 }
 
 export function renderSSSStudentProfile({
- data,academicRecords,experienceRecords,sssRecords,studentId,reportYear='',academicOpen=false
+ data,academicRecords,experienceRecords,sssRecords,studentId,reportYear='',academicOpen=false,supportWorkspace=''
 }){
  const record=sssRecordFor(sssRecords,studentId);
  const student=record?data.userIndex.get(studentId):null;
@@ -220,6 +220,7 @@ export function renderSSSStudentProfile({
   ' · '+esc(student.classId)+' · '+esc(student.campus)+'</p>'+
   '<div class="sss-profile-tags">'+serviceChips(record)+supportChips(student)+'</div></div>'+
   '<span class="sss-private-label">Demonstration only · no real support plan</span></div>'+
+   supportWorkspace+
   '<div class="sss-profile-summary"><article class="sss-brief-card">'+
   '<span class="eyebrow">TEAM FOCUS</span><h3>'+esc(record.focus.title)+'</h3>'+
   '<p>'+esc(record.focus.goal)+'</p><small>Illustrative focus — not an individual learning plan</small></article>'+
