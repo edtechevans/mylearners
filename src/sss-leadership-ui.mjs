@@ -143,7 +143,7 @@ function renderVoice(student,entries){
   '<button type="button" class="support-new" data-support-new="'+e(student.id)+'" data-support-type="voice">+ Learner Perspective</button></div>'+
   '<div class="support-voice-grid"><article><small>What Helps Me Learn</small><p>'+e(p.helps)+'</p></article>'+
   '<article><small>What Feels Difficult</small><p>'+e(p.hard)+'</p></article>'+
-  '<article><small>What I'd Like to Try</small><p>'+e(p.try)+'</p></article></div>'+
+  '<article><small>What I Would Like to Try</small><p>'+e(p.try)+'</p></article></div>'+
   '<div class="support-voice-footer"><span>Student voice: '+e(p.source)+'</span>'+
   '<span>Caregiver: '+e(comms[0]?.summary||'No fictional caregiver communication yet')+'</span>'+
   '<button type="button" class="support-small-button" data-support-new="'+e(student.id)+'" data-support-type="communication">Record Caregiver Communication</button></div></section>';
