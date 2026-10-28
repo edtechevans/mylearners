@@ -712,7 +712,7 @@ root.addEventListener('click',e=>{
   main?.scrollIntoView?.({block:'start'});
   return;
  }
- if(e.target.closest('[data-support-cancel]')||e.target.matches('[data-support-overlay]')){state.supportForm=null;render();return}
+ if(e.target.closest('[data-support-cancel]')||e.target.matches?.('[data-support-overlay]')){state.supportForm=null;render();return}
  const sn=e.target.closest('[data-support-new]');
  if(sn&&['faculty','sss'].includes(state.role)){
   const id=sn.dataset.supportNew;
