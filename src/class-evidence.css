@@ -231,3 +231,84 @@
  #app .maia-profile-content{padding:14px}
  #app .maia-dimension-grid{grid-template-columns:1fr}
 }
+
+
+/* Faculty My Students 2026: compact, quiet class intelligence toolbar. */
+#app .roster-daily>.sectionhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px}
+#app .roster-daily>.sectionhead h2{font-size:clamp(21px,2vw,26px);letter-spacing:-.04em}
+#app .roster-daily>.sectionhead .tiny{font-size:12px}
+#app .roster-daily .class-evidence-panel{
+  margin:0 0 12px;padding:14px 17px 12px;border-radius:13px;
+  background:#f8fafc;border-color:#dce7ee;box-shadow:none;
+}
+#app .class-evidence-heading{align-items:center;margin-bottom:11px}
+#app .class-evidence-heading h3{font-size:16px;font-weight:780;letter-spacing:-.025em;margin:0 0 2px}
+#app .class-evidence-heading p{font-size:11.5px;line-height:1.45}
+#app .class-evidence-heading-tag{
+  flex-shrink:0;font-size:9.5px;letter-spacing:.095em;font-weight:800;
+  color:#67849a;background:#edf3f7;padding:5px 8px;border-radius:6px
+}
+#app .class-evidence-navigation{
+  display:flex;align-items:center;flex-wrap:wrap;gap:8px 18px;
+  padding:0 0 11px;border-bottom:1px solid #e2ebf0
+}
+#app .class-evidence-tab-group{display:flex;align-items:center;gap:7px;min-width:0}
+#app .class-evidence-tab-group+.class-evidence-tab-group{border-left:1px solid #dce7ed;padding-left:17px}
+#app .class-evidence-group-label{
+  min-width:0;font-size:10px;letter-spacing:.04em;
+  text-transform:uppercase;color:#6a8192
+}
+#app .class-evidence-tabs{gap:3px}
+#app .class-evidence-tabs button{
+  padding:7px 10px;min-height:33px;font-size:11.5px;
+  border-radius:7px;font-weight:700;transition:background .15s ease,color .15s ease
+}
+#app .class-evidence-tabs button.active{
+  color:#113c5e;border-color:#cbdce8;background:#e8f0f6;
+  box-shadow:none
+}
+#app .class-evidence-controls{
+  padding:11px 0 5px;align-items:center;justify-content:flex-start;gap:9px 17px
+}
+#app .class-evidence-filter-row{gap:8px 15px;align-items:center}
+#app .class-evidence-controls .class-compare-filter,
+#app .class-evidence-filter-row .class-evidence-filter{gap:7px;color:#496c81;font-size:11.5px}
+#app .class-evidence-filter select{min-height:34px;border-radius:8px;padding:5px 27px 5px 9px;font-size:11.5px}
+#app .class-evidence-controls .class-compare-filter select{min-width:185px;max-width:240px}
+#app .class-evidence-filter-row .class-evidence-filter select{min-width:130px;max-width:220px}
+#app .class-evidence-selection{
+  margin-top:5px;padding:12px 14px;gap:13px 25px;
+  border:1px solid #e0e9ef;border-radius:10px;background:#fff;
+}
+#app .class-evidence-selected{gap:4px 12px;align-items:baseline}
+#app .class-evidence-selected>span:first-child{font-size:11.5px}
+#app .class-evidence-selected strong{font-size:23px}
+#app .class-evidence-selected>span:last-child{font-size:11px}
+#app .class-evidence-selection.has-comparison{
+  margin-top:7px;padding:8px;gap:8px;border-top:1px solid #e0e9ef;
+}
+#app .class-evidence-selection.has-comparison .class-evidence-selected{padding:9px 11px;background:#f9fbfd}
+#app .class-evidence-methodology{margin-top:8px;font-size:11px;color:#627e91}
+#app .class-evidence-methodology>summary{width:max-content;max-width:100%;cursor:pointer;font-weight:690;color:#4a7089;padding:3px 0}
+#app .class-evidence-methodology[open]{padding-bottom:4px}
+#app .class-evidence-methodology .class-evidence-help{margin:5px 0 0}
+#app .class-evidence-breakdown{margin-top:7px;padding-top:8px}
+#app .class-evidence-breakdown summary{font-size:11.5px;min-height:25px}
+#app .roster-daily .tablewrap{margin-top:10px}
+@media(max-width:1050px){
+ #app .class-evidence-controls{flex-direction:row;align-items:center}
+ #app .class-evidence-filter-row{width:auto}
+ #app .class-evidence-tab-group{align-items:center;flex-direction:row;gap:7px}
+}
+@media(max-width:700px){
+ #app .roster-daily .class-evidence-panel{padding:12px}
+ #app .class-evidence-heading-tag{display:none}
+ #app .class-evidence-navigation{align-items:flex-start;flex-direction:column;gap:8px}
+ #app .class-evidence-tab-group+.class-evidence-tab-group{border-left:0;padding-left:0}
+ #app .class-evidence-controls{align-items:stretch;flex-direction:column}
+ #app .class-evidence-filter-row{width:100%}
+ #app .class-evidence-selected{align-items:flex-start}
+}
+@media(prefers-reduced-motion:reduce){
+ #app .class-evidence-tabs button{transition:none}
+}
