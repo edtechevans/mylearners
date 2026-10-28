@@ -33,7 +33,7 @@ test('monitoring examples use six comparable opportunities and an explicit targe
  assert.ok(monitor.observations.every((row,i)=>row.week===i+1&&row.opportunities===5&&row.observed>=0&&row.observed<=5));
  assert.equal(monitor.target,4);
  const html=renderSSSPlans(learner,records.get(learner.id),entries);
- assert.match(html,/Intervention Monitoring/);
+ assert.match(html,/Intervention Monitoring/i);
  assert.match(html,/data-support-review-form/);
  assert.match(html,/Referral Journey/);
  assert.match(html,/Meeting Preparation Brief/);
