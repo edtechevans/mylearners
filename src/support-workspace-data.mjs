@@ -7,7 +7,8 @@ import {hash} from './data.mjs';
 
 export const SUPPORT_TYPES=Object.freeze({
  note:'Case Note',referral:'SST Referral',meeting:'SST Meeting',
- plan:'Support Plan',communication:'Caregiver Communication',action:'Follow-up Action'
+ plan:'Support Plan',communication:'Caregiver Communication',action:'Follow-up Action',
+ review:'Intervention Review',voice:'Learner Perspective'
 });
 export const SUPPORT_AS_OF='2026-10-28';
 const demoDate=(day)=>'2026-10-'+String(day).padStart(2,'0');
@@ -84,11 +85,11 @@ function sanitizeEntry(entry){
  const extra={};
  for(const key of ['category','nextStep','strengths','evidence','previous','participants',
   'barriers','studentNeeds','supports','classroom','actionItems','owner','services','goals',
-  'accommodations','progress'])extra[key]=clean(entry[key],2000);
+  'accommodations','progress','decision','referralStage','learnerHelps','learnerHard','learnerTry'])extra[key]=clean(entry[key],2000);
  return {...extra,id:clean(entry.id,100),studentId:entry.studentId,type:entry.type,
   date:/^\d{4}-\d{2}-\d{2}$/.test(entry.date)?entry.date:SUPPORT_AS_OF,
   title:clean(entry.title,160),summary:clean(entry.summary),author:'Demo Contributor',
-  status:['Active','Open','Completed','Under review','Recorded'].includes(entry.status)?entry.status:'Recorded',
+  status:['Active','Open','Completed','Under review','Recorded','Submitted','Reviewed','Support Agreed','Progress Reviewed','Closed'].includes(entry.status)?entry.status:'Recorded',
   reviewDate:/^\d{4}-\d{2}-\d{2}$/.test(entry.reviewDate)?entry.reviewDate:'',
   visibility:allowedVisibility(entry.visibility),source:'session'};
 }
@@ -101,7 +102,7 @@ export function createDraftEntry(form,studentId,role,existingId=''){
   id:existingId||'draft-'+Date.now()+'-'+Math.random().toString(36).slice(2,8),
   title:clean(form.title,160)||SUPPORT_TYPES[type],
   summary:clean(form.summary),author:'Demo Contributor',source:'session',
-  status:type==='plan'?'Active':type==='action'?'Open':type==='referral'?'Under review':'Recorded',
+  status:type==='plan'?'Active':type==='action'?'Open':type==='referral'?'Submitted':'Recorded',
   visibility:role==='faculty'?'shared':allowedVisibility(form.visibility)};
  return sanitizeEntry(input);
 }
