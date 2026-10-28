@@ -537,7 +537,7 @@ function sss(){
  const cohort=DATA.students.filter(x=>SSS_RECORDS.has(x.id));
  return banner+renderSSSLeadershipDashboard(cohort,SSS_RECORDS,supportEntries(),state.sssManager)+renderSSSOverview({
   data:DATA,academicRecords:ACADEMIC_RECORDS,sssRecords:SSS_RECORDS,
-  grade:state.sssGrade,query:state.sssQuery,openGrades:state.sssOpenGrades
+  grade:state.sssGrade,query:state.sssQuery,openGrades:state.sssOpenGrades,caseManager:state.sssManager
  })+info();
 }
 
