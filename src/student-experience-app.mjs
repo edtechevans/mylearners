@@ -4,6 +4,8 @@ import {latestMapGrowth} from './map-growth.mjs';
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
 import {createSSSDemoRecords} from './sss-demo-data.mjs';
+import {seedSupportDemo,loadDraftEntries,storeDraftEntries,createDraftEntry} from './support-workspace-data.mjs';
+import {renderFacultySupportPanel,renderSupportDashboard,renderSSSWorkspace,renderSupportForm} from './support-workspace-ui.mjs';
 import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=20261028titles1';
 import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs';
@@ -23,6 +25,9 @@ const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(
  ACADEMIC_RECORDS=createAcademicDemoRecords(DATA.students),
  MAIA_RECORDS=createMaiaDemoRecords(DATA.students),
  SSS_RECORDS=createSSSDemoRecords(DATA.students);
+const SUPPORT_SEEDED=seedSupportDemo(DATA.students,SSS_RECORDS);
+let SUPPORT_DRAFTS=loadDraftEntries();
+const supportEntries=()=>[...SUPPORT_SEEDED.filter(x=>!SUPPORT_DRAFTS.some(d=>d.id===x.id)),...SUPPORT_DRAFTS];
 const root=document.getElementById('app');
 const saved=(k,d)=>{try{return sessionStorage.getItem(k)||d}catch{return d}};
 const facultyPref=(teacherId,field,fallback='')=>{
@@ -61,6 +66,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  maiaDimension:'relationships',maiaWindow:'F26',
  studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
  sssGrade:'All',sssQuery:'',sssStudentId:'',sssOpenGrades:['G3'],sssAcademicOpen:false,
+  supportForm:null,supportFilter:'all',supportQuery:'',
  boardWindow:saved('my-board-window-v2','fall2026'),boardSubject:saved('my-board-subject','math'),
  boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all'),
  boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardTrendRange:'recent',boardOverviewChart:'map',
@@ -276,7 +282,8 @@ function learnerProfile(s,studentRole=false){
    safe(t.strategies[0])+'</p></div>').join(' '):
   '<p class="muted">No additional classroom guidance tags in this fictional example.</p>')+
   '<p class="tiny">Detailed support plans and confidential records are not included in this public demo.</p></section>';
- return profileStart+header+profileKpis+academics+wellbeing+maiaFaculty+guidance;
+ return profileStart+header+profileKpis+academics+wellbeing+maiaFaculty+
+   renderFacultySupportPanel(s,supportEntries(),SSS_RECORDS.get(s.id))+guidance;
 }
 
 function quickStat(label,value,detail,action=''){
@@ -510,15 +517,16 @@ function leader(){
 }
 function sss(){
  const banner=heading('Student Support Services',
-  'A grade-organised, read-only demonstration of coordinated learner support.');
+  'Coordinated learning support, review cycles and case histories. All records are fictional.');
  if(state.sssStudentId){
   return banner+renderSSSStudentProfile({
    data:DATA,academicRecords:ACADEMIC_RECORDS,experienceRecords:RECORDS,
    sssRecords:SSS_RECORDS,studentId:state.sssStudentId,
    reportYear:state.academicReportYear,academicOpen:state.sssAcademicOpen
-  })+info();
+  })+renderSSSWorkspace(DATA.userIndex.get(state.sssStudentId),supportEntries(),SSS_RECORDS.get(state.sssStudentId),state.supportFilter,state.supportQuery)+info();
  }
- return banner+renderSSSOverview({
+ const cohort=DATA.students.filter(s=>SSS_RECORDS.has(s.id));
+ return banner+renderSupportDashboard(DATA,SSS_RECORDS,supportEntries(),cohort)+renderSSSOverview({
   data:DATA,academicRecords:ACADEMIC_RECORDS,sssRecords:SSS_RECORDS,
   grade:state.sssGrade,query:state.sssQuery,openGrades:state.sssOpenGrades
  })+info();
@@ -547,7 +555,7 @@ function render(){
  root.innerHTML=header()+'<main class="container" id="main" tabindex="-1">'+content+'</main><footer>'+
  (state.role==='board'?'AISG Board · Aggregated MAP and IB Diploma outcomes · No individual student scores published':
  'My Learners demonstration · Learners, assessments and student check-ins fictional')+
- '</footer>';
+ '</footer>'+(state.supportForm?renderSupportForm(state.supportForm,DATA.userIndex.get(state.supportForm.studentId),SUPPORT_DRAFTS):'');
  if(state.role==='board'&&state.boardView==='explore'&&state.boardMapDetailsOpen){
   root.querySelector('.board-drawer-close')?.focus({preventScroll:true});
  }
@@ -702,6 +710,30 @@ root.addEventListener('click',e=>{
   main?.focus({preventScroll:true});
   main?.scrollIntoView?.({block:'start'});
   return;
+ }
+ if(e.target.closest('[data-support-cancel]')||e.target.matches('[data-support-overlay]')){state.supportForm=null;render();return}
+ const sn=e.target.closest('[data-support-new]');
+ if(sn&&['faculty','sss'].includes(state.role)){
+  const id=sn.dataset.supportNew;
+  if(!DATA.userIndex.has(id)||(state.role==='faculty'&&!ownStudents().some(s=>s.id===id))||
+     (state.role==='sss'&&!SSS_RECORDS.has(id)))return;
+  state.supportForm={studentId:id,type:state.role==='faculty'?'note':sn.dataset.supportType,role:state.role};
+  render();root.querySelector('.support-dialog input[name="title"]')?.focus();return;
+ }
+ const se=e.target.closest('[data-support-edit]');
+ if(se&&state.role==='sss'){
+  const item=SUPPORT_DRAFTS.find(x=>x.id===se.dataset.supportEdit&&x.studentId===state.sssStudentId);
+  if(item){state.supportForm={studentId:item.studentId,type:item.type,id:item.id,role:'sss'};render()}return;
+ }
+ const sd=e.target.closest('[data-support-delete]');
+ if(sd&&state.role==='sss'){
+  SUPPORT_DRAFTS=SUPPORT_DRAFTS.filter(x=>x.id!==sd.dataset.supportDelete);
+  storeDraftEntries(SUPPORT_DRAFTS);render();return;
+ }
+ const st=e.target.closest('[data-support-toggle]');
+ if(st&&state.role==='sss'){
+  const item=supportEntries().find(x=>x.id===st.dataset.supportToggle&&x.studentId===state.sssStudentId&&x.type==='action');
+  if(item){SUPPORT_DRAFTS=[...SUPPORT_DRAFTS.filter(x=>x.id!==item.id),{...item,status:item.status==='Completed'?'Open':'Completed',source:'session'}];storeDraftEntries(SUPPORT_DRAFTS);render()}return;
  }
  const sssStudent=e.target.closest('[data-sss-student]');
  if(sssStudent&&state.role==='sss'){
@@ -882,6 +914,10 @@ root.addEventListener('click',e=>{
  const link=e.target.closest('[data-student]');if(link){state.studentId=link.dataset.student;state.details=false;state.academicReportYear='';render();window.scrollTo(0,0)}
 });
 root.addEventListener('change',e=>{
+ const supportType=e.target.closest('[data-support-form-type]');
+ if(supportType&&state.supportForm){state.supportForm.type=supportType.value;render();return}
+ const supportFilter=e.target.closest('[data-support-filter]');
+ if(supportFilter&&state.role==='sss'){state.supportFilter=supportFilter.value;render();return}
  const compareSelect=e.target.closest('[data-class-compare]');
  if(compareSelect&&state.role==='faculty'){
   const grade=activeClass()?.grade||'';
@@ -989,6 +1025,17 @@ root.addEventListener('change',e=>{
  if(el.dataset.select==='window'){state.window=v;state.details=false}
  render()
 });
+root.addEventListener('submit',e=>{
+ if(!e.target.matches('[data-support-form]'))return;
+ e.preventDefault();const form=e.target,role=form.dataset.supportRole,id=form.dataset.supportStudent;
+ if(!DATA.userIndex.has(id)||(role==='faculty'&&!ownStudents().some(s=>s.id===id))||(role==='sss'&&!SSS_RECORDS.has(id)))return;
+ const values=Object.fromEntries(new FormData(form).entries());
+ if(!String(values.title||'').trim()||!String(values.summary||'').trim())return;
+ const next=createDraftEntry(values,id,role,state.supportForm?.id||'');
+ if(!next)return;
+ SUPPORT_DRAFTS=[...SUPPORT_DRAFTS.filter(x=>x.id!==next.id),next];
+ storeDraftEntries(SUPPORT_DRAFTS);state.supportForm=null;render();
+});
 root.addEventListener('toggle',e=>{
  if(state.role==='sss'){
   const gradePanel=e.target.closest?.('details[data-sss-grade-panel]');
@@ -1016,6 +1063,11 @@ root.addEventListener('toggle',e=>{
  if(panel.dataset.studentPanel==='wellbeing')state.studentWellbeingOpen=panel.open;
 },true);
 root.addEventListener('input',e=>{
+ if(e.target.matches('[data-support-query]')&&state.role==='sss'){
+  const p=e.target.selectionStart;state.supportQuery=e.target.value;render();
+  const field=root.querySelector('[data-support-query]');field?.focus({preventScroll:true});
+  if(Number.isInteger(p))field?.setSelectionRange(p,p);return;
+ }
  if(e.target.matches('[data-sss-query]')&&state.role==='sss'){
   const p=e.target.selectionStart;
   state.sssQuery=e.target.value;
