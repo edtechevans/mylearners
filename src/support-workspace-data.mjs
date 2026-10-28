@@ -60,14 +60,33 @@ export function seedSupportDemo(students,sssRecords){
     'Caregiver check-in','A constructive discussion about learning strengths and practical support approaches.',
     'restricted',{category:'Phone conversation',owner:'SSS Case Manager (demo)',
      nextStep:'Share an update at the next review.',reviewDate}));
-  if(hash(student.id+'-referral')%4===0)
+  if(hash(student.id+'-referral')%4===0){
+   const stages=['Submitted','Reviewed','Support Agreed','Progress Reviewed','Closed'];
+   const referralStage=stages[hash(student.id+'-referral-stage')%stages.length];
    all.push(base(student,'referral','referral','2026-09-16','SST referral',
     'Teacher requested collaborative review of learning access and prior classroom strategies.',
-    'restricted',{status:'Under review',category:'Learning Access',
+    'restricted',{status:referralStage,referralStage,category:'Learning Access',
      strengths:'Engages positively with familiar learning routines.',
      evidence:'Recent classroom work samples and formative checks.',
      previous:'Visual task checklist, modelling and targeted feedback.',
      nextStep:'Review evidence with the SST.',reviewDate}));
+  }
+  if(hash(student.id+'-intervention-review')%3===0){
+   const decisions=['Continue','Adapt','Intensify','Fade Support'];
+   const decision=decisions[hash(student.id+'-support-decision')%decisions.length];
+   all.push(base(student,'review','review','2026-10-24','Collaborative Intervention Review',
+    'The demonstration team reviewed six consistent monitoring checks and learner feedback before selecting a next step.',
+    'restricted',{decision,category:'Progress Monitoring',reviewDate,
+     evidence:'Six weekly fictional observations using five comparable opportunities each.',
+     nextStep:'Revisit delivery and participation at the next scheduled review.'}));
+  }
+  if(hash(student.id+'-learner-perspective')%2===0)
+   all.push(base(student,'voice','voice','2026-10-19','Learner Perspective',
+    'The learner shared an example of what supports access and a strategy they would like to try.',
+    'restricted',{learnerHelps:'Seeing a model before beginning a new task.',
+     learnerHard:'Keeping track of multi-step instructions.',
+     learnerTry:'A short visual checklist I can use independently.',
+     category:'Student Voice',reviewDate}));
  }
  return all;
 }
