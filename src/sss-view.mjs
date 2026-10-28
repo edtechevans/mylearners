@@ -157,7 +157,8 @@ function renderWida(record){
 }
 
 export function renderSSSStudentProfile({
- data,academicRecords,experienceRecords,sssRecords,studentId,reportYear='',academicOpen=false,supportWorkspace=''
+ data,academicRecords,experienceRecords,sssRecords,studentId,reportYear='',academicOpen=false,supportWorkspace='',panel='evidence',
+  tabNavigation='',summaryWorkspace='',plansWorkspace=''
 }){
  const record=sssRecordFor(sssRecords,studentId);
  const student=record?data.userIndex.get(studentId):null;
@@ -211,8 +212,8 @@ export function renderSSSStudentProfile({
   '</div>'+(restricted.length?'<p class="sss-footnote">Other fictional guidance indicators: '+
    restricted.map(t=>esc(t.label)).join(', ')+'. Any actual medical, safeguarding, behaviour or '+
    'counselling plans must remain in their own permission-controlled systems.</p>':'')+
-  '<p class="sss-footnote">This demo does not save referrals, case notes, '+
-  'interventions, meeting decisions, IEP files or family communications.</p></section>';
+  '<p class="sss-footnote">New entries remain only in this browser session. Do not enter real student information. '+
+  'This is a fictional design demonstration.</p></section>';
  return '<div class="sss-view sss-student-view">'+
   actionBack+
   '<div class="sss-profile-hero"><div><div class="eyebrow">SSS LEARNER · FICTIONAL DEMO</div>'+
@@ -220,8 +221,9 @@ export function renderSSSStudentProfile({
   ' · '+esc(student.classId)+' · '+esc(student.campus)+'</p>'+
   '<div class="sss-profile-tags">'+serviceChips(record)+supportChips(student)+'</div></div>'+
   '<span class="sss-private-label">Demonstration only · no real support plan</span></div>'+
-   supportWorkspace+
-  '<div class="sss-profile-summary"><article class="sss-brief-card">'+
+   tabNavigation+
+   (panel==='summary'?summaryWorkspace:panel==='plans'?plansWorkspace:panel==='history'?supportWorkspace:'')+
+   (panel==='evidence'?'<div class="sss-profile-summary"><article class="sss-brief-card">'+
   '<span class="eyebrow">TEAM FOCUS</span><h3>'+esc(record.focus.title)+'</h3>'+
   '<p>'+esc(record.focus.goal)+'</p><small>Illustrative focus — not an individual learning plan</small></article>'+
   '<article class="sss-brief-card"><span class="eyebrow">COORDINATION</span>'+
@@ -249,7 +251,7 @@ export function renderSSSStudentProfile({
   '<small>Issued subjects, IXL Mathematics, reading and phonics history where applicable</small>'+
   '</span><span aria-hidden="true">⌄</span></summary>'+
   '<div class="sss-detail-body">'+renderAcademicProfile(student,academicRecords,false,reportYear)+
-  '</div></details>'+
+  '</div></details>':'')+
   '<div class="sss-boundary sss-profile-boundary"><strong>Future restricted SSS view.</strong> '+
   'Staff must be assigned to this programme and learner before accessing any real information. '+
   'Authentication, server-side row permissions, audit logs and approved source-system links '+
