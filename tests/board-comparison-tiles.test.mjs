@@ -103,22 +103,22 @@ test('IB Diploma presents one school-year filter, two cohort outcomes and histor
  assert.match(html,/2023–24/);
  assert.match(html,/95%/);
  assert.match(html,/Consistent outcomes/);
- assert.match(html,/7 \/ 9/);
+ assert.match(html,/7 \/ 11/);
  assert.match(html,/Explore Grade 12 Diploma pathways/);
  assert.match(html,/data-board-dp-point="average:2024"/);
  assert.match(html,/data-board-dp-metric="passRate"/);
  assert.match(html,/board-dp-point is-selected/);
 });
-test('Diploma preserves spreadsheet historic pass rates and plots the full nine-year series',()=>{
+test('Diploma preserves spreadsheet historic pass rates and plots the full eleven-year series',()=>{
  const missing=renderBoardDP({boardDpYear:'2020',boardDpMetric:'passRate'});
  assert.match(missing,/2019–20/);
  assert.match(missing,/93%/);
  assert.doesNotMatch(missing,/class="board-dp-graphic-value">—/);
- assert.equal((missing.match(/<g class="board-dp-point/g)||[]).length,9);
+ assert.equal((missing.match(/<g class="board-dp-point/g)||[]).length,11);
  const latest=renderBoardDP({boardDpYear:'2026',boardDpMetric:'average',boardDpRange:'recent'});
- assert.equal((latest.match(/<g class="board-dp-point/g)||[]).length,9);
+ assert.equal((latest.match(/<g class="board-dp-point/g)||[]).length,11);
  assert.doesNotMatch(latest,/confirmation pending|unconfirmed|verification pending/i);
- assert.match(latest,/2026 Diploma outcomes are drawn from the school examination statistics summary/);
+ assert.match(latest,/IB School Statistics \(school 001832\)/);
 });
 test('Board deep links preserve data filters without offering presentation or copy controls',()=>{
  const opts={boardView:'explore',boardWindow:'fall2026',boardSubject:'math',boardDivision:'all',boardGrade:'all',
