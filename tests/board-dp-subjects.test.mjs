@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {DIPLOMA_SUBJECTS,dpSubject,dpSubjectDetails,renderDiplomaSubjectSection} from '../src/board-dp-subjects.mjs';
+import {DIPLOMA_SUBJECTS,dpSubject,dpSubjectDetails,renderDiplomaSubjectSection,renderDPSubjectPointDetails} from '../src/board-dp-subjects.mjs';
 import {DP_RECORDS} from '../src/board-dp-data.mjs';
 import {boardHash,parseBoardHash} from '../src/board-map-links.mjs';
 
@@ -49,6 +49,10 @@ test('Board subject explorer shows fully accessible 2016–2026 trends and sourc
   'school 001832','subject entries','Year-by-year figures'])
   assert.ok(html.includes(word),word);
  assert.match(html,/aria-pressed="true"/);
+ assert.match(html,/data-board-dp-subject-point="chemistry-hl:2016:school"/);
+ assert.match(html,/data-board-dp-subject-point="chemistry-hl:2026:world"/);
+ assert.match(renderDPSubjectPointDetails('biology-hl:2026:school'),/AISG student subject entries:<\/strong> 16/);
+ assert.match(renderDPSubjectPointDetails('biology-hl:2026:world'),/Worldwide average grade:<\/strong> 4\.49/);
  assert.match(html,/5\.33/);
  assert.match(html,/\+0\.38/);
  assert.match(html,/full zero-to-seven scale/);
