@@ -198,8 +198,12 @@ export function renderSSSStudentProfile({
    '<p>Fall 2026 check-in indices, not grades or diagnostic indicators.</p></div></div>'+
    '<div class="sss-experience-summary">'+['engagement','belonging'].map(id=>{
     const value=experienceFor(experienceRecords,student.id,id,'F26')?.value;
-    return evidenceTile(id==='engagement'?'Engagement':'Belonging',
-     value===undefined?'—':value+' / 100','Fictional Fall 2026 student check-in');
+    return '<div class="sss-experience-with-help">'+
+     evidenceTile(id==='engagement'?'Engagement':'Belonging',
+      value===undefined?'—':value+' / 100','Fictional Fall 2026 student check-in')+
+     '<button type="button" class="experience-detail-link" data-experience-explain="'+id+
+     '" data-experience-scope="sss" data-experience-student="'+esc(student.id)+
+     '" data-experience-window="F26">ⓘ How is this calculated?</button></div>';
    }).join('')+'</div></section>':'';
  const learningTags=demoTagsForStudent(student).filter(tag=>!tag.restricted);
  const restricted=demoTagsForStudent(student).filter(tag=>tag.restricted);
