@@ -79,9 +79,9 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
   sssManager:'All',sssPanel:'summary',supportBarrier:'All',
  boardWindow:saved('my-board-window-v2','fall2026'),boardSubject:saved('my-board-subject','math'),
  boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all'),
- boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardTrendRange:'recent',boardOverviewChart:'map',
+ boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardTrendRange:'recent',boardOverviewChart:'dp',
  boardMapDetailsOpen:false,boardMapCompareSeasons:false,boardMapGrowthOpen:false,
- boardDpMetric:'average',boardDpGlobal:true,
+ boardDpMetric:'passRate',boardDpGlobal:true,
  boardDpYear:String(DP_RECORDS.at(-1).end),boardDpRange:'all',boardDpSubject:'math-aa-sl'};
 recallFaculty();
 if(state.role==='leader')state.classId='';
@@ -1043,8 +1043,15 @@ root.addEventListener('click',e=>{
  const dpGo=e.target.closest('[data-board-dp-go]');
  if(dpGo){
   state.boardView='dp';
-  state.boardDpMetric=dpGo.dataset.boardDpGo==='passRate'?'passRate':'average';
-  render();globalThis.window?.scrollTo?.(0,0);return;
+  const target=String(dpGo.dataset.boardDpGo||'');
+  if(target.startsWith('subject:')){
+   state.boardDpSubject=target.slice(8);
+   state.boardDpMetric='passRate';
+  }else state.boardDpMetric=target==='passRate'?'passRate':'average';
+  render();
+  if(target.startsWith('subject:'))root.querySelector('#board-dp-subjects')?.scrollIntoView?.({block:'start',behavior:'smooth'});
+  else globalThis.window?.scrollTo?.(0,0);
+  return;
  }
  const boardChart=e.target.closest('[data-board-overview-chart]');
  if(boardChart){
