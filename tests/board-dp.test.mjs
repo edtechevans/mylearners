@@ -38,8 +38,8 @@ test('Eleven-year Diploma chart keeps full scale and supports actual global refe
  const html=renderBoardDP({boardDpMetric:'average',boardDpGlobal:true});
  assert.match(html,/board-dp-graphic-grid/);
  assert.match(html,/IB Diploma Results/);
- assert.match(html,/Consistent outcomes/);
- assert.match(html,/7 \/ 11/);
+ assert.match(html,/Long-term Diploma success/);
+ assert.match(html,/10 \/ 11/);
  assert.match(html,/data-board-dp-point="average:2016"/);
  assert.match(html,/data-board-dp-point="average:2018"/);
  assert.match(html,/data-board-dp-point="average:2026"/);
@@ -47,6 +47,8 @@ test('Eleven-year Diploma chart keeps full scale and supports actual global refe
  assert.match(html,/board-dp-world-hover/);
  assert.match(html,/data-board-dp-global/);
  assert.match(html,/30\.88/);
+ assert.match(html,/different candidate populations/);
+ assert.doesNotMatch(html,/AISG \+3\.12 points vs world/);
  assert.match(html,/82\.6%/);
  assert.match(html,/data-board-dp-world-point="passRate:2026"|data-board-dp-world-point="average:2026"/);
  assert.match(html,/global IB reference/);
