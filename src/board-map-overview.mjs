@@ -189,8 +189,8 @@ export function renderBoardOverview(state){
     'Grade-subject averages above U.S. school norms · G3–10','fall2026:math','map')+
   strengthCard('MAP · growth · Fall 2026','95%','',
     'Returning students grew in at least one MAP area','fall2026:growth','map')+
-  strengthCard('IB Diploma · '+current.year,String(current.average),'/45',
-    'Reported school average · global IB mean 30.88 /45','average','dp')+
+  strengthCard('IB Diploma · '+current.year,String(Math.round(current.average)),'/45',
+    'AISG mean (rounded) · worldwide mean approximately 31 /45','average','dp')+
   strengthCard('IB Diploma · '+current.year,String(current.passRate)+'%','',
     'IB Diploma awards as share of Diploma/retake candidates','passRate','dp');
  const mapPanel='<div class="board-overview-chartbody">'+
