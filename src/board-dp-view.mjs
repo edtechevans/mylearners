@@ -89,9 +89,9 @@ function dpLineChart(metric,{range='all',selectedYear=null,compareWorld=false}={
 }
 function dpOutcomesTable(){
  return '<details class="board-details board-dp-table"><summary>Detailed results by graduating year <span>+</span></summary>'+
- '<p>* The school Diploma mean and published global mean may cover different candidate populations; differences are descriptive, not like-for-like performance claims. A dash means unavailable, not zero. Diploma/retake candidates differ from Grade 12 pathway counts.</p>+
+ '<p>* The school Diploma mean and published global mean may cover different candidate populations; differences are descriptive, not like-for-like performance claims. A dash means unavailable, not zero. Diploma/retake candidates differ from Grade 12 pathway counts.</p>'+
  '<div class="tablewrap"><table class="board-table board-dp-detail-table"><thead><tr>'+
- '<th>Class</th><th>AISG average /45</th><th>World average*</th><th>Descriptive gap*</th>+
+ '<th>Class</th><th>AISG average /45</th><th>World average*</th><th>Descriptive gap*</th>'+
  '<th>Diploma pass</th><th>World pass</th><th>Candidates / cohort</th><th>Diplomas awarded</th>'+
  '<th>35+ points</th><th>Bilingual</th><th>Mean subject grade</th><th>Mean core</th><th>Highest /45</th><th>Source context</th></tr></thead><tbody>'+
  DP_RECORDS.map(r=>'<tr><td>'+r.end+'</td><td>'+points(r.average)+'</td>'+
