@@ -15,7 +15,7 @@ export const DIPLOMA_SUBJECTS=Object.freeze([
  {id:'psychology-hl',group:'breadth',name:'Psychology HL',short:'Psychology HL',rows:[[2022,13,5.08,5.07],[2023,21,5.19,4.79],[2024,20,5.60,4.74],[2025,12,5.42,4.74],[2026,14,5.86,4.82]]},
  {id:'chinese-b-sl',group:'breadth',name:'Chinese B: Mandarin SL',short:'Chinese B SL',rows:[[2022,9,6.33,5.80],[2023,17,6.59,5.73],[2024,10,6.60,5.68],[2025,10,5.90,5.69],[2026,10,6.10,5.71]]},
  {id:'visual-arts-hl',group:'breadth',name:'Visual Arts HL',short:'Visual Arts HL',rows:[[2022,6,5.50,4.45],[2023,11,5.18,4.40],[2024,9,5.22,4.25],[2025,9,5.11,4.26],[2026,7,5.57,4.30]]}
-].map(s=>Object.freeze({...s,rows:Object.freeze(s.rows.map(([year,n,school,world])=>Object.freeze({year,n,school,world})))}))));
+].map(s=>({...s,rows:s.rows.map(([year,n,school,world])=>({year,n,school,world}))})));
 export const DP_SUBJECT_GROUPS=Object.freeze([
  {id:'maths',label:'Mathematics'},{id:'english',label:'English A'},
  {id:'science',label:'Sciences'},{id:'breadth',label:'Beyond STEM'}
