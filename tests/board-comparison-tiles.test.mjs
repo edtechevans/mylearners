@@ -120,14 +120,15 @@ test('Diploma preserves spreadsheet historic pass rates and plots the full nine-
  assert.doesNotMatch(latest,/confirmation pending|unconfirmed|verification pending/i);
  assert.match(latest,/previously reported (school )?dashboard/);
 });
-test('Board presentation and optional details are sharable without changing other roles',()=>{
+test('Board deep links preserve data filters without offering presentation or copy controls',()=>{
  const opts={boardView:'explore',boardWindow:'fall2026',boardSubject:'math',boardDivision:'all',boardGrade:'all',
-  boardMapDetailsOpen:true,boardMapCompareSeasons:true,boardPresentation:true};
+  boardMapDetailsOpen:true,boardMapCompareSeasons:true};
  const parsed=parseBoardHash(boardHash(opts));
  assert.equal(parsed.boardMapDetailsOpen,true);
  assert.equal(parsed.boardMapCompareSeasons,true);
- assert.equal(parsed.boardPresentation,true);
+ assert.equal(boardHash(opts).includes('present='),false);
  assert.equal(parseBoardHash('#/board?view=explore&grade=8').boardMapDetailsOpen,true);
  assert.equal(parseBoardHash('#/faculty'),null);
- assert.equal(parseBoardHash('#/board').boardPresentation,false);
+ assert.equal(parseBoardHash('#/board').boardView,'overview');
+ assert.equal(Object.hasOwn(parseBoardHash('#/board?present=1'),'boardPresentation'),false);
 });
