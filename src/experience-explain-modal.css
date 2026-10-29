@@ -1,0 +1,72 @@
+/* My Learners · Student Experience methodology dialog · 29 October 2026 */
+.experience-dialog{border:1px solid #c7d9e3;border-radius:20px;padding:0;
+ background:#fff;color:#18374c;width:min(690px,calc(100vw - 32px));
+ max-height:min(88dvh,880px);overflow-y:auto;box-shadow:0 28px 84px #0c334658;
+ font:14px/1.6 'Noto Sans','Segoe UI',Arial,sans-serif}
+.experience-dialog::backdrop{background:rgba(10,38,62,.55);backdrop-filter:blur(3px)}
+.experience-dialog *{box-sizing:border-box}
+.experience-modal-top{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;
+ border-bottom:1px solid #e5edf2;background:#f8fbfd;padding:24px 29px 20px}
+.experience-eyebrow{color:#517186;font-weight:800;font-size:10px;letter-spacing:.10em}
+.experience-dialog h2{font-size:24px;letter-spacing:-.045em;line-height:1.25;color:#113b5a;
+ margin:7px 0;font-weight:800}
+.experience-modal-top p{margin:0;font-size:12px;color:#536f80}
+.experience-modal-close{border:1px solid #d7e3e8;background:#fff;color:#1e4966;flex:none;
+ font-size:25px;line-height:1;border-radius:10px;width:40px;height:40px;cursor:pointer}
+.experience-modal-content{padding:24px 29px 27px}
+.experience-modal-content.engagement{--experience-accent:#28778e;--experience-pale:#eaf5f8}
+.experience-modal-content.belonging{--experience-accent:#765e96;--experience-pale:#f3eef9}
+.experience-score-band{background:var(--experience-pale);border:1px solid #dbe5ed;border-radius:14px;
+ display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:18px 22px;align-items:center}
+.experience-score-label{font-size:12px;color:#3b6177;font-weight:800}
+.experience-score{font-size:39px;font-weight:800;color:#123c5e;line-height:1.2;letter-spacing:-.05em;margin-top:4px}
+.experience-score small{font-size:15px;letter-spacing:0;color:#4f7082;font-weight:700}
+.experience-score-context{display:flex;flex-direction:column;gap:3px;font-size:12px;color:#526e7d;line-height:1.5;
+ border-left:1px solid #cadde8;padding-left:20px}
+.experience-score-context strong{color:#163c5e;font-size:14px}
+.experience-dialog h3{font-size:15px;color:#163c5e;line-height:1.4;margin:24px 0 9px;font-weight:800}
+.experience-modal-content p{margin:8px 0;color:#486579;font-size:13px}
+.experience-scale{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:7px;margin:15px 0}
+.experience-scale span{border:1px solid #d9e5eb;border-radius:10px;padding:10px 6px;text-align:center;
+ font-size:11px;font-weight:650;color:#3e6278;line-height:1.4;background:#f9fbfc}
+.experience-scale b{display:block;margin-top:4px;font-size:20px;color:#1b4b6a;font-weight:800}
+.experience-questions{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:10px}
+.experience-question{border:1px solid #dce7ed;border-radius:12px;padding:13px 15px}
+.experience-question-head{display:flex;align-items:start;justify-content:space-between;gap:14px;
+ font-size:13px;color:#2d4f67}
+.experience-question-head span{min-width:0;flex:1}
+.experience-question-head b{color:#457186;margin-right:5px}
+.experience-question-head strong{color:#123d60;white-space:nowrap;font-variant-numeric:tabular-nums}
+.experience-progress{margin:12px 0 8px;height:7px;background:#eaf0f4;border-radius:8px;overflow:hidden}
+.experience-progress span{display:block;background:var(--experience-accent);height:100%;border-radius:8px}
+.experience-answer{display:block;font-size:11px;font-weight:650;color:#587587}
+.experience-modal-content .experience-method-note{font-size:11px;color:#667e8c;margin-top:12px}
+.experience-warning{padding:13px 15px;background:#f5f8fa;border-left:3px solid var(--experience-accent);
+ margin-top:21px;border-radius:0 8px 8px 0;color:#4a6576;font-size:12px}
+.experience-warning strong{color:#173f60}
+.experience-modal-foot{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;
+ margin-top:22px}
+.experience-modal-foot span{font-size:11px;color:#617b8e}
+.experience-done{border:0;border-radius:9px;background:#164e72;color:#fff;
+ font:inherit;font-size:12px;font-weight:800;padding:10px 19px;cursor:pointer}
+.experience-dialog button:focus-visible{outline:3px solid #307faa;outline-offset:3px}
+#app .experience-detail-link{display:inline-flex;align-items:center;gap:5px;background:transparent;border:0;
+ color:#1f6688;font:inherit;font-size:11px;font-weight:800;padding:6px 0;cursor:pointer;
+ text-align:left;text-decoration:underline;text-underline-offset:3px}
+#app .experience-cell-help{display:inline-flex;align-items:center;justify-content:center;
+ width:25px;height:25px;border:0;border-radius:8px;background:transparent;color:#316a86;
+ cursor:pointer;font:inherit;font-size:13px;vertical-align:middle;margin-left:4px}
+#app .experience-cell-help:hover,#app .experience-cell-help:focus-visible{background:#e5f0f5;outline-offset:2px}
+#app .class-evidence-selected .experience-detail-link{margin-top:4px}
+#app .leader-experience-card .experience-detail-link{margin-top:8px}
+#app .quick-score small{color:#1d5d80}
+@media(max-width:600px){
+ .experience-modal-top{padding:18px}
+ .experience-dialog h2{font-size:21px}
+ .experience-modal-content{padding:18px}
+ .experience-score-band{grid-template-columns:1fr;gap:12px}
+ .experience-score-context{border-left:0;border-top:1px solid #cadde8;padding-left:0;padding-top:10px}
+ .experience-scale{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce){.experience-dialog::backdrop{backdrop-filter:none}}
