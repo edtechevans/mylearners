@@ -107,3 +107,52 @@
  .board-view .board-dp-gap{flex:0 0 72px}
 }
 @media print{.board-view .board-dp-matched-gaps{break-inside:avoid}.board-view .board-dp-gaps-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr))}}
+
+
+/* A labelled, reversible focused scale makes modest score differences legible
+   without misrepresenting the axis origin. Both views keep all actual values. */
+.board-view .board-dp-chart-actions{
+ display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:10px;
+}
+.board-view .board-dp-overview-scale{
+ display:flex;justify-content:flex-end;align-items:center;margin:10px 0 5px;
+}
+.board-view .board-dp-scale-control{
+ display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px;
+ border:1px solid #d0e2eb;background:#f5f9fb;padding:4px;
+ border-radius:10px;
+}
+.board-view .board-dp-scale-label{
+ font-size:11px;font-weight:750;color:#4d6c80;padding:0 7px;white-space:nowrap;
+}
+.board-view .board-dp-scale-control button{
+ appearance:none;border:1px solid transparent;border-radius:7px;
+ color:#385d75;background:transparent;padding:8px 10px;min-height:34px;
+ font-size:11px;font-weight:770;line-height:1.25;cursor:pointer;
+}
+.board-view .board-dp-scale-control button.active{
+ background:white;color:#174d71;border-color:#c0dbe7;
+ box-shadow:0 1px 3px rgba(14,50,75,.07);
+}
+.board-view .board-dp-scale-control button:hover{background:#e7f3f8}
+.board-view .board-dp-scale-control button.active:hover{background:white}
+.board-view .board-dp-scale-control button:focus-visible{
+ outline:3px solid #287ca8;outline-offset:2px;
+}
+.board-view .board-dp-scale-note{
+ color:#4c7185;font-size:11px;line-height:1.6;margin:5px 0 13px;
+}
+.board-view .board-dp-scale-note strong{color:#173f5f}
+.board-view .board-dp-axis-mode{
+ font-size:10px;fill:#647e90;font-weight:730;letter-spacing:.025em;
+}
+@media(max-width:760px){
+ .board-view .board-dp-chart-actions{width:100%;justify-content:space-between}
+ .board-view .board-dp-overview-scale{justify-content:flex-start}
+ .board-view .board-dp-scale-control{gap:2px}
+ .board-view .board-dp-scale-control button{font-size:10px;padding:7px 8px}
+}
+@media print{
+ .board-view .board-dp-scale-control{display:none}
+ .board-view .board-dp-scale-note{font-size:10px}
+}
