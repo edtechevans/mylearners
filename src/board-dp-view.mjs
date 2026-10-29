@@ -218,7 +218,7 @@ export function renderBoardDP(state){
  '<p>'+safe(DP_METHODS.comparison)+'</p><p>'+safe(DP_METHODS.covid)+'</p>'+
  '<p>'+safe(DP_METHODS.discrepancy)+'</p><p>'+safe(DP_METHODS.pathways)+'</p>'+
  '<p>'+safe(DP_METHODS.boundary)+'</p>'+
- '<p>IB 2026 worldwide DP mean: 30.88 points · <a href="https://ibo.org/news/news-list/more-than-209000-ib-students-worldwide-receive-their-dp-and-cp-results/" target="_blank" rel="noopener noreferrer">IB July 2026 announcement</a>. Worldwide Diploma pass rate: 82.6% · <a href="https://ibo.org/globalassets/publications/dpcp-provisional-statistical-bulletin-may-2026_en.pdf" target="_blank" rel="noopener noreferrer">IB May 2026 statistical bulletin</a>.</p>'+
+ '<p>IB 2026 worldwide DP mean: 30.88 points · <a href="https://ibo.org/news/news-list/more-than-209000-ib-students-worldwide-receive-their-dp-and-cp-results/" target="_blank" rel="noopener noreferrer">IB July 2026 announcement</a>. Worldwide Diploma pass rate: 82.6% · <a href="https://ibo.org/about-the-ib/facts-and-figures/statistical-bulletins/diploma-programme-and-career-related-programme-statistical-bulletin/" target="_blank" rel="noopener noreferrer">IB May 2026 statistical bulletin</a>.</p>'+
  '</details></section>';
 }
 
