@@ -1058,6 +1058,13 @@ root.addEventListener('click',e=>{
  }
  const worldToggle=e.target.closest('[data-board-dp-global]');
  if(worldToggle&&state.role==='board'){state.boardDpGlobal=state.boardDpGlobal===false;render();return;}
+ const boardJump=e.target.closest('[data-board-dp-jump]');
+ if(boardJump&&state.role==='board'){
+  const allowed=new Set(['board-dp-outcomes','board-dp-subjects','board-dp-history']);
+  const id=boardJump.dataset.boardDpJump;
+  if(allowed.has(id))root.querySelector('#'+id)?.scrollIntoView?.({behavior:'smooth',block:'start'});
+  return;
+ }
  const dpCourse=e.target.closest('[data-board-dp-subject]');
  if(dpCourse&&state.role==='board'){
   state.boardDpSubject=dpCourse.dataset.boardDpSubject;
