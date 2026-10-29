@@ -84,3 +84,55 @@
  #app .ux-table-shell thead th{position:static}
 }
 @media(prefers-reduced-motion:reduce){#app .ux-data-tools,.ux-command{transition:none!important;scroll-behavior:auto!important}}
+
+/* Faculty class default: four or five age-appropriate measures, plus support
+   information. Original focused comparison columns retain their existing styles. */
+#app .class-roster-view-switch{
+ display:inline-flex;align-items:center;gap:3px;margin:8px 0 11px;
+ padding:4px;border:1px solid #d6e5ee;border-radius:11px;background:#f1f6f9;
+}
+#app .class-roster-view-switch button{
+ padding:8px 13px;font:inherit;font-size:12px;font-weight:750;
+ border:1px solid transparent;border-radius:8px;background:transparent;color:#486b81;
+ cursor:pointer;min-height:34px;
+}
+#app .class-roster-view-switch button.active{
+ background:#fff;border-color:#c9dce8;color:#174d73;box-shadow:0 1px 5px #183c4f12;
+}
+#app .class-roster-view-switch button:focus-visible{
+ outline:3px solid #2877a1;outline-offset:2px;
+}
+#app .roster-daily[data-roster-layout="everyday"] .roster-desktop{
+ overflow-x:auto;overscroll-behavior-x:contain;
+}
+#app .roster-daily[data-roster-layout="everyday"] table{
+ min-width:1030px;table-layout:auto;
+}
+#app .roster-daily[data-roster-layout="everyday"] td,
+#app .roster-daily[data-roster-layout="everyday"] th{
+ padding:11px 10px;vertical-align:middle;
+}
+#app .roster-daily[data-roster-layout="everyday"] thead th{
+ white-space:normal;line-height:1.4;min-width:115px;
+}
+#app .roster-daily[data-roster-layout="everyday"] thead th:first-child{
+ min-width:170px;
+}
+#app .roster-daily[data-roster-layout="everyday"] .class-evidence-result{
+ min-width:0;
+}
+#app .roster-daily[data-roster-layout="everyday"] .class-evidence-result strong{
+ font-size:13px;white-space:nowrap;
+}
+#app .roster-daily[data-roster-layout="everyday"] .class-evidence-result small{
+ font-size:10px;line-height:1.35;max-width:165px;
+}
+#app .roster-daily[data-roster-layout="everyday"] .experience-cell-help,
+#app .roster-daily[data-roster-layout="everyday"] .evidence-preview-trigger{
+ width:22px;height:22px;min-width:22px;min-height:22px;margin-left:3px;
+}
+@media(max-width:760px){
+ #app .roster-daily[data-roster-layout="everyday"] table{min-width:0}
+ #app .class-roster-view-switch{display:flex;width:100%}
+ #app .class-roster-view-switch button{flex:1}
+}
