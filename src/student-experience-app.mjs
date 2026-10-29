@@ -13,6 +13,8 @@ import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=202610
 import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs';
 import {experienceDialogContent} from './experience-explain-modal.mjs';
+import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs';
+import {resolveEvidencePreview} from './evidence-preview-context.mjs';
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic} from './academic-journey-data.mjs';
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261028titles1';
@@ -88,6 +90,11 @@ const teacher=()=>DATA.teachers.find(t=>t.id===state.teacher)||DATA.teachers.fin
 const ownClasses=()=>DATA.classes.filter(c=>teacher().classIds.includes(c.id));
 const ownStudents=()=>DATA.students.filter(s=>teacher().classIds.includes(s.classId));
 const activeClass=()=>ownClasses().find(c=>c.id===state.classId)||ownClasses()[0];
+const previewController=installEvidencePreviewController(root,trigger=>resolveEvidencePreview(trigger,{
+ role:state.role,state,data:DATA,academic:ACADEMIC_RECORDS,sssRecords:SSS_RECORDS,
+ allowedStudentIds:ownStudents().map(s=>s.id),
+ allowedClassIds:ownClasses().map(c=>c.id)
+}));
 const fmt=v=>v===null||v===undefined?'—':v;
 const avg=(arr)=>arr.length?Math.round(arr.reduce((a,b)=>a+b,0)/arr.length):null;
 const eligible=ss=>ss.filter(experienceEligible);
@@ -656,6 +663,8 @@ function render(){
   const scroller=root.querySelector?.(useDp?'.board-dp-chart-scroll':'.board-trend-scroller');
   if(scroller)scroller.scrollLeft=scroller.scrollWidth;
  }
+ previewController?.dismiss();
+ decorateEvidencePreviews(root,state.role);
  try{sessionStorage.setItem('my-role',state.role);sessionStorage.setItem('my-teacher',state.teacher);
  sessionStorage.setItem('my-board-window-v2',state.boardWindow);sessionStorage.setItem('my-board-subject',state.boardSubject);
  sessionStorage.setItem('my-board-division',state.boardDivision);sessionStorage.setItem('my-board-grade',state.boardGrade)}catch{}
