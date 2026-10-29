@@ -5,6 +5,7 @@
  */
 import {BOARD_DATA,BOARD_SUBJECTS,boardSummary,BOARD_METHODS} from './board-map-data.mjs';
 import {DP_RECORDS} from './board-dp-data.mjs?v=20261029ibsubjects2';
+import {dpSubjectDetails} from './board-dp-subjects.mjs';
 import {renderDPOverviewTrend} from './board-dp-view.mjs?v=20261029ibsubjects2';
 const SUBJECT_KEYS=['math','reading','language'];
 const NAME={math:'Mathematics',reading:'Reading',language:'Language Usage'};
@@ -175,7 +176,7 @@ export function renderBoardOverview(state){
  const season=state.boardTrendTerm==='spring'?'spring':'fall';
  const rawFocus=state.boardTrendFocus==='both'?'all':state.boardTrendFocus;
  const focus=['all',...SUBJECT_KEYS].includes(rawFocus)?rawFocus:'all';
- const chartMode=state.boardOverviewChart==='dp'?'dp':'map';
+ const chartMode=state.boardOverviewChart==='map'?'map':'dp';
  const fullData=historicalTrend(season);
  const selectedKeys=focus==='all'?SUBJECT_KEYS:[focus];
  const range=state.boardTrendRange==='all'?'all':'recent';
@@ -184,15 +185,18 @@ export function renderBoardOverview(state){
  const nWindows=data.filter(r=>selectedKeys.every(k=>r[k]!==null)).length;
  const mostRecent=season==='fall'?'Fall 2025':'Spring 2026';
  const current=DP_RECORDS.at(-1);
+ const awardYears=DP_RECORDS.filter(r=>r.passRate>=90).length;
+ const english=dpSubjectDetails('english-hl');
+ const englishYears=english.subject.rows.length;
  const strengthCards=
-  strengthCard('MAP · achievement · Fall 2026','24 / 24','',
+  strengthCard('IB DIPLOMA · 2016–2026',awardYears+' / '+DP_RECORDS.length,'',
+    'May sessions with at least 90% Diploma awards · 2026: 52 of 56','passRate','dp')+
+  strengthCard('ENGLISH A HL · 2016–2026',english.above+' / '+englishYears,'',
+    'May sessions above the worldwide course average · same course and level','subject:english-hl','dp')+
+  strengthCard('MAP · FALL 2026','24 / 24','',
     'Grade-subject averages above U.S. school norms · G3–10','fall2026:math','map')+
-  strengthCard('MAP · growth · Fall 2026','95%','',
-    'Returning students grew in at least one MAP area','fall2026:growth','map')+
-  strengthCard('IB Diploma · '+current.year,String(Math.round(current.average)),'/45',
-    'AISG mean (rounded) · worldwide mean approximately 31 /45','average','dp')+
-  strengthCard('IB Diploma · '+current.year,String(current.passRate)+'%','',
-    'IB Diploma awards as share of Diploma/retake candidates','passRate','dp');
+  strengthCard('MAP · FALL 2026','95%','',
+    'Returning students grew in at least one MAP subject area','fall2026:growth','map');
  const mapPanel='<div class="board-overview-chartbody">'+
  '<div class="board-overview-charthead"><div><span class="eyebrow">MAP · HISTORICAL ACHIEVEMENT</span>'+
  '<h2 id="board-trend-heading">Learning Over Time · Regional Comparisons</h2>'+
@@ -224,15 +228,15 @@ export function renderBoardOverview(state){
  '<button type="button" data-board-view="explore" class="board-inline-link">Explore MAP results ›</button></div></div>';
  return '<div class="board-overview board-story">'+
  '<div class="board-overview-intro"><div><span class="eyebrow">OUR LEARNING STORY · AT A GLANCE</span>'+
- '<h2>From Grade 3 to Graduation</h2>'+
- '<p>Four meaningful measures of achievement, progress and graduation outcomes.</p></div></div>'+
+ '<h2>A Decade of Academic Strength</h2>'+
+ '<p>Eleven May Diploma sessions, enduring subject achievement, and the latest MAP evidence · selected indicators, not a composite score.</p></div></div>'+
  '<div class="board-strength-grid">'+strengthCards+'</div>'+
- '<p class="board-strength-interpretation"><strong>The picture:</strong> AISG’s latest MAP grade averages exceed U.S. school norms in all 24 grade-subject comparisons, and 95% of returning students grew in at least one MAP area. Reported Diploma results add a complementary graduation perspective. <span>These reflect different learners and measures, and Diploma values represent graduating cohorts.</span></p>'+
+ '<div class="board-track-record-note"><div><span class="eyebrow">LATEST DIPLOMA EVIDENCE · MAY 2026</span><strong>93% awarded the Diploma</strong><span>52 of 56 Diploma/retake candidates · worldwide provisional Diploma award rate 82.6%</span></div><div><span class="eyebrow">HOW TO READ THIS</span><p>MAP and IB Diploma measure different learners and outcomes. All historic comparisons use reported cohorts; the 2020–2022 IB sessions had altered assessment arrangements.</p></div></div>'+
  '<div class="board-history-switch"><div><span class="eyebrow">EXPLORE THE EVIDENCE</span>'+
- '<h3>How Results Have Changed</h3></div>'+
+ '<h3>Explore the Historical Evidence</h3><p>Select the Diploma award-rate record or MAP grade-level comparisons.</p></div>'+
  '<div class="board-segmented" role="group" aria-label="Historical outcomes view">'+
- tabButton('map','MAP achievement',chartMode,'data-board-overview-chart')+
- tabButton('dp','IB Diploma',chartMode,'data-board-overview-chart')+'</div></div>'+
+ tabButton('dp','Diploma awards · 2016–26',chartMode,'data-board-overview-chart')+
+ tabButton('map','MAP regional history',chartMode,'data-board-overview-chart')+'</div></div>'+
  '<section class="board-panel board-historical-chart" aria-label="Historical learning outcomes">'+
  (chartMode==='dp'?renderDPOverviewTrend(state):mapPanel)+'</section>'+
  '</div>';
