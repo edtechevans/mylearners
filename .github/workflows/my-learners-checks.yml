@@ -1,0 +1,23 @@
+name: My Learners - UI and data-regression checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          node --check src/daily-ux-core.mjs
+          node --check src/daily-ux.mjs
+          node --check src/student-experience-app.mjs
+      - name: Run app regression tests
+        run: node --test tests/*.test.mjs
