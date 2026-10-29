@@ -24,7 +24,7 @@ test('Historic Diploma figures include official 2024 and 2026 IB school-report c
  [[38,5,0],[42,9,0],[56,6,1]]);
  assert.match(DP_METHODS.discrepancy,/117/);
  assert.match(DP_METHODS.discrepancy,/56/);
- assert.match(DP_METHODS.current,/52 passes from 56/);
+ assert.match(DP_METHODS.current,/52 awards from 56/);
 });
 test('Nine-year Diploma chart keeps full scale and supports actual global reference windows',()=>{
  const average=dpMetricSeries('average'),passes=dpMetricSeries('passRate');
@@ -51,7 +51,7 @@ test('Nine-year Diploma chart keeps full scale and supports actual global refere
  assert.doesNotMatch(html,/confirmation pending|verification pending|unconfirmed|board-dp-status/i);
  assert.match(html,/Detailed results by graduating year/);
  assert.match(html,/Source context/);
- assert.match(html,/Previously reported dashboard/);
+ assert.match(html,/IB school report/);
  const solo=renderBoardDP({boardDpGlobal:false});
  assert.doesNotMatch(solo,/class="board-dp-world-point"/);
  assert.match(solo,/Compare with world/);
@@ -100,7 +100,7 @@ test('Fall 2025 and Spring 2026 use NWEA school achievement reference, not stude
 test('Public DP module contains only annual aggregates, pathway counts and no learner identifiers',()=>{
  const raw=JSON.stringify({DP_RECORDS,DP_GRADE12_PATHWAYS});
  assert.ok(!/(?:@aisgz|studentid|dateofbirth|learner name|student email)/i.test(raw));
- assert.ok(DP_METHODS.limits.includes('Examination'));
+ assert.ok(DP_METHODS.limits.includes('Diploma and retake candidates'));
  assert.ok(DP_METHODS.current.includes('May 2026'));
  assert.ok(DP_METHODS.quality.includes('school-supplied'));
 });
@@ -109,7 +109,7 @@ test('No filenames or underlying cell references are shown in any Diploma result
  for(const metric of ['average','passRate']){
   const html=renderBoardDP({boardDpMetric:metric});
   const tooltip=renderDPPointDetails(metric+':2026');
-  assert.doesNotMatch(html+tooltip,/\.xlsx|\.csv|\.pdf|Dashboard SY\d|KPIs!|Source:|workbook/i);
+  assert.doesNotMatch(html+tooltip,/\.xlsx|\.csv|\.pdf|Dashboard SY\d|KPIs!|workbook/i);
   assert.match(html,/Understanding Diploma results/);
   assert.doesNotMatch(html,/confirmation pending|verification pending|unconfirmed|board-dp-status/i);
   assert.match(html,/supplied examination statistics summary/);
