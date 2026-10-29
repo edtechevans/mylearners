@@ -1,0 +1,86 @@
+/* My Learners | Daily UX · shared, desktop-first, data-preserving design layer.
+   This stylesheet holds only new reusable controls; no score or chart logic. */
+:root{
+ --daily-ink:#123a5a;
+ --daily-link:#175b8a;
+ --daily-line:#d4e2e9;
+ --daily-surface:#fff;
+ --daily-soft:#f3f7fa;
+ --daily-muted:#506b7c;
+ --daily-focus:#166dae;
+ --daily-radius:12px;
+}
+#app .ux-nav-button{font:inherit;display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border:1px solid var(--daily-line);border-radius:10px;background:var(--daily-surface);color:var(--daily-ink);font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer}
+#app .ux-nav-button:hover,#app .ux-action:hover{border-color:#88afc4;background:#edf4f8}
+#app .ux-nav-shortcut{font-size:10px;border-radius:5px;padding:2px 5px;background:#edf2f6;color:var(--daily-muted)}
+#app .ux-source-strip{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 16px;padding:9px 13px;border:1px solid var(--daily-line);border-radius:var(--daily-radius);background:var(--daily-soft);font-size:12px;color:var(--daily-muted);line-height:1.45}
+#app .ux-source-strip strong{font-weight:750;color:var(--daily-ink)}
+#app .ux-source-strip details{margin-left:auto;position:relative}
+#app .ux-source-strip summary{cursor:pointer;color:var(--daily-link);font-weight:700}
+#app .ux-source-strip details p{max-width:650px;margin:8px 0 0}
+#app .ux-table-shell{min-width:0;position:relative}
+#app .ux-data-tools{border:1px solid var(--daily-line);border-radius:var(--daily-radius);background:var(--daily-surface);padding:10px 12px;margin:10px 0 8px;box-shadow:0 2px 10px rgba(16,59,97,.035)}
+#app .ux-tool-main{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#app .ux-filter-label{position:relative;flex:1;min-width:150px;max-width:300px}
+#app .ux-search-input,#app .ux-view-picker,#app .ux-column-filter input,#app .ux-save-name{font-family:inherit;font-size:12px;color:var(--daily-ink);background:#fff;border:1px solid #c8d8e1;border-radius:9px;padding:9px 11px;min-height:37px;max-width:100%;box-sizing:border-box}
+#app .ux-search-input{width:100%;padding-left:32px}
+#app .ux-filter-label:before{content:'⌕';position:absolute;left:11px;top:5px;font-size:20px;color:var(--daily-muted);pointer-events:none}
+#app .ux-action{font:inherit;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--daily-line);border-radius:9px;background:var(--daily-surface);color:var(--daily-ink);font-size:12px;font-weight:700;padding:9px 11px;min-height:37px;cursor:pointer}
+#app .ux-action[data-ux-export]{color:var(--daily-link)}
+#app .ux-action[disabled]{opacity:.5;cursor:not-allowed}
+#app .ux-menu{position:relative}
+#app .ux-menu>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;padding:9px 11px;min-height:37px;box-sizing:border-box;font-size:12px;font-weight:700;background:#fff;border:1px solid var(--daily-line);border-radius:9px;color:var(--daily-ink)}
+#app .ux-menu>summary::-webkit-details-marker{display:none}
+#app .ux-menu[open]>summary{border-color:var(--daily-focus);background:var(--daily-soft)}
+#app .ux-popover{position:absolute;z-index:80;top:calc(100% + 5px);right:0;min-width:240px;max-height:330px;overflow:auto;box-shadow:0 10px 34px #13385628;background:white;border:1px solid var(--daily-line);border-radius:12px;padding:12px;box-sizing:border-box}
+#app .ux-popover strong{display:block;margin-bottom:7px;color:var(--daily-ink);font-size:12px}
+#app .ux-column-row{display:flex;align-items:center;gap:9px;padding:5px 1px;font-size:12px;color:var(--daily-ink);cursor:pointer}
+#app .ux-column-row input{accent-color:#195d8e}
+#app .ux-field-grid{display:grid;grid-template-columns:1fr;gap:9px}
+#app .ux-column-filter{display:flex;flex-direction:column;gap:4px;color:var(--daily-muted);font-size:11px;font-weight:650}
+#app .ux-column-filter input{width:100%;min-height:33px}
+#app .ux-view-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px;padding-top:9px;border-top:1px solid #e7edf1}
+#app .ux-view-row label{font-size:11px;color:var(--daily-muted);font-weight:700}
+#app .ux-view-picker{min-height:33px;max-width:190px;padding:6px 9px}
+#app .ux-view-row .ux-action{min-height:33px;padding:6px 9px}
+#app .ux-save-name{min-height:33px;max-width:150px}
+#app .ux-table-caption{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--daily-muted);font-size:11px;margin-top:8px;flex-wrap:wrap}
+#app .ux-table-caption output{font-variant-numeric:tabular-nums}
+#app .ux-table-caption span{color:var(--daily-muted)}
+#app .ux-table-shell thead th{position:sticky;top:0;background:#f6f9fb;z-index:1;vertical-align:bottom;line-height:1.4}
+#app .ux-sort-button{font:inherit;font-weight:750;font-size:inherit;line-height:1.4;text-align:inherit;background:transparent;border:0;color:inherit;padding:4px 1px;cursor:pointer}
+#app .ux-sort-button:after{content:' ↕';font-size:11px;opacity:.5}
+#app .ux-sort-button[aria-sort=ascending]:after{content:' ↑';opacity:1;color:#175b8a}
+#app .ux-sort-button[aria-sort=descending]:after{content:' ↓';opacity:1;color:#175b8a}
+#app .ux-table-shell td:nth-child(n+2){font-variant-numeric:tabular-nums}
+#app .ux-table-shell tr.ux-hidden{display:none!important}
+#app .ux-table-shell [data-ux-column-hidden]{display:none!important}
+#app .ux-table-shell tbody tr:hover{background:#f6fafc}
+#app .ux-grade-button{font:inherit;background:transparent;border:0;color:var(--daily-link);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-weight:650}
+#app .ux-board-utility{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:2px 0 14px}
+#app .ux-board-utility p{margin:0 auto 0 0;color:var(--daily-muted);font-size:12px}
+#app .ux-sss-note{border-left:3px solid #4788ac;padding:8px 12px;margin:12px 0;background:#f3f8fb;color:var(--daily-muted);font-size:12px;border-radius:0 9px 9px 0}
+#app .ux-sss-note strong{color:var(--daily-ink)}
+#app :is(.ux-action,.ux-menu summary,.ux-sort-button,.ux-nav-button,.ux-grade-button,.ux-search-input,.ux-view-picker,.ux-save-name):focus-visible{outline:3px solid var(--daily-focus);outline-offset:3px}
+.ux-command{border:1px solid #b9cdd9;border-radius:16px;padding:0;width:min(620px,calc(100vw - 28px));box-shadow:0 26px 80px #0b2f4b45;background:#fff;color:#123a5a;max-height:75vh}
+.ux-command::backdrop{background:rgba(7,28,47,.43)}
+.ux-command-head{padding:20px 20px 10px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.ux-command-head h2{font-family:inherit;font-weight:800;font-size:19px;margin:0}
+.ux-command input{font:inherit;width:calc(100% - 40px);margin:5px 20px 14px;box-sizing:border-box;border:1px solid #9fbbcd;border-radius:10px;padding:12px;color:#123a5a}
+.ux-command p{font:inherit;color:#526f7e;font-size:12px;padding:0 20px;margin:0 0 12px}
+.ux-command-results{padding:4px 12px 18px;max-height:330px;overflow:auto}
+.ux-command-results button{font:inherit;display:block;width:100%;text-align:left;padding:11px 10px;background:white;border:0;border-bottom:1px solid #e5edf2;color:#123a5a;cursor:pointer;border-radius:7px}
+.ux-command-results button:hover,.ux-command-results button:focus-visible{background:#eff5f8;outline:2px solid #166dae}
+.ux-command-close{font:inherit;border:1px solid #d4e2e9;background:white;border-radius:8px;padding:6px 10px;cursor:pointer}
+@media(max-width:760px){
+ #app .ux-nav-shortcut{display:none}
+ #app .ux-tool-main{gap:5px}
+ #app .ux-filter-label{width:100%;max-width:none;flex-basis:100%}
+ #app .ux-popover{right:auto;left:0;min-width:min(265px,calc(100vw - 50px))}
+ #app .ux-view-picker{max-width:145px}
+}
+@media print{
+ #app .ux-nav-button,#app .ux-data-tools,#app .ux-board-utility,.ux-command{display:none!important}
+ #app .ux-table-shell thead th{position:static}
+}
+@media(prefers-reduced-motion:reduce){#app .ux-data-tools,.ux-command{transition:none!important;scroll-behavior:auto!important}}
