@@ -8,6 +8,7 @@ const divisions=new Set(['all','elementary','secondary']);
 const trends=new Set(['fall','spring']);
 const focuses=new Set(['all','math','reading','language']);
 const dpMetrics=new Set(['average','passRate']);
+const dpScales=new Set(['focus','full']);
 const dpYears=new Set(DP_RECORDS.map(r=>String(r.end)));
 const dpCourses=new Set(DIPLOMA_SUBJECTS.map(s=>s.id));
 const dpRanges=new Set(['all','recent']);
@@ -28,6 +29,7 @@ export function parseBoardHash(hash){
   boardView:clean(params.get('view'),views,'overview'),
   boardOverviewChart:params.get('chart')==='map'?'map':'dp',
   boardDpMetric:clean(params.get('metric'),dpMetrics,params.get('view')==='dp'?'average':'passRate'),
+  boardDpScale:clean(params.get('scale'),dpScales,'focus'),
   boardDpSubject:clean(params.get('course'),dpCourses,DP_SUBJECT_DEFAULT),
   boardDpYear:clean(params.get('year'),dpYears,currentDpYear),
   boardDpRange:clean(params.get('range'),dpRanges,'all'),
@@ -48,6 +50,7 @@ export function boardHash(state){
  params.set('view',view);
  if(view==='dp'){
   params.set('metric',clean(state.boardDpMetric,dpMetrics,'average'));
+  if(state.boardDpScale==='full')params.set('scale','full');
   if(dpCourses.has(state.boardDpSubject)&&state.boardDpSubject!==DP_SUBJECT_DEFAULT)params.set('course',state.boardDpSubject);
   const year=String(state.boardDpYear??currentDpYear);
   if(dpYears.has(year)&&year!==currentDpYear)params.set('year',year);
@@ -56,6 +59,7 @@ export function boardHash(state){
   if(state.boardOverviewChart==='dp'){
    params.set('chart','dp');
    params.set('metric',clean(state.boardDpMetric,dpMetrics,'average'));
+   if(state.boardDpScale==='full')params.set('scale','full');
   }else{
    params.set('term',clean(state.boardTrendTerm,trends,'fall'));
    params.set('focus',clean(state.boardTrendFocus,focuses,'all'));
