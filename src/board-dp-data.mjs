@@ -10,8 +10,8 @@
  * and no mixing DP/CP world recipients with Diploma candidates.
  */
 export const DP_RECORDS=Object.freeze([
- {year:'2015–16',end:2016,average:33,passRate:95,candidates:65,cohort:67,passes:62,highScore:42,meanGrade:5.36},
- {year:'2016–17',end:2017,average:33,passRate:98,candidates:60,cohort:65,passes:59,highScore:41,meanGrade:5.28},
+ {year:'2015–16',end:2016,average:33,passRate:95,candidates:65,sessionCandidates:67,passes:62,highScore:42,meanGrade:5.36},
+ {year:'2016–17',end:2017,average:33,passRate:98,candidates:60,sessionCandidates:65,passes:59,highScore:41,meanGrade:5.28},
  {year:'2017–18',end:2018,average:34,passRate:89,candidates:65,cohort:75,passes:58,
   highCount:27,highDenominator:65,bilingualCount:9,bilingualDenominator:58,highScore:44,meanGrade:5.46},
  {year:'2018–19',end:2019,average:32,passRate:93,candidates:58,cohort:null,participationPct:89,passes:54,
@@ -49,7 +49,7 @@ export const DP_METRICS=Object.freeze([
   description:'Percentage of Diploma/retake candidates awarded the full Diploma. IB May 2026 reports 52 passes from 56 Diploma and retake candidates.'}
 ]);
 export const DP_METHODS=Object.freeze({
- quality:'Official May 2016–2026 AISG IB School Statistics (school 001832) establish Diploma averages, awards, examination candidature and subject means. Other supplementary indicators use the previously supplied school summary. May 2026 includes 52 passes out of 56 Diploma and retake candidates.',
+ quality:'Official May 2016–2026 AISG IB School Statistics (school 001832) establish Diploma averages, awards, examination candidature and subject means. The 2016 and 2017 total session-registration figures are not labelled as graduating-class counts. Other supplementary indicators use the previously supplied school summary. May 2026 includes 52 passes out of 56 Diploma and retake candidates.',
  limits:'The official May 2026 report lists 61 registered session candidates, including 56 Diploma and retake candidates, of whom 52 passed. These populations are not interchangeable with Grade 12 pathway enrollment.',
  discrepancy:'The previously reported count of 117 full DP learners differs from the Grade 12 full Diploma pathway (56). The official 2026 IB report also lists 56 Diploma and retake candidates, but do not presume they are the same individuals.',
  current:'The May 2026 AISG IB School Statistics reports 34 average points among successful Diploma candidates and 52 awards from 56 Diploma/retake candidates (92.9%, displayed as 93%).',
