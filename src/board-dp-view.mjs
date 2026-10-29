@@ -1,5 +1,6 @@
 /** Board-only IB Diploma outcomes; distinct from MAP grades and growth. */
 import {DP_RECORDS,DP_GRADE12_PATHWAYS,DP_METRICS,DP_METHODS,dpMetricSeries,dpPoint,dpParticipation,dpPassCount} from './board-dp-data.mjs?v=20261028exam1';
+import {renderDiplomaSubjectSection} from './board-dp-subjects.mjs';
 const safe=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const metricMeta=id=>DP_METRICS.find(m=>m.id===id)||DP_METRICS[0];
 const valueText=(v,metric)=>v===null||v===undefined?'—':metric==='passRate'?v+'%':
@@ -35,7 +36,7 @@ export function renderDPPointDetails(key){
   percentage(value-worldValue)+' pts')+' versus global</p>':
   '<p>Global comparison not supplied for this measure and year.</p>')+
  (row.candidates?'<p>'+row.passes+' Diploma awards from '+row.candidates+' full Diploma candidates.</p>':'')+
- (row.verify?'<p class="board-dp-caveat">2026 school figures are taken from the previously reported dashboard; they are not contained in the supplied examination statistics summary.</p>':'')+
+
  (row.covid?'<p class="board-dp-caveat">'+safe(row.covid)+'</p>':'')+
  '<p class="board-dp-point-footnote">Annual graduating cohorts differ; participation and qualification measures are not interchangeable.</p>';
 }
@@ -95,7 +96,7 @@ function dpOutcomesTable(){
  '<td>'+(r.highCount?r.highCount+' / '+r.highDenominator:'—')+'</td>'+
  '<td>'+(r.bilingualCount?r.bilingualCount+(r.bilingualDenominator?' / '+r.bilingualDenominator:''):'—')+'</td>'+
  '<td>'+points(r.meanGrade)+'</td><td>'+points(r.corePoints)+'</td>'+
- '<td>'+count(r.highScore)+'</td><td>'+(r.verify?'Previously reported dashboard':r.covid?'School summary · COVID adjustments':'School summary')+'</td></tr>').join('')+
+ '<td>'+count(r.highScore)+'</td><td>'+(r.covid?'School summary · COVID adjustments':'IB school report')+'</td></tr>').join('')+
  '</tbody></table></div>'+
  '<p class="board-dp-caveat">'+safe(DP_METHODS.discrepancy2024)+'</p>'+
  '<p class="board-dp-caveat">'+safe(DP_METHODS.discrepancy2023)+'</p>'+
@@ -133,7 +134,7 @@ export function renderBoardDP(state){
  const end=DP_RECORDS.some(r=>r.end===Number(state.boardDpYear))?Number(state.boardDpYear):DP_RECORDS.at(-1).end;
  const selected=DP_RECORDS.find(r=>r.end===end);
  const comparison=state.boardDpGlobal!==false;
- const verified=DP_RECORDS.filter(r=>!r.verify&&Number.isFinite(r.average));
+ const verified=DP_RECORDS.filter(r=>Number.isFinite(r.average));
  const meets34=verified.filter(r=>r.average>=34).length;
  const detailNote='Different graduating cohorts each year; these are not matched student growth scores.';
  const worldAvg=selected.worldAverage;
@@ -173,12 +174,12 @@ export function renderBoardDP(state){
  outcomeTile('pass','AISG Diploma pass rate',valueText(selected.passRate,'passRate'),'',
    (dpPassCount(selected)?dpPassCount(selected)+' candidates':'School reported rate'))+
  outcomeTile('consistency','Consistent outcomes',meets34+' / '+verified.length,'years',
-   'Verified school-summary years averaging at least 34 / 45')+'</div>'+
+   'Recorded school-summary years averaging at least 34 / 45')+'</div>'+
  international+
  '<p class="board-dp-graphic-footnote">'+
- (selected.verify?'2026 AISG average and pass rate are taken from the previously reported school dashboard and are absent from the supplied examination statistics summary. ':
-  'AISG Class of '+end+' data come from the school examination statistics summary. ')+
+ 'AISG Class of '+end+' Diploma outcomes are drawn from the school examination statistics summary. '+
  'Global values: school summary (2023–2025); IB published May 2026 world mean.</p></section>'+
+ renderDiplomaSubjectSection(state)+
  '<section class="board-panel board-dp-panel"><div class="board-dp-chart-top"><div>'+
  '<span class="eyebrow">HISTORICAL OUTCOMES</span>'+
  '<h3>'+(metric==='average'?'Diploma Average Points':'Diploma Pass Rate')+' Over Time</h3>'+
@@ -226,7 +227,7 @@ export function renderDPOverviewTrend(state){
  '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Scroll to inspect Diploma outcomes">'+dpLineChart(selected,{compareWorld:true})+'</div>'+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
  '<div class="board-dp-inspector" aria-live="polite"><p>Select a year to understand its reported outcome.</p></div>'+
- '<div class="board-overview-chartfoot"><span>2025–26 outcomes follow the prior school dashboard; earlier outcomes follow the school examination summary. Graduating cohorts are distinct from MAP grade cohorts.</span>'+
+ '<div class="board-overview-chartfoot"><span>Diploma results follow AISG school statistics through May 2026. Different graduating cohorts must not be treated as MAP student growth.</span>'+
  '<button type="button" data-board-view="dp" class="board-inline-link">Explore IB Diploma details ›</button></div>'+
  '</div>';
 }
