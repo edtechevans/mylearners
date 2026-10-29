@@ -46,3 +46,8 @@
  .board-view .ux-board-table-controls:not([open]){display:none}
  .board-view .board-track-record-note,.board-view .board-strength-card{break-inside:avoid}
 }
+
+.board-view .dp-subject-highlight-value{font-size:clamp(24px,2.4vw,33px)}
+.board-view .dp-subject-breadth{display:flex;align-items:center;flex-wrap:wrap;gap:8px 17px;border:1px solid #dce9ef;background:#f7fafc;padding:12px 15px;border-radius:11px;margin-bottom:14px;color:#21526e;font-size:12px;line-height:1.5}
+.board-view .dp-subject-breadth strong{font-size:13px;color:#154364;font-variant-numeric:tabular-nums}
+.board-view .dp-subject-breadth-note{color:#627d8e;font-size:10px}
