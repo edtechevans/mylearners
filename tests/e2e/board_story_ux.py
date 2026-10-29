@@ -50,7 +50,7 @@ def main():
           text=page.locator(".board-strength-grid").inner_text()
           for expected in ("24 / 24","95%","34","/45","93%"):
               require(expected in text,"Missing headline outcome "+expected)
-          require("confirmation pending" in text.lower(),"DP outcomes should be qualified")
+          require("confirmation pending" not in text.lower(),"Prominent pending labels should be removed")
           require(page.locator('[data-board-overview-chart]').count()==2,"One two-option historical selector")
           no_restricted_text(page)
           screenshot(page,"01-four-strengths-overview-desktop")
