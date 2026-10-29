@@ -194,11 +194,15 @@ try{
   async()=>{
    const select=await evaluate("(function(){const s=document.querySelector('[data-board-dp-select=\"year\"]');s.value='2026';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
    assert(select,'Could not select Class of 2026');await sleep(170);
-   assert(await evaluate("document.querySelector('.board-dp-status')?.textContent.includes('confirmation pending')"),
-    '2026 AISG school results must remain clearly unconfirmed');
+   assert(await evaluate("!document.querySelector('.board-dp-status')"),
+    'The Board must not show a confirmation status badge');
+   assert(await evaluate("document.querySelector('.board-dp-graphic-footnote')?.textContent.includes('previously reported school dashboard')"),
+    'Source provenance for 2026 must remain accessible');
+   assert(await evaluate("!document.querySelector('.board-dp')?.textContent.includes('confirmation pending')"),
+    'Board dashboard must not show confirmation-pending wording');
    assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('30.88')"),
     'May 2026 world average from IB not visible');
-   assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('2026 examination cohort not confirmed')"),
+   assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('Examination candidate count unavailable')"),
     'No 2026 examination denominator can be invented');
   });
 
