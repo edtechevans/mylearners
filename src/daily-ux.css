@@ -136,3 +136,16 @@
  #app .class-roster-view-switch{display:flex;width:100%}
  #app .class-roster-view-switch button{flex:1}
 }
+
+/* Keep wider everyday evidence inside its own horizontal table scroller.
+   The Faculty page must never widen at common desktop widths (1280px). */
+#app .roster-daily[data-roster-layout="everyday"]{
+ min-width:0;max-width:100%;overflow:hidden;
+}
+#app .roster-daily[data-roster-layout="everyday"] .tablewrap,
+#app .roster-daily[data-roster-layout="everyday"] .ux-table-shell{
+ min-width:0;max-width:100%;width:100%;
+}
+#app .roster-daily[data-roster-layout="everyday"] .tablewrap{
+ overflow-x:auto;
+}
