@@ -25,6 +25,7 @@ import {renderStudentOverview} from './student-daily-overview.mjs?v=20261028titl
 import {renderBoard} from './board-map-view.mjs?v=20261029ibsubjects2';
 import {renderTrendPointDetails} from './board-map-overview.mjs?v=20261029ibsubjects2';
 import {renderDPPointDetails} from './board-dp-view.mjs?v=20261029ibsubjects2';
+import {renderDPSubjectPointDetails} from './board-dp-subjects.mjs';
 import {DP_RECORDS} from './board-dp-data.mjs?v=20261029ibsubjects2';
 import {boardWindowFor,BOARD_DATA} from './board-map-data.mjs';
 import {parseBoardHash} from './board-map-links.mjs';
@@ -766,12 +767,14 @@ function closeBoardDrawer(){
 function placeBoardFloat(point,e){
  const tooltip=root.querySelector('.board-floating-tooltip');
  if(!tooltip||!point)return;
- const dp=!!point.dataset.boardDpPoint;
- const key=dp?point.dataset.boardDpPoint:point.dataset.boardPoint;
+ const subject=point.dataset.boardDpSubjectPoint;
+ const dp=!!point.dataset.boardDpPoint||!!point.dataset.boardDpWorldPoint;
+ const key=subject||point.dataset.boardDpPoint||point.dataset.boardDpWorldPoint||point.dataset.boardPoint;
  if(!key)return;
- if(tooltip.dataset.activePoint!==key){
-  tooltip.innerHTML=dp?renderDPPointDetails(key):renderTrendPointDetails(key);
-  tooltip.dataset.activePoint=key;
+ const tooltipKey=(subject?'subject:':dp?'dp:':'map:')+key;
+ if(tooltip.dataset.activePoint!==tooltipKey){
+  tooltip.innerHTML=subject?renderDPSubjectPointDetails(key):dp?renderDPPointDetails(key):renderTrendPointDetails(key);
+  tooltip.dataset.activePoint=tooltipKey;
  }
  tooltip.hidden=false;
  const rect=point.getBoundingClientRect();
@@ -791,7 +794,7 @@ function hideBoardFloat(){
 }
 root.addEventListener('pointerover',e=>{
  if(state.role!=='board')return;
- const point=e.target.closest?.('[data-board-point],[data-board-dp-point]');
+ const point=e.target.closest?.('[data-board-point],[data-board-dp-point],[data-board-dp-world-point],[data-board-dp-subject-point]');
  if(!point)return;
  if(e.pointerType==='mouse'||e.pointerType==='pen'){placeBoardFloat(point,e);return}
  // Touch users select a point; keyboard users retain the inline inspector.
@@ -799,15 +802,15 @@ root.addEventListener('pointerover',e=>{
 });
 root.addEventListener('pointermove',e=>{
  if(state.role!=='board'||(e.pointerType!=='mouse'&&e.pointerType!=='pen'))return;
- const point=e.target.closest?.('[data-board-point],[data-board-dp-point]');
+ const point=e.target.closest?.('[data-board-point],[data-board-dp-point],[data-board-dp-world-point],[data-board-dp-subject-point]');
  if(point)placeBoardFloat(point,e);
 });
 root.addEventListener('pointerout',e=>{
- const point=e.target.closest?.('[data-board-point],[data-board-dp-point]');
+ const point=e.target.closest?.('[data-board-point],[data-board-dp-point],[data-board-dp-world-point],[data-board-dp-subject-point]');
  if(point&&!point.contains(e.relatedTarget))hideBoardFloat();
 });
 root.addEventListener('focusin',e=>{
- const point=e.target.closest?.('[data-board-point],[data-board-dp-point]');
+ const point=e.target.closest?.('[data-board-point],[data-board-dp-point],[data-board-dp-world-point],[data-board-dp-subject-point]');
  if(point&&state.role==='board'){
   if(point.dataset.boardPoint&&state.boardView==='overview')showBoardPoint(point);
   if(point.dataset.boardDpPoint&&(state.boardView==='dp'||(state.boardView==='overview'&&state.boardOverviewChart==='dp')))showDPPoint(point);
@@ -815,7 +818,7 @@ root.addEventListener('focusin',e=>{
  }
 });
 root.addEventListener('focusout',e=>{
- if(e.target.closest?.('[data-board-point],[data-board-dp-point]'))hideBoardFloat();
+ if(e.target.closest?.('[data-board-point],[data-board-dp-point],[data-board-dp-world-point],[data-board-dp-subject-point]'))hideBoardFloat();
 });
 root.addEventListener('keydown',e=>{
  const drawer=root.querySelector('.board-map-drawer[aria-modal="true"]');
@@ -832,9 +835,10 @@ root.addEventListener('keydown',e=>{
   }
   return;
  }
- const point=e.target.closest?.('[data-board-point],[data-board-dp-point]');
+ const point=e.target.closest?.('[data-board-point],[data-board-dp-point],[data-board-dp-world-point],[data-board-dp-subject-point]');
  if(point&&(e.key==='Enter'||e.key===' ')){
   e.preventDefault();
+  if(point.dataset.boardDpSubjectPoint||point.dataset.boardDpWorldPoint){placeBoardFloat(point);return}
   if(point.dataset.boardDpPoint){point.click();return}
   pinChartPoint(point);placeBoardFloat(point);
  }
@@ -986,6 +990,11 @@ root.addEventListener('click',e=>{
  if(point){pinChartPoint(point);
   if(e.detail>0&&window.matchMedia?.('(pointer: coarse)').matches)
    root.querySelector('.board-trend-inspector')?.scrollIntoView?.({block:'nearest',behavior:'smooth'});
+  return;
+ }
+ const standalonePoint=e.target.closest('[data-board-dp-subject-point],[data-board-dp-world-point]');
+ if(standalonePoint&&state.role==='board'){
+  placeBoardFloat(standalonePoint,e);
   return;
  }
  const dpPoint=e.target.closest('[data-board-dp-point]');
