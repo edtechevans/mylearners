@@ -26,7 +26,7 @@ import {renderTrendPointDetails} from './board-map-overview.mjs?v=20261028titles
 import {renderDPPointDetails} from './board-dp-view.mjs?v=20261028titles1';
 import {DP_RECORDS} from './board-dp-data.mjs?v=20261028exam1';
 import {boardWindowFor,BOARD_DATA} from './board-map-data.mjs';
-import {parseBoardHash,boardShareUrl} from './board-map-links.mjs';
+import {parseBoardHash} from './board-map-links.mjs';
 const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(DATA.students),
  ACADEMIC_RECORDS=createAcademicDemoRecords(DATA.students),
  MAIA_RECORDS=createMaiaDemoRecords(DATA.students),
@@ -78,7 +78,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  boardWindow:saved('my-board-window-v2','fall2026'),boardSubject:saved('my-board-subject','math'),
  boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all'),
  boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardTrendRange:'recent',boardOverviewChart:'map',
- boardMapDetailsOpen:false,boardMapCompareSeasons:false,boardMapGrowthOpen:false,boardPresentation:false,
+ boardMapDetailsOpen:false,boardMapCompareSeasons:false,boardMapGrowthOpen:false,
  boardDpMetric:'average',boardDpGlobal:true,
  boardDpYear:String(DP_RECORDS.at(-1).end),boardDpRange:'all'};
 recallFaculty();
@@ -649,7 +649,6 @@ function render(){
  pinnedChartKey=null;
  const content=state.role==='board'?renderBoard(state):state.role==='leader'?leader():
   state.role==='sss'?sss():state.role==='student'?student():faculty();
- root.classList.toggle('board-presentation-mode',state.role==='board'&&!!state.boardPresentation);
  document.body.classList.toggle('board-drawer-open',state.role==='board'&&state.boardView==='explore'&&!!state.boardMapDetailsOpen);
  root.innerHTML=header()+'<main class="container" id="main" tabindex="-1">'+content+'</main><footer>'+
  (state.role==='board'?'AISG Board · Aggregated MAP and IB Diploma outcomes · No individual student scores published':
@@ -972,12 +971,6 @@ root.addEventListener('click',e=>{
   }
   return;
  }
- const presentation=e.target.closest('[data-board-presentation]');
- if(presentation){
-  state.boardPresentation=!state.boardPresentation;
-  try{globalThis.history?.replaceState?.(null,'',boardShareUrl(globalThis.location,state))}catch{}
-  render();return;
- }
  const closeDetails=e.target.closest('[data-board-close-details]');
  if(closeDetails){closeBoardDrawer();return}
  const unpin=e.target.closest('[data-board-unpin]');
@@ -1029,25 +1022,6 @@ root.addEventListener('click',e=>{
  if(boardFocus){
   state.boardTrendFocus=['all','math','reading','language'].includes(boardFocus.dataset.boardFocus)?
    boardFocus.dataset.boardFocus:'all';render();return
- }
- const share=e.target.closest('[data-board-share]');
- if(share){
-  const url=boardShareUrl(globalThis.location,state);
-  const status=document.getElementById('board-share-feedback');
-  const say=(message)=>{if(status)status.textContent=message};
-  const copy=(async()=>{
-   try{if(!globalThis.navigator?.clipboard?.writeText)throw Error('Clipboard API unavailable');
-    await globalThis.navigator.clipboard.writeText(url);say('Link copied');return;
-   }catch{}
-   const field=document.createElement('textarea');
-   field.value=url;field.setAttribute('readonly','true');
-   field.style.position='fixed';field.style.opacity='0';
-   document.body.appendChild(field);field.select();
-   let copied=false;try{copied=document.execCommand('copy')}catch{}
-   field.remove();
-   if(copied){say('Link copied');return}
-   if(status){status.textContent='Copy this link: '+url;status.setAttribute('title',url)}
-  })();void copy;return;
  }
  const boardSubject=e.target.closest('[data-board-subject]');
  if(boardSubject){state.boardSubject=boardSubject.dataset.boardSubject;render();return}
