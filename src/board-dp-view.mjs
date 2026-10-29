@@ -22,6 +22,25 @@ function matchedGlobalGaps(){
  delta(r.average,r.worldAwardedAverage)+'</strong></span>').join('')+'</div></div>';
 }
 
+
+/** The focused axis improves discriminability without implying a zero baseline.
+ * Full-scale view remains a single click away and is supported in deep links. */
+function dpScaleControls(metric,scale='focus'){
+ if(metric!=='average')return '';
+ const mode=scale==='full'?'full':'focus';
+ return '<div class="board-dp-scale-control" role="group" aria-label="Diploma average score chart scale">'+
+ '<span class="board-dp-scale-label">Chart scale</span>'+
+ '<button type="button" data-board-dp-scale="focus" aria-pressed="'+(mode==='focus')+
+ '" class="'+(mode==='focus'?'active':'')+'">Focused · 30–40</button>'+
+ '<button type="button" data-board-dp-scale="full" aria-pressed="'+(mode==='full')+
+ '" class="'+(mode==='full'?'active':'')+'">Full · 0–45</button></div>';
+}
+const dpScaleNote=(metric,scale='focus')=>metric==='average'?
+ '<p class="board-dp-scale-note" role="note">'+
+ (scale==='full'?'Full Diploma scoring scale displayed (0–45).':
+ 'Focused axis begins at <strong>30, not zero</strong> (30–40 out of 45). This magnifies visible differences; switch to Full scale for context.')+
+ ' AISG and world averages, year labels and calculations are unchanged.</p>':'';
+
 function dpRangeHighlight(metric){
  const values=DP_RECORDS.map(r=>r[metric]).filter(Number.isFinite);
  if(!values.length)return '';
@@ -53,12 +72,15 @@ export function renderDPPointDetails(key){
  (row.covid?'<p class="board-dp-caveat">'+safe(row.covid)+'</p>':'')+
  '<p class="board-dp-point-footnote">Annual graduating cohorts differ; participation and qualification measures are not interchangeable.</p>';
 }
-function dpLineChart(metric,{range='all',selectedYear=null,compareWorld=false}={}){
+function dpLineChart(metric,{range='all',selectedYear=null,compareWorld=false,scale='focus'}={}){
  const meta=metricMeta(metric),all=dpMetricSeries(metric);
  const items=range==='recent'?all.slice(-3):all;
- const width=920,height=330,left=58,right=28,top=75,bottom=257,max=meta.max;
+ const width=920,height=330,left=58,right=28,top=75,bottom=257;
+ const availableValues=items.flatMap(r=>[r.value,...(compareWorld?[r.worldValue]:[])]).filter(Number.isFinite);
+ const focus=metric==='average'&&scale!=='full'&&availableValues.every(n=>n>=30&&n<=40);
+ const min=focus?30:0,max=focus?40:meta.max;
  const xp=i=>left+(width-left-right)*(i/Math.max(1,items.length-1));
- const yp=n=>bottom-(n/max)*(bottom-top);
+ const yp=n=>bottom-((n-min)/(max-min))*(bottom-top);
  const pathFor=(field,color,dashed=false)=>{
   const segments=[];let current=[];
   items.forEach((r,i)=>{
@@ -78,8 +100,9 @@ function dpLineChart(metric,{range='all',selectedYear=null,compareWorld=false}={
   '<circle class="board-dp-world-point" cx="'+xp(i)+'" cy="'+yp(r.worldValue)+'" r="4.6" fill="#13847c" stroke="#fff" stroke-width="1.4"/>'+
   '<text class="board-dp-world-value" text-anchor="middle" x="'+xp(i)+'" y="'+(yp(r.worldValue)+21)+'">'+
   (metric==='average'?r.worldValue.toFixed(1):Math.round(r.worldValue)+'%')+'</text></g>':'').join(''):'';
- const ticks=[0,.25,.5,.75,1].map(frac=>{
-  const val=Math.round(max*frac),y=yp(val);
+ const tickValues=focus?[30,32,34,36,38,40]:[0,.25,.5,.75,1].map(frac=>Math.round(max*frac));
+ const ticks=tickValues.map(val=>{
+  const y=yp(val);
   return '<line class="board-trend-grid" x1="'+left+'" y1="'+y+'" x2="'+(width-right)+'" y2="'+y+'"/>'+
    '<text class="board-trend-tick" x="'+(left-13)+'" y="'+(y+4)+'" text-anchor="end">'+(metric==='passRate'?val+'%':val)+'</text>';
  }).join('');
@@ -96,8 +119,11 @@ function dpLineChart(metric,{range='all',selectedYear=null,compareWorld=false}={
    '<text x="'+xx+'" y="'+(yy-19)+'" text-anchor="middle" class="board-trend-value" fill="#176397">'+(metric==='average'?headlinePoints(r.value):Math.round(r.value)+'%')+'</text></g>'+title;
  }).join('');
  return '<svg class="board-dp-svg" viewBox="0 0 '+width+' '+height+'" role="group" aria-label="'+safe(meta.label)+
-  ' by AISG graduating year'+(compareWorld?', with global IB reference':'')+'. Full chart scale." xmlns="http://www.w3.org/2000/svg">'+
+  ' by AISG graduating year'+(compareWorld?', with global IB reference':'')+
+  '. '+(focus?'Focused y-axis 30 to 40, truncated above zero.':'Full y-axis from 0 to '+max+'.')+'" xmlns="http://www.w3.org/2000/svg">'+
   '<text class="board-trend-axislabel" x="'+left+'" y="22">'+safe(meta.label)+(metric==='average'?' · out of 45':' · percentage')+'</text>'+
+  '<text class="board-dp-axis-mode" text-anchor="end" x="'+(width-right)+'" y="22">'+
+  (focus?'FOCUSED AXIS · 30–40 (NOT ZERO-BASED)':'FULL AXIS · 0–'+max)+'</text>'+
   ticks+lines+worldPoints+marks+'</svg>';
 }
 function dpOutcomesTable(){
@@ -215,16 +241,18 @@ export function renderBoardDP(state){
  '" class="'+(metric==='passRate'?'active':'')+'">Pass rate</button></div></div>'+
  '<div class="board-dp-trend-controls"><span class="board-dp-legend"><i class="board-dp-key-aisg"></i>AISG'+
  (comparison?'<i class="board-dp-key-world"></i>World IB · '+(metric==='average'?'Diploma recipients':'Diploma award rate'):'')+'</span>'+
+ '<div class="board-dp-chart-actions">'+dpScaleControls(metric,state.boardDpScale)+
  '<button type="button" class="board-dp-global-toggle" data-board-dp-global aria-pressed="'+comparison+'">'+
- (comparison?'Show AISG only':'Compare with world')+'</button></div>'+
+ (comparison?'Show AISG only':'Compare with world')+'</button></div></div>'+
  dpRangeHighlight(metric)+
  '<p class="board-dp-swipe">Hover or focus an AISG or world point to see precise scores and AISG candidate counts. Select an AISG year to inspect its outcome.</p>'+
  '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Explore Diploma outcomes by school year">'+
- dpLineChart(metric,{selectedYear:end,compareWorld:comparison})+'</div>'+
+ dpLineChart(metric,{selectedYear:end,compareWorld:comparison,scale:state.boardDpScale})+'</div>'+
+ dpScaleNote(metric,state.boardDpScale)+
  (metric==='average'&&comparison?matchedGlobalGaps():'')+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
  '<div class="board-dp-inspector" aria-live="polite"><p>Hover or select a year to inspect its outcome.</p></div>'+
- '<p class="board-chart-caption">Full 0–45 point or 0–100% scale. For average points, the dashed world line is the <strong>Diploma-recipient mean</strong> (2017–2026); the worldwide overall DP mean is a different population. For pass rates, it is the worldwide Diploma award rate. The 2020–22 years had altered assessment arrangements.</p></section>'+ renderDiplomaSubjectSection(state)+
+ '<p class="board-chart-caption">Average-point charts use a clearly labelled focused 30–40 axis by default, with full 0–45 available. Pass-rate charts retain their full 0–100% scale. The dashed line compares worldwide <strong>Diploma-recipient means</strong> for average points, or worldwide Diploma award rates for pass rates. The 2020–22 years had altered assessment arrangements.</p></section>'+ renderDiplomaSubjectSection(state)+
 
  achievements+
  dpPathways()+
@@ -249,10 +277,12 @@ export function renderDPOverviewTrend(state){
  '<button type="button" data-board-dp-metric="average" aria-pressed="'+(selected==='average')+'" class="'+(selected==='average'?'active':'')+'">Average points</button>'+
  '<button type="button" data-board-dp-metric="passRate" aria-pressed="'+(selected==='passRate')+'" class="'+(selected==='passRate'?'active':'')+'">Pass rate</button></div></div>'+
  dpRangeHighlight(selected)+
+ (selected==='average'?'<div class="board-dp-overview-scale">'+dpScaleControls(selected,state.boardDpScale)+'</div>':'')+
  '<div class="board-dp-overview-legend" role="note"><span><i class="board-dp-key-aisg"></i> AISG</span><span><i class="board-dp-key-world"></i> World IB · '+(selected==='average'?'Diploma recipients only':'Diploma awards')+'</span>'+
  '<small>'+(selected==='average'?'The plotted worldwide mean is for Diploma recipients, not all Diploma candidates.':'Worldwide Diploma award rate; all eleven May sessions.')+'</small></div>'+
  '<p class="board-dp-swipe">Hover or focus any plotted point for precise AISG/world data and AISG candidate counts.</p>'+
- '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Scroll to inspect Diploma outcomes">'+dpLineChart(selected,{compareWorld:true})+'</div>'+
+ '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Scroll to inspect Diploma outcomes">'+dpLineChart(selected,{compareWorld:true,scale:state.boardDpScale})+'</div>'+
+ dpScaleNote(selected,state.boardDpScale)+
  (selected==='average'?matchedGlobalGaps():'')+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
  '<div class="board-dp-inspector" aria-live="polite"><p>Select a year to understand its reported outcome.</p></div>'+
