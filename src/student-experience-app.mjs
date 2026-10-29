@@ -18,6 +18,7 @@ import {resolveEvidencePreview} from './evidence-preview-context.mjs';
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic} from './academic-journey-data.mjs';
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261028titles1';
+import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs';
 import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceRosterColumn} from './class-evidence.mjs?v=20261028sleek1';
 import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile} from './maia-demo.mjs';
 import {renderStudentOverview} from './student-daily-overview.mjs?v=20261028titles1';
@@ -68,7 +69,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  teacher:saved('my-teacher',DEFAULT_TEACHER_ID),
  division:'All',grade:'All',classId:'',studentId:'',query:'',metric:'engagement',window:'F26',details:false,checkin:false,
  academicMode:'report',academicSubject:'Mathematics',academicReportYear:'',studentGrade:'G7',
- classEvidence:'report',classMapSubject:'Mathematics',classCompare:'none',classExperienceWindow:'F26',
+ classEvidence:'report',classMapSubject:'Mathematics',classCompare:'none',classExperienceWindow:'F26',rosterView:EVERYDAY_VIEW,
  maiaDimension:'relationships',maiaWindow:'F26',
  studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
   leaderSupportOpen:false,
@@ -169,6 +170,35 @@ function roster(ss,options={}){
  const reportSubjects=academicFor(ACADEMIC_RECORDS,ss[0]?.id).reports?.[0]?.subjects||[];
  const subject=reportSubjects.some(x=>x.subject===state.academicSubject)?
   state.academicSubject:reportSubjects[0]?.subject||'';
+ // The everyday view is a deliberately small, grade-aware selection of existing
+ // evidence. Focused mode preserves the original single-measure comparison UX.
+ const everyday=!across&&state.rosterView===EVERYDAY_VIEW;
+ const everydayColumns=everyday?everydayEvidenceForGrade(grade):[];
+ const checkinLabel=EXPERIENCE_WINDOWS.find(w=>w.key===state.classExperienceWindow)?.label||'Fall 2026';
+ const everydayHeading=column=>column.kind==='engagement'||column.kind==='belonging'?
+  (column.kind==='engagement'?'Engagement':'Belonging')+' · '+checkinLabel:column.label;
+ const everydayCell=(student,column)=>{
+  if(column.kind==='attendance'){
+   const attendance=attendanceSummary(DATA.attendance[student.id]||[]);
+   const value=attendance.rate===null||attendance.rate===undefined?'—':fmt(attendance.rate)+'%';
+   return '<span class="class-evidence-result"><strong>'+safe(value)+'</strong><small>Through 8 Oct 2026</small></span>';
+  }
+  const reports=academicFor(ACADEMIC_RECORDS,student.id).reports?.[0]?.subjects||[];
+  const subject=column.kind==='report'&&(column.id==='math'&&
+   !reports.some(x=>x.subject==='Mathematics')&&reports.some(x=>x.subject==='Early Mathematics'))?
+   'Early Mathematics':column.subject||state.academicSubject;
+  const context={...evidenceCtx,mode:column.kind,subject,
+   mapSubject:column.kind==='map'?'Mathematics':state.classMapSubject,
+   maiaDimension:column.kind==='flourishing'?'relationships':state.maiaDimension};
+  const content=evidenceRosterColumn(student,context);
+  const help=(column.kind==='engagement'||column.kind==='belonging')?
+   '<button type="button" class="experience-cell-help" data-experience-explain="'+column.kind+
+   '" data-experience-scope="learner" data-experience-student="'+safe(student.id)+
+   '" data-experience-window="'+safe(state.classExperienceWindow)+
+   '" aria-label="Explain '+column.label+' for '+safe(student.name)+'">ⓘ</button>':'';
+  return content+help;
+ };
+
  const modeLabel=across?'Last issued report':evidenceLabel(mode,{...evidenceCtx,subject});
  const compareLabel=compare==='none'?'':evidenceLabel(compare,{...evidenceCtx,subject});
  const query=state.query.trim().toLowerCase();
@@ -197,7 +227,7 @@ function roster(ss,options={}){
    '" data-experience-window="'+safe(state.classExperienceWindow)+
    '" aria-label="Explain '+id+' for '+safe(student.name)+'">ⓘ</button>':'';
   return {student,attendance:fmt(attendance.rate)+'%',growth:growthText,
-   eng:engagement,bel:belonging,academics:academics+cellHelp(mode),
+   eng:engagement,bel:belonging,everydayCells:everydayColumns.map(column=>everydayCell(student,column)),academics:academics+cellHelp(mode),
    compared:compared+cellHelp(compare),tags:demoTagsForStudent(student),
    sss:SSS_RECORDS.has(student.id)};
  });
@@ -205,16 +235,19 @@ function roster(ss,options={}){
  const context=across?rows.length+' of '+ss.length+' assigned students across all classes':
   rows.length+' of '+ss.length+' learners in '+safe(activeClass()?.name||'this class');
  const table='<div class="tablewrap roster-desktop"><table><thead><tr><th>Learner</th>'+
-  (across?'<th>Class</th>':'')+'<th>Attendance</th><th>'+safe(modeLabel)+'</th>'+  (compare==='none'?'':'<th>'+safe(compareLabel)+'</th>')+
-  (showMap?'<th>MAP Math growth</th>':'')+
-  (showSEL?'<th>Engagement</th><th>Belonging</th>':'')+
+  (across?'<th>Class</th>':'')+
+  (everyday?everydayColumns.map(column=>'<th>'+safe(everydayHeading(column))+'</th>').join(''):
+   '<th>Attendance</th><th>'+safe(modeLabel)+'</th>'+(compare==='none'?'':'<th>'+safe(compareLabel)+'</th>'))+
+  (!everyday&&showMap?'<th>MAP Math growth</th>':'')+
+  (!everyday&&showSEL?'<th>Engagement</th><th>Belonging</th>':'')+
   '<th>Support information</th></tr></thead><tbody>'+
   data.map(x=>'<tr><td><button class="student-link" data-student="'+x.student.id+
    '"><img src="'+portrait(x.student.portraitSeed)+'" alt="">'+safe(x.student.name)+'</button></td>'+
    (across?'<td><span class="roster-class-label">'+safe(x.student.classId)+'</span></td>':'')+
-   '<td>'+x.attendance+'</td><td>'+x.academics+'</td>'+   (compare==='none'?'':'<td>'+x.compared+'</td>')+
-   (showMap?'<td>'+safe(x.growth)+'</td>':'')+
-   (showSEL?'<td>'+x.eng+
+   (everyday?x.everydayCells.map(cell=>'<td>'+cell+'</td>').join(''):
+    '<td>'+x.attendance+'</td><td>'+x.academics+'</td>'+(compare==='none'?'':'<td>'+x.compared+'</td>'))+
+   (!everyday&&showMap?'<td>'+safe(x.growth)+'</td>':'')+
+   (!everyday&&showSEL?'<td>'+x.eng+
      '<button type="button" class="experience-cell-help" data-experience-explain="engagement" data-experience-scope="learner" data-experience-student="'+safe(x.student.id)+'" data-experience-window="F26" aria-label="Explain engagement for '+safe(x.student.name)+'">ⓘ</button></td>'+
     '<td>'+x.bel+
      '<button type="button" class="experience-cell-help" data-experience-explain="belonging" data-experience-scope="learner" data-experience-student="'+safe(x.student.id)+'" data-experience-window="F26" aria-label="Explain belonging for '+safe(x.student.name)+'">ⓘ</button></td>':'')+
@@ -225,9 +258,13 @@ function roster(ss,options={}){
   '<img src="'+portrait(x.student.portraitSeed)+'" alt=""><span class="roster-item-body"><strong>'+
   safe(x.student.name)+'</strong>'+
   (across?'<span>Class '+safe(x.student.classId)+'</span>':'')+
-  '<span>'+safe(modeLabel)+': '+x.academics.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()+'</span>'+  (compare==='none'?'':'<span>'+safe(compareLabel)+': '+x.compared.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()+'</span>')+
-  '<span>Attendance '+x.attendance+(showMap?' · MAP '+safe(x.growth):'')+'</span>'+
-  (experienceEligible(x.student)?'<span>Engagement '+x.eng+' · Belonging '+x.bel+'</span>':'')+
+  (everyday?everydayColumns.map((column,i)=>'<span>'+safe(everydayHeading(column))+': '+
+   x.everydayCells[i].replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()+'</span>').join(''):
+   '<span>'+safe(modeLabel)+': '+x.academics.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()+
+   '</span>'+(compare==='none'?'':'<span>'+safe(compareLabel)+': '+
+    x.compared.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()+'</span>'))+
+  (!everyday?'<span>Attendance '+x.attendance+(showMap?' · MAP '+safe(x.growth):'')+'</span>':'')+
+  (!everyday&&experienceEligible(x.student)?'<span>Engagement '+x.eng+' · Belonging '+x.bel+'</span>':'')+
   (x.sss?'<span>SSS programme · demonstration</span>':'')+
   '</span><span class="roster-arrow" aria-hidden="true">›</span></button>').join('')+'</div>';
  return '<section class="roster roster-daily" aria-label="'+(across?'Search across assigned students':'My class roster')+'">'+
@@ -339,7 +376,7 @@ function faculty(){
  const reportControls=searching?'':renderClassEvidencePanel(ss,{
   academic:ACADEMIC_RECORDS,map:DATA.map,experience:RECORDS,maia:MAIA_RECORDS,
   maiaDimension:state.maiaDimension,maiaWindow:state.maiaWindow,
-  mode:state.classEvidence,subject:state.academicSubject,
+  rosterView:state.rosterView,mode:state.classEvidence,subject:state.academicSubject,
   mapSubject:state.classMapSubject,compare:state.classCompare,window:state.classExperienceWindow});
  return heading('My students','Find a learner, see essential information, or choose a class result.')+
   toolbar+summary+
@@ -893,11 +930,18 @@ root.addEventListener('click',e=>{
   globalThis.window?.scrollTo?.(0,0);
   return;
  }
+ const rosterToggle=e.target.closest('[data-roster-view]');
+ if(rosterToggle&&state.role==='faculty'){
+  state.rosterView=rosterToggle.dataset.rosterView===FOCUSED_VIEW?FOCUSED_VIEW:EVERYDAY_VIEW;
+  render();root.querySelector('[data-roster-view="'+state.rosterView+'"]')?.focus({preventScroll:true});
+  return;
+ }
  const evidenceTab=e.target.closest('[data-class-evidence]');
  if(evidenceTab&&state.role==='faculty'){
   const next=evidenceTab.dataset.classEvidence;
   if(!evidenceModesForGrade(activeClass()?.grade||'').includes(next))return;
   state.classEvidence=next;
+  state.rosterView=FOCUSED_VIEW;
   state.classCompare=normalizeComparison(activeClass()?.grade||'',next,state.classCompare);
   rememberFaculty();render();
   root.querySelector('[data-class-evidence="'+next+'"]')?.focus({preventScroll:true});
