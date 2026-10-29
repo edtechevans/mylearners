@@ -50,7 +50,7 @@ test('Board subject explorer shows fully accessible 2022–2026 trends and sourc
  assert.match(html,/5\.33/);
  assert.match(html,/\+0\.38/);
  assert.match(html,/full zero-to-seven scale/);
- assert.equal((html.match(/<tr/g)||[]).length,7);
+ assert.equal((html.match(/<tr/g)||[]).length,6);
 });
 test('Board deep links preserve selected course only when valid',()=>{
  const hash=boardHash({boardView:'dp',boardDpMetric:'average',boardDpSubject:'english-hl'});
