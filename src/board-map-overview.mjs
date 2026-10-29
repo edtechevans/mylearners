@@ -192,7 +192,7 @@ export function renderBoardOverview(state){
   strengthCard('IB Diploma · '+current.year,String(current.average),'/45',
     'Reported school average · global IB mean 30.88 /45','average','dp')+
   strengthCard('IB Diploma · '+current.year,String(current.passRate)+'%','',
-    'Reported Diploma pass rate','passRate','dp');
+    'IB Diploma awards as share of Diploma/retake candidates','passRate','dp');
  const mapPanel='<div class="board-overview-chartbody">'+
  '<div class="board-overview-charthead"><div><span class="eyebrow">MAP · HISTORICAL ACHIEVEMENT</span>'+
  '<h2 id="board-trend-heading">Learning Over Time · Regional Comparisons</h2>'+
