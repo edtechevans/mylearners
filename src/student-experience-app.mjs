@@ -12,6 +12,7 @@ import {renderSSSLeadershipDashboard,renderSSSProfileNavigation,renderSSSSummary
 import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=20261028titles1';
 import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs';
+import {experienceDialogContent} from './experience-explain-modal.mjs';
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic} from './academic-journey-data.mjs';
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261028titles1';
@@ -146,9 +147,7 @@ function scoreExplanation(id,ss,student){
 }
 function metrics(ss,student,scope='main'){
  if(!eligible(ss).length)return '<p class="not-collected">Student experience indices are not collected for PK–Grade 2 in this demonstration.</p>';
- const detail=METRIC_IDS.find(id=>state.details===scope+':'+id);
- return '<div class="metrics">'+METRIC_IDS.map(id=>metricCard(student?[student]:ss,id,state.window,scope)).join('')+'</div>'+
- (detail?scoreExplanation(detail,ss,student):'');
+ return '<div class="metrics">'+METRIC_IDS.map(id=>metricCard(student?[student]:ss,id,state.window,scope)).join('')+'</div>';
 }
 function roster(ss,options={}){
  const across=!!options.across;
@@ -185,8 +184,14 @@ function roster(ss,options={}){
    (latest?'<small>'+safe(mixSubject)+' · '+safe(latest.year)+' ('+safe(latest.grade)+')</small>':'<small>No issued report</small>')+'</span>':
    evidenceRosterColumn(student,{...evidenceCtx,subject,mode});
   const compared=compare==='none'?'':evidenceRosterColumn(student,{...evidenceCtx,subject,mode:compare});
+  const cellHelp=id=>['engagement','belonging'].includes(id)?
+   '<button type="button" class="experience-cell-help" data-experience-explain="'+id+
+   '" data-experience-scope="learner" data-experience-student="'+safe(student.id)+
+   '" data-experience-window="'+safe(state.classExperienceWindow)+
+   '" aria-label="Explain '+id+' for '+safe(student.name)+'">ⓘ</button>':'';
   return {student,attendance:fmt(attendance.rate)+'%',growth:growthText,
-   eng:engagement,bel:belonging,academics,compared,tags:demoTagsForStudent(student),
+   eng:engagement,bel:belonging,academics:academics+cellHelp(mode),
+   compared:compared+cellHelp(compare),tags:demoTagsForStudent(student),
    sss:SSS_RECORDS.has(student.id)};
  });
  const heading=across?'Students matching “'+safe(state.query.trim())+'”':'My Students';
@@ -202,7 +207,10 @@ function roster(ss,options={}){
    (across?'<td><span class="roster-class-label">'+safe(x.student.classId)+'</span></td>':'')+
    '<td>'+x.attendance+'</td><td>'+x.academics+'</td>'+   (compare==='none'?'':'<td>'+x.compared+'</td>')+
    (showMap?'<td>'+safe(x.growth)+'</td>':'')+
-   (showSEL?'<td>'+x.eng+'</td><td>'+x.bel+'</td>':'')+
+   (showSEL?'<td>'+x.eng+
+     '<button type="button" class="experience-cell-help" data-experience-explain="engagement" data-experience-scope="learner" data-experience-student="'+safe(x.student.id)+'" data-experience-window="F26" aria-label="Explain engagement for '+safe(x.student.name)+'">ⓘ</button></td>'+
+    '<td>'+x.bel+
+     '<button type="button" class="experience-cell-help" data-experience-explain="belonging" data-experience-scope="learner" data-experience-student="'+safe(x.student.id)+'" data-experience-window="F26" aria-label="Explain belonging for '+safe(x.student.name)+'">ⓘ</button></td>':'')+
    '<td>'+(x.sss?'<span class="pill sss-faculty-indicator" title="Fictional SSS programme membership">SSS</span> ':'')+
     x.tags.map(t=>pill(t.label)).join(' ')+'</td></tr>').join('')+'</tbody></table></div>';
  const mobile='<div class="roster-mobile">'+data.map(x=>
@@ -329,8 +337,6 @@ function faculty(){
  return heading('My students','Find a learner, see essential information, or choose a class result.')+
   toolbar+summary+
   roster(searching?ownStudents():ss,{across:searching,controls:reportControls})+
-  (!searching&&typeof state.details==='string'&&state.details.startsWith('faculty:')?
-   scoreExplanation(state.details.split(':')[1],ss,null):'')+
   info();
 }
 
@@ -386,10 +392,8 @@ function leader(){
     (summary.value===null?'':btn('explain:'+scope+':'+id,'How calculated','quiet'))+
     '</article>';
   }).join('');
-  const chosen=METRIC_IDS.find(id=>state.details===scope+':'+id);
   return '<section class="leader-experience-group">'+titleRow+
-   '<div class="leader-experience-pair">'+cards+'</div>'+
-   (chosen?scoreExplanation(chosen,ss,null):'')+'</section>';
+   '<div class="leader-experience-pair">'+cards+'</div></section>';
  };
  const experience=splitExperience?
   '<div class="leader-experience-sections">'+
@@ -452,7 +456,8 @@ function leader(){
    const b=summarizeExperience(RECORDS,ss,'belonging',state.window);
    return '<tr><th scope="row">'+safe(name)+'</th><td>'+ss.length+
     '</td><td>'+(e.eligible?e.n+' / '+e.eligible:'Not collected')+
-    '</td><td>'+fmt(e.value)+'</td><td>'+fmt(b.value)+'</td></tr>';
+    '</td><td>'+fmt(e.value)+' <button type="button" class="experience-cell-help" data-experience-explain="engagement" data-experience-scope="leader-row" data-experience-group="'+safe(name)+'" aria-label="Explain engagement for '+safe(name)+'">ⓘ</button></td>'+
+   '<td>'+fmt(b.value)+' <button type="button" class="experience-cell-help" data-experience-explain="belonging" data-experience-scope="leader-row" data-experience-group="'+safe(name)+'" aria-label="Explain belonging for '+safe(name)+'">ⓘ</button></td></tr>';
   }).join('')+'</tbody></table></div>';
  const trendFor=(ss,title)=>'<div class="leader-trend-group"><h4>'+safe(title)+'</h4>'+
   '<div class="leader-trend-grid">'+EXPERIENCE_WINDOWS.map(w=>{
@@ -557,6 +562,80 @@ function student(){
  learnerProfile(chosen,true)+info();
 }
 
+let experienceDialog=null,experienceReturnFocus=null;
+function experienceScope(trigger,action=''){
+ const parts=action.startsWith('explain:')?action.split(':'):[];
+ const metric=trigger.dataset.experienceExplain||parts.at(-1);
+ if(!METRIC_IDS.includes(metric))return null;
+ const scope=trigger.dataset.experienceScope||parts[1]||state.role;
+ const preferred=trigger.dataset.experienceWindow||
+  (scope==='faculty'||scope==='sss'?'F26':state.window);
+ const windowKey=EXPERIENCE_WINDOWS.some(w=>w.key===preferred)?preferred:'F26';
+ const windowLabel=EXPERIENCE_WINDOWS.find(w=>w.key===windowKey).label;
+ let students=[],person=null,scopeLabel='';
+ const studentId=trigger.dataset.experienceStudent||
+  (scope==='profile'||scope==='student'?state.studentId:
+   scope==='sss'?state.sssStudentId:'');
+ if(studentId){
+  const found=DATA.userIndex.get(studentId);
+  const permitted=found&&(state.role==='faculty'&&ownStudents().some(s=>s.id===studentId)||
+    state.role==='student'&&state.studentId===studentId||
+    state.role==='sss'&&SSS_RECORDS.has(studentId));
+  if(!permitted)return null;
+  person=found;students=[found];scopeLabel=found.name+' · '+found.grade;
+ }else if(state.role==='faculty'){
+  students=(activeClass()?.studentIds||[]).map(id=>DATA.userIndex.get(id)).filter(Boolean);
+  scopeLabel=activeClass()?.name||'Selected class';
+ }else if(state.role==='leader'){
+  const divisions=state.division==='All'?['Elementary','Secondary']:[state.division];
+  students=DATA.students.filter(s=>divisions.includes(s.division)&&
+   (state.grade==='All'||s.grade===state.grade)&&
+   (!state.classId||s.classId===state.classId));
+  if(scope==='elementary')students=students.filter(s=>s.division==='Elementary');
+  if(scope==='secondary')students=students.filter(s=>s.division==='Secondary');
+  const namedGroup=trigger.dataset.experienceGroup;
+  if(namedGroup){
+   const gradeMatches=students.filter(s=>s.grade===namedGroup);
+   const classMatch=DATA.classes.find(c=>c.name===namedGroup);
+   students=gradeMatches.length?gradeMatches:
+    classMatch?students.filter(s=>s.classId===classMatch.id):[];
+   scopeLabel=namedGroup;
+  }else scopeLabel=scope==='elementary'?'Elementary':scope==='secondary'?'Secondary':
+   state.classId?DATA.classes.find(c=>c.id===state.classId)?.name||'Selected class':
+   state.grade!=='All'?state.grade:state.division==='All'?'Whole school':state.division;
+ }else return null;
+ // Elementary and Secondary wording differs. Never blend different question sets.
+ if(students.some(s=>s.division==='Elementary')&&
+    students.some(s=>s.division==='Secondary')&&!person)return null;
+ const entry=person?experienceFor(RECORDS,person.id,metric,windowKey):null;
+ const summary=person?{value:entry?.value??null,n:entry?1:0,eligible:1}:
+  summarizeExperience(RECORDS,students,metric,windowKey);
+ const questions=person?entry?.items||[]:
+  experienceQuestionSummary(RECORDS,students,metric,windowKey);
+ return {metric,scopeLabel,windowLabel,summary,questions,individual:!!person};
+}
+function openExperienceExplanation(trigger,action=''){
+ const context=experienceScope(trigger,action);
+ if(!context)return;
+ if(experienceDialog){experienceDialog.close();experienceDialog.remove()}
+ experienceReturnFocus=trigger;
+ const dialog=document.createElement('dialog');
+ dialog.className='experience-dialog';
+ dialog.setAttribute('aria-labelledby','experience-dialog-title');
+ dialog.setAttribute('aria-describedby','experience-dialog-desc');
+ dialog.innerHTML=experienceDialogContent(context);
+ dialog.addEventListener('click',event=>{
+  if(event.target===dialog||event.target.closest('[data-experience-close]'))dialog.close();
+ });
+ dialog.addEventListener('close',()=>{
+  dialog.remove();if(experienceDialog===dialog)experienceDialog=null;
+  if(experienceReturnFocus?.isConnected)experienceReturnFocus.focus({preventScroll:true});
+ });
+ document.body.appendChild(dialog);
+ experienceDialog=dialog;
+ dialog.showModal();
+ dialog.querySelector('.experience-modal-close')?.focus({preventScroll:true});
+}
 let pinnedChartKey=null;
 function render(){
  pinnedChartKey=null;
@@ -964,7 +1043,9 @@ root.addEventListener('click',e=>{
  if(boardSubject){state.boardSubject=boardSubject.dataset.boardSubject;render();return}
  const boardWindow=e.target.closest('[data-board-window]');
  if(boardWindow){state.boardWindow=boardWindow.dataset.boardWindow;render();return}
- const b=e.target.closest('[data-action]');if(b){const a=b.dataset.action;if(a.startsWith('explain:')){state.details=a.slice('explain:'.length)}else if(a==='close')state.details=false;else if(a==='back'){state.studentId='';state.details=false}else if(a==='save-reflection'){const t=document.querySelector('#reflection');try{sessionStorage.setItem('reflection-'+state.studentId,t?.value||'')}catch{}document.querySelector('#save-status').textContent='Draft saved in this browser session only.';return}render();return}
+ const explain=e.target.closest('[data-experience-explain]');
+ if(explain){openExperienceExplanation(explain);return}
+ const b=e.target.closest('[data-action]');if(b){const a=b.dataset.action;if(a.startsWith('explain:')){openExperienceExplanation(b,a);return}else if(a==='close')state.details=false;else if(a==='back'){state.studentId='';state.details=false}else if(a==='save-reflection'){const t=document.querySelector('#reflection');try{sessionStorage.setItem('reflection-'+state.studentId,t?.value||'')}catch{}document.querySelector('#save-status').textContent='Draft saved in this browser session only.';return}render();return}
  const link=e.target.closest('[data-student]');if(link){state.studentId=link.dataset.student;state.details=false;state.academicReportYear='';render();window.scrollTo(0,0)}
 });
 root.addEventListener('change',e=>{
