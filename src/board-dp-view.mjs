@@ -9,6 +9,7 @@ const points=v=>Number.isFinite(v)?valueText(v,'average'):'—';
 const percentage=v=>Number.isFinite(v)?(Math.round(v*10)/10).toString()+'%':'—';
 const delta=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)?(a-b>=0?'+':'')+valueText(a-b,'average'):'—';
 const count=(v)=>Number.isFinite(v)?String(v):'—';
+const headlinePoints=v=>Number.isFinite(v)?String(Math.round(v)):'—';
 const mini=(label,value,note)=>'<span class="board-dp-evidence-item"><span>'+safe(label)+'</span><strong>'+safe(value)+'</strong><small>'+safe(note)+'</small></span>';
 function dpRangeHighlight(metric){
  const values=DP_RECORDS.map(r=>r[metric]).filter(Number.isFinite);
@@ -34,8 +35,9 @@ export function renderDPPointDetails(key){
  (Number.isFinite(worldValue)?'<p class="board-dp-global-point">Global IB · '+valueText(worldValue,metric)+
   (metric==='average'?' / 45':'')+' · AISG '+(metric==='average'?delta(value,worldValue):
   percentage(value-worldValue)+' pts')+' versus global</p>':
-  '<p>Global comparison not supplied for this measure and year.</p>')+
- (row.candidates?'<p>'+row.passes+' Diploma awards from '+row.candidates+' Diploma and retake candidates.</p>':'')+
+  '<p>Worldwide comparison unavailable for this earlier year or measure.</p>')+
+ (row.candidates?'<p><strong>AISG candidate count:</strong> '+row.candidates+' Diploma/retake candidates · '+row.passes+' Diplomas awarded.</p>':'')+
+ (Number.isFinite(row.meanGrade)?'<p><strong>AISG mean subject grade:</strong> '+row.meanGrade.toFixed(2)+' / 7 (Diploma awardees).</p>':'')+
 
  (row.covid?'<p class="board-dp-caveat">'+safe(row.covid)+'</p>':'')+
  '<p class="board-dp-point-footnote">Annual graduating cohorts differ; participation and qualification measures are not interchangeable.</p>';
@@ -58,7 +60,11 @@ function dpLineChart(metric,{range='all',selectedYear=null,compareWorld=false}={
  };
  const lines=pathFor('value','#176397')+(compareWorld?pathFor('worldValue','#13847c',true):'');
  const worldPoints=compareWorld?items.map((r,i)=>Number.isFinite(r.worldValue)?
-  '<circle class="board-dp-world-point" cx="'+xp(i)+'" cy="'+yp(r.worldValue)+'" r="4.6" fill="#13847c" stroke="#fff" stroke-width="1.4"/>' : '').join(''):'';
+  '<g class="board-dp-world-hover" data-board-dp-world-point="'+metric+':'+r.end+
+  '" role="button" tabindex="0" aria-label="'+safe(r.year+', World IB '+meta.label+
+  ' '+valueText(r.worldValue,metric)+'. Hover or focus for comparisons and AISG candidate counts.')+'">'+
+  '<circle cx="'+xp(i)+'" cy="'+yp(r.worldValue)+'" r="15" fill="transparent"/>'+
+  '<circle class="board-dp-world-point" cx="'+xp(i)+'" cy="'+yp(r.worldValue)+'" r="4.6" fill="#13847c" stroke="#fff" stroke-width="1.4"/></g>':'').join(''):'';
  const ticks=[0,.25,.5,.75,1].map(frac=>{
   const val=Math.round(max*frac),y=yp(val);
   return '<line class="board-trend-grid" x1="'+left+'" y1="'+y+'" x2="'+(width-right)+'" y2="'+y+'"/>'+
@@ -74,7 +80,7 @@ function dpLineChart(metric,{range='all',selectedYear=null,compareWorld=false}={
    '<circle class="board-dp-point-hit" cx="'+xx+'" cy="'+yy+'" r="17" fill="transparent"/>'+
    (selected?'<circle class="board-dp-selected-ring" cx="'+xx+'" cy="'+yy+'" r="12.8" fill="none" stroke="#72a8c4" stroke-width="4" opacity=".55"/>':'')+
    '<circle class="board-dp-point-mark" cx="'+xx+'" cy="'+yy+'" r="6.3" fill="'+'#176397'+'" stroke="#fff" stroke-width="2"/>'+
-   '<text x="'+xx+'" y="'+(yy-19)+'" text-anchor="middle" class="board-trend-value" fill="#176397">'+valueText(r.value,metric)+'</text></g>'+title;
+   '<text x="'+xx+'" y="'+(yy-19)+'" text-anchor="middle" class="board-trend-value" fill="#176397">'+(metric==='average'?headlinePoints(r.value):Math.round(r.value)+'%')+'</text></g>'+title;
  }).join('');
  return '<svg class="board-dp-svg" viewBox="0 0 '+width+' '+height+'" role="group" aria-label="'+safe(meta.label)+
   ' by AISG graduating year'+(compareWorld?', with global IB reference':'')+'. Full chart scale." xmlns="http://www.w3.org/2000/svg">'+
@@ -140,9 +146,9 @@ export function renderBoardDP(state){
  const worldAvg=selected.worldAverage;
  const worldPass=selected.worldPassRate;
  const international='<div class="board-dp-world-strip" aria-label="International Diploma comparisons">'+
-  mini('World IB average',points(worldAvg)+' /45',
+  mini('World IB average',headlinePoints(worldAvg)+' /45',
    Number.isFinite(worldAvg)?'AISG '+delta(selected.average,worldAvg)+' points vs world':'No comparable global average')+
-  mini('World Diploma pass rate',percentage(worldPass),
+  mini('World Diploma pass rate',Number.isFinite(worldPass)?Math.round(worldPass)+'%':'—',
    Number.isFinite(worldPass)?'AISG '+percentage(selected.passRate-worldPass).replace('%',' percentage points')+' vs world':'Global pass-rate result unavailable for this year')+
   mini('Diploma/retake candidates',selected.candidates?
     selected.candidates+(Number.isFinite(selected.cohort)?' / '+selected.cohort:''):'—',
@@ -173,7 +179,7 @@ export function renderBoardDP(state){
  '<h3>Diploma at a Glance</h3><p>Each number describes the selected graduating cohort.</p></div>'+
  '</div>'+
  '<div class="board-dp-graphic-grid">'+
- outcomeTile('average','AISG average Diploma score',valueText(selected.average,'average'),'/45',
+ outcomeTile('average','AISG average Diploma score',headlinePoints(selected.average),'/45',
    'Class of '+end)+
  outcomeTile('pass','AISG Diploma pass rate',valueText(selected.passRate,'passRate'),'',
    (dpPassCount(selected)?dpPassCount(selected)+' candidates':'School reported rate'))+
@@ -182,7 +188,7 @@ export function renderBoardDP(state){
  international+
  '<p class="board-dp-graphic-footnote">'+
  'AISG May '+end+' Diploma awards and averages are sourced from official IB School Statistics (school 001832). '+
- 'Global values: school summary (2023–2025); IB published May 2026 world mean.</p></section>'+
+ '2026 worldwide mean: IB July announcement; 2026 worldwide pass rate: IB May 2026 statistical bulletin. Summary scores are rounded; hover for precise results.</p></section>'+
  renderDiplomaSubjectSection(state)+
  '<section id="board-dp-history" class="board-panel board-dp-panel"><div class="board-dp-chart-top"><div>'+
  '<span class="eyebrow">HISTORICAL OUTCOMES</span>'+
@@ -198,7 +204,7 @@ export function renderBoardDP(state){
  '<button type="button" class="board-dp-global-toggle" data-board-dp-global aria-pressed="'+comparison+'">'+
  (comparison?'Show AISG only':'Compare with world')+'</button></div>'+
  dpRangeHighlight(metric)+
- '<p class="board-dp-swipe">Select a year on the chart to inspect its school outcome and available global comparison.</p>'+
+ '<p class="board-dp-swipe">Hover or focus an AISG or world point to see precise scores and AISG candidate counts. Select an AISG year to inspect its outcome.</p>'+
  '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Explore Diploma outcomes by school year">'+
  dpLineChart(metric,{selectedYear:end,compareWorld:comparison})+'</div>'+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
@@ -212,7 +218,7 @@ export function renderBoardDP(state){
  '<p>'+safe(DP_METHODS.comparison)+'</p><p>'+safe(DP_METHODS.covid)+'</p>'+
  '<p>'+safe(DP_METHODS.discrepancy)+'</p><p>'+safe(DP_METHODS.pathways)+'</p>'+
  '<p>'+safe(DP_METHODS.boundary)+'</p>'+
- '<p>IB published May 2026 world average: <a href="https://ibo.org/news/news-list/more-than-209000-ib-students-worldwide-receive-their-dp-and-cp-results/" target="_blank" rel="noopener noreferrer">IB official results announcement</a>.</p>'+
+ '<p>IB 2026 worldwide DP mean: 30.88 points · <a href="https://ibo.org/news/news-list/more-than-209000-ib-students-worldwide-receive-their-dp-and-cp-results/" target="_blank" rel="noopener noreferrer">IB July 2026 announcement</a>. Worldwide Diploma pass rate: 82.6% · <a href="https://ibo.org/globalassets/publications/dpcp-provisional-statistical-bulletin-may-2026_en.pdf" target="_blank" rel="noopener noreferrer">IB May 2026 statistical bulletin</a>.</p>'+
  '</details></section>';
 }
 
@@ -222,12 +228,12 @@ export function renderDPOverviewTrend(state){
  return '<div class="board-dp-overview-trend">'+
  '<div class="board-dp-chart-top"><div><span class="eyebrow">GRADUATION OUTCOMES · IB DIPLOMA</span>'+
  '<h2>Diploma Outcomes Over Time</h2>'+
- '<p>Nine graduating years · '+(selected==='average'?'Average Diploma points out of 45':'Diploma pass rate as a percentage')+'</p></div>'+
+ '<p>'+DP_RECORDS.length+' graduating years · '+(selected==='average'?'Average Diploma points out of 45':'Diploma pass rate as a percentage')+'</p></div>'+
  '<div class="board-segmented" role="group" aria-label="IB Diploma historical measure">'+
  '<button type="button" data-board-dp-metric="average" aria-pressed="'+(selected==='average')+'" class="'+(selected==='average'?'active':'')+'">Average points</button>'+
  '<button type="button" data-board-dp-metric="passRate" aria-pressed="'+(selected==='passRate')+'" class="'+(selected==='passRate'?'active':'')+'">Pass rate</button></div></div>'+
  dpRangeHighlight(selected)+
- '<p class="board-dp-swipe">Swipe for earlier graduation years. Tap a point for its value.</p>'+
+ '<p class="board-dp-swipe">Hover or focus any plotted point for precise AISG/world data and AISG candidate counts.</p>'+
  '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Scroll to inspect Diploma outcomes">'+dpLineChart(selected,{compareWorld:true})+'</div>'+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
  '<div class="board-dp-inspector" aria-live="polite"><p>Select a year to understand its reported outcome.</p></div>'+
