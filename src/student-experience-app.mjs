@@ -81,7 +81,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardTrendRange:'recent',boardOverviewChart:'map',
  boardMapDetailsOpen:false,boardMapCompareSeasons:false,boardMapGrowthOpen:false,
  boardDpMetric:'average',boardDpGlobal:true,
- boardDpYear:String(DP_RECORDS.at(-1).end),boardDpRange:'all'};
+ boardDpYear:String(DP_RECORDS.at(-1).end),boardDpRange:'all',boardDpSubject:'math-aa-sl'};
 recallFaculty();
 if(state.role==='leader')state.classId='';
 const boardDeepLink=parseBoardHash(globalThis.location?.hash);
@@ -1058,6 +1058,13 @@ root.addEventListener('click',e=>{
  }
  const worldToggle=e.target.closest('[data-board-dp-global]');
  if(worldToggle&&state.role==='board'){state.boardDpGlobal=state.boardDpGlobal===false;render();return;}
+ const dpCourse=e.target.closest('[data-board-dp-subject]');
+ if(dpCourse&&state.role==='board'){
+  state.boardDpSubject=dpCourse.dataset.boardDpSubject;
+  render();
+  root.querySelector('[data-board-dp-subject="'+state.boardDpSubject+'"]')?.focus({preventScroll:true});
+  return;
+ }
  const dpMetric=e.target.closest('[data-board-dp-metric]');
  if(dpMetric){state.boardDpMetric=dpMetric.dataset.boardDpMetric==='passRate'?'passRate':'average';render();return;}
  const boardTerm=e.target.closest('[data-board-trend]');
