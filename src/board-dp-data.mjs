@@ -49,7 +49,7 @@ export const DP_METRICS=Object.freeze([
 export const DP_METHODS=Object.freeze({
  quality:'Class of 2018–2025 school averages, pass rates and candidate counts use the school-supplied IBDP examination statistics summary. The separately reported 2025–26 results require confirmation.',
  limits:'Examination candidate counts are available for 2018–2025 only. The 2026 candidate denominator is not in the provided summary, and 2026 pass counts cannot be inferred from programme pathway enrollment.',
- discrepancy:'For 2025–26, the previously reported count of 117 full DP learners differs from 56 in the Grade 12 full Diploma pathway. These are different or unconfirmed populations, not a verified examination candidate denominator.',
+ discrepancy:'For 2025–26, the previously reported count of 117 full DP learners differs from 56 in the Grade 12 full Diploma pathway. These are different populations or counting conventions; neither provides the examination candidate denominator for 2026.',
  current:'Confirm the 2025–26 AISG average of 34 and pass rate of 93% against final examination session results before formal Board reporting; they are not recorded in the supplied school exam summary.',
  pathways:'Grade 12 pathways are enrollment information, not examination candidate or pass counts. Do not divide examinations by pathway entries.',
  boundary:'DP results cover graduating cohorts; MAP covers Grades 3–10. Do not combine them into a single attainment percentage.',
