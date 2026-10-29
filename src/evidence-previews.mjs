@@ -133,7 +133,7 @@ export function decorateEvidencePreviews(root,role){
  }
  if(role==='board'){
   for(const e of q('.board-strength-card,.board-overview-card'))mark(e,'board-card');
-  for(const e of q('.board-dp-graphic-tile,.board-dp-evidence-item'))mark(e,'board-dp');
+  for(const e of q('.board-dp-graphic-card,.board-dp-evidence-item'))mark(e,'board-dp');
   for(const e of q('.board-indicator'))mark(e,'board-index');
   for(const e of q('.board-comparison-subject'))mark(e,'board-map');
   // Chart points already have a working richer hover/pin inspector: avoid a second popover.
