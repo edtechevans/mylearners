@@ -22,10 +22,10 @@ import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-eve
 import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceRosterColumn} from './class-evidence.mjs?v=20261028sleek1';
 import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile} from './maia-demo.mjs';
 import {renderStudentOverview} from './student-daily-overview.mjs?v=20261028titles1';
-import {renderBoard} from './board-map-view.mjs?v=20261028titles1';
-import {renderTrendPointDetails} from './board-map-overview.mjs?v=20261028titles1';
-import {renderDPPointDetails} from './board-dp-view.mjs?v=20261028titles1';
-import {DP_RECORDS} from './board-dp-data.mjs?v=20261028exam1';
+import {renderBoard} from './board-map-view.mjs?v=20261029ibsubjects2';
+import {renderTrendPointDetails} from './board-map-overview.mjs?v=20261029ibsubjects2';
+import {renderDPPointDetails} from './board-dp-view.mjs?v=20261029ibsubjects2';
+import {DP_RECORDS} from './board-dp-data.mjs?v=20261029ibsubjects2';
 import {boardWindowFor,BOARD_DATA} from './board-map-data.mjs';
 import {parseBoardHash} from './board-map-links.mjs';
 const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(DATA.students),
