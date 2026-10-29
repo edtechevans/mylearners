@@ -1,0 +1,83 @@
+/* AISG Board · Diploma subject performance, official IB 2022–2026.
+   Uses the existing Board navy, white surfaces and subtle global green. */
+.board-view .dp-subject-section{margin:18px 0;padding:24px;min-width:0;background:#fff}
+.board-view .dp-subject-intro{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}
+.board-view .dp-subject-intro h3{font-size:23px;letter-spacing:-.035em;color:#153f5f;margin:5px 0}
+.board-view .dp-subject-intro p{font-size:12px;color:#60798a;line-height:1.6;margin:4px 0;max-width:72ch}
+.board-view .dp-subject-ib-mark{font-size:11px;white-space:nowrap;border:1px solid #d4e4ed;border-radius:7px;padding:7px 10px;color:#365e77;background:#f5f9fb}
+.board-view .dp-subject-highlights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:19px}
+.board-view .dp-subject-highlight{background:linear-gradient(138deg,#f5fafc,#fff 85%);border:1px solid #d8e7ee;border-radius:13px;padding:18px;display:flex;flex-direction:column;gap:7px;min-width:0}
+.board-view .dp-subject-highlight:nth-child(2){background:linear-gradient(138deg,#f5f7fc,#fff 85%)}
+.board-view .dp-subject-highlight:nth-child(3){background:linear-gradient(138deg,#f2faf7,#fff 85%)}
+.board-view .dp-subject-eyebrow{font-size:10px;letter-spacing:.085em;font-weight:800;color:#58778d}
+.board-view .dp-subject-highlight>strong{font-size:15px;color:#1b4565;letter-spacing:-.02em}
+.board-view .dp-subject-highlight-value{font-size:29px;line-height:1.3;font-weight:820;letter-spacing:-.055em;color:#175277;font-variant-numeric:tabular-nums}
+.board-view .dp-subject-highlight-value small{font-size:11px;letter-spacing:0;color:#577687;font-weight:680;white-space:normal}
+.board-view .dp-subject-highlight p{font-size:11px;color:#44667a;margin:0;line-height:1.6}
+.board-view .dp-subject-coverage{display:block;font-size:10px;color:#698596;border-top:1px solid #dce8ee;padding-top:10px;margin-top:auto;line-height:1.55}
+.board-view .dp-subject-explorer{display:grid;grid-template-columns:minmax(208px,250px) minmax(0,1fr);border:1px solid #dbe8ef;border-radius:14px;overflow:hidden;background:#fff}
+.board-view .dp-subject-choice{background:#f6f9fb;border-right:1px solid #dbe8ef;padding:18px 13px}
+.board-view .dp-subject-choice h4{font-size:15px;color:#163f5e;margin:0 0 5px}
+.board-view .dp-subject-choice p{font-size:11px;line-height:1.55;color:#6d8290;margin:0 0 14px}
+.board-view .dp-subject-options{display:flex;flex-direction:column;gap:4px}
+.board-view .dp-subject-group-label{font-size:10px;font-weight:850;letter-spacing:.065em;text-transform:uppercase;color:#7190a2;display:block;margin:12px 7px 3px}
+.board-view .dp-subject-group-label:first-child{margin-top:0}
+.board-view .dp-subject-options button{font:inherit;border:1px solid transparent;background:transparent;color:#395e74;font-size:11px;line-height:1.45;font-weight:720;text-align:left;padding:9px 10px;min-height:38px;border-radius:8px;cursor:pointer}
+.board-view .dp-subject-options button.active,.board-view .dp-subject-options button[aria-pressed="true"]{background:#e8f2f8;color:#124a71;border-color:#b9d7e5}
+.board-view .dp-subject-options button:hover{background:#eaf4f8}
+.board-view .dp-subject-options button:focus-visible{outline:3px solid #3386a4;outline-offset:1px}
+.board-view .dp-subject-detail{padding:20px 21px;min-width:0}
+.board-view .dp-subject-detail-top{display:flex;align-items:start;justify-content:space-between;gap:16px}
+.board-view .dp-subject-detail-top h4{font-size:18px;font-weight:820;color:#173f60;margin:5px 0 3px;line-height:1.3}
+.board-view .dp-subject-detail-top p{font-size:11px;color:#657d8a;line-height:1.5;margin:0}
+.board-view .dp-subject-five-year{font-weight:850;font-size:23px;color:#18537b;letter-spacing:-.05em;white-space:nowrap}
+.board-view .dp-subject-five-year small{display:block;text-align:right;font-size:10px;letter-spacing:0;color:#658092;font-weight:650}
+.board-view .dp-subject-score-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:17px 0 11px}
+.board-view .dp-subject-score-row>div{padding:12px;background:#f5f8fa;border:1px solid #e4edf2;border-radius:10px;min-width:0}
+.board-view .dp-subject-score-row span{display:block;font-size:10px;color:#607b8e;font-weight:700;line-height:1.5}
+.board-view .dp-subject-score-row strong{font-variant-numeric:tabular-nums;display:block;font-size:23px;color:#164c6f;white-space:nowrap;letter-spacing:-.04em}
+.board-view .dp-subject-score-row strong small{font-size:12px;color:#7190a0;letter-spacing:0}
+.board-view .dp-subject-legend{display:flex;gap:18px;justify-content:flex-end;color:#526f81;font-size:11px;font-weight:700;margin:5px 4px 0}
+.board-view .dp-subject-legend span{display:flex;align-items:center;gap:6px}
+.board-view .dp-subject-legend i{display:block;width:18px;height:0;border-top:3px solid #1d638e}
+.board-view .dp-subject-legend .dp-subject-legend-world{border-color:#168879;border-top-style:dashed}
+.board-view .dp-subject-chart-wrap{overflow-x:auto;max-width:100%;margin:0;padding:0}
+.board-view .dp-subject-chart{display:block;width:100%;min-width:460px;height:auto}
+.board-view .dp-subject-grid{stroke:#dfebf1;stroke-width:1}
+.board-view .dp-subject-tick,.board-view .dp-subject-year{font-size:12px;fill:#617d8e}
+.board-view .dp-subject-school-line{fill:none;stroke:#1d638e;stroke-width:3.5;stroke-linejoin:round;stroke-linecap:round}
+.board-view .dp-subject-world-line{fill:none;stroke:#168879;stroke-width:2.5;stroke-dasharray:7 6;stroke-linecap:round}
+.board-view .dp-subject-school-dot{fill:#1d638e;stroke:#fff;stroke-width:2}
+.board-view .dp-subject-world-dot{fill:#168879;stroke:#fff;stroke-width:2}
+.board-view .dp-subject-detail-bottom{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;color:#637e8c;font-size:11px;border-top:1px solid #e4edf2;padding-top:10px;margin-top:2px}
+.board-view .dp-subject-table{margin-top:16px;border-top:1px solid #e3edf2;padding-top:10px}
+.board-view .dp-subject-table summary{color:#215c7d;font-weight:740;font-size:12px;cursor:pointer}
+.board-view .dp-subject-table .tablewrap{overflow-x:auto;margin-top:12px}
+.board-view .dp-subject-table table{width:100%;font-size:11px;border-collapse:collapse;min-width:430px}
+.board-view .dp-subject-table th,.board-view .dp-subject-table td{padding:9px 8px;border-bottom:1px solid #e5edf2;text-align:right;font-variant-numeric:tabular-nums}
+.board-view .dp-subject-table th:first-child{text-align:left}
+.board-view .dp-subject-table thead{background:#f5f9fb}
+.board-view .dp-subject-table .dp-subject-current{background:#edf6f9;font-weight:780}
+.board-view .dp-subject-method{color:#647f91;font-size:11px;line-height:1.6;margin:15px 1px 0}
+@media(max-width:1100px){.board-view .dp-subject-explorer{grid-template-columns:1fr}
+ .board-view .dp-subject-choice{border-right:0;border-bottom:1px solid #dbe8ef}
+ .board-view .dp-subject-options{display:flex;flex-direction:row;flex-wrap:wrap}
+ .board-view .dp-subject-group-label{width:100%;margin:10px 0 0}
+ .board-view .dp-subject-options button{padding:7px 10px}
+}
+@media(max-width:760px){
+ .board-view .dp-subject-section{padding:15px}
+ .board-view .dp-subject-intro{align-items:start;flex-direction:column}
+ .board-view .dp-subject-highlights{grid-template-columns:1fr}
+ .board-view .dp-subject-detail{padding:14px}
+ .board-view .dp-subject-score-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .board-view .dp-subject-detail-top{flex-direction:column}
+ .board-view .dp-subject-five-year small{text-align:left}
+}
+@media print{
+ .board-view .dp-subject-options button:not([aria-pressed="true"]){display:none}
+ .board-view .dp-subject-explorer{display:block}
+ .board-view .dp-subject-choice{border:0;background:none}
+ .board-view .dp-subject-score-row{break-inside:avoid}
+ .board-view .dp-subject-highlights{break-inside:avoid}
+}
