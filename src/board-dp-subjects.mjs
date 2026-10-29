@@ -36,7 +36,7 @@ const plus=v=>(v>0?'+':'')+v.toFixed(2);
 const score=v=>Number(v).toFixed(2);
 function chart(subject){
  const W=780,H=238,left=46,right=25,top=24,bottom=191;
- const xp=i=>left+(W-left-right)*i/4,yp=v=>bottom-(v/7)*(bottom-top);
+ const xp=i=>left+(W-left-right)*i/Math.max(1,subject.rows.length-1),yp=v=>bottom-(v/7)*(bottom-top);
  const path=k=>subject.rows.map((r,i)=>(i?'L':'M')+xp(i)+' '+yp(r[k]).toFixed(1)).join(' ');
  const grid=[0,2,4,6,7].map(v=>'<line x1="'+left+'" x2="'+(W-right)+'" y1="'+yp(v)+'" y2="'+yp(v)+'" class="dp-subject-grid"/>'+
   '<text x="'+(left-12)+'" y="'+(yp(v)+4)+'" text-anchor="end" class="dp-subject-tick">'+v+'</text>').join('');
@@ -44,31 +44,32 @@ function chart(subject){
   const x=xp(i);
   const point=k=>'<circle cx="'+x+'" cy="'+yp(r[k]).toFixed(1)+'" r="5" class="dp-subject-'+k+'-dot">'+
    '<title>'+safe(r.year+' '+(k==='school'?'AISG':'Worldwide')+': '+score(r[k])+' / 7; '+r.n+' AISG subject entries')+'</title></circle>';
-  return point('world')+point('school')+'<text x="'+x+'" y="218" text-anchor="middle" class="dp-subject-year">'+r.year+'</text>';
+  return point('world')+point('school')+(subject.rows.length<=6||i%2===0||i===subject.rows.length-1?'<text x="'+x+'" y="218" text-anchor="middle" class="dp-subject-year">'+r.year+'</text>':'');
  }).join('');
  return '<div class="dp-subject-chart-wrap"><svg viewBox="0 0 '+W+' '+H+'" class="dp-subject-chart" role="img" aria-label="'+
-  safe(subject.name)+': AISG and worldwide average grades from 2022 to 2026 on a full zero-to-seven scale">'+
+  safe(subject.name)+': AISG and worldwide average grades from '+subject.rows[0].year+' to '+subject.rows.at(-1).year+' on a full zero-to-seven scale">'+
   grid+'<path d="'+path('world')+'" class="dp-subject-world-line"/>'+
   '<path d="'+path('school')+'" class="dp-subject-school-line"/>'+years+'</svg></div>';
 }
 function subjectHighlights(){
  const spotlight=[
-  {id:'math-aa-sl',title:'Mathematics AA SL',message:'Five consecutive years above the worldwide course average'},
-  {id:'english-hl',title:'English A HL',message:'Five consecutive years above the worldwide course average'},
-  {id:'biology-hl',title:'Biology HL',message:'Five consecutive years above the worldwide course average'}
+  {id:'english-hl',title:'English A HL'},
+  {id:'math-aa-sl',title:'Mathematics AA SL'},
+  {id:'biology-hl',title:'Biology HL'}
  ];
  return '<div class="dp-subject-highlights">'+spotlight.map(h=>{
   const d=dpSubjectDetails(h.id);return '<article class="dp-subject-highlight">'+
    '<span class="dp-subject-eyebrow">MAY 2026 · SUBJECT STRENGTH</span>'+
    '<strong>'+safe(h.title)+'</strong>'+
    '<div class="dp-subject-highlight-value">'+plus(d.gap)+' <small>grade points vs worldwide</small></div>'+
-   '<p>'+safe(h.message)+'</p>'+
+   '<p>Above the worldwide course average in <strong>'+d.above+' of '+d.subject.rows.length+'</strong> May sessions ('+d.subject.rows[0].year+'–2026).</p>'+
    '<span class="dp-subject-coverage">2026: '+d.current.n+' subject entries · AISG '+score(d.current.school)+' / World '+score(d.current.world)+'</span></article>';
  }).join('')+'</div>';
 }
 export function renderDiplomaSubjectSection(state={}){
  const {subject,current,previous,above,gap,yearChange}=dpSubjectDetails(state.boardDpSubject||DP_SUBJECT_DEFAULT);
  const group=subject.group;
+ const first=subject.rows[0].year,last=current.year,coverage=subject.rows.length;
  const tabs=DP_SUBJECT_GROUPS.map(g=>'<span class="dp-subject-group-label"'+(g.id===group?' data-current="true"':'')+'>'+safe(g.label)+'</span>'+
  DIPLOMA_SUBJECTS.filter(s=>s.group===g.id).map(s=>'<button type="button" data-board-dp-subject="'+safe(s.id)+
  '" aria-pressed="'+(s.id===subject.id)+'" class="'+(s.id===subject.id?'active':'')+'">'+safe(s.short)+'</button>').join('')).join('');
@@ -77,30 +78,30 @@ export function renderDiplomaSubjectSection(state={}){
  '<td>'+plus(r.school-r.world)+'</td></tr>').join('');
  return '<section class="board-panel dp-subject-section" aria-label="Subject-specific Diploma outcomes">'+
  '<div class="dp-subject-intro"><div>'+
- '<span class="eyebrow">SUBJECT PERFORMANCE · OFFICIAL IB RESULTS 2022–2026</span>'+
+ '<span class="eyebrow">SUBJECT PERFORMANCE · OFFICIAL IB RESULTS 2016–2026</span>'+
  '<h3>Where AISG Students Stand Out</h3>'+
- '<p>Selected higher-level and widely enrolled subjects. Five May examination sessions; each subject is compared with its own worldwide IB average.</p></div>'+
+ '<p>Selected higher-level and widely enrolled subjects, compared with their course-specific worldwide IB averages for the years offered.</p></div>'+
  '<span class="dp-subject-ib-mark">Grades out of 7</span></div>'+
  subjectHighlights()+
  '<div class="dp-subject-explorer">'+
- '<div class="dp-subject-choice"><h4>Explore a Subject</h4><p>Choose a course to compare five years of AISG and worldwide outcomes.</p>'+
+ '<div class="dp-subject-choice"><h4>Explore a Subject</h4><p>Choose a course to compare school and worldwide outcomes. The older Mathematics HL/SL syllabus is separate from AA/AI.</p>'+
  '<div class="dp-subject-options" role="group" aria-label="Select IB Diploma subject">'+tabs+'</div></div>'+
  '<div class="dp-subject-detail">'+
- '<div class="dp-subject-detail-top"><div><span class="dp-subject-eyebrow">FIVE-YEAR COMPARISON · '+safe(group.toUpperCase())+'</span>'+
+ '<div class="dp-subject-detail-top"><div><span class="dp-subject-eyebrow">'+coverage+' MAY SESSIONS · '+first+'–'+last+' · '+safe(group.toUpperCase())+'</span>'+
  '<h4>'+safe(subject.name)+'</h4><p>School and worldwide mean grades · same subject and level · different cohorts each year</p></div>'+
- '<span class="dp-subject-five-year">'+above+' / 5 <small>years above world</small></span></div>'+
- '<div class="dp-subject-score-row"><div><span>AISG · 2026</span><strong>'+score(current.school)+' <small>/ 7</small></strong></div>'+
- '<div><span>Worldwide · 2026</span><strong>'+score(current.world)+' <small>/ 7</small></strong></div>'+
+ '<span class="dp-subject-five-year">'+above+' / '+coverage+' <small>years above world</small></span></div>'+
+ '<div class="dp-subject-score-row"><div><span>AISG · '+last+'</span><strong>'+score(current.school)+' <small>/ 7</small></strong></div>'+
+ '<div><span>Worldwide · '+last+'</span><strong>'+score(current.world)+' <small>/ 7</small></strong></div>'+
  '<div><span>AISG vs worldwide</span><strong>'+plus(gap)+'</strong></div>'+
  '<div><span>AISG course entries</span><strong>'+current.n+'</strong></div></div>'+
  '<div class="dp-subject-legend"><span><i class="dp-subject-legend-school"></i>AISG</span>'+
  '<span><i class="dp-subject-legend-world"></i>Worldwide IB</span></div>'+chart(subject)+
- '<div class="dp-subject-detail-bottom"><span>2025 to 2026 · AISG mean '+plus(yearChange)+' grade points</span>'+
+ '<div class="dp-subject-detail-bottom"><span>'+previous.year+' to '+last+' · AISG mean '+plus(yearChange)+' grade points</span>'+
  '<span>View all years in the table below</span></div>'+
- '<details class="dp-subject-table"><summary>Five-year figures and candidate counts <span>+</span></summary>'+
+ '<details class="dp-subject-table"><summary>Year-by-year figures and candidate counts <span>+</span></summary>'+
  '<div class="tablewrap"><table><thead><tr><th>May session</th><th>AISG entries</th><th>AISG average</th>'+
  '<th>Worldwide average</th><th>Difference</th></tr></thead><tbody>'+tbody+'</tbody></table></div></details>'+
  '</div></div>'+
- '<p class="dp-subject-method">Source: International Baccalaureate school statistics for AISG (school 001832), May 2022–2026. Courses are selected to illustrate sustained academic outcomes and curriculum breadth; this is not a ranking of subjects. HL and SL are not combined. Worldwide averages are course-and-level-specific. Entry counts are subject entries, not unique students across courses. Positive and negative years remain visible in each series. Results from different graduating cohorts must not be interpreted as individual student growth.</p>'+
+ '<p class="dp-subject-method">Source: International Baccalaureate school statistics for AISG (school 001832), May 2016–2026, for available courses. Legacy Mathematics HL/SL (through 2020) and newer Mathematics AA/AI (from 2021) are not joined. Courses are selected to illustrate sustained academic outcomes and curriculum breadth; this is not a ranking of subjects. HL and SL are not combined. Worldwide averages are course-and-level-specific. Entry counts are subject entries, not unique students across courses. Positive and negative years remain visible in each series. Results from different graduating cohorts must not be interpreted as individual student growth.</p>'+
  '</section>';
 }
