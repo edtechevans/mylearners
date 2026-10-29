@@ -267,7 +267,7 @@ function roster(ss,options={}){
   (!everyday&&experienceEligible(x.student)?'<span>Engagement '+x.eng+' · Belonging '+x.bel+'</span>':'')+
   (x.sss?'<span>SSS programme · demonstration</span>':'')+
   '</span><span class="roster-arrow" aria-hidden="true">›</span></button>').join('')+'</div>';
- return '<section class="roster roster-daily" aria-label="'+(across?'Search across assigned students':'My class roster')+'">'+
+ return '<section class="roster roster-daily" data-roster-layout="'+(everyday?'everyday':'focused')+'" aria-label="'+(across?'Search across assigned students':'My class roster')+'">'+
   '<div class="sectionhead"><div><h2>'+heading+'</h2><span class="tiny">'+context+'</span></div>'+
   (across?'<button type="button" class="roster-clear-search" data-clear-search>Clear search</button>':'')+'</div>'+
   (options.controls||'')+table+mobile+
