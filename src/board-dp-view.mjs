@@ -224,7 +224,7 @@ export function renderBoardDP(state){
 
 /** One concise historical visual shared with the Board's Overview. */
 export function renderDPOverviewTrend(state){
- const selected=state.boardDpMetric==='passRate'?'passRate':'average';
+ const selected=state.boardDpMetric==='average'?'average':'passRate';
  return '<div class="board-dp-overview-trend">'+
  '<div class="board-dp-chart-top"><div><span class="eyebrow">GRADUATION OUTCOMES · IB DIPLOMA</span>'+
  '<h2>Diploma Outcomes Over Time</h2>'+
