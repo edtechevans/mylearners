@@ -102,7 +102,7 @@ test('Public DP module contains only annual aggregates, pathway counts and no le
  assert.ok(!/(?:@aisgz|studentid|dateofbirth|learner name|student email)/i.test(raw));
  assert.ok(DP_METHODS.limits.includes('Diploma and retake candidates'));
  assert.ok(DP_METHODS.current.includes('May 2026'));
- assert.ok(DP_METHODS.quality.includes('school-supplied'));
+ assert.ok(DP_METHODS.quality.includes('IB School Statistics'));
 });
 
 test('No filenames or underlying cell references are shown in any Diploma result',()=>{
@@ -112,7 +112,7 @@ test('No filenames or underlying cell references are shown in any Diploma result
   assert.doesNotMatch(html+tooltip,/\.xlsx|\.csv|\.pdf|Dashboard SY\d|KPIs!|workbook/i);
   assert.match(html,/Understanding Diploma results/);
   assert.doesNotMatch(html,/confirmation pending|verification pending|unconfirmed|board-dp-status/i);
-  assert.match(html,/supplied examination statistics summary/);
+  assert.match(html,/school examination statistics summary/);
  }
 });
 
