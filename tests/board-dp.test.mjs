@@ -32,7 +32,7 @@ test('Eleven-year Diploma chart keeps full scale and supports actual global refe
  assert.equal(average[0].value,33);
  assert.equal(passes.find(x=>x.end===2020).value,93);
  assert.equal(average.at(-1).worldValue,30.88);
- assert.equal(passes.at(-1).worldValue,null);
+ assert.equal(passes.at(-1).worldValue,82.6);
  assert.equal(dpPoint(2018,'average').value,34);
  assert.equal(dpPoint(2026,'passRate').value,93);
  const html=renderBoardDP({boardDpMetric:'average',boardDpGlobal:true});
@@ -44,8 +44,11 @@ test('Eleven-year Diploma chart keeps full scale and supports actual global refe
  assert.match(html,/data-board-dp-point="average:2018"/);
  assert.match(html,/data-board-dp-point="average:2026"/);
  assert.match(html,/board-dp-world-point/);
+ assert.match(html,/board-dp-world-hover/);
  assert.match(html,/data-board-dp-global/);
  assert.match(html,/30\.88/);
+ assert.match(html,/82\.6%/);
+ assert.match(html,/data-board-dp-world-point="passRate:2026"|data-board-dp-world-point="average:2026"/);
  assert.match(html,/global IB reference/);
  assert.match(html,/32\.0–37\.0/);
  assert.match(html,/IB School Statistics \(school 001832\)/);
@@ -61,6 +64,8 @@ test('Eleven-year Diploma chart keeps full scale and supports actual global refe
  assert.match(passHtml,/data-board-dp-point="passRate:2026"/);
  assert.match(renderDPPointDetails('passRate:2026'),/93%/);
  assert.match(renderDPPointDetails('average:2025'),/33\.66/);
+ assert.match(renderBoardDP({boardDpYear:'2025'}),/board-dp-graphic-value\">34/);
+ assert.match(renderDPPointDetails('passRate:2026'),/82\.6%/);
  assert.match(renderDPPointDetails('average:2025'),/30\.58/);
  assert.equal(dpPoint(2017,'passRate').row.passes,59);
  assert.equal(DP_RECORDS.find(r=>r.end===2021).highScore,44);
