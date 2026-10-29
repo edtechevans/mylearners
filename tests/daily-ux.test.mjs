@@ -34,7 +34,7 @@ test('daily interaction layer is additive and connected to site shell',()=>{
  const css=readFileSync(new URL('../src/daily-ux.css',import.meta.url),'utf8');
  assert.match(html,/daily-ux\.css/);
  assert.match(html,/daily-ux\.mjs/);
- for(const key of ['MutationObserver','data-ux-view','data-ux-sort','data-ux-columns','data-ux-export','data-ux-find','data-ux-evidence'])
+ for(const key of ['MutationObserver','data-ux-view','data-ux-sort','data-ux-columns','data-ux-export','data-ux-find','ux-source-strip'])
   assert.match(js,new RegExp(key));
  assert.match(css,/prefers-reduced-motion/);
  assert.match(css,/:focus-visible/);
