@@ -33,7 +33,6 @@ export function parseBoardHash(hash){
   boardMapDetailsOpen:params.get('details')==='1'||!!validGrade,
   boardMapCompareSeasons:params.get('compare')==='1',
   boardMapGrowthOpen:params.get('growth')==='1',
-  boardPresentation:params.get('present')==='1',
   boardTrendFocus:params.get('focus')==='both'?'all':clean(params.get('focus'),focuses,'all'),
   boardWindow:window&&BOARD_DATA[window]?window:'fall2026',
   boardSubject:clean(params.get('subject'),subjects,'math'),
@@ -68,7 +67,6 @@ export function boardHash(state){
   if(state.boardMapCompareSeasons)params.set('compare','1');
   if(state.boardMapGrowthOpen)params.set('growth','1');
  }
- if(state.boardPresentation)params.set('present','1');
  return '#/board?'+params.toString();
 }
 export function boardShareUrl(location,state){
