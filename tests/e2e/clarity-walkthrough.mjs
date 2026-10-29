@@ -194,18 +194,30 @@ try{
    assert(await evaluate("document.querySelectorAll('.board-dp-world-point').length>=3"),
     'World comparison toggle did not restore world series');
   });
+ await run('board-dp-2017-navigation-1440','board?view=dp&metric=passRate','.board-dp',1440,900,
+  async()=>{
+   assert(await evaluate("document.querySelectorAll('[data-board-dp-jump]').length===3"),'Board navigation should offer three section jumps');
+   assert(await evaluate("Array.from(document.querySelectorAll('[data-board-dp-select=year] option')).some(o=>o.value==='2016')"),'May 2016 must be selectable');
+   const chosen=await evaluate("(function(){const s=document.querySelector('[data-board-dp-select=year]');s.value='2017';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
+   assert(chosen,'2017 should be selectable');await sleep(180);
+   assert(await evaluate("document.querySelector('.board-dp-comparison-panel')?.textContent.includes('98%')"),'2017 award rate should be 98%');
+   assert(await evaluate("document.querySelector('.board-dp-comparison-panel')?.textContent.includes('59/60')"),'2017 source denominator should be 59/60');
+   await click('[data-board-dp-jump="board-dp-subjects"]');
+   assert(await evaluate("document.querySelector('#board-dp-subjects')!==null"),'Subject section should remain available');
+  });
  await run('board-dp-subjects-1440','board?view=dp&metric=average','.dp-subject-section',1440,900,
   async()=>{
    assert(await evaluate("document.querySelector('.dp-subject-section')?.textContent.includes('Where AISG Students Stand Out')"),'Subject highlights missing');
-   assert(await evaluate("document.querySelectorAll('[data-board-dp-subject]').length===11"),'Eleven courses should be available');
+   assert(await evaluate("document.querySelectorAll('[data-board-dp-subject]').length===13"),'Thirteen courses should be available');
    assert(await evaluate("document.querySelector('.dp-subject-highlight-value')?.textContent.includes('+1.06')"),'Math AA SL highlight must match IB course comparison');
+   await click('.dp-subject-more summary');
    await click('[data-board-dp-subject="chemistry-hl"]');
    assert(await evaluate("document.querySelector('.dp-subject-detail h4')?.textContent==='Chemistry HL'"),'Chemistry course should select');
    assert(await evaluate("document.querySelector('.dp-subject-detail')?.textContent.includes('5.33')"),'Chemistry 2026 AISG grade not displayed');
    await click('[data-board-dp-subject="physics-hl"]');
    assert(await evaluate("document.querySelector('.dp-subject-score-row')?.textContent.includes('-0.32')"),'Negative comparison years must remain visible');
    await click('[data-board-dp-subject="math-aa-sl"]');
-   assert(await evaluate("document.querySelector('.dp-subject-detail')?.textContent.includes('5 / 5')"),'Mathematics five-year positive comparison missing');
+   assert(await evaluate("document.querySelector('.dp-subject-detail')?.textContent.includes('6 / 6')"),'Mathematics six-year positive comparison missing');
   });
  await run('board-dp-2026-provenance-1440','board?view=dp&metric=average','.board-dp',1440,900,
   async()=>{
@@ -213,7 +225,7 @@ try{
    assert(select,'Could not select Class of 2026');await sleep(170);
    assert(await evaluate("!document.querySelector('.board-dp-status')"),
     'The Board must not show a confirmation status badge');
-   assert(await evaluate("document.querySelector('.board-dp-graphic-footnote')?.textContent.includes('school examination statistics summary')"),
+   assert(await evaluate("document.querySelector('.board-dp-graphic-footnote')?.textContent.includes('IB School Statistics')"),
     'Source provenance for 2026 must remain accessible');
    assert(await evaluate("!document.querySelector('.board-dp')?.textContent.includes('confirmation pending')"),
     'Board dashboard must not show confirmation-pending wording');
