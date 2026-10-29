@@ -63,6 +63,7 @@ function cardDetails(target,ctx,kind){
   t(target,'.leader-stat-heading span')||t(target,'.leader-measure-label')||
   t(target,'.leader-support-metric span')||t(target,'.board-strength-eyebrow')||
   t(target,'.board-indicator-label')||t(target,'.board-dp-graphic-label')||
+  t(target,'.sss-evidence-tile > span')||t(target,'.support-progress-stats small')||
   t(target,'.academic-evidence-top h3')||tidy(target.dataset.previewTag)||'Evidence';
  const headline=t(target,'.student-today-score')||t(target,'.leader-stat > strong')||
   t(target,'.leader-support-metric > strong')||t(target,'.board-strength-number')||
@@ -95,12 +96,17 @@ function cardDetails(target,ctx,kind){
   ctx.role==='leader'?'Current leader selection · fictional data':
   ctx.role==='student'?'My fictional learning example':
   ctx.role==='sss'?'Fictional, authorised learner evidence':'Fictional classroom evidence';
+ const dataContext=t(target,'.leader-stat > p')||
+  t(target,'.leader-support-metric small')||t(target,'.board-dp-graphic-note')||
+  t(target,'.student-today-tile > small')||t(target,'.sss-evidence-tile > small')||
+  t(target,'.board-strength-caption')||'';
+ const chartMeaning=kind==='leader-monitor'?(target.getAttribute?.('aria-label')||''):'';
  const status=ctx.role==='board'&&/unconfirmed|verification pending|confirmation pending/.test(text.toLowerCase())?
   'Confirmation pending — do not use as a verified Board result.':'';
  const note=guide.description+
   (ctx.role==='board'?' Compare only like-for-like cohorts and testing windows.':
    ctx.role==='leader'?' Counts and eligibility depend on the selected division, grade and class.':'');
- return makePreview({title,subtitle,rows:headline?[['Displayed',headline]]:[],
+ return makePreview({title:chartMeaning||title,subtitle,rows:[...(headline?[['Displayed',headline]]:[]),...(dataContext?[['Evidence context',dataContext]]:[])],
    status,note,kind:ctx.role==='board'?'board':ctx.role==='sss'?'support':
    guideKey==='engagement'||guideKey==='belonging'?'experience':'academic'});
 }
