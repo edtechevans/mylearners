@@ -32,9 +32,9 @@ export function renderDPPointDetails(key){
  const {row,metric,value,label,worldValue}=item;
  return '<div class="board-dp-point-title"><div><span class="eyebrow">IB DIPLOMA · '+safe(row.year)+'</span>'+
  '<h3>'+safe(label)+'</h3></div><strong>'+valueText(value,metric)+(metric==='average'?'<small> / 45</small>':'')+'</strong></div>'+
- (Number.isFinite(worldValue)?'<p class="board-dp-global-point">Global IB · '+valueText(worldValue,metric)+
-  (metric==='average'?' / 45 · separately published global mean; candidate populations may differ':
-  ' · AISG '+percentage(value-worldValue)+' percentage points versus global')+'</p>':
+ (Number.isFinite(worldValue)?'<p class="board-dp-global-point">'+
+  (metric==='average'?'World Diploma recipients · '+valueText(worldValue,metric)+' / 45 · matched recipient cohort · AISG '+delta(value,worldValue)+' points':
+   'World Diploma award rate · '+valueText(worldValue,metric)+' · AISG '+percentage(value-worldValue)+' percentage points higher')+'</p>':
   '<p>Worldwide comparison unavailable for this earlier year or measure.</p>')+
  (row.candidates?'<p><strong>AISG candidate count:</strong> '+row.candidates+' Diploma/retake candidates · '+row.passes+' Diplomas awarded.</p>':'')+
  (Number.isFinite(row.meanGrade)?'<p><strong>AISG mean subject grade:</strong> '+row.meanGrade.toFixed(2)+' / 7 (Diploma awardees).</p>':'')+
@@ -89,13 +89,14 @@ function dpLineChart(metric,{range='all',selectedYear=null,compareWorld=false}={
 }
 function dpOutcomesTable(){
  return '<details class="board-details board-dp-table"><summary>Detailed results by graduating year <span>+</span></summary>'+
- '<p>* The school Diploma mean and published global mean may cover different candidate populations; differences are descriptive, not like-for-like performance claims. A dash means unavailable, not zero. Diploma/retake candidates differ from Grade 12 pathway counts.</p>'+
+ '<p>Average-point gaps compare AISG Diploma recipients with worldwide Diploma recipients only (same award category). The separate worldwide overall DP mean includes unsuccessful Diploma candidates and is <strong>not</strong> the benchmark used for the gap. A dash means unavailable, not zero.</p>'+
  '<div class="tablewrap"><table class="board-table board-dp-detail-table"><thead><tr>'+
- '<th>Class</th><th>AISG average /45</th><th>World average*</th><th>Descriptive gap*</th>'+
+ '<th>Class</th><th>AISG recipients /45</th><th>World recipients /45</th><th>Matched gap</th><th>World overall /45</th>'+
  '<th>Diploma pass</th><th>World pass</th><th>Candidates / cohort</th><th>Diplomas awarded</th>'+
  '<th>35+ points</th><th>Bilingual</th><th>Mean subject grade</th><th>Mean core</th><th>Highest /45</th><th>Source context</th></tr></thead><tbody>'+
  DP_RECORDS.map(r=>'<tr><td>'+r.end+'</td><td>'+points(r.average)+'</td>'+
- '<td>'+points(r.worldAverage)+'</td><td>'+delta(r.average,r.worldAverage)+'</td>'+
+ '<td>'+points(r.worldAwardedAverage)+'</td><td>'+delta(r.average,r.worldAwardedAverage)+'</td>'+
+ '<td>'+points(r.worldAverage)+'</td>'+
  '<td>'+percentage(r.passRate)+'</td><td>'+percentage(r.worldPassRate)+'</td>'+
  '<td>'+(r.candidates?(r.candidates+(Number.isFinite(r.cohort)?' / '+r.cohort:'')):'—')+'</td>'+
  '<td>'+count(r.passes)+'</td>'+
@@ -143,11 +144,12 @@ export function renderBoardDP(state){
  const verified=DP_RECORDS.filter(r=>Number.isFinite(r.average));
  const highAwardYears=verified.filter(r=>r.passRate>=90).length;
  const detailNote='Different graduating cohorts each year; these are not matched student growth scores.';
- const worldAvg=selected.worldAverage;
+ const worldAvg=selected.worldAwardedAverage;
+ const worldOverall=selected.worldAverage;
  const worldPass=selected.worldPassRate;
  const international='<div class="board-dp-world-strip" aria-label="International Diploma comparisons">'+
-  mini('World IB average',headlinePoints(worldAvg)+' /45',
-   Number.isFinite(worldAvg)?'IB-reported global mean; different candidate populations—no direct gap claimed':'Global mean unavailable for this year')+
+  mini('World Diploma recipients',headlinePoints(worldAvg)+' /45',
+   Number.isFinite(worldAvg)?'Matched awardee-only mean · AISG '+delta(selected.average,worldAvg)+' points':'Recipient-only global mean unavailable for this year')+
   mini('World Diploma pass rate',Number.isFinite(worldPass)?Math.round(worldPass)+'%':'—',
    Number.isFinite(worldPass)?'AISG '+percentage(selected.passRate-worldPass).replace('%',' percentage points')+' vs world':'Global pass-rate result unavailable for this year')+
   mini('Diploma/retake candidates',selected.candidates?
@@ -188,7 +190,7 @@ export function renderBoardDP(state){
  international+
  '<p class="board-dp-graphic-footnote">'+
  'AISG May '+end+' Diploma awards and averages are sourced from official IB School Statistics (school 001832). '+
- '2026 worldwide mean: IB July announcement; worldwide award rate: IB May 2026 statistical bulletin. Diploma mean populations differ, so a school-versus-world mean gap is not presented as like-for-like. Summary scores are rounded; hover for exact results.</p></section>'+
+ 'Worldwide Diploma-recipient mean is compared with AISG Diploma-recipient mean (same award category). The separately published world overall DP mean for '+end+' is '+points(worldOverall)+' /45 and includes a broader candidate population. IB May 2026 provisional bulletin; historical IB May bulletins. Summary scores are rounded; hover for exact results.</p></section>'+
  renderDiplomaSubjectSection(state)+
  '<section id="board-dp-history" class="board-panel board-dp-panel"><div class="board-dp-chart-top"><div>'+
  '<span class="eyebrow">HISTORICAL OUTCOMES</span>'+
@@ -200,7 +202,7 @@ export function renderBoardDP(state){
  '<button type="button" data-board-dp-metric="passRate" aria-pressed="'+(metric==='passRate')+
  '" class="'+(metric==='passRate'?'active':'')+'">Pass rate</button></div></div>'+
  '<div class="board-dp-trend-controls"><span class="board-dp-legend"><i class="board-dp-key-aisg"></i>AISG'+
- (comparison?'<i class="board-dp-key-world"></i>World IB':'')+'</span>'+
+ (comparison?'<i class="board-dp-key-world"></i>World IB · '+(metric==='average'?'Diploma recipients':'Diploma award rate'):'')+'</span>'+
  '<button type="button" class="board-dp-global-toggle" data-board-dp-global aria-pressed="'+comparison+'">'+
  (comparison?'Show AISG only':'Compare with world')+'</button></div>'+
  dpRangeHighlight(metric)+
@@ -209,7 +211,7 @@ export function renderBoardDP(state){
  dpLineChart(metric,{selectedYear:end,compareWorld:comparison})+'</div>'+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
  '<div class="board-dp-inspector" aria-live="polite"><p>Hover or select a year to inspect its outcome.</p></div>'+
- '<p class="board-chart-caption">Full 0–45 point or 0–100% scale. Dashed world line begins only when a global reference is available. The 2020–22 years had COVID-related assessment adjustments.</p></section>'+
+ '<p class="board-chart-caption">Full 0–45 point or 0–100% scale. For average points, the dashed world line is the <strong>Diploma-recipient mean</strong> (2017–2026); the worldwide overall DP mean is a different population. For pass rates, it is the worldwide Diploma award rate. The 2020–22 years had altered assessment arrangements.</p></section>'+
  achievements+
  dpPathways()+
  dpOutcomesTable()+
@@ -228,16 +230,18 @@ export function renderDPOverviewTrend(state){
  return '<div class="board-dp-overview-trend">'+
  '<div class="board-dp-chart-top"><div><span class="eyebrow">GRADUATION OUTCOMES · IB DIPLOMA</span>'+
  '<h2>Diploma Outcomes Over Time</h2>'+
- '<p>'+DP_RECORDS.length+' graduating years · '+(selected==='average'?'Average Diploma points out of 45':'Diploma pass rate as a percentage')+'</p></div>'+
+ '<p>'+DP_RECORDS.length+' graduating years · '+(selected==='average'?'AISG vs worldwide Diploma recipients · points out of 45':'AISG vs worldwide Diploma award rates · percentage')+'</p></div>'+
  '<div class="board-segmented" role="group" aria-label="IB Diploma historical measure">'+
  '<button type="button" data-board-dp-metric="average" aria-pressed="'+(selected==='average')+'" class="'+(selected==='average'?'active':'')+'">Average points</button>'+
  '<button type="button" data-board-dp-metric="passRate" aria-pressed="'+(selected==='passRate')+'" class="'+(selected==='passRate'?'active':'')+'">Pass rate</button></div></div>'+
  dpRangeHighlight(selected)+
+ '<div class="board-dp-overview-legend" role="note"><span><i class="board-dp-key-aisg"></i> AISG</span><span><i class="board-dp-key-world"></i> World IB · '+(selected==='average'?'Diploma recipients only':'Diploma awards')+'</span>'+
+ '<small>'+(selected==='average'?'The plotted worldwide mean is for Diploma recipients, not all Diploma candidates.':'Worldwide Diploma award rate; all eleven May sessions.')+'</small></div>'+
  '<p class="board-dp-swipe">Hover or focus any plotted point for precise AISG/world data and AISG candidate counts.</p>'+
  '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Scroll to inspect Diploma outcomes">'+dpLineChart(selected,{compareWorld:true})+'</div>'+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
  '<div class="board-dp-inspector" aria-live="polite"><p>Select a year to understand its reported outcome.</p></div>'+
- '<div class="board-overview-chartfoot"><span>Diploma results follow AISG school statistics through May 2026. Different graduating cohorts must not be treated as MAP student growth.</span>'+
+ '<div class="board-overview-chartfoot"><span>Official IB school and worldwide bulletins · May 2016–2026. Exact AISG and world values appear on hover. The 2016 recipient-only world mean is unavailable. Different graduating cohorts do not represent individual growth.</span>'+
  '<button type="button" data-board-view="dp" class="board-inline-link">Explore IB Diploma details ›</button></div>'+
  '</div>';
 }
