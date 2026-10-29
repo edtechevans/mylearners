@@ -70,13 +70,17 @@ export function renderDiplomaSubjectSection(state={}){
  const {subject,current,previous,above,gap,yearChange}=dpSubjectDetails(state.boardDpSubject||DP_SUBJECT_DEFAULT);
  const group=subject.group;
  const first=subject.rows[0].year,last=current.year,coverage=subject.rows.length;
- const tabs=DP_SUBJECT_GROUPS.map(g=>'<span class="dp-subject-group-label"'+(g.id===group?' data-current="true"':'')+'>'+safe(g.label)+'</span>'+
- DIPLOMA_SUBJECTS.filter(s=>s.group===g.id).map(s=>'<button type="button" data-board-dp-subject="'+safe(s.id)+
- '" aria-pressed="'+(s.id===subject.id)+'" class="'+(s.id===subject.id?'active':'')+'">'+safe(s.short)+'</button>').join('')).join('');
+ const featured=['english-hl','math-aa-sl','biology-hl'];
+ const courseButton=s=>'<button type="button" data-board-dp-subject="'+safe(s.id)+
+ '" aria-pressed="'+(s.id===subject.id)+'" class="'+(s.id===subject.id?'active':'')+'">'+safe(s.short)+'</button>';
+ const quick=featured.map(id=>courseButton(dpSubject(id))).join('');
+ const tabs=DP_SUBJECT_GROUPS.map(g=>'<span class="dp-subject-group-label">'+safe(g.label)+'</span>'+
+ DIPLOMA_SUBJECTS.filter(s=>s.group===g.id&&!featured.includes(s.id)).map(courseButton).join('')).join('');
+ const extraSelected=!featured.includes(subject.id);
  const tbody=subject.rows.map(r=>'<tr'+(r.year===2026?' class="dp-subject-current"':'')+'><th scope="row">'+r.year+'</th>'+
  '<td>'+r.n+'</td><td>'+score(r.school)+'</td><td>'+score(r.world)+'</td>'+
  '<td>'+plus(r.school-r.world)+'</td></tr>').join('');
- return '<section class="board-panel dp-subject-section" aria-label="Subject-specific Diploma outcomes">'+
+ return '<section id="board-dp-subjects" class="board-panel dp-subject-section" aria-label="Subject-specific Diploma outcomes">'+
  '<div class="dp-subject-intro"><div>'+
  '<span class="eyebrow">SUBJECT PERFORMANCE · OFFICIAL IB RESULTS 2016–2026</span>'+
  '<h3>Where AISG Students Stand Out</h3>'+
@@ -84,8 +88,10 @@ export function renderDiplomaSubjectSection(state={}){
  '<span class="dp-subject-ib-mark">Grades out of 7</span></div>'+
  subjectHighlights()+
  '<div class="dp-subject-explorer">'+
- '<div class="dp-subject-choice"><h4>Explore a Subject</h4><p>Choose a course to compare school and worldwide outcomes. The older Mathematics HL/SL syllabus is separate from AA/AI.</p>'+
- '<div class="dp-subject-options" role="group" aria-label="Select IB Diploma subject">'+tabs+'</div></div>'+
+ '<div class="dp-subject-choice"><h4>Explore a Subject</h4><p>Begin with a featured subject or open the full list.</p>'+
+ '<div class="dp-subject-options dp-subject-quick" role="group" aria-label="Featured Diploma subjects">'+quick+'</div>'+
+ '<details class="dp-subject-more"'+(extraSelected?' open':'')+'><summary>More subjects <span aria-hidden="true">+</span></summary>'+
+ '<div class="dp-subject-options" role="group" aria-label="More Diploma subjects">'+tabs+'</div></details></div>'+
  '<div class="dp-subject-detail">'+
  '<div class="dp-subject-detail-top"><div><span class="dp-subject-eyebrow">'+coverage+' MAY SESSIONS · '+first+'–'+last+' · '+safe(group.toUpperCase())+'</span>'+
  '<h4>'+safe(subject.name)+'</h4><p>School and worldwide mean grades · same subject and level · different cohorts each year</p></div>'+
