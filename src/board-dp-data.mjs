@@ -1,8 +1,8 @@
 /**
  * AISG IB Diploma aggregate history.
  * Class of 2018–2025: school-provided IBDP exam statistics table (authoritative).
- * Class of 2026: previously published dashboard figures, NOT in the attached
- * 2018–2025 summary; keep explicitly marked pending source confirmation.
+ * Class of 2026: May 2026 AISG IB School Statistics (school 001832).
+ * May 2022–2025 IB reports also support this Board subject comparison.
  * International benchmarks 2023–2025: supplied school statistics table;
  * May 2026 world average: IB official July 2026 results news (30.88 / 45).
  *
@@ -26,13 +26,13 @@ export const DP_RECORDS=Object.freeze([
  {year:'2022–23',end:2023,average:34,passRate:91,candidates:55,cohort:63,passes:50,
   highCount:22,highDenominator:55,bilingualCount:14,bilingualDenominator:55,highScore:42,meanGrade:5.33,corePoints:1.49,
   worldAverage:30.24,worldPassRate:79.67,worldMeanGrade:4.83,worldCorePoints:1.38,worldHighShare:28.4,worldBilingualShare:27.64},
- {year:'2023–24',end:2024,average:34,passRate:95,candidates:38,cohort:43,passes:36,
+ {year:'2023–24',end:2024,average:34,passRate:92,candidates:38,cohort:43,passes:35,
   highCount:15,highDenominator:35,bilingualCount:7,bilingualDenominator:35,highScore:44,meanGrade:5.34,corePoints:1.67,
   worldAverage:30.32,worldPassRate:80,worldMeanGrade:4.9,worldCorePoints:1.5,worldHighShare:35.6},
  {year:'2024–25',end:2025,average:33.66,passRate:93,candidates:42,cohort:51,passes:39,
   highCount:15,highDenominator:42,bilingualCount:11,bilingualDenominator:39,highScore:43,meanGrade:5.29,corePoints:1.9,
   worldAverage:30.58,worldPassRate:81,worldMeanGrade:4.89,worldCorePoints:1.5,worldBilingualShare:27.3},
- {year:'2025–26',end:2026,average:34,passRate:93,verify:true,
+ {year:'2025–26',end:2026,average:34,passRate:93,candidates:56,passes:52,highScore:43,meanGrade:5.35,
   worldAverage:30.88,worldSource:'https://ibo.org/news/news-list/more-than-209000-ib-students-worldwide-receive-their-dp-and-cp-results/'}
 ]);
 export const DP_GRADE12_PATHWAYS=Object.freeze([
@@ -44,13 +44,13 @@ export const DP_METRICS=Object.freeze([
  {id:'average',label:'Average Diploma score',unit:'/45',max:45,
   description:'School average Diploma points out of 45. An annual graduating cohort, not matched student growth.'},
  {id:'passRate',label:'Diploma pass rate',unit:'%',max:100,
-  description:'Percentage of examination candidates awarded the full Diploma. Candidate counts are known for 2018–2025 only.'}
+  description:'Percentage of Diploma/retake candidates awarded the full Diploma. IB May 2026 reports 52 passes from 56 Diploma and retake candidates.'}
 ]);
 export const DP_METHODS=Object.freeze({
- quality:'Class of 2018–2025 school averages, pass rates and candidate counts use the school-supplied IBDP examination statistics summary. The separately reported 2025–26 results require confirmation.',
- limits:'Examination candidate counts are available for 2018–2025 only. The 2026 candidate denominator is not in the provided summary, and 2026 pass counts cannot be inferred from programme pathway enrollment.',
- discrepancy:'For 2025–26, the previously reported count of 117 full DP learners differs from 56 in the Grade 12 full Diploma pathway. These are different populations or counting conventions; neither provides the examination candidate denominator for 2026.',
- current:'Confirm the 2025–26 AISG average of 34 and pass rate of 93% against final examination session results before formal Board reporting; they are not recorded in the supplied school exam summary.',
+ quality:'School Diploma statistics for 2018–2025 come from the supplied historic summary, with May 2022–2026 figures cross-checked against AISG IB School Statistics (school 001832). May 2026 includes 52 passes out of 56 Diploma and retake candidates.',
+ limits:'The official May 2026 report lists 61 registered session candidates, including 56 Diploma and retake candidates, of whom 52 passed. These populations are not interchangeable with Grade 12 pathway enrollment.',
+ discrepancy:'The previously reported count of 117 full DP learners differs from the Grade 12 full Diploma pathway (56). The official 2026 IB report also lists 56 Diploma and retake candidates, but do not presume they are the same individuals.',
+ current:'The May 2026 AISG IB School Statistics reports 34 average points among successful Diploma candidates and 52 awards from 56 Diploma/retake candidates (92.9%, displayed as 93%).',
  pathways:'Grade 12 pathways are enrollment information, not examination candidate or pass counts. Do not divide examinations by pathway entries.',
  boundary:'DP results cover graduating cohorts; MAP covers Grades 3–10. Do not combine them into a single attainment percentage.',
  comparison:'School and world Diploma averages use the same 0–45 scale, but cohort composition and candidature differ. World 2023–2025 values come from the school examination summary, while the 2026 world mean is published by the IB. A world 2026 Diploma pass rate is not included.',
@@ -58,7 +58,7 @@ export const DP_METHODS=Object.freeze({
  discrepancy2024:'For 2024, the school summary records 15 high scorers out of 35 for that indicator, but 38 Diploma candidates overall. The high-score denominator is retained exactly as supplied and not silently changed.',
  discrepancy2023:'The bilingual Diploma figure for 2023 is 14/55 in the school summary, a different denominator from the 50 Diploma passes. Historical denominators are displayed as supplied and not reconciled by assumption.'
 });
-export const dpVerified=(row)=>!!row&&!row.verify;
+export const dpVerified=(row)=>!!row&&Number.isFinite(row.average);
 export const dpPassCount=(row)=>Number.isFinite(row?.passes)&&Number.isFinite(row?.candidates)?row.passes+'/'+row.candidates:null;
 export const dpParticipation=(row)=>{
  if(!row||!Number.isFinite(row.candidates))return null;
@@ -68,7 +68,7 @@ export function dpMetricSeries(metric='average'){
  const key=metric==='passRate'?'passRate':'average';
  const world=key==='average'?'worldAverage':'worldPassRate';
  return DP_RECORDS.map(row=>({year:row.year,end:row.end,value:row[key],
-  worldValue:row[world]??null,provisional:!!row.verify}));
+  worldValue:row[world]??null,provisional:false}));
 }
 export function dpPoint(year,metric='average'){
  const row=DP_RECORDS.find(r=>r.end===Number(year));if(!row)return null;
