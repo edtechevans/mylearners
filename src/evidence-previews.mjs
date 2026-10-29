@@ -211,7 +211,12 @@ export function installEvidencePreviewController(root,resolve){
  root.addEventListener('focusout',e=>{if(parent(e)&&!pinned)scheduleHide()});
  root.addEventListener('click',e=>{
   const trigger=parent(e);
-  if(!trigger||!trigger.matches?.('.evidence-preview-trigger'))return;
+  if(!trigger)return;
+  const infoIcon=trigger.matches?.('.evidence-preview-trigger');
+  const coarsePointer=!!globalThis.matchMedia?.('(pointer: coarse)')?.matches;
+  // Keep real navigation and form controls working normally on all devices.
+  if(!infoIcon&&(!coarsePointer||trigger.matches?.('button,a,summary')||
+   e.target.closest?.('button,a,summary,input,select,textarea')))return;
   e.preventDefault();e.stopPropagation();
   if(anchor===trigger&&pinned){dismiss();return}
   pinned=true;display(trigger);
