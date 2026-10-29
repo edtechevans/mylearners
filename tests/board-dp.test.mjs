@@ -72,7 +72,7 @@ test('Eleven-year Diploma chart keeps full scale and supports actual global refe
  assert.match(renderDPPointDetails('average:2025'),/World Diploma recipients · 32\.8/);
  assert.match(renderBoardDP({boardDpYear:'2025'}),/board-dp-graphic-value\">34/);
  assert.match(renderDPPointDetails('passRate:2026'),/82\.6%/);
- assert.match(renderDPPointDetails('average:2025'),/AISG \+1\.2 points/);
+ assert.match(renderDPPointDetails('average:2025'),/AISG \+1\.20 points/);
  assert.equal(dpPoint(2017,'passRate').row.passes,59);
  assert.equal(DP_RECORDS.find(r=>r.end===2021).highScore,44);
 });
