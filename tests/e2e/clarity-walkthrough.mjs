@@ -177,6 +177,34 @@ try{
  console.log('PASS evidence previews: Faculty pointer, Escape, click, SSS, Leaders and Board');
  await run('board-map-1440','board?view=explore&window=fall2026&subject=math','.board-controls',1440,900);
  await run('board-dp-1440','board?view=dp&metric=average','.board-dp',1440,900);
+ await run('board-dp-focused-average-axis-1440','board?view=dp&metric=average','.board-dp',1440,900,
+  async()=>{
+   assert(await evaluate("document.querySelector('.board-dp-svg')?.getAttribute('aria-label')?.includes('Focused y-axis 30 to 40')"),
+    'Average-point chart should default to a clearly labelled 30–40 axis');
+   assert(await evaluate("Array.from(document.querySelectorAll('.board-dp-svg .board-trend-tick')).map(x=>x.textContent).join('|')==='30|32|34|36|38|40'"),
+    'Focused graph should explicitly mark 30, 32, 34, 36, 38, 40');
+   assert(await evaluate("document.querySelector('.board-dp-scale-note')?.textContent.includes('not zero')"),
+    'Focused chart must disclose the nonzero baseline');
+   await click('[data-board-dp-scale="full"]');
+   assert(await evaluate("document.querySelector('.board-dp-svg')?.getAttribute('aria-label')?.includes('Full y-axis from 0 to 45')"),
+    'Full 0–45 scale should be available');
+   assert(await evaluate("document.querySelector('[data-board-dp-scale=full]')?.getAttribute('aria-pressed')==='true'"),
+    'Full-scale control should update');
+   await click('[data-board-dp-scale="focus"]');
+   assert(await evaluate("document.querySelector('.board-dp-svg')?.getAttribute('aria-label')?.includes('Focused y-axis 30 to 40')"),
+    'Focused scale should be reversible');
+   assert(await evaluate("document.querySelectorAll('[data-board-dp-point]').length===11"),
+    'All eleven AISG values must remain available in both modes');
+  });
+ await run('board-overview-focused-average-axis-1440','board?view=overview&chart=dp&metric=average','.board-dp-overview-trend',1440,900,
+  async()=>{
+   assert(await evaluate("document.querySelector('.board-dp-svg')?.getAttribute('aria-label')?.includes('Focused y-axis 30 to 40')"),
+    'Board Overview should use the same focused average-points scale');
+   await click('[data-board-dp-scale="full"]');
+   assert(await evaluate("document.querySelector('.board-dp-svg')?.getAttribute('aria-label')?.includes('Full y-axis from 0 to 45')"),
+    'Overview full-scale toggle should work');
+  });
+
  await run('board-dp-global-2025-1440','board?view=dp&metric=average','.board-dp',1440,900,
   async()=>{
    const select=await evaluate("(function(){const s=document.querySelector('[data-board-dp-select=\"year\"]');s.value='2025';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
