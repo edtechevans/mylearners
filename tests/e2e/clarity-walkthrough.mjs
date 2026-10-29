@@ -181,10 +181,10 @@ try{
   async()=>{
    const select=await evaluate("(function(){const s=document.querySelector('[data-board-dp-select=\"year\"]');s.value='2025';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
    assert(select,'DP graduation year selector missing');await sleep(180);
-   assert(await evaluate("document.querySelector('.board-dp-comparison-panel')?.textContent.includes('33.66')"),
-    'The authoritative Class of 2025 average must be 33.66');
-   assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('30.58')"),
-    'The 2025 world Diploma average should be visible');
+   assert(await evaluate("document.querySelector('.board-dp-comparison-panel')?.textContent.includes('34')"),
+    '2025 headline average must round 33.66 to 34');
+   assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('31')"),
+    'The rounded 2025 world Diploma average should show 31');
    assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('42 / 51')"),
     'Cohort participation should use 42 of 51');
    assert(await evaluate("document.querySelectorAll('.board-dp-world-point').length>=3"),
@@ -251,8 +251,8 @@ try{
     'Source provenance for 2026 must remain accessible');
    assert(await evaluate("!document.querySelector('.board-dp')?.textContent.includes('confirmation pending')"),
     'Board dashboard must not show confirmation-pending wording');
-   assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('30.88')"),
-    'May 2026 world average from IB not visible');
+   assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('31')"),
+    'Rounded 2026 world average from IB not visible');
    assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('56')"),
     'The official 2026 IB Diploma candidate denominator must be visible');
   });
