@@ -8,7 +8,7 @@ permissions:
   pages: write
   id-token: write
 concurrency:
-  group: my-learners-pages-release
+  group: my-learners-board-ui-cleanup
   cancel-in-progress: true
 jobs:
   validate:
