@@ -24,7 +24,7 @@ import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile}
 import {renderStudentOverview} from './student-daily-overview.mjs?v=20261028titles1';
 import {renderBoard} from './board-map-view.mjs?v=20261029ibsubjects2';
 import {renderTrendPointDetails} from './board-map-overview.mjs?v=20261029ibsubjects2';
-import {renderDPPointDetails} from './board-dp-view.mjs?v=20261029verifiedglobal1';
+import {renderDPPointDetails} from './board-dp-view.mjs?v=20261029dphistory2';
 import {renderDPSubjectPointDetails} from './board-dp-subjects.mjs';
 import {DP_RECORDS} from './board-dp-data.mjs?v=20261029verifiedglobal1';
 import {boardWindowFor,BOARD_DATA} from './board-map-data.mjs';
