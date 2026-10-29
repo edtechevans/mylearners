@@ -617,7 +617,8 @@ function experienceScope(trigger,action=''){
 function openExperienceExplanation(trigger,action=''){
  const context=experienceScope(trigger,action);
  if(!context)return;
- if(experienceDialog){experienceDialog.close();experienceDialog.remove()}
+ const previousDialog=experienceDialog;
+ if(previousDialog){previousDialog.close();previousDialog.remove()}
  experienceReturnFocus=trigger;
  const dialog=document.createElement('dialog');
  dialog.className='experience-dialog';
