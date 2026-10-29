@@ -95,3 +95,11 @@
 .board-view .dp-subject-highlight strong{font-weight:790}
 @media(max-width:760px){.board-view .board-dp-section-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.board-view .board-dp-section-nav button{padding:9px 5px;font-size:11px}}
 @media print{.board-view .board-dp-section-nav{display:none}}
+
+/* Every subject-year marker supports the same fast mouse/pen tooltip and
+   accessible keyboard focus as the schoolwide Diploma trend. */
+.board-view .dp-subject-hover-point{cursor:help;outline:none}
+.board-view .dp-subject-hover-point circle:not(.dp-subject-point-hit){transition:r .12s ease,stroke-width .12s ease}
+.board-view .dp-subject-hover-point:hover circle:not(.dp-subject-point-hit),
+.board-view .dp-subject-hover-point:focus-visible circle:not(.dp-subject-point-hit){r:8;stroke-width:3.5}
+.board-view .dp-subject-hover-point:focus-visible .dp-subject-point-hit{stroke:#328bb7;stroke-width:2.5;fill:none}
