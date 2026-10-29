@@ -144,6 +144,31 @@ try{
    ['sss','.sss-overview'],['leader','.leader-learning-grid'],['board','.board-view']
   ])await run(role+'-'+screen,role,selector,width,height);
  }
+ // New interaction coverage: actual hover, keyboard, click and role-bound previews.
+ await viewport(1440,900);
+ await navigate('faculty','.roster-desktop .student-link');
+ const studentPreviewCount=await evaluate('document.querySelectorAll(".roster-desktop [data-evidence-preview=student]").length');
+ assert(studentPreviewCount>=10,'Faculty learner preview affordances missing');
+ const beforePreviewHash=await evaluate('location.hash');
+ const visiblePreview=await evaluate("(async()=>{const a=document.querySelector('.roster-desktop [data-evidence-preview=student]');a.dispatchEvent(new PointerEvent('pointerover',{bubbles:true,pointerType:'mouse'}));await new Promise(r=>setTimeout(r,470));const p=document.querySelector('.evidence-preview-popup');return !!p&&p.textContent.includes('Attendance')&&p.textContent.includes('Mathematics')})()");
+ assert(visiblePreview,'Hover must reveal a concise learner evidence preview');
+ assert((await evaluate('location.hash'))===beforePreviewHash,'Hover must not change navigation');
+ const keyboardDismiss=await evaluate("(async()=>{document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));await new Promise(r=>setTimeout(r,70));return !document.querySelector('.evidence-preview-popup')})()");
+ assert(keyboardDismiss,'Escape must close preview');
+ await click('.roster-desktop [data-evidence-preview="student"]');
+ assert(await evaluate('!!document.querySelector(".evidence-preview-popup")'),'Dedicated preview icon should work on click');
+ await navigate('sss','.sss-overview');
+ assert(await evaluate('document.querySelectorAll(".sss-roster-row[data-evidence-preview=sss-person]").length>0'),
+  'SSS needs role-scoped roster preview targets');
+ const privateContent=await evaluate("(async()=>{const a=document.querySelector('.sss-roster-row[data-evidence-preview=sss-person]');a.dispatchEvent(new FocusEvent('focusin',{bubbles:true}));await new Promise(r=>setTimeout(r,50));return document.querySelector('.evidence-preview-popup')?.textContent||''})()");
+ assert(privateContent.includes('Fictional')&&!privateContent.includes('case notes:'),'SSS preview must not include case-note narrative');
+ await navigate('leader','.leader-learning-grid');
+ assert(await evaluate('document.querySelectorAll(".leader-stat[data-evidence-preview=leader-stat]").length===4'),
+  'All four Leader overview measures need previews');
+ await navigate('board','.board-view');
+ assert(await evaluate('document.querySelectorAll("[data-evidence-preview=board-card]").length>=3'),
+  'Board result cards need concise previews');
+ console.log('PASS evidence previews: Faculty pointer, Escape, click, SSS, Leaders and Board');
  await run('board-map-1440','board?view=explore&window=fall2026&subject=math','.board-controls',1440,900);
  await run('board-dp-1440','board?view=dp&metric=average','.board-dp',1440,900);
  await run('board-dp-global-2025-1440','board?view=dp&metric=average','.board-dp',1440,900,
