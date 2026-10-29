@@ -35,7 +35,7 @@ export function renderDPPointDetails(key){
   (metric==='average'?' / 45':'')+' · AISG '+(metric==='average'?delta(value,worldValue):
   percentage(value-worldValue)+' pts')+' versus global</p>':
   '<p>Global comparison not supplied for this measure and year.</p>')+
- (row.candidates?'<p>'+row.passes+' Diploma awards from '+row.candidates+' full Diploma candidates.</p>':'')+
+ (row.candidates?'<p>'+row.passes+' Diploma awards from '+row.candidates+' Diploma and retake candidates.</p>':'')+
 
  (row.covid?'<p class="board-dp-caveat">'+safe(row.covid)+'</p>':'')+
  '<p class="board-dp-point-footnote">Annual graduating cohorts differ; participation and qualification measures are not interchangeable.</p>';
@@ -83,7 +83,7 @@ function dpLineChart(metric,{range='all',selectedYear=null,compareWorld=false}={
 }
 function dpOutcomesTable(){
  return '<details class="board-details board-dp-table"><summary>Detailed results by graduating year <span>+</span></summary>'+
- '<p>School results and selected global references are listed separately. Dashes indicate missing—not zero—values. Exam candidates and Grade 12 pathways have different denominators.</p>'+
+ '<p>School results and selected global references are listed separately. Dashes indicate missing—not zero—values. Diploma/retake candidates and Grade 12 pathways have different denominators.</p>'+
  '<div class="tablewrap"><table class="board-table board-dp-detail-table"><thead><tr>'+
  '<th>Class</th><th>AISG average /45</th><th>World average</th><th>AISG minus world</th>'+
  '<th>Diploma pass</th><th>World pass</th><th>Candidates / cohort</th><th>Diplomas awarded</th>'+
@@ -144,7 +144,7 @@ export function renderBoardDP(state){
    Number.isFinite(worldAvg)?'AISG '+delta(selected.average,worldAvg)+' points vs world':'No comparable global average')+
   mini('World Diploma pass rate',percentage(worldPass),
    Number.isFinite(worldPass)?'AISG '+percentage(selected.passRate-worldPass).replace('%',' percentage points')+' vs world':'Global pass-rate result unavailable for this year')+
-  mini('Full Diploma candidates',selected.candidates?
+  mini('Diploma/retake candidates',selected.candidates?
     selected.candidates+(Number.isFinite(selected.cohort)?' / '+selected.cohort:''):'—',
     selected.candidates?(Number.isFinite(selected.cohort)?dpParticipation(selected)+'% of graduating class':'Graduating-class size unavailable'):
      'Examination candidate count unavailable')+
