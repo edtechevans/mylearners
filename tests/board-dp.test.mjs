@@ -76,6 +76,20 @@ test('Eleven-year Diploma chart keeps full scale and supports actual global refe
  assert.equal(dpPoint(2017,'passRate').row.passes,59);
  assert.equal(DP_RECORDS.find(r=>r.end===2021).highScore,44);
 });
+test('Board Diploma presents historical AISG vs global outcomes immediately after At a Glance',()=>{
+ const html=renderBoardDP({boardDpMetric:'average',boardDpGlobal:true});
+ const ids=['board-dp-outcomes','board-dp-history','board-dp-subjects'];
+ const offsets=ids.map(id=>html.indexOf('id="'+id+'"'));
+ assert.ok(offsets.every(i=>i>=0), 'All Diploma sections remain accessible');
+ assert.ok(offsets[0]<offsets[1]&&offsets[1]<offsets[2], 'Overview, then history, then subject results');
+ assert.equal((html.match(/id="board-dp-history"/g)||[]).length,1,'History only appears once');
+ const nav=['board-dp-outcomes','board-dp-history','board-dp-subjects'].map(id=>html.indexOf('data-board-dp-jump="'+id+'"'));
+ assert.ok(nav[0]<nav[1]&&nav[1]<nav[2], 'Navigation matches on-screen order');
+ assert.match(html,/World IB · Diploma recipients/);
+ assert.match(html,/data-board-dp-world-point="average:2026"/);
+ assert.match(html,/board-dp-matched-gaps/);
+});
+
 test('IB Diploma remains separate from MAP; Board URLs preserve DP metric',()=>{
  const link=boardHash({boardView:'dp',boardDpMetric:'passRate'});
  assert.equal(link,'#/board?view=dp&metric=passRate');
