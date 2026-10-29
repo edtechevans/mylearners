@@ -34,6 +34,21 @@ export const dpSubjectDetails=id=>{
 const safe=value=>String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const plus=v=>(v>0?'+':'')+v.toFixed(2);
 const score=v=>Number(v).toFixed(2);
+/** Rich, keyboard-accessible hover content for each subject series point. */
+export function renderDPSubjectPointDetails(key){
+ const [id,yearString,series]=String(key||'').split(':');
+ const subject=DIPLOMA_SUBJECTS.find(s=>s.id===id);
+ const row=subject?.rows.find(r=>r.year===Number(yearString));
+ if(!row||!['school','world'].includes(series))return '<p>Select a course point to see its results.</p>';
+ const gap=Number((row.school-row.world).toFixed(2));
+ return '<div class="board-dp-point-title"><div><span class="eyebrow">MAY '+row.year+' · '+(series==='school'?'AISG':'WORLDWIDE IB')+'</span>'+
+ '<h3>'+safe(subject.short)+'</h3></div><strong>'+score(series==='school'?row.school:row.world)+'<small> / 7</small></strong></div>'+
+ '<p><strong>AISG average grade:</strong> '+score(row.school)+' / 7</p>'+
+ '<p><strong>Worldwide average grade:</strong> '+score(row.world)+' / 7</p>'+
+ '<p><strong>AISG difference:</strong> '+plus(gap)+' grade points</p>'+
+ '<p><strong>AISG student subject entries:</strong> '+row.n+'</p>'+
+ '<p class="board-dp-point-footnote">This count is AISG entries in this course, not worldwide candidates. Separate cohorts each May session.</p>';
+}
 function chart(subject){
  const W=780,H=238,left=46,right=25,top=24,bottom=191;
  const xp=i=>left+(W-left-right)*i/Math.max(1,subject.rows.length-1),yp=v=>bottom-(v/7)*(bottom-top);
@@ -42,8 +57,11 @@ function chart(subject){
   '<text x="'+(left-12)+'" y="'+(yp(v)+4)+'" text-anchor="end" class="dp-subject-tick">'+v+'</text>').join('');
  const years=subject.rows.map((r,i)=>{
   const x=xp(i);
-  const point=k=>'<circle cx="'+x+'" cy="'+yp(r[k]).toFixed(1)+'" r="5" class="dp-subject-'+k+'-dot">'+
-   '<title>'+safe(r.year+' '+(k==='school'?'AISG':'Worldwide')+': '+score(r[k])+' / 7; '+r.n+' AISG subject entries')+'</title></circle>';
+  const point=k=>'<g class="dp-subject-hover-point" data-board-dp-subject-point="'+safe(subject.id+':'+r.year+':'+k)+
+   '" role="button" tabindex="0" aria-label="'+safe(subject.short+', '+r.year+
+    ', '+(k==='school'?'AISG':'Worldwide')+' mean '+score(r[k])+' out of 7, AISG '+r.n+' course entries; hover or focus for details')+'">'+
+   '<circle class="dp-subject-point-hit" cx="'+x+'" cy="'+yp(r[k]).toFixed(1)+'" r="15" fill="transparent"/>'+
+   '<circle cx="'+x+'" cy="'+yp(r[k]).toFixed(1)+'" r="5" class="dp-subject-'+k+'-dot"/></g>';
   return point('world')+point('school')+(subject.rows.length<=6||i%2===0||i===subject.rows.length-1?'<text x="'+x+'" y="218" text-anchor="middle" class="dp-subject-year">'+r.year+'</text>':'');
  }).join('');
  return '<div class="dp-subject-chart-wrap"><svg viewBox="0 0 '+W+' '+H+'" class="dp-subject-chart" role="img" aria-label="'+
