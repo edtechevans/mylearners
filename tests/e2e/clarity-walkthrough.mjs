@@ -211,7 +211,7 @@ try{
   async()=>{
    assert(await evaluate("document.querySelector('.dp-subject-section')?.textContent.includes('Where AISG Students Stand Out')"),'Subject highlights missing');
    assert(await evaluate("document.querySelectorAll('[data-board-dp-subject]').length===13"),'Thirteen courses should be available');
-   assert(await evaluate("document.querySelector('.dp-subject-highlight-value')?.textContent.includes('+0.57')"),'English A HL highlight must match IB course comparison');
+   assert(await evaluate("document.querySelector('.dp-subject-highlight-value')?.textContent.includes('11 / 11')"),'English A HL highlight must show 11 of 11 May sessions above worldwide');
    await click('.dp-subject-more summary');
    await click('[data-board-dp-subject="chemistry-hl"]');
    assert(await evaluate("document.querySelector('.dp-subject-detail h4')?.textContent==='Chemistry HL'"),'Chemistry course should select');
