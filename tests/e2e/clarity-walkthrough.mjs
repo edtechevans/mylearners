@@ -124,6 +124,10 @@ async function run(name,route,selector,width,height,interaction){
   assert(!record.overlappingNavigation,'Sidebar overlaps dashboard content');
   assert(!record.navClipped,'Navigation contains offscreen buttons');
   assert(!record.overlappingBoardCards,'Board overview cards overlap');
+  if(record.horizontalOverflow>4){
+   const offenders=await evaluate("Array.from(document.querySelectorAll('body *')).map(e=>({selector:e.tagName.toLowerCase()+(e.className&&typeof e.className==='string'?'.'+e.className.trim().replace(/\\s+/g,'.'):'') ,right:Math.round(e.getBoundingClientRect().right),width:Math.round(e.getBoundingClientRect().width),scrollWidth:e.scrollWidth,clientWidth:e.clientWidth})).filter(e=>e.right>innerWidth+6).sort((a,b)=>b.right-a.right).slice(0,14)");
+   console.log('OVERFLOW DIAGNOSTICS '+name+' '+JSON.stringify(offenders));
+  }
   assert(record.horizontalOverflow<=4,'Document overflows horizontally by '+record.horizontalOverflow+'px');
   assert(record.focusables>=5,'No working interactive controls found');
   if(width>=1180)assert(record.navigationPosition==='fixed','Desktop side rail not fixed');
