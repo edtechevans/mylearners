@@ -106,9 +106,9 @@ jobs:
           grep -q 'AISG AGGREGATED DATA' /tmp/mylearners-board-dom.html
           grep -q 'board-strength-grid' /tmp/mylearners-board-dom.html
           grep -q 'OUR LEARNING STORY' /tmp/mylearners-board-dom.html
-          grep -q 'board-story-insight' /tmp/mylearners-board-dom.html
+          grep -q 'board-track-record-note' /tmp/mylearners-board-dom.html
           grep -q 'data-board-overview-chart="dp"' /tmp/mylearners-board-dom.html
-          grep -q 'board-trend-svg' /tmp/mylearners-board-dom.html
+          grep -q 'board-dp-svg' /tmp/mylearners-board-dom.html
           grep -q 'data-board-view="explore"' /tmp/mylearners-board-dom.html
           timeout 45s "$browser" --headless=new --disable-dev-shm-usage --no-sandbox --disable-gpu --virtual-time-budget=6000 --dump-dom 'http://127.0.0.1:8765/#/board?view=explore&window=spring2026&subject=math&division=all&grade=all' > /tmp/mylearners-board-explore-dom.html 2>/tmp/mylearners-explore-chrome.log
           grep -q 'board-controls' /tmp/mylearners-board-explore-dom.html
