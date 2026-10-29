@@ -81,3 +81,17 @@
  .board-view .dp-subject-score-row{break-inside:avoid}
  .board-view .dp-subject-highlights{break-inside:avoid}
 }
+
+/* Board view: compact course discovery and section navigation for screen sharing. */
+.board-view .board-dp-section-nav{display:flex;flex-wrap:wrap;gap:8px;margin:13px 0 16px}
+.board-view .board-dp-section-nav button{font:inherit;background:#fff;border:1px solid #d3e3ed;color:#22516e;border-radius:9px;padding:10px 15px;min-height:42px;font-size:12px;font-weight:750;cursor:pointer}
+.board-view .board-dp-section-nav button:hover,.board-view .board-dp-section-nav button:focus-visible{border-color:#7aaac6;background:#eff7fb}
+.board-view #board-dp-outcomes,.board-view #board-dp-subjects,.board-view #board-dp-history{scroll-margin-top:105px}
+.board-view .dp-subject-quick{display:flex;flex-direction:column;gap:7px;margin-bottom:10px}
+.board-view .dp-subject-more{border-top:1px solid #dce8ee;padding-top:10px}
+.board-view .dp-subject-more>summary{padding:9px 10px;color:#205579;font-weight:790;font-size:12px;cursor:pointer;border-radius:8px}
+.board-view .dp-subject-more>summary:hover{background:#e9f3f8}
+.board-view .dp-subject-more>.dp-subject-options{padding-top:7px}
+.board-view .dp-subject-highlight strong{font-weight:790}
+@media(max-width:760px){.board-view .board-dp-section-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.board-view .board-dp-section-nav button{padding:9px 5px;font-size:11px}}
+@media print{.board-view .board-dp-section-nav{display:none}}
