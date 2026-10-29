@@ -26,8 +26,8 @@ export function parseBoardHash(hash){
  const window=params.get('window');
  return {
   boardView:clean(params.get('view'),views,'overview'),
-  boardOverviewChart:params.get('chart')==='dp'?'dp':'map',
-  boardDpMetric:clean(params.get('metric'),dpMetrics,'average'),
+  boardOverviewChart:params.get('chart')==='map'?'map':'dp',
+  boardDpMetric:clean(params.get('metric'),dpMetrics,params.get('view')==='dp'?'average':'passRate'),
   boardDpSubject:clean(params.get('course'),dpCourses,DP_SUBJECT_DEFAULT),
   boardDpYear:clean(params.get('year'),dpYears,currentDpYear),
   boardDpRange:clean(params.get('range'),dpRanges,'all'),
