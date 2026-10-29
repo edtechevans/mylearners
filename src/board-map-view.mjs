@@ -6,7 +6,7 @@ import {BOARD_DATA,BOARD_SUBJECTS,BOARD_GRADE_LIST,BOARD_SCHOOL_YEARS,
  BOARD_METHODS,boardRows,boardSummary,boardWindowFor} from './board-map-data.mjs';
 import {esc} from './v2-ui.mjs';
 import {renderBoardOverview} from './board-map-overview.mjs?v=20261029ibsubjects2';
-import {renderBoardDP} from './board-dp-view.mjs?v=20261029verifiedglobal1';
+import {renderBoardDP} from './board-dp-view.mjs?v=20261029dphistory2';
 import {renderMapComparisonTiles} from './board-comparison-tiles.mjs';
 const safe=v=>esc(v??'');
 const n1=n=>Number.isFinite(n)?Number(n).toFixed(1):'—';
