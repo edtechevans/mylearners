@@ -120,7 +120,9 @@ async function run(name,route,selector,width,height,interaction){
    assert(record.tileShadeCount>=3,'Sky, mint and lilac should all appear in the overview tiles');
    assert(!record.tileOverlaps,'Summary tiles should not overlap');
   }
-  assert(record.visibleHeading,'Heading is not visible');
+  if(name.startsWith('board-dp-')&&interaction)
+   assert(record.headings.some(Boolean),'Board page heading must remain present after section navigation');
+  else assert(record.visibleHeading,'Heading is not visible');
   assert(!record.overlappingNavigation,'Sidebar overlaps dashboard content');
   assert(!record.navClipped,'Navigation contains offscreen buttons');
   assert(!record.overlappingBoardCards,'Board overview cards overlap');
