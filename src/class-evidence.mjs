@@ -161,7 +161,11 @@ export function renderClassEvidencePanel(students,{
    (mode==='map'?' · Fall 2026':'')+'</span>';
  };
  const summary=mode=>'<div class="class-evidence-selected"><span>'+esc(evidenceLabel(mode,ctx))+
-  '</span>'+countFor(mode)+'</div>';
+  '</span>'+countFor(mode)+
+  ((mode==='engagement'||mode==='belonging')?
+   '<button type="button" class="experience-detail-link" data-experience-explain="'+mode+
+   '" data-experience-scope="faculty" data-experience-window="'+selectedWindow+
+   '">ⓘ How is this calculated?</button>':'')+'</div>';
  const compareSelect='<label class="class-evidence-filter class-compare-filter">Compare with '+
   '<select data-class-compare aria-label="Compare roster evidence with">'+
   '<option value="none"'+(paired==='none'?' selected':'')+'>None · one measure</option>'+
