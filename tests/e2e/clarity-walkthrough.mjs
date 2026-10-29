@@ -199,6 +199,11 @@ try{
  await run('board-dp-2017-navigation-1440','board?view=dp&metric=passRate','.board-dp',1440,900,
   async()=>{
    assert(await evaluate("document.querySelectorAll('[data-board-dp-jump]').length===3"),'Board navigation should offer three section jumps');
+   const sections=await evaluate("Array.from(document.querySelectorAll('#board-dp-outcomes,#board-dp-history,#board-dp-subjects')).map(x=>x.id).join('|')");
+   assert(sections==='board-dp-outcomes|board-dp-history|board-dp-subjects',
+    'Historical Diploma chart should sit directly below At a Glance, before subject results');
+   const jumpOrder=await evaluate("Array.from(document.querySelectorAll('[data-board-dp-jump]')).map(x=>x.dataset.boardDpJump).join('|')");
+   assert(jumpOrder===sections,'Diploma navigation should follow the reordered sections');
    assert(await evaluate("Array.from(document.querySelectorAll('[data-board-dp-select=year] option')).some(o=>o.value==='2016')"),'May 2016 must be selectable');
    const chosen=await evaluate("(function(){const s=document.querySelector('[data-board-dp-select=year]');s.value='2017';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
    assert(chosen,'2017 should be selectable');await sleep(180);
