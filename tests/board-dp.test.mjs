@@ -7,12 +7,12 @@ import {boardHash,parseBoardHash} from '../src/board-map-links.mjs';
 
 test('Historic Diploma figures include official 2024 and 2026 IB school-report counts',()=>{
  assert.deepEqual(DP_RECORDS.map(x=>x.year),[
-  '2017–18','2018–19','2019–20','2020–21','2021–22',
+  '2015–16','2016–17','2017–18','2018–19','2019–20','2020–21','2021–22',
   '2022–23','2023–24','2024–25','2025–26']);
- assert.deepEqual(DP_RECORDS.map(x=>x.average),[34,32,36,37,36,34,34,33.66,34]);
- assert.deepEqual(DP_RECORDS.map(x=>x.passRate),[89,93,93,95,100,91,92,93,93]);
- assert.deepEqual(DP_RECORDS.map(x=>x.candidates??null),[65,58,59,42,43,55,38,42,56]);
- assert.deepEqual(DP_RECORDS.map(x=>x.passes??null),[58,54,55,40,43,50,35,39,52]);
+ assert.deepEqual(DP_RECORDS.map(x=>x.average),[33,33,34,32,36,37,36,34,34,33.66,34]);
+ assert.deepEqual(DP_RECORDS.map(x=>x.passRate),[95,98,89,93,93,95,100,91,92,93,93]);
+ assert.deepEqual(DP_RECORDS.map(x=>x.candidates??null),[65,60,65,58,59,42,43,55,38,42,56]);
+ assert.deepEqual(DP_RECORDS.map(x=>x.passes??null),[62,59,58,54,55,40,43,50,35,39,52]);
  assert.equal(DP_RECORDS.find(x=>x.end===2025).worldAverage,30.58);
  assert.equal(DP_RECORDS.find(x=>x.end===2025).worldPassRate,81);
  assert.equal(DP_RECORDS.find(x=>x.end===2024).highDenominator,35);
@@ -26,10 +26,10 @@ test('Historic Diploma figures include official 2024 and 2026 IB school-report c
  assert.match(DP_METHODS.discrepancy,/56/);
  assert.match(DP_METHODS.current,/52 awards from 56/);
 });
-test('Nine-year Diploma chart keeps full scale and supports actual global reference windows',()=>{
+test('Eleven-year Diploma chart keeps full scale and supports actual global reference windows',()=>{
  const average=dpMetricSeries('average'),passes=dpMetricSeries('passRate');
- assert.equal(average.length,9);assert.equal(passes.length,9);
- assert.equal(average[0].value,34);
+ assert.equal(average.length,11);assert.equal(passes.length,11);
+ assert.equal(average[0].value,33);
  assert.equal(passes.find(x=>x.end===2020).value,93);
  assert.equal(average.at(-1).worldValue,30.88);
  assert.equal(passes.at(-1).worldValue,null);
@@ -39,7 +39,8 @@ test('Nine-year Diploma chart keeps full scale and supports actual global refere
  assert.match(html,/board-dp-graphic-grid/);
  assert.match(html,/IB Diploma Results/);
  assert.match(html,/Consistent outcomes/);
- assert.match(html,/7 \/ 9/);
+ assert.match(html,/7 \/ 11/);
+ assert.match(html,/data-board-dp-point="average:2016"/);
  assert.match(html,/data-board-dp-point="average:2018"/);
  assert.match(html,/data-board-dp-point="average:2026"/);
  assert.match(html,/board-dp-world-point/);
@@ -47,7 +48,7 @@ test('Nine-year Diploma chart keeps full scale and supports actual global refere
  assert.match(html,/30\.88/);
  assert.match(html,/global IB reference/);
  assert.match(html,/32\.0–37\.0/);
- assert.match(html,/2026 Diploma outcomes are drawn from the school examination statistics summary/);
+ assert.match(html,/IB School Statistics \(school 001832\)/);
  assert.doesNotMatch(html,/confirmation pending|verification pending|unconfirmed|board-dp-status/i);
  assert.match(html,/Detailed results by graduating year/);
  assert.match(html,/Source context/);
@@ -61,6 +62,8 @@ test('Nine-year Diploma chart keeps full scale and supports actual global refere
  assert.match(renderDPPointDetails('passRate:2026'),/93%/);
  assert.match(renderDPPointDetails('average:2025'),/33\.66/);
  assert.match(renderDPPointDetails('average:2025'),/30\.58/);
+ assert.equal(dpPoint(2017,'passRate').row.passes,59);
+ assert.equal(DP_RECORDS.find(r=>r.end===2021).highScore,44);
 });
 test('IB Diploma remains separate from MAP; Board URLs preserve DP metric',()=>{
  const link=boardHash({boardView:'dp',boardDpMetric:'passRate'});
