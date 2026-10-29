@@ -182,9 +182,9 @@ try{
    const select=await evaluate("(function(){const s=document.querySelector('[data-board-dp-select=\"year\"]');s.value='2025';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
    assert(select,'DP graduation year selector missing');await sleep(180);
    assert(await evaluate("document.querySelector('.board-dp-comparison-panel')?.textContent.includes('34')"),
-    '2025 headline average must round 33.66 to 34');
-   assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('31')"),
-    'The rounded 2025 world Diploma average should show 31');
+    '2025 official AISG Diploma mean is 34');
+   assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('33')"),
+    'The 2025 world Diploma-recipient average rounds to 33');
    assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('42 / 51')"),
     'Cohort participation should use 42 of 51');
    assert(await evaluate("document.querySelectorAll('.board-dp-world-point').length>=3"),
@@ -251,8 +251,8 @@ try{
     'Source provenance for 2026 must remain accessible');
    assert(await evaluate("!document.querySelector('.board-dp')?.textContent.includes('confirmation pending')"),
     'Board dashboard must not show confirmation-pending wording');
-   assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('31')"),
-    'Rounded 2026 world average from IB not visible');
+   assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('33')"),
+    'Matched 2026 world Diploma-recipient average must show 33');
    assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('56')"),
     'The official 2026 IB Diploma candidate denominator must be visible');
   });
