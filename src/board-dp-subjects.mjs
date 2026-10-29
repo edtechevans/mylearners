@@ -1,20 +1,23 @@
 /** Official IB May-session subject outcomes, AISG school 001832.
- * Transcribed from AISG 2022–2026 IB School Statistics subject tables.
+ * Transcribed from AISG 2016–2026 IB School Statistics subject tables.
+ * Legacy Mathematics HL/SL (2016–2020) is not joined to Mathematics AA/AI (2021–2026).
  * School/world means are specific to the exact subject and level (1–7).
  * Different cohorts across years are NOT matched student growth.
  */
 export const DIPLOMA_SUBJECTS=Object.freeze([
- {id:'math-aa-sl',group:'maths',name:'Mathematics: Analysis & Approaches SL',short:'Mathematics AA SL',rows:[[2022,20,6.20,4.99],[2023,24,5.92,4.61],[2024,15,5.73,4.55],[2025,29,5.34,4.50],[2026,25,5.52,4.46]]},
- {id:'math-aa-hl',group:'maths',name:'Mathematics: Analysis & Approaches HL',short:'Mathematics AA HL',rows:[[2022,6,6.67,5.21],[2023,19,5.89,4.88],[2024,8,6.13,4.87],[2025,7,5.14,4.92],[2026,17,5.41,5.00]]},
- {id:'math-ai-sl',group:'maths',name:'Mathematics: Applications & Interpretation SL',short:'Mathematics AI SL',rows:[[2022,19,5.26,4.39],[2023,16,4.25,3.87],[2024,17,5.12,3.92],[2025,9,4.78,3.88],[2026,17,4.88,3.89]]},
- {id:'english-hl',group:'english',name:'English A: Language & Literature HL',short:'English A HL',rows:[[2022,26,5.62,5.03],[2023,20,5.30,4.80],[2024,9,5.22,4.73],[2025,10,5.50,4.83],[2026,17,5.41,4.84]]},
- {id:'english-sl',group:'english',name:'English A: Language & Literature SL',short:'English A SL',rows:[[2022,15,5.20,5.27],[2023,41,5.00,4.89],[2024,26,5.27,4.92],[2025,36,5.17,4.95],[2026,36,5.22,4.98]]},
- {id:'biology-hl',group:'science',name:'Biology HL',short:'Biology HL',rows:[[2022,13,5.46,4.73],[2023,12,5.00,4.41],[2024,13,4.62,4.42],[2025,14,4.93,4.45],[2026,16,5.06,4.49]]},
- {id:'chemistry-hl',group:'science',name:'Chemistry HL',short:'Chemistry HL',rows:[[2022,14,6.21,4.99],[2023,17,4.24,4.57],[2024,18,4.39,4.70],[2025,16,4.19,4.82],[2026,18,5.33,4.95]]},
- {id:'physics-hl',group:'science',name:'Physics HL',short:'Physics HL',rows:[[2022,3,5.67,5.09],[2023,19,5.26,4.81],[2024,9,4.88,4.86],[2025,10,4.10,4.91],[2026,17,4.65,4.97]]},
- {id:'psychology-hl',group:'breadth',name:'Psychology HL',short:'Psychology HL',rows:[[2022,13,5.08,5.07],[2023,21,5.19,4.79],[2024,20,5.60,4.74],[2025,12,5.42,4.74],[2026,14,5.86,4.82]]},
- {id:'chinese-b-sl',group:'breadth',name:'Chinese B: Mandarin SL',short:'Chinese B SL',rows:[[2022,9,6.33,5.80],[2023,17,6.59,5.73],[2024,10,6.60,5.68],[2025,10,5.90,5.69],[2026,10,6.10,5.71]]},
- {id:'visual-arts-hl',group:'breadth',name:'Visual Arts HL',short:'Visual Arts HL',rows:[[2022,6,5.50,4.45],[2023,11,5.18,4.40],[2024,9,5.22,4.25],[2025,9,5.11,4.26],[2026,7,5.57,4.30]]}
+ {id:'math-aa-sl',group:'maths',name:'Mathematics: Analysis & Approaches SL',short:'Mathematics AA SL',rows:[[2021,21,5.81,5.18],[2022,20,6.20,4.99],[2023,24,5.92,4.61],[2024,15,5.73,4.55],[2025,29,5.34,4.50],[2026,25,5.52,4.46]]},
+ {id:'math-aa-hl',group:'maths',name:'Mathematics: Analysis & Approaches HL',short:'Mathematics AA HL',rows:[[2021,8,6.25,5.44],[2022,6,6.67,5.21],[2023,19,5.89,4.88],[2024,8,6.13,4.87],[2025,7,5.14,4.92],[2026,17,5.41,5.00]]},
+ {id:'math-ai-sl',group:'maths',name:'Mathematics: Applications & Interpretation SL',short:'Mathematics AI SL',rows:[[2021,17,5.88,4.75],[2022,19,5.26,4.39],[2023,16,4.25,3.87],[2024,17,5.12,3.92],[2025,9,4.78,3.88],[2026,17,4.88,3.89]]},
+ {id:'math-legacy-hl',group:'maths',name:'Mathematics HL (legacy curriculum, 2016–2020)',short:'Mathematics HL · legacy',rows:[[2016,10,5.30,4.46],[2017,17,4.47,4.73],[2018,13,6.15,4.75],[2019,11,5.64,4.69],[2020,10,6.40,5.04]]},
+ {id:'math-legacy-sl',group:'maths',name:'Mathematics SL (legacy curriculum, 2016–2020)',short:'Mathematics SL · legacy',rows:[[2016,47,5.06,4.39],[2017,40,4.95,4.38],[2018,53,4.74,4.26],[2019,45,4.78,4.18],[2020,45,5.38,4.79]]},
+ {id:'english-hl',group:'english',name:'English A: Language & Literature HL',short:'English A HL',rows:[[2016,38,5.47,5.06],[2017,26,5.5,4.96],[2018,33,5.52,4.98],[2019,28,5.68,4.97],[2020,31,5.68,5.13],[2021,28,5.86,5.11],[2022,26,5.62,5.03],[2023,20,5.30,4.80],[2024,9,5.22,4.73],[2025,10,5.50,4.83],[2026,17,5.41,4.84]]},
+ {id:'english-sl',group:'english',name:'English A: Language & Literature SL',short:'English A SL',rows:[[2016,21,5.1,5.18],[2017,30,5.13,5.19],[2018,34,5.06,5.1],[2019,27,5.22,5.09],[2020,29,5.69,5.45],[2021,20,5.2,5.43],[2022,15,5.20,5.27],[2023,41,5.00,4.89],[2024,26,5.27,4.92],[2025,36,5.17,4.95],[2026,36,5.22,4.98]]},
+ {id:'biology-hl',group:'science',name:'Biology HL',short:'Biology HL',rows:[[2016,14,4.86,4.33],[2017,14,5.29,4.32],[2018,22,5.36,4.35],[2019,9,4.67,4.34],[2020,11,5.82,4.72],[2021,5,5,5.04],[2022,13,5.46,4.73],[2023,12,5.00,4.41],[2024,13,4.62,4.42],[2025,14,4.93,4.45],[2026,16,5.06,4.49]]},
+ {id:'chemistry-hl',group:'science',name:'Chemistry HL',short:'Chemistry HL',rows:[[2016,11,5.09,4.48],[2017,7,5,4.49],[2018,20,5,4.46],[2019,14,4.71,4.51],[2020,15,5.6,4.92],[2021,13,4.85,5.38],[2022,14,6.21,4.99],[2023,17,4.24,4.57],[2024,18,4.39,4.70],[2025,16,4.19,4.82],[2026,18,5.33,4.95]]},
+ {id:'physics-hl',group:'science',name:'Physics HL',short:'Physics HL',rows:[[2016,7,5,4.62],[2017,12,5.75,4.65],[2018,10,4.8,4.65],[2019,12,4.83,4.65],[2020,12,5.33,5.29],[2021,8,5.38,5.34],[2022,3,5.67,5.09],[2023,19,5.26,4.81],[2024,9,4.88,4.86],[2025,10,4.10,4.91],[2026,17,4.65,4.97]]},
+ {id:'psychology-hl',group:'breadth',name:'Psychology HL',short:'Psychology HL',rows:[[2016,39,5.15,4.68],[2017,20,5.8,4.73],[2018,27,4.89,4.69],[2019,27,4.67,4.7],[2020,34,5.06,5.18],[2021,27,5.41,5.29],[2022,13,5.08,5.07],[2023,21,5.19,4.79],[2024,20,5.60,4.74],[2025,12,5.42,4.74],[2026,14,5.86,4.82]]},
+ {id:'chinese-b-sl',group:'breadth',name:'Chinese B: Mandarin SL',short:'Chinese B SL',rows:[[2016,14,6.79,6.01],[2017,11,6.91,5.97],[2018,18,6.61,5.93],[2019,14,6.07,5.99],[2020,15,6.4,6.08],[2021,11,6.73,6.17],[2022,9,6.33,5.80],[2023,17,6.59,5.73],[2024,10,6.60,5.68],[2025,10,5.90,5.69],[2026,10,6.10,5.71]]},
+ {id:'visual-arts-hl',group:'breadth',name:'Visual Arts HL',short:'Visual Arts HL',rows:[[2016,11,6.18,4.79],[2017,9,5.56,4.65],[2018,14,5,4.48],[2019,7,5.57,4.27],[2020,9,5.22,4.21],[2021,7,6,4.56],[2022,6,5.50,4.45],[2023,11,5.18,4.40],[2024,9,5.22,4.25],[2025,9,5.11,4.26],[2026,7,5.57,4.30]]}
 ].map(s=>({...s,rows:s.rows.map(([year,n,school,world])=>({year,n,school,world}))})));
 export const DP_SUBJECT_GROUPS=Object.freeze([
  {id:'maths',label:'Mathematics'},{id:'english',label:'English A'},
