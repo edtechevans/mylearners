@@ -93,7 +93,11 @@ function graph(iv){
   grid+'<line x1="'+x0+'" x2="'+x1+'" y1="'+yp(iv.target)+'" y2="'+yp(iv.target)+
   '" stroke="#8f4552" stroke-width="2" stroke-dasharray="6 5"/>'+
   '<polyline fill="none" stroke="#156b86" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="'+pts+'"/>'+
-  iv.observations.map((r,i)=>'<circle cx="'+xp(i)+'" cy="'+yp(r.observed)+'" r="4" fill="#156b86"/>').join('')+
+  iv.observations.map((r,i)=>'<circle cx="'+xp(i)+'" cy="'+yp(r.observed)+
+    '" r="5" fill="#156b86" data-preview-week="'+r.week+'" data-preview-observed="'+r.observed+
+    '" data-preview-target="'+iv.target+'" tabindex="0" role="button" aria-label="Week '+r.week+
+    ': '+r.observed+' of 5 observed opportunities; example target '+iv.target+' of 5"><title>Week '+
+    r.week+' · Observed '+r.observed+' of 5 · Target '+iv.target+' of 5</title></circle>').join('')+
   labels+'</svg>';
 }
 function renderProgress(student,record,entries){
