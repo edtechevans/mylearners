@@ -187,8 +187,8 @@ export function renderBoardDP(state){
  [...DP_RECORDS].reverse().map(r=>option(r.end,String(r.end),end)).join('')+'</select></label></div>'+
  '<nav class="board-dp-section-nav" aria-label="Diploma page sections">'+
  '<button type="button" data-board-dp-jump="board-dp-outcomes">Annual outcomes</button>'+ 
- '<button type="button" data-board-dp-jump="board-dp-subjects">Subject results</button>'+ 
- '<button type="button" data-board-dp-jump="board-dp-history">History since 2016</button></nav>'+ 
+ '<button type="button" data-board-dp-jump="board-dp-history">History since 2016</button>'+
+ '<button type="button" data-board-dp-jump="board-dp-subjects">Subject results</button></nav>'+ 
  '<section id="board-dp-outcomes" class="board-dp-comparison-panel"><div class="board-dp-panel-heading"><div>'+
  '<span class="eyebrow">DIPLOMA OUTCOMES · CLASS OF '+end+'</span>'+
  '<h3>Diploma at a Glance</h3><p>Two measures describe the selected May cohort; the third shows consistency across 2016–2026.</p></div>'+
@@ -204,7 +204,6 @@ export function renderBoardDP(state){
  '<p class="board-dp-graphic-footnote">'+
  'AISG May '+end+' Diploma awards and averages are sourced from official IB School Statistics (school 001832). '+
  'Worldwide Diploma-recipient mean is compared with AISG Diploma-recipient mean (same award category). The separately published world overall DP mean for '+end+' is '+points(worldOverall)+' /45 and includes a broader candidate population. IB May 2026 provisional bulletin; historical IB May bulletins. Summary scores are rounded; hover for exact results.</p></section>'+
- renderDiplomaSubjectSection(state)+
  '<section id="board-dp-history" class="board-panel board-dp-panel"><div class="board-dp-chart-top"><div>'+
  '<span class="eyebrow">HISTORICAL OUTCOMES</span>'+
  '<h3>'+(metric==='average'?'Diploma Average Points':'Diploma Pass Rate')+' Over Time</h3>'+
@@ -225,7 +224,8 @@ export function renderBoardDP(state){
  (metric==='average'&&comparison?matchedGlobalGaps():'')+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
  '<div class="board-dp-inspector" aria-live="polite"><p>Hover or select a year to inspect its outcome.</p></div>'+
- '<p class="board-chart-caption">Full 0–45 point or 0–100% scale. For average points, the dashed world line is the <strong>Diploma-recipient mean</strong> (2017–2026); the worldwide overall DP mean is a different population. For pass rates, it is the worldwide Diploma award rate. The 2020–22 years had altered assessment arrangements.</p></section>'+
+ '<p class="board-chart-caption">Full 0–45 point or 0–100% scale. For average points, the dashed world line is the <strong>Diploma-recipient mean</strong> (2017–2026); the worldwide overall DP mean is a different population. For pass rates, it is the worldwide Diploma award rate. The 2020–22 years had altered assessment arrangements.</p></section>'+ renderDiplomaSubjectSection(state)+
+
  achievements+
  dpPathways()+
  dpOutcomesTable()+
