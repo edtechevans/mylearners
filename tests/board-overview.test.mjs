@@ -51,7 +51,7 @@ test('Board Overview communicates four defensible strengths in a clear schoolwid
  assert.equal((html.match(/data-board-dp-go=/g)||[]).length,2);
  assert.match(html,/24 \/ 24/);assert.match(html,/95%/);
  assert.match(html,/IB Diploma · 2025–26/);assert.match(html,/93%/);
- assert.match(html,/\/45/);assert.match(html,/confirmation pending/);
+ assert.match(html,/\/45/);assert.doesNotMatch(html,/confirmation pending|unconfirmed|verification pending/i);
  assert.match(html,/data-board-overview-chart="map"/);
  assert.match(html,/data-board-overview-chart="dp"/);
  assert.match(html,/data-board-series="math"/);
