@@ -127,11 +127,7 @@ export function renderBoard(state){
  '<button type="button" data-board-view="overview" aria-current="'+(!explore&&!diploma?'page':'false')+'" class="'+(!explore&&!diploma?'active':'')+'">Overview</button>'+
  '<button type="button" data-board-view="explore" aria-current="'+explore+'" class="'+(explore?'active':'')+'">MAP</button>'+
  '<button type="button" data-board-view="dp" aria-current="'+diploma+'" class="'+(diploma?'active':'')+'">IB Diploma</button>'+
- '</nav><div class="board-share-area">'+
- '<button type="button" class="board-presentation-button" data-board-presentation aria-pressed="'+!!state.boardPresentation+'">'+
- (state.boardPresentation?'Exit presentation':'Presentation view')+'</button>'+
- '<button type="button" class="board-copy-link" data-board-share="true" aria-label="Copy link to this Board view">Copy link</button>'+
- '<span class="board-share-feedback" id="board-share-feedback" role="status" aria-live="polite"></span></div></div>';
+ '</nav></div>';
  if(diploma)return header+renderBoardDP(state)+'</section>';
  if(!explore)return header+renderBoardOverview(state)+'</section>';
  const filters='<div class="board-controls board-simple-controls">'+
