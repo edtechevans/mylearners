@@ -83,7 +83,7 @@ function dpLineChart(metric,{range='all',selectedYear=null,compareWorld=false}={
 }
 function dpOutcomesTable(){
  return '<details class="board-details board-dp-table"><summary>Detailed results by graduating year <span>+</span></summary>'+
- '<p>School results and selected global references are listed separately. Dashes indicate missing—not zero—values. Diploma/retake candidates and Grade 12 pathways have different denominators.</p>'+
+ '<p>School results and global benchmarks are listed separately. A dash means unavailable, not zero. Diploma/retake candidates are not the same as Grade 12 pathway counts.</p>'+
  '<div class="tablewrap"><table class="board-table board-dp-detail-table"><thead><tr>'+
  '<th>Class</th><th>AISG average /45</th><th>World average</th><th>AISG minus world</th>'+
  '<th>Diploma pass</th><th>World pass</th><th>Candidates / cohort</th><th>Diplomas awarded</th>'+
@@ -161,8 +161,8 @@ export function renderBoardDP(state){
   '</div></details>';
  return '<section class="board-dp board-dp-simplified">'+
  '<div class="board-dp-intro"><div><span class="eyebrow">GRADUATION OUTCOMES · IB DIPLOMA PROGRAMME</span>'+
- '<h2>IB Diploma Results</h2><p>School outcomes alongside the global IB reference, with cohort context.</p></div>'+
- '<label class="board-dp-year-simple">Graduating class <select data-board-dp-select="year" aria-label="Diploma school year">'+
+ '<h2>IB Diploma Results</h2><p>Choose a year to highlight Diploma outcomes. Subject comparisons below always show their available years.</p></div>'+
+ '<label class="board-dp-year-simple">Spotlight year <select data-board-dp-select="year" aria-label="Diploma school year">'+
  [...DP_RECORDS].reverse().map(r=>option(r.end,String(r.end),end)).join('')+'</select></label></div>'+
  '<nav class="board-dp-section-nav" aria-label="Diploma page sections">'+
  '<button type="button" data-board-dp-jump="board-dp-outcomes">Annual outcomes</button>'+ 
@@ -178,7 +178,7 @@ export function renderBoardDP(state){
  outcomeTile('pass','AISG Diploma pass rate',valueText(selected.passRate,'passRate'),'',
    (dpPassCount(selected)?dpPassCount(selected)+' candidates':'School reported rate'))+
  outcomeTile('consistency','Consistent outcomes',meets34+' / '+verified.length,'years',
-   'Recorded school-summary years averaging at least 34 / 45')+'</div>'+
+   'May 2016–2026 sessions averaging at least 34 / 45')+'</div>'+
  international+
  '<p class="board-dp-graphic-footnote">'+
  'AISG May '+end+' Diploma awards and averages are sourced from official IB School Statistics (school 001832). '+
