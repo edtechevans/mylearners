@@ -118,7 +118,7 @@ const modeHelp={
  flourishing:'Synthetic MaiaLearning-style PERMA dimensions. The 0–10 display scale is illustrative, NOT confirmed Maia scoring. This is not a real Maia export, benchmark, diagnosis or combined wellbeing score.'
 };
 export function renderClassEvidencePanel(students,{
- academic,map,experience,maia,mode='report',compare='none',subject='Mathematics',mapSubject='Mathematics',window='F26',maiaDimension:dim=MAIA_DEFAULT_DIMENSION,maiaWindow='F26'
+ academic,map,experience,maia,rosterView='focused',mode='report',compare='none',subject='Mathematics',mapSubject='Mathematics',window='F26',maiaDimension:dim=MAIA_DEFAULT_DIMENSION,maiaWindow='F26'
 }={}){
  const grade=students[0]?.grade||'';
  const modes=evidenceModesForGrade(grade);
@@ -204,7 +204,15 @@ export function renderClassEvidencePanel(students,{
   '<p class="class-evidence-secondary">Maia-style PERMA examples are available separately in Secondary classes; the two measures use different instruments and scales.</p>':'';
  return '<section class="class-evidence-panel" aria-label="Select learning and wellbeing evidence for the class roster">'+
   '<div class="class-evidence-heading"><div><h3>Learning &amp; Wellbeing Evidence</h3>'+
-  '<p>Choose an evidence measure for your class.</p></div><span class="class-evidence-heading-tag" aria-hidden="true">CLASS VIEW</span></div>'+
+  '<p>'+(rosterView==='everyday'?
+   'Five familiar measures are shown together below. Select another measure to focus on a dataset.':
+   'Choose an evidence measure for your class.')+
+  '</p></div><span class="class-evidence-heading-tag" aria-hidden="true">CLASS VIEW</span></div>'+
+  '<div class="class-roster-view-switch" role="group" aria-label="Class roster columns">'+
+  '<button type="button" data-roster-view="everyday" aria-pressed="'+(rosterView==='everyday')+
+  '" class="'+(rosterView==='everyday'?'active':'')+'">Everyday columns</button>'+
+  '<button type="button" data-roster-view="focused" aria-pressed="'+(rosterView==='focused')+
+  '" class="'+(rosterView==='focused'?'active':'')+'">Focused evidence</button></div>'+
   '<div class="class-evidence-navigation">'+tabs+'</div>'+
   '<div class="class-evidence-controls">'+compareSelect+(filters.length?
    '<div class="class-evidence-filter-row">'+filters.join('')+'</div>':'')+'</div>'+
