@@ -20,6 +20,7 @@ function matchedGlobalGaps(){
  '<div class="board-dp-gaps-grid" role="list">'+rows.map(r=>'<span role="listitem" class="board-dp-gap'+
  (r.average>=r.worldAwardedAverage?' is-above':' is-below')+'"><small>'+r.end+'</small><strong>'+
  delta(r.average,r.worldAwardedAverage)+'</strong></span>').join('')+'</div></div>';
+}
 
 function dpRangeHighlight(metric){
  const values=DP_RECORDS.map(r=>r[metric]).filter(Number.isFinite);
