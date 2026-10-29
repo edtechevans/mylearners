@@ -88,3 +88,22 @@
 .board-view .board-dp-world-hover:hover .board-dp-world-point,
 .board-view .board-dp-world-hover:focus-visible .board-dp-world-point{r:7.5;stroke-width:3}
 .board-view .board-dp-world-hover:focus-visible circle:first-child{stroke:#328bb7;stroke-width:2.5;fill:none}
+
+/* Official IB May 2017–2026, matched Diploma-recipient population: concise,
+   accessible worldwide point labels and exact per-year published-score gaps. */
+.board-view .board-dp-world-value{font-size:10px;font-weight:740;fill:#117b70;pointer-events:none;font-variant-numeric:tabular-nums}
+.board-view .board-dp-matched-gaps{margin:8px 0 13px;padding:13px 14px;border:1px solid #d6e8e7;background:#f5faf9;border-radius:11px;min-width:0}
+.board-view .board-dp-matched-intro{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;margin-bottom:11px;color:#194a60}
+.board-view .board-dp-matched-intro strong{font-size:13px;line-height:1.4}
+.board-view .board-dp-matched-intro small{font-size:11px;color:#617d87;line-height:1.5}
+.board-view .board-dp-gaps-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px;overflow-x:auto;min-width:0}
+.board-view .board-dp-gap{border:1px solid #d9e7ec;border-radius:8px;background:white;padding:8px 3px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px}
+.board-view .board-dp-gap small{font-size:10px;color:#6c8695}
+.board-view .board-dp-gap strong{font-size:13px;color:#166080;font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-.02em}
+.board-view .board-dp-gap.is-below{border-color:#ead2d2;background:#fff8f7}
+.board-view .board-dp-gap.is-below strong{color:#a13d41}
+@media(max-width:1100px){
+ .board-view .board-dp-gaps-grid{display:flex;overflow-x:auto;gap:7px;scrollbar-width:thin}
+ .board-view .board-dp-gap{flex:0 0 72px}
+}
+@media print{.board-view .board-dp-matched-gaps{break-inside:avoid}.board-view .board-dp-gaps-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr))}}
