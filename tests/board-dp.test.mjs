@@ -47,9 +47,11 @@ test('Nine-year Diploma chart keeps full scale and supports actual global refere
  assert.match(html,/30\.88/);
  assert.match(html,/global IB reference/);
  assert.match(html,/32\.0–37\.0/);
- assert.match(html,/2026 school results/);
+ assert.match(html,/2026 AISG average and pass rate are taken from the previously reported school dashboard/);
+ assert.doesNotMatch(html,/confirmation pending|verification pending|unconfirmed|board-dp-status/i);
  assert.match(html,/Detailed results by graduating year/);
- assert.match(html,/2024.*unconfirmed|2024.*School summary|School summary/i);
+ assert.match(html,/Source context/);
+ assert.match(html,/Previously reported dashboard/);
  const solo=renderBoardDP({boardDpGlobal:false});
  assert.doesNotMatch(solo,/class="board-dp-world-point"/);
  assert.match(solo,/Compare with world/);
@@ -109,7 +111,8 @@ test('No filenames or underlying cell references are shown in any Diploma result
   const tooltip=renderDPPointDetails(metric+':2026');
   assert.doesNotMatch(html+tooltip,/\.xlsx|\.csv|\.pdf|Dashboard SY\d|KPIs!|Source:|workbook/i);
   assert.match(html,/Understanding Diploma results/);
-  assert.match(html,/verification|confirm/i);
+  assert.doesNotMatch(html,/confirmation pending|verification pending|unconfirmed|board-dp-status/i);
+  assert.match(html,/supplied examination statistics summary/);
  }
 });
 
