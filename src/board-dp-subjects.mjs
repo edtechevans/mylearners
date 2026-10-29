@@ -79,9 +79,9 @@ function subjectHighlights(){
   const d=dpSubjectDetails(h.id);return '<article class="dp-subject-highlight">'+
    '<span class="dp-subject-eyebrow">MAY 2026 · SUBJECT STRENGTH</span>'+
    '<strong>'+safe(h.title)+'</strong>'+
-   '<div class="dp-subject-highlight-value">'+plus(d.gap)+' <small>grade points vs worldwide</small></div>'+
-   '<p>Above the worldwide course average in <strong>'+d.above+' of '+d.subject.rows.length+'</strong> May sessions ('+d.subject.rows[0].year+'–2026).</p>'+
-   '<span class="dp-subject-coverage">2026: '+d.current.n+' subject entries · AISG '+score(d.current.school)+' / World '+score(d.current.world)+'</span></article>';
+   '<div class="dp-subject-highlight-value">'+d.above+' / '+d.subject.rows.length+' <small>sessions above world</small></div>'+
+   '<p>Consistent subject outcomes · '+d.subject.rows[0].year+'–2026</p>'+
+   '<span class="dp-subject-coverage">2026 · AISG '+score(d.current.school)+' / 7 · World '+score(d.current.world)+' / 7 ('+plus(d.gap)+') · '+d.current.n+' subject entries</span></article>';
  }).join('')+'</div>';
 }
 export function renderDiplomaSubjectSection(state={}){
@@ -105,6 +105,10 @@ export function renderDiplomaSubjectSection(state={}){
  '<p>Selected higher-level and widely enrolled subjects, compared with their course-specific worldwide IB averages for the years offered.</p></div>'+
  '<span class="dp-subject-ib-mark">Grades out of 7</span></div>'+
  subjectHighlights()+
+ '<div class="dp-subject-breadth" aria-label="Sustained excellence across curriculum areas">'+
+ '<span class="dp-subject-eyebrow">ACADEMIC BREADTH</span>'+
+ '<span>Visual Arts HL: <strong>11 / 11</strong> sessions above world · Chinese B SL: <strong>11 / 11</strong> sessions above world</span>'+
+ '<span class="dp-subject-breadth-note">Smaller subject entry groups; full year-by-year results remain available below.</span></div>'+
  '<div class="dp-subject-explorer">'+
  '<div class="dp-subject-choice"><h4>Explore a Subject</h4><p>Begin with a featured subject or open the full list.</p>'+
  '<div class="dp-subject-options dp-subject-quick" role="group" aria-label="Featured Diploma subjects">'+quick+'</div>'+
