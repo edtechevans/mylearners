@@ -102,8 +102,8 @@ test('IB Diploma presents one school-year filter, two cohort outcomes and histor
  assert.equal((html.match(/class="board-dp-graphic-card /g)||[]).length,3);
  assert.match(html,/2023–24/);
  assert.match(html,/95%/);
- assert.match(html,/Consistent outcomes/);
- assert.match(html,/7 \/ 11/);
+ assert.match(html,/Long-term Diploma success/);
+ assert.match(html,/10 \/ 11/);
  assert.match(html,/Explore Grade 12 Diploma pathways/);
  assert.match(html,/data-board-dp-point="average:2024"/);
  assert.match(html,/data-board-dp-metric="passRate"/);
