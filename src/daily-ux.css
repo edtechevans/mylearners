@@ -149,3 +149,16 @@
 #app .roster-daily[data-roster-layout="everyday"] .tablewrap{
  overflow-x:auto;
 }
+
+/* At desktop sidebar widths the global main is a non-shrinking flex item.
+   Constrain only Faculty's expanded everyday roster canvas to the viewport;
+   the table itself retains horizontal scrolling. */
+@media(min-width:1180px){
+ #app > main.container:has(.roster-daily[data-roster-layout="everyday"]){
+  box-sizing:border-box;
+  width:calc(100vw - 224px);
+  max-width:min(1560px,calc(100vw - 224px));
+  min-width:0;
+  flex:1 1 auto;
+ }
+}
