@@ -221,6 +221,26 @@ try{
    await click('[data-board-dp-subject="math-aa-sl"]');
    assert(await evaluate("document.querySelector('.dp-subject-detail')?.textContent.includes('6 / 6')"),'Mathematics six-year positive comparison missing');
   });
+ await run('board-dp-hover-points-1440','board?view=dp&metric=average','.dp-subject-section',1440,900,
+  async()=>{
+   const subject=await evaluate("(function(){const pt=document.querySelector('[data-board-dp-subject-point=\"math-aa-sl:2026:school\"]');if(!pt)return false;pt.dispatchEvent(new PointerEvent('pointerover',{bubbles:true,pointerType:'mouse',clientX:700,clientY:390}));return true})()");
+   assert(subject,'Subject chart must expose hoverable AISG markers');
+   assert(await evaluate("document.querySelector('.board-floating-tooltip:not([hidden])')?.textContent.includes('AISG student subject entries: 25')"),'Subject hover must display AISG candidate count');
+   assert(await evaluate("document.querySelector('.board-floating-tooltip:not([hidden])')?.textContent.includes('5.52')"),'Subject hover must display exact AISG grade');
+   const world=await evaluate("(function(){const pt=document.querySelector('[data-board-dp-subject-point=\"math-aa-sl:2026:world\"]');pt.dispatchEvent(new PointerEvent('pointerover',{bubbles:true,pointerType:'mouse',clientX:710,clientY:380}));return !!pt})()");
+   assert(world,'Subject worldwide point must respond');
+   assert(await evaluate("document.querySelector('.board-floating-tooltip:not([hidden])')?.textContent.includes('4.46')"),'Worldwide course grade must appear');
+   const cohort=await evaluate("(function(){const pt=document.querySelector('[data-board-dp-world-point=\"average:2026\"]');pt.dispatchEvent(new PointerEvent('pointerover',{bubbles:true,pointerType:'mouse',clientX:840,clientY:540}));return !!pt})()");
+   assert(cohort,'World Diploma trend point must be hoverable');
+   assert(await evaluate("document.querySelector('.board-floating-tooltip:not([hidden])')?.textContent.includes('56 Diploma/retake candidates')"),'World point hover must show AISG cohort size');
+  });
+ await run('board-dp-2026-pass-hover-1440','board?view=dp&metric=passRate','.board-dp',1440,900,
+  async()=>{
+   assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('83%')"),'Rounded 2026 global pass rate should be 83% on summary');
+   const hovered=await evaluate("(function(){const pt=document.querySelector('[data-board-dp-world-point=\"passRate:2026\"]');pt.dispatchEvent(new PointerEvent('pointerover',{bubbles:true,pointerType:'mouse',clientX:810,clientY:430}));return !!pt})()");
+   assert(hovered,'2026 global pass line point missing');
+   assert(await evaluate("document.querySelector('.board-floating-tooltip:not([hidden])')?.textContent.includes('82.6%')"),'Exact official 2026 global pass rate must appear on hover');
+  });
  await run('board-dp-2026-provenance-1440','board?view=dp&metric=average','.board-dp',1440,900,
   async()=>{
    const select=await evaluate("(function(){const s=document.querySelector('[data-board-dp-select=\"year\"]');s.value='2026';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
