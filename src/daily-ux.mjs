@@ -103,6 +103,15 @@ function decorate(table,index){
  empty.textContent='No matching records. Try resetting the filters.';
  empty.hidden=true;
  shell.insertBefore(panel,table);
+ if(role()==='board'){
+  const controls=document.createElement('details');
+  controls.className='ux-board-table-controls';
+  const heading=document.createElement('summary');
+  heading.textContent='Table tools · search, columns and export';
+  controls.appendChild(heading);
+  panel.parentNode.insertBefore(controls,panel);
+  controls.appendChild(panel);
+ }
  shell.appendChild(caption);shell.appendChild(empty);
  [...table.querySelectorAll('thead th')].forEach((th,i)=>{
   if(th.querySelector('[data-ux-sort]'))return;
