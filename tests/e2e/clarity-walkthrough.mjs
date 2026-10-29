@@ -206,6 +206,23 @@ try{
     'No 2026 examination denominator can be invented');
   });
 
+ await run('faculty-everyday-columns-default-1440','faculty','.roster-daily[data-roster-layout="everyday"]',1440,900,
+  async()=>{
+   assert(await evaluate("document.querySelector('.roster-daily[data-roster-layout=everyday]')!==null"),
+    'Faculty should open with everyday evidence visible');
+   const headers=await evaluate("Array.from(document.querySelectorAll('.roster-daily thead th')).map(th=>th.textContent.trim())");
+   for(const expected of ['Learner','Attendance','Mathematics','MAP Mathematics growth','Engagement','Belonging','Support information'])
+    assert(headers.some(h=>h.includes(expected)),'Missing default evidence: '+expected);
+   assert(headers.length===7,'Expected learner, five measures and support information');
+   assert(await evaluate("document.querySelectorAll('.roster-daily tbody .class-evidence-result').length>=20"),
+    'Everyday columns should show per-learner values without extra clicks');
+   await click('[data-roster-view="focused"]');
+   assert(await evaluate("document.querySelector('.roster-daily')?.dataset.rosterLayout==='focused'"),
+    'Focused evidence mode should remain available');
+   await click('[data-roster-view="everyday"]');
+   assert(await evaluate("document.querySelector('.roster-daily')?.dataset.rosterLayout==='everyday'"),
+    'Teacher should be able to return to everyday measures');
+  });
  await run('faculty-profile-1440','faculty','.faculty-daily-toolbar',1440,900,
   async()=>{await click('.student-link');assert(await evaluate("!!document.querySelector('.profile-head')"),'Faculty profile did not open')});
  await run('sss-profile-1440','sss','.sss-overview',1440,900,
