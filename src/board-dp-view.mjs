@@ -16,7 +16,7 @@ function dpRangeHighlight(metric){
  const low=Math.min(...values),high=Math.max(...values),n=values.length;
  const v=metric==='average'?low.toFixed(1)+'–'+high.toFixed(1)+' <small>/ 45</small>':
   low.toFixed(0)+'–'+high.toFixed(0)+'<small>%</small>';
- const label=metric==='average'?'Annual Diploma score range':'Reported pass-rate range';
+ const label=metric==='average'?'Annual Diploma score range':'Diploma award-rate range';
  return '<div class="board-chart-range-annotation" role="note">'+
  '<span class="board-chart-range-icon" aria-hidden="true">↗</span>'+
  '<div><span class="board-chart-range-title">'+label+'</span>'+
@@ -164,7 +164,11 @@ export function renderBoardDP(state){
  '<h2>IB Diploma Results</h2><p>School outcomes alongside the global IB reference, with cohort context.</p></div>'+
  '<label class="board-dp-year-simple">Graduating class <select data-board-dp-select="year" aria-label="Diploma school year">'+
  [...DP_RECORDS].reverse().map(r=>option(r.end,String(r.end),end)).join('')+'</select></label></div>'+
- '<section class="board-dp-comparison-panel"><div class="board-dp-panel-heading"><div>'+
+ '<nav class="board-dp-section-nav" aria-label="Diploma page sections">'+
+ '<button type="button" data-board-dp-jump="board-dp-outcomes">Annual outcomes</button>'+ 
+ '<button type="button" data-board-dp-jump="board-dp-subjects">Subject results</button>'+ 
+ '<button type="button" data-board-dp-jump="board-dp-history">History since 2016</button></nav>'+ 
+ '<section id="board-dp-outcomes" class="board-dp-comparison-panel"><div class="board-dp-panel-heading"><div>'+
  '<span class="eyebrow">DIPLOMA OUTCOMES · CLASS OF '+end+'</span>'+
  '<h3>Diploma at a Glance</h3><p>Each number describes the selected graduating cohort.</p></div>'+
  '</div>'+
@@ -177,13 +181,13 @@ export function renderBoardDP(state){
    'Recorded school-summary years averaging at least 34 / 45')+'</div>'+
  international+
  '<p class="board-dp-graphic-footnote">'+
- 'AISG Class of '+end+' Diploma outcomes are drawn from the school examination statistics summary. '+
+ 'AISG May '+end+' Diploma awards and averages are sourced from official IB School Statistics (school 001832). '+
  'Global values: school summary (2023–2025); IB published May 2026 world mean.</p></section>'+
  renderDiplomaSubjectSection(state)+
- '<section class="board-panel board-dp-panel"><div class="board-dp-chart-top"><div>'+
+ '<section id="board-dp-history" class="board-panel board-dp-panel"><div class="board-dp-chart-top"><div>'+
  '<span class="eyebrow">HISTORICAL OUTCOMES</span>'+
  '<h3>'+(metric==='average'?'Diploma Average Points':'Diploma Pass Rate')+' Over Time</h3>'+
- '<p>Nine graduating years · '+safe(detailNote)+'</p></div>'+
+ '<p>'+DP_RECORDS.length+' graduating years ('+DP_RECORDS[0].end+'–'+DP_RECORDS.at(-1).end+') · '+safe(detailNote)+'</p></div>'+
  '<div class="board-segmented" role="group" aria-label="Select Diploma history measure">'+
  '<button type="button" data-board-dp-metric="average" aria-pressed="'+(metric==='average')+
  '" class="'+(metric==='average'?'active':'')+'">Average points</button>'+
