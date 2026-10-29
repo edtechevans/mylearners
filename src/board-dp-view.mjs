@@ -176,7 +176,7 @@ export function renderBoardDP(state){
  '<button type="button" data-board-dp-jump="board-dp-history">History since 2016</button></nav>'+ 
  '<section id="board-dp-outcomes" class="board-dp-comparison-panel"><div class="board-dp-panel-heading"><div>'+
  '<span class="eyebrow">DIPLOMA OUTCOMES · CLASS OF '+end+'</span>'+
- '<h3>Diploma at a Glance</h3><p>Two measures describe the selected May cohort; the third shows consistency across 2016–2026.</p></div>+
+ '<h3>Diploma at a Glance</h3><p>Two measures describe the selected May cohort; the third shows consistency across 2016–2026.</p></div>'+
  '</div>'+
  '<div class="board-dp-graphic-grid">'+
  outcomeTile('average','AISG average Diploma score',headlinePoints(selected.average),'/45',
@@ -188,7 +188,7 @@ export function renderBoardDP(state){
  international+
  '<p class="board-dp-graphic-footnote">'+
  'AISG May '+end+' Diploma awards and averages are sourced from official IB School Statistics (school 001832). '+
- '2026 worldwide mean: IB July announcement; worldwide award rate: IB May 2026 statistical bulletin. Diploma mean populations differ, so a school-versus-world mean gap is not presented as like-for-like. Summary scores are rounded; hover for exact results.</p></section>+
+ '2026 worldwide mean: IB July announcement; worldwide award rate: IB May 2026 statistical bulletin. Diploma mean populations differ, so a school-versus-world mean gap is not presented as like-for-like. Summary scores are rounded; hover for exact results.</p></section>'+
  renderDiplomaSubjectSection(state)+
  '<section id="board-dp-history" class="board-panel board-dp-panel"><div class="board-dp-chart-top"><div>'+
  '<span class="eyebrow">HISTORICAL OUTCOMES</span>'+
