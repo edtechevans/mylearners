@@ -83,3 +83,8 @@
  .board-view .board-dp-global-toggle{display:none}
  .board-view .board-dp-world-strip{break-inside:avoid}
 }
+
+.board-view .board-dp-world-hover{cursor:help;outline:none}
+.board-view .board-dp-world-hover:hover .board-dp-world-point,
+.board-view .board-dp-world-hover:focus-visible .board-dp-world-point{r:7.5;stroke-width:3}
+.board-view .board-dp-world-hover:focus-visible circle:first-child{stroke:#328bb7;stroke-width:2.5;fill:none}
