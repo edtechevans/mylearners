@@ -89,9 +89,9 @@ function dpLineChart(metric,{range='all',selectedYear=null,compareWorld=false}={
 }
 function dpOutcomesTable(){
  return '<details class="board-details board-dp-table"><summary>Detailed results by graduating year <span>+</span></summary>'+
- '<p>School results and global benchmarks are listed separately. A dash means unavailable, not zero. Diploma/retake candidates are not the same as Grade 12 pathway counts.</p>'+
+ '<p>* The school Diploma mean and published global mean may cover different candidate populations; differences are descriptive, not like-for-like performance claims. A dash means unavailable, not zero. Diploma/retake candidates differ from Grade 12 pathway counts.</p>+
  '<div class="tablewrap"><table class="board-table board-dp-detail-table"><thead><tr>'+
- '<th>Class</th><th>AISG average /45</th><th>World average</th><th>AISG minus world</th>'+
+ '<th>Class</th><th>AISG average /45</th><th>World average*</th><th>Descriptive gap*</th>+
  '<th>Diploma pass</th><th>World pass</th><th>Candidates / cohort</th><th>Diplomas awarded</th>'+
  '<th>35+ points</th><th>Bilingual</th><th>Mean subject grade</th><th>Mean core</th><th>Highest /45</th><th>Source context</th></tr></thead><tbody>'+
  DP_RECORDS.map(r=>'<tr><td>'+r.end+'</td><td>'+points(r.average)+'</td>'+
@@ -141,13 +141,13 @@ export function renderBoardDP(state){
  const selected=DP_RECORDS.find(r=>r.end===end);
  const comparison=state.boardDpGlobal!==false;
  const verified=DP_RECORDS.filter(r=>Number.isFinite(r.average));
- const meets34=verified.filter(r=>r.average>=34).length;
+ const highAwardYears=verified.filter(r=>r.passRate>=90).length;
  const detailNote='Different graduating cohorts each year; these are not matched student growth scores.';
  const worldAvg=selected.worldAverage;
  const worldPass=selected.worldPassRate;
  const international='<div class="board-dp-world-strip" aria-label="International Diploma comparisons">'+
   mini('World IB average',headlinePoints(worldAvg)+' /45',
-   Number.isFinite(worldAvg)?'AISG '+delta(selected.average,worldAvg)+' points vs world':'No comparable global average')+
+   Number.isFinite(worldAvg)?'IB-reported global mean; different candidate populations—no direct gap claimed':'Global mean unavailable for this year')+
   mini('World Diploma pass rate',Number.isFinite(worldPass)?Math.round(worldPass)+'%':'—',
    Number.isFinite(worldPass)?'AISG '+percentage(selected.passRate-worldPass).replace('%',' percentage points')+' vs world':'Global pass-rate result unavailable for this year')+
   mini('Diploma/retake candidates',selected.candidates?
@@ -176,19 +176,19 @@ export function renderBoardDP(state){
  '<button type="button" data-board-dp-jump="board-dp-history">History since 2016</button></nav>'+ 
  '<section id="board-dp-outcomes" class="board-dp-comparison-panel"><div class="board-dp-panel-heading"><div>'+
  '<span class="eyebrow">DIPLOMA OUTCOMES · CLASS OF '+end+'</span>'+
- '<h3>Diploma at a Glance</h3><p>Each number describes the selected graduating cohort.</p></div>'+
+ '<h3>Diploma at a Glance</h3><p>Two measures describe the selected May cohort; the third shows consistency across 2016–2026.</p></div>+
  '</div>'+
  '<div class="board-dp-graphic-grid">'+
  outcomeTile('average','AISG average Diploma score',headlinePoints(selected.average),'/45',
    'Class of '+end)+
  outcomeTile('pass','AISG Diploma pass rate',valueText(selected.passRate,'passRate'),'',
    (dpPassCount(selected)?dpPassCount(selected)+' candidates':'School reported rate'))+
- outcomeTile('consistency','Consistent outcomes',meets34+' / '+verified.length,'years',
-   'May 2016–2026 sessions averaging at least 34 / 45')+'</div>'+
+ outcomeTile('consistency','Long-term Diploma success',highAwardYears+' / '+verified.length,'years',
+   'May sessions awarding Diplomas to at least 90% of candidates')+'</div>'+
  international+
  '<p class="board-dp-graphic-footnote">'+
  'AISG May '+end+' Diploma awards and averages are sourced from official IB School Statistics (school 001832). '+
- '2026 worldwide mean: IB July announcement; 2026 worldwide pass rate: IB May 2026 statistical bulletin. Summary scores are rounded; hover for precise results.</p></section>'+
+ '2026 worldwide mean: IB July announcement; worldwide award rate: IB May 2026 statistical bulletin. Diploma mean populations differ, so a school-versus-world mean gap is not presented as like-for-like. Summary scores are rounded; hover for exact results.</p></section>+
  renderDiplomaSubjectSection(state)+
  '<section id="board-dp-history" class="board-panel board-dp-panel"><div class="board-dp-chart-top"><div>'+
  '<span class="eyebrow">HISTORICAL OUTCOMES</span>'+
