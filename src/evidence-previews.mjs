@@ -88,8 +88,8 @@ export function decorateEvidencePreviews(root,role){
    [...tr.cells].forEach((cell,i)=>{
     if(i===0)return;
     const h=heads[i]||'';
-    if(h.includes('attendance'))addInfoAfter(cell.querySelector('.academic-roster-value')||cell.lastElementChild||null,'attendance',id,'attendance');
-    if(h.includes('map math growth'))addInfoAfter(cell.querySelector('.academic-roster-value')||cell.lastElementChild||null,'map',id,'MAP growth');
+    if(h.includes('attendance')&&!cell.querySelector('.evidence-preview-trigger'))cell.appendChild(iconButton('attendance',id,'attendance'));
+    if(h.includes('map math growth')&&!cell.querySelector('.evidence-preview-trigger'))cell.appendChild(iconButton('map',id,'MAP growth'));
     if((h.includes('report')||h.includes('map')||h.includes('ixl')||h.includes('phonics')||h.includes('f&p'))&&!cell.querySelector('.experience-cell-help')){
      const kind=guideKey(h);
      const icon=iconButton('academic',id,h);
