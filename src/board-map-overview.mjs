@@ -190,9 +190,9 @@ export function renderBoardOverview(state){
   strengthCard('MAP · growth · Fall 2026','95%','',
     'Returning students grew in at least one MAP area','fall2026:growth','map')+
   strengthCard('IB Diploma · '+current.year,String(current.average),'/45',
-    'Reported school average · global IB mean 30.88 /45 · confirmation pending','average','dp')+
+    'Reported school average · global IB mean 30.88 /45','average','dp')+
   strengthCard('IB Diploma · '+current.year,String(current.passRate)+'%','',
-    'Reported Diploma pass rate · confirmation pending','passRate','dp');
+    'Reported Diploma pass rate','passRate','dp');
  const mapPanel='<div class="board-overview-chartbody">'+
  '<div class="board-overview-charthead"><div><span class="eyebrow">MAP · HISTORICAL ACHIEVEMENT</span>'+
  '<h2 id="board-trend-heading">Learning Over Time · Regional Comparisons</h2>'+
@@ -227,7 +227,7 @@ export function renderBoardOverview(state){
  '<h2>From Grade 3 to Graduation</h2>'+
  '<p>Four meaningful measures of achievement, progress and graduation outcomes.</p></div></div>'+
  '<div class="board-strength-grid">'+strengthCards+'</div>'+
- '<p class="board-strength-interpretation"><strong>The picture:</strong> AISG’s latest MAP grade averages exceed U.S. school norms in all 24 grade-subject comparisons, and 95% of returning students grew in at least one MAP area. Reported Diploma results add a complementary graduation perspective. <span>These reflect different learners and measures; 2025–26 Diploma outcomes await final confirmation.</span></p>'+
+ '<p class="board-strength-interpretation"><strong>The picture:</strong> AISG’s latest MAP grade averages exceed U.S. school norms in all 24 grade-subject comparisons, and 95% of returning students grew in at least one MAP area. Reported Diploma results add a complementary graduation perspective. <span>These reflect different learners and measures, and Diploma values represent graduating cohorts.</span></p>'+
  '<div class="board-history-switch"><div><span class="eyebrow">EXPLORE THE EVIDENCE</span>'+
  '<h3>How Results Have Changed</h3></div>'+
  '<div class="board-segmented" role="group" aria-label="Historical outcomes view">'+
