@@ -11,6 +11,16 @@ const delta=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)?(a-b>=0?'+':'')+valueT
 const count=(v)=>Number.isFinite(v)?String(v):'—';
 const headlinePoints=v=>Number.isFinite(v)?String(Math.round(v)):'—';
 const mini=(label,value,note)=>'<span class="board-dp-evidence-item"><span>'+safe(label)+'</span><strong>'+safe(value)+'</strong><small>'+safe(note)+'</small></span>';
+function matchedGlobalGaps(){
+ const rows=DP_RECORDS.filter(r=>Number.isFinite(r.worldAwardedAverage));
+ const above=rows.filter(r=>r.average>r.worldAwardedAverage).length;
+ return '<div class="board-dp-matched-gaps" aria-label="AISG versus worldwide Diploma-recipient averages by May session">'+
+ '<div class="board-dp-matched-intro"><strong>'+above+' of '+rows.length+' May sessions above the worldwide Diploma-recipient average</strong>'+
+ '<small>Difference in published Diploma-recipient mean scores · AISG minus global · points out of 45. Published AISG means are rounded by the IB.</small></div>'+
+ '<div class="board-dp-gaps-grid" role="list">'+rows.map(r=>'<span role="listitem" class="board-dp-gap'+
+ (r.average>=r.worldAwardedAverage?' is-above':' is-below')+'"><small>'+r.end+'</small><strong>'+
+ delta(r.average,r.worldAwardedAverage)+'</strong></span>').join('')+'</div></div>';
+
 function dpRangeHighlight(metric){
  const values=DP_RECORDS.map(r=>r[metric]).filter(Number.isFinite);
  if(!values.length)return '';
@@ -64,7 +74,9 @@ function dpLineChart(metric,{range='all',selectedYear=null,compareWorld=false}={
   '" role="button" tabindex="0" aria-label="'+safe(r.year+', World IB '+meta.label+
   ' '+valueText(r.worldValue,metric)+'. Hover or focus for comparisons and AISG candidate counts.')+'">'+
   '<circle cx="'+xp(i)+'" cy="'+yp(r.worldValue)+'" r="15" fill="transparent"/>'+
-  '<circle class="board-dp-world-point" cx="'+xp(i)+'" cy="'+yp(r.worldValue)+'" r="4.6" fill="#13847c" stroke="#fff" stroke-width="1.4"/></g>':'').join(''):'';
+  '<circle class="board-dp-world-point" cx="'+xp(i)+'" cy="'+yp(r.worldValue)+'" r="4.6" fill="#13847c" stroke="#fff" stroke-width="1.4"/>'+
+  '<text class="board-dp-world-value" text-anchor="middle" x="'+xp(i)+'" y="'+(yp(r.worldValue)+21)+'">'+
+  (metric==='average'?r.worldValue.toFixed(1):Math.round(r.worldValue)+'%')+'</text></g>':'').join(''):'';
  const ticks=[0,.25,.5,.75,1].map(frac=>{
   const val=Math.round(max*frac),y=yp(val);
   return '<line class="board-trend-grid" x1="'+left+'" y1="'+y+'" x2="'+(width-right)+'" y2="'+y+'"/>'+
@@ -209,6 +221,7 @@ export function renderBoardDP(state){
  '<p class="board-dp-swipe">Hover or focus an AISG or world point to see precise scores and AISG candidate counts. Select an AISG year to inspect its outcome.</p>'+
  '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Explore Diploma outcomes by school year">'+
  dpLineChart(metric,{selectedYear:end,compareWorld:comparison})+'</div>'+
+ (metric==='average'&&comparison?matchedGlobalGaps():'')+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
  '<div class="board-dp-inspector" aria-live="polite"><p>Hover or select a year to inspect its outcome.</p></div>'+
  '<p class="board-chart-caption">Full 0–45 point or 0–100% scale. For average points, the dashed world line is the <strong>Diploma-recipient mean</strong> (2017–2026); the worldwide overall DP mean is a different population. For pass rates, it is the worldwide Diploma award rate. The 2020–22 years had altered assessment arrangements.</p></section>'+
@@ -239,6 +252,7 @@ export function renderDPOverviewTrend(state){
  '<small>'+(selected==='average'?'The plotted worldwide mean is for Diploma recipients, not all Diploma candidates.':'Worldwide Diploma award rate; all eleven May sessions.')+'</small></div>'+
  '<p class="board-dp-swipe">Hover or focus any plotted point for precise AISG/world data and AISG candidate counts.</p>'+
  '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Scroll to inspect Diploma outcomes">'+dpLineChart(selected,{compareWorld:true})+'</div>'+
+ (selected==='average'?matchedGlobalGaps():'')+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
  '<div class="board-dp-inspector" aria-live="polite"><p>Select a year to understand its reported outcome.</p></div>'+
  '<div class="board-overview-chartfoot"><span>Official IB school and worldwide bulletins · May 2016–2026. Exact AISG and world values appear on hover. The 2016 recipient-only world mean is unavailable. Different graduating cohorts do not represent individual growth.</span>'+
