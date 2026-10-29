@@ -118,7 +118,7 @@ test('Diploma preserves spreadsheet historic pass rates and plots the full nine-
  const latest=renderBoardDP({boardDpYear:'2026',boardDpMetric:'average',boardDpRange:'recent'});
  assert.equal((latest.match(/<g class="board-dp-point/g)||[]).length,9);
  assert.doesNotMatch(latest,/confirmation pending|unconfirmed|verification pending/i);
- assert.match(latest,/previously reported (school )?dashboard/);
+ assert.match(latest,/2026 Diploma outcomes are drawn from the school examination statistics summary/);
 });
 test('Board deep links preserve data filters without offering presentation or copy controls',()=>{
  const opts={boardView:'explore',boardWindow:'fall2026',boardSubject:'math',boardDivision:'all',boardGrade:'all',
