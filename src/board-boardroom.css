@@ -1,0 +1,48 @@
+/* Boardroom-ready dashboard hierarchy.  Evidence remains selectable,
+   descriptive and auditable; this CSS does not alter source values. */
+.board-view .board-overview-intro h2{font-size:clamp(24px,2.6vw,33px);letter-spacing:-.035em;line-height:1.15}
+.board-view .board-overview-intro p{max-width:75ch;line-height:1.5;color:#526f80;font-size:13px}
+.board-view .board-strength-grid{gap:11px;margin-top:13px}
+.board-view .board-strength-card{padding:17px 17px 15px;min-height:155px;gap:6px;border-radius:14px;box-shadow:0 5px 16px #1239500a}
+.board-view .board-strength-number{font-size:clamp(30px,2.6vw,39px);letter-spacing:-.06em;font-variant-numeric:tabular-nums;line-height:1.1}
+.board-view .board-strength-eyebrow{font-size:10px;letter-spacing:.075em;line-height:1.4}
+.board-view .board-strength-caption{font-size:11.5px;line-height:1.45}
+.board-view .board-track-record-note{display:grid;grid-template-columns:minmax(220px,.9fr) minmax(250px,1.1fr);gap:16px;background:#f5f9fb;border:1px solid #dce8ef;border-radius:13px;padding:15px 19px;margin:12px 0 19px}
+.board-view .board-track-record-note>div{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.board-view .board-track-record-note>div+div{border-left:1px solid #d3e2eb;padding-left:18px}
+.board-view .board-track-record-note .eyebrow{font-size:9px;letter-spacing:.085em;color:#5d788b}
+.board-view .board-track-record-note strong{font-size:19px;color:#174765;letter-spacing:-.025em}
+.board-view .board-track-record-note span:not(.eyebrow),.board-view .board-track-record-note p{font-size:11.5px;color:#526e80;margin:0;line-height:1.52}
+.board-view .board-history-switch{margin-top:7px}
+.board-view .board-history-switch h3{font-size:20px}
+.board-view .board-history-switch p{font-size:11.5px;color:#5c778a;line-height:1.5;margin:5px 0 0}
+.board-view .board-historical-chart{margin-top:12px}
+.board-view .board-dp-svg .board-trend-value{font-size:13px;font-weight:820}
+.board-view .board-dp-point-hit{cursor:crosshair}
+.board-view .board-dp-comparison-panel .board-dp-graphic-card .board-dp-graphic-note{line-height:1.4}
+.board-view .board-dp-graphic-note{max-width:38ch}
+.board-view .board-dp-graphic-consistency{background:linear-gradient(130deg,#f2f8fc,#fff)}
+.board-view .board-dp-graphic-consistency .board-dp-graphic-value{font-variant-numeric:tabular-nums}
+.board-view .ux-board-table-controls{border:1px solid #d9e7ef;border-radius:10px;background:#f7fafc;margin:10px 0 12px}
+.board-view .ux-board-table-controls>summary{padding:12px 15px;cursor:pointer;color:#205878;font-size:12px;font-weight:750}
+.board-view .ux-board-table-controls>summary:hover{background:#edf5f9}
+.board-view .ux-board-table-controls[open]>.ux-data-tools{margin:0;padding:12px;border-top:1px solid #dce8ef}
+.board-view .board-dp-subjects .dp-subject-highlight{min-width:0}
+@media (min-width:1240px){
+ .board-view .board-strength-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media (max-width:870px){
+ .board-view .board-track-record-note{grid-template-columns:1fr;gap:11px}
+ .board-view .board-track-record-note>div+div{border-left:0;border-top:1px solid #d3e2eb;padding:10px 0 0}
+ .board-view .board-strength-card{min-height:142px}
+}
+@media (max-width:520px){
+ .board-view .board-strength-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .board-view .board-strength-card{padding:11px 12px}
+ .board-view .board-strength-caption{font-size:10px}
+ .board-view .board-history-switch{align-items:flex-start}
+}
+@media print{
+ .board-view .ux-board-table-controls:not([open]){display:none}
+ .board-view .board-track-record-note,.board-view .board-strength-card{break-inside:avoid}
+}
