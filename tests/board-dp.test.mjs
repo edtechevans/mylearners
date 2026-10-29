@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DP_RECORDS,DP_GRADE12_PATHWAYS,DP_METHODS,dpPoint,dpMetricSeries} from '../src/board-dp-data.mjs';
-import {renderBoardDP,renderDPPointDetails} from '../src/board-dp-view.mjs';
+import {renderBoardDP,renderDPPointDetails,renderDPOverviewTrend} from '../src/board-dp-view.mjs';
 import {BOARD_DATA,BOARD_US_SCHOOL_NORMS_2025,boardRows,boardSummary} from '../src/board-map-data.mjs';
 import {boardHash,parseBoardHash} from '../src/board-map-links.mjs';
 
@@ -88,6 +88,58 @@ test('Board Diploma presents historical AISG vs global outcomes immediately afte
  assert.match(html,/World IB · Diploma recipients/);
  assert.match(html,/data-board-dp-world-point="average:2026"/);
  assert.match(html,/board-dp-matched-gaps/);
+});
+
+test('Focused 30–40 point axis is explicit, readable and reversible to 0–45',()=>{
+ const focused=renderBoardDP({boardDpMetric:'average',boardDpScale:'focus',boardDpGlobal:true});
+ const full=renderBoardDP({boardDpMetric:'average',boardDpScale:'full',boardDpGlobal:true});
+ const svg=html=>html.match(/<svg class="board-dp-svg"[\s\S]*?<\/svg>/)?.[0]||'';
+ const f=svg(focused),g=svg(full);
+ assert.match(f,/Focused y-axis 30 to 40, truncated above zero/);
+ assert.match(f,/FOCUSED AXIS · 30–40 \(NOT ZERO-BASED\)/);
+ assert.match(f,/>30<\/text>/);
+ assert.match(f,/>40<\/text>/);
+ assert.doesNotMatch(f,/board-trend-tick"[^>]*>0<\/text>/);
+ assert.match(focused,/data-board-dp-scale="focus" aria-pressed="true"/);
+ assert.match(focused,/data-board-dp-scale="full" aria-pressed="false"/);
+ assert.match(focused,/axis begins at <strong>30, not zero<\/strong>/);
+ assert.match(g,/Full y-axis from 0 to 45/);
+ assert.match(g,/FULL AXIS · 0–45/);
+ assert.match(g,/>0<\/text>/);
+ assert.match(g,/>45<\/text>/);
+ assert.match(full,/data-board-dp-scale="full" aria-pressed="true"/);
+ const schoolY=svg=>Number(svg.match(/data-board-dp-point="average:2026"[\s\S]*?<circle class="board-dp-point-hit" cx="[^"]+" cy="([^"]+)"/)?.[1]);
+ const worldY=svg=>Number(svg.match(/data-board-dp-world-point="average:2026"[\s\S]*?<circle cx="[^"]+" cy="([^"]+)"/)?.[1]);
+ const focusGap=Math.abs(schoolY(f)-worldY(f));
+ const fullGap=Math.abs(schoolY(g)-worldY(g));
+ assert.ok(focusGap>14&&fullGap<6,'Scaled gap: '+focusGap+' vs '+fullGap);
+ assert.ok(focusGap>fullGap*4,'Focused scale expands drawn distance without altering values');
+ assert.match(focused,/data-board-dp-world-point="average:2019"/);
+ assert.match(focused,/board-dp-matched-gaps/);
+ const pass=renderBoardDP({boardDpMetric:'passRate',boardDpScale:'focus'});
+ assert.match(svg(pass),/Full y-axis from 0 to 100/);
+ assert.doesNotMatch(pass,/data-board-dp-scale=/);
+});
+test('Board Overview uses the same clearly disclosed zoom toggle as the Diploma page',()=>{
+ const overview=renderDPOverviewTrend({boardDpMetric:'average'});
+ assert.match(overview,/FOCUSED AXIS · 30–40/);
+ assert.match(overview,/data-board-dp-scale="full"/);
+ assert.match(overview,/begins at <strong>30, not zero<\/strong>/);
+ const full=renderDPOverviewTrend({boardDpMetric:'average',boardDpScale:'full'});
+ assert.match(full,/FULL AXIS · 0–45/);
+ assert.match(full,/Full Diploma scoring scale displayed/);
+ const pass=renderDPOverviewTrend({boardDpMetric:'passRate'});
+ assert.doesNotMatch(pass,/data-board-dp-scale/);
+});
+test('Chart scale survives validated Board deep links without changing metrics or subjects',()=>{
+ const full=boardHash({boardView:'dp',boardDpMetric:'average',boardDpScale:'full',boardDpSubject:'english-hl'});
+ assert.match(full,/scale=full/);
+ assert.equal(parseBoardHash(full).boardDpScale,'full');
+ assert.equal(parseBoardHash(full).boardDpSubject,'english-hl');
+ assert.equal(parseBoardHash('#/board?view=dp&metric=average&scale=bad').boardDpScale,'focus');
+ assert.equal(parseBoardHash('#/board').boardDpScale,'focus');
+ assert.match(boardHash({boardView:'overview',boardOverviewChart:'dp',boardDpMetric:'average',boardDpScale:'full'}),/scale=full/);
+ assert.equal(parseBoardHash('#/board?view=overview&chart=dp&metric=average&scale=full').boardDpScale,'full');
 });
 
 test('IB Diploma remains separate from MAP; Board URLs preserve DP metric',()=>{
