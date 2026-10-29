@@ -101,8 +101,7 @@ function cardDetails(target,ctx,kind){
   t(target,'.student-today-tile > small')||t(target,'.sss-evidence-tile > small')||
   t(target,'.board-strength-caption')||'';
  const chartMeaning=kind==='leader-monitor'?(target.getAttribute?.('aria-label')||''):'';
- const status=ctx.role==='board'&&/unconfirmed|verification pending|confirmation pending/.test(text.toLowerCase())?
-  'Confirmation pending — do not use as a verified Board result.':'';
+ const status='';
  const note=guide.description+
   (ctx.role==='board'?' Compare only like-for-like cohorts and testing windows.':
    ctx.role==='leader'?' Counts and eligibility depend on the selected division, grade and class.':'');
