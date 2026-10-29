@@ -115,7 +115,7 @@ test('No filenames or underlying cell references are shown in any Diploma result
   assert.doesNotMatch(html+tooltip,/\.xlsx|\.csv|\.pdf|Dashboard SY\d|KPIs!|workbook/i);
   assert.match(html,/Understanding Diploma results/);
   assert.doesNotMatch(html,/confirmation pending|verification pending|unconfirmed|board-dp-status/i);
-  assert.match(html,/school examination statistics summary/);
+  assert.match(html,/IB School Statistics \(school 001832\)/);
  }
 });
 
