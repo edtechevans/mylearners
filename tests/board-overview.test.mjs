@@ -2,7 +2,7 @@ test('Plain Board overview leads with historical Diploma award-rate evidence whi
  const html=renderBoardOverview({});
  assert.match(html,/A Decade of Academic Strength/);
  assert.match(html,/data-board-dp-point="passRate:2026"/);
- assert.match(html,/English A HL/);
+ assert.match(html,/ENGLISH A HL/);
  assert.match(html,/10 \/ 11/);
  assert.match(html,/24 \/ 24/);
  assert.match(html,/95%/);
