@@ -4,7 +4,8 @@
  * Historical supplementary indicators remain from school-provided IBDP summary;
  * IB official report is authoritative for Diploma awards, candidate counts and averages.
  * International benchmarks 2023–2025: supplied school statistics table;
- * May 2026 world average: IB official July 2026 results news (30.88 / 45).
+ * May 2026 world average: IB July 2026 announcement (30.88 / 45).
+ * May 2026 world Diploma pass rate: IB May 2026 provisional statistical bulletin (82.6%).
  *
  * No identifying records or inferred examination cohort counts,
  * and no mixing DP/CP world recipients with Diploma candidates.
@@ -35,7 +36,9 @@ export const DP_RECORDS=Object.freeze([
   highCount:15,highDenominator:42,bilingualCount:11,bilingualDenominator:39,highScore:43,meanGrade:5.29,corePoints:1.9,
   worldAverage:30.58,worldPassRate:81,worldMeanGrade:4.89,worldCorePoints:1.5,worldBilingualShare:27.3},
  {year:'2025–26',end:2026,average:34,passRate:93,candidates:56,passes:52,highScore:43,meanGrade:5.35,
-  worldAverage:30.88,worldSource:'https://ibo.org/news/news-list/more-than-209000-ib-students-worldwide-receive-their-dp-and-cp-results/'}
+  worldAverage:30.88,worldPassRate:82.6,worldMeanGrade:4.9,
+  worldSource:'https://ibo.org/news/news-list/more-than-209000-ib-students-worldwide-receive-their-dp-and-cp-results/',
+  worldPassSource:'https://ibo.org/globalassets/publications/dpcp-provisional-statistical-bulletin-may-2026_en.pdf'}
 ]);
 export const DP_GRADE12_PATHWAYS=Object.freeze([
  {year:'2023–24',full:38,courses:5,aisg:0},
@@ -55,7 +58,7 @@ export const DP_METHODS=Object.freeze({
  current:'The May 2026 AISG IB School Statistics reports 34 average points among successful Diploma candidates and 52 awards from 56 Diploma/retake candidates (92.9%, displayed as 93%).',
  pathways:'Grade 12 pathways are enrollment information, not examination candidate or pass counts. Do not divide examinations by pathway entries.',
  boundary:'DP results cover graduating cohorts; MAP covers Grades 3–10. Do not combine them into a single attainment percentage.',
- comparison:'School and world Diploma averages use the same 0–45 scale, but cohort composition and candidature differ. World 2023–2025 values come from the school examination summary, while the 2026 world mean is published by the IB. A world 2026 Diploma pass rate is not included.',
+ comparison:'May 2026 world DP Diploma mean: 30.88 /45 (IB July 2026 announcement). Worldwide Diploma pass rate: 82.6% (IB May 2026 provisional statistical bulletin). The AISG school mean reflects candidates awarded the Diploma, while the global overall mean includes the wider Diploma results population: interpret comparisons with that population distinction. Earlier world references follow the school summary.',
  covid:'The school summary flags examination cancellation in 2020 and altered assessment arrangements in 2021–2022. Compare those years with care.',
  discrepancy2024:'For 2024, the school summary records 15 high scorers out of 35 for that indicator, but 38 Diploma candidates overall. The high-score denominator is retained exactly as supplied and not silently changed.',
  discrepancy2023:'The bilingual Diploma figure for 2023 is 14/55 in the school summary, a different denominator from the 50 Diploma passes. Historical denominators are displayed as supplied and not reconciled by assumption.'
