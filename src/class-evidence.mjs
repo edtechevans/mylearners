@@ -205,7 +205,7 @@ export function renderClassEvidencePanel(students,{
  return '<section class="class-evidence-panel" aria-label="Select learning and wellbeing evidence for the class roster">'+
   '<div class="class-evidence-heading"><div><h3>Learning &amp; Wellbeing Evidence</h3>'+
   '<p>'+(rosterView==='everyday'?
-   'Five familiar measures are shown together below. Select another measure to focus on a dataset.':
+   'A small selection of everyday measures is shown together below. Select another measure to focus on a dataset.':
    'Choose an evidence measure for your class.')+
   '</p></div><span class="class-evidence-heading-tag" aria-hidden="true">CLASS VIEW</span></div>'+
   '<div class="class-roster-view-switch" role="group" aria-label="Class roster columns">'+
