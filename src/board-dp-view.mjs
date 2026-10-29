@@ -33,8 +33,8 @@ export function renderDPPointDetails(key){
  return '<div class="board-dp-point-title"><div><span class="eyebrow">IB DIPLOMA · '+safe(row.year)+'</span>'+
  '<h3>'+safe(label)+'</h3></div><strong>'+valueText(value,metric)+(metric==='average'?'<small> / 45</small>':'')+'</strong></div>'+
  (Number.isFinite(worldValue)?'<p class="board-dp-global-point">Global IB · '+valueText(worldValue,metric)+
-  (metric==='average'?' / 45':'')+' · AISG '+(metric==='average'?delta(value,worldValue):
-  percentage(value-worldValue)+' pts')+' versus global</p>':
+  (metric==='average'?' / 45 · separately published global mean; candidate populations may differ':
+  ' · AISG '+percentage(value-worldValue)+' percentage points versus global')+'</p>':
   '<p>Worldwide comparison unavailable for this earlier year or measure.</p>')+
  (row.candidates?'<p><strong>AISG candidate count:</strong> '+row.candidates+' Diploma/retake candidates · '+row.passes+' Diplomas awarded.</p>':'')+
  (Number.isFinite(row.meanGrade)?'<p><strong>AISG mean subject grade:</strong> '+row.meanGrade.toFixed(2)+' / 7 (Diploma awardees).</p>':'')+
