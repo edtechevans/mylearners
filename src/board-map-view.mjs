@@ -121,7 +121,7 @@ export function renderBoard(state){
  const explore=state.boardView==='explore',diploma=state.boardView==='dp';
  const header='<section class="board-view">'+
  '<div class="heading board-heading"><div><div class="eyebrow">AISG · BOARD · LEARNING EVIDENCE</div>'+
- '<h1>Learning at AISG</h1><p>Achievement, progress and graduation outcomes—clearly presented.</p></div>'+
+ '<h1>Learning at AISG</h1><p>MAP covers Grades 3–10. IB Diploma outcomes cover graduating cohorts. The two measures are separate.</p></div>'+
  '<div class="board-provenance-badge"><strong>AISG AGGREGATED DATA</strong><small>No student records</small></div></div>'+
  '<div class="board-nav-row"><nav class="board-nav-tabs" aria-label="Board dashboard sections">'+
  '<button type="button" data-board-view="overview" aria-current="'+(!explore&&!diploma?'page':'false')+'" class="'+(!explore&&!diploma?'active':'')+'">Overview</button>'+
