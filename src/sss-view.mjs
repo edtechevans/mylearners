@@ -1,9 +1,9 @@
 /** Read-only, completely fictional Student Support Services experience.
-import {experienceBand} from './faculty-bands.mjs?v=20261030wall2';
  * Shared student / academic / attendance / MAP / check-in models are passed in
  * by the main app; the only new records are synthetic membership and WIDA examples.
  * This file must never render genuine intervention notes, diagnoses or identifiers.
  */
+import {experienceBand} from './faculty-bands.mjs?v=20261030wall2';
 import {GRADES,attendanceSummary,gradeNumber} from './data.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
 import {sssCohort,sssRecordFor} from './sss-demo-data.mjs';
