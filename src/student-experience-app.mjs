@@ -256,14 +256,9 @@ function roster(ss,options={}){
    (latest?'<small>'+safe(mixSubject)+' · '+safe(latest.year)+' ('+safe(latest.grade)+')</small>':'<small>No issued report</small>')+'</span>':
    evidenceRosterColumn(student,{...evidenceCtx,subject,mode});
   const compared=compare==='none'?'':evidenceRosterColumn(student,{...evidenceCtx,subject,mode:compare});
-  const cellHelp=id=>['engagement','belonging'].includes(id)?
-   '<button type="button" class="experience-cell-help" data-experience-explain="'+id+
-   '" data-experience-scope="learner" data-experience-student="'+safe(student.id)+
-   '" data-experience-window="'+safe(state.classExperienceWindow)+
-   '" aria-label="Explain '+id+' for '+safe(student.name)+'">ⓘ</button>':'';
   return {student,attendance:fmt(attendance.rate)+'%',growth:growthText,
-   eng:engagement,bel:belonging,everydayCells:everydayColumns.map(column=>everydayCell(student,column)),academics:academics+cellHelp(mode),
-   compared:compared+cellHelp(compare),tags:demoTagsForStudent(student),
+   eng:engagement,bel:belonging,everydayCells:everydayColumns.map(column=>everydayCell(student,column)),academics,
+   compared,tags:demoTagsForStudent(student),
    sss:SSS_RECORDS.has(student.id)};
  });
  const heading=across?'Students matching “'+safe(state.query.trim())+'”':'My Students';
@@ -537,8 +532,8 @@ function leader(){
    const b=summarizeExperience(RECORDS,ss,'belonging',state.window);
    return '<tr><th scope="row">'+safe(name)+'</th><td>'+ss.length+
     '</td><td>'+(e.eligible?e.n+' / '+e.eligible:'Not collected')+
-    '</td><td>'+fmt(e.value)+' <button type="button" class="experience-cell-help" data-experience-explain="engagement" data-experience-scope="leader-row" data-experience-group="'+safe(name)+'" aria-label="Explain engagement for '+safe(name)+'">ⓘ</button></td>'+
-   '<td>'+fmt(b.value)+' <button type="button" class="experience-cell-help" data-experience-explain="belonging" data-experience-scope="leader-row" data-experience-group="'+safe(name)+'" aria-label="Explain belonging for '+safe(name)+'">ⓘ</button></td></tr>';
+    '</td><td tabindex="0" data-evidence-preview="leader-index" data-preview-measure="engagement" data-preview-group="'+safe(name)+'">'+fmt(e.value)+'</td>'+
+   '<td tabindex="0" data-evidence-preview="leader-index" data-preview-measure="belonging" data-preview-group="'+safe(name)+'">'+fmt(b.value)+'</td></tr>';
   }).join('')+'</tbody></table></div>';
  const trendFor=(ss,title)=>'<div class="leader-trend-group"><h4>'+safe(title)+'</h4>'+
   '<div class="leader-trend-grid">'+EXPERIENCE_WINDOWS.map(w=>{
