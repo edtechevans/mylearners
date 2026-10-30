@@ -162,3 +162,17 @@
   flex:1 1 auto;
  }
 }
+
+/* Faculty: compact student data-wall with four fixed experience bands. */
+#app .roster-daily[data-roster-layout="everyday"] table{border-collapse:separate;border-spacing:0 3px;min-width:930px}
+#app .roster-daily[data-roster-layout="everyday"] td{padding:6px 7px;border-bottom:1px solid #eaf0f3}
+#app .roster-daily[data-roster-layout="everyday"] thead th{font-size:11px;letter-spacing:.015em;color:#516676}
+#app .roster-daily[data-roster-layout="everyday"] .class-evidence-result.evidence-heat{display:flex;align-items:center;justify-content:center;min-height:42px;border-radius:6px;padding:5px 8px;text-align:center}
+#app .roster-daily[data-roster-layout="everyday"] .evidence-heat strong{font-size:14px;color:#fff}
+#app .roster-daily[data-roster-layout="everyday"] .evidence-heat small{display:none}
+#app .roster-daily .evidence-heat.band-low{background:#a6373f}
+#app .roster-daily .evidence-heat.band-mid-low{background:#e4a15f}
+#app .roster-daily .evidence-heat.band-mid-high{background:#a6bd88}
+#app .roster-daily .evidence-heat.band-high{background:#246b4f}
+#app .roster-daily .evidence-heat.band-mid-low strong,#app .roster-daily .evidence-heat.band-mid-high strong{color:#142b32}
+#app .roster-daily[data-roster-layout="everyday"] tbody tr:hover{background:#f4f8fb}
