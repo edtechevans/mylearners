@@ -16,9 +16,10 @@ import {experienceDialogContent} from './experience-explain-modal.mjs?v=20261030
 import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs';
 import {resolveEvidencePreview} from './evidence-preview-context.mjs';
 import {esc} from './v2-ui.mjs';
-import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic} from './academic-journey-data.mjs';
+import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,READING_LEVELS} from './academic-journey-data.mjs';
+import {quartileBand,formatIndex} from './faculty-bands.mjs?v=20261030wall1';
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261028titles1';
-import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261030repair1';
+import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261030wall1';
 import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261030repair1';
 import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile} from './maia-demo.mjs';
 import {renderStudentOverview} from './student-daily-overview.mjs?v=20261028titles1';
@@ -178,21 +179,20 @@ function roster(ss,options={}){
  const checkinLabel=EXPERIENCE_WINDOWS.find(w=>w.key===state.classExperienceWindow)?.label||'Fall 2026';
  const everydayHeading=column=>column.kind==='engagement'||column.kind==='belonging'?
   (column.kind==='engagement'?'Engagement':'Belonging')+' · '+checkinLabel:column.label;
+ const gradeCohort=DATA.students.filter(s=>s.grade===grade);
+ const gradeReferences=new Map();
+ const evidenceNumeric=(s,column)=>{
+  const result=evidenceValue(s,{...evidenceCtx,mode:column.kind,subject:column.subject||'Mathematics',mapSubject:'Mathematics'});
+  if(!result.available)return null;
+  if(column.kind==='fp'){const level=READING_LEVELS.indexOf(result.text);return level>=0?level:null}
+  const value=Number.parseFloat(result.text);
+  return Number.isFinite(value)?value:null;
+ };
  const relativeBand=(student,column)=>{
-  // Exploratory within-class distribution, never a normative achievement level.
-  const values=ss.map(s=>{
-   const result=evidenceValue(s,{...evidenceCtx,mode:column.kind,subject:column.subject||'Mathematics',mapSubject:'Mathematics'});
-   if(!result.available)return null;
-   const value=Number.parseFloat(result.text);
-   return Number.isFinite(value)?{id:s.id,value}:null;
-  }).filter(Boolean);
-  if(values.length<4)return '';
-  const target=values.find(v=>v.id===student.id);
-  if(!target)return '';
-  const below=values.filter(v=>v.value<target.value).length;
-  const equal=values.filter(v=>v.value===target.value).length;
-  const rank=(below+equal/2)/values.length;
-  return rank<=.25?'band-low':rank<=.5?'band-mid-low':rank<=.75?'band-mid-high':'band-high';
+  if(!['map','ixl','core','fp'].includes(column.kind))return null;
+  const key=column.kind+'|'+(column.subject||'');
+  if(!gradeReferences.has(key))gradeReferences.set(key,gradeCohort.map(s=>evidenceNumeric(s,column)).filter(Number.isFinite));
+  return quartileBand(evidenceNumeric(student,column),gradeReferences.get(key),20);
  };
  const everydayCell=(student,column)=>{
   if(column.kind==='attendance'){
@@ -207,17 +207,34 @@ function roster(ss,options={}){
   const context={...evidenceCtx,mode:column.kind,subject,
    mapSubject:column.kind==='map'?'Mathematics':state.classMapSubject,
    maiaDimension:column.kind==='flourishing'?'relationships':state.maiaDimension};
-  let content=evidenceRosterColumn(student,context);
-  if(column.kind==='map'||column.kind==='ixl'){
-   const band=relativeBand(student,column);
-   if(band)content=content.replace('class-evidence-result','class-evidence-result evidence-heat '+band);
-  }
-  const help=(column.kind==='engagement'||column.kind==='belonging')?
+  const result=evidenceValue(student,context);
+  const quartile=relativeBand(student,column);
+  const content=quartile?
+   '<span class="class-evidence-result evidence-heat '+quartile.band+'"><strong>'+quartile.label+
+   '</strong><small>'+safe(result.text)+'</small></span>':evidenceRosterColumn(student,context);
+  const isExperience=column.kind==='engagement'||column.kind==='belonging';
+  const windowIndex=EXPERIENCE_WINDOWS.findIndex(w=>w.key===state.classExperienceWindow);
+  const prior=windowIndex>0&&isExperience?
+   experienceFor(RECORDS,student.id,column.kind,EXPERIENCE_WINDOWS[windowIndex-1].key):null;
+  const current=isExperience?experienceFor(RECORDS,student.id,column.kind,state.classExperienceWindow):null;
+  const change=prior&&current?Math.round((current.value-prior.value)*100)/100:null;
+  const trend=change===null?'':change>0?'↑':change<0?'↓':'→';
+  const detail=quartile?
+   column.label+': '+quartile.label+' among '+quartile.count+
+   ' same-grade fictional demo results; actual result '+result.text+'. This is not an official norm.':
+   column.label+': '+result.text+'. '+result.detail+
+   (isExperience?'. Fixed four-band −2 to +2 index.':'');
+  const trendDetail=change===null?'':'. Change since '+EXPERIENCE_WINDOWS[windowIndex-1].label+': '+formatIndex(change);
+  const title=safe(detail+trendDetail+'. Select to open learner profile');
+  const button='<button type="button" class="evidence-cell-open" data-student="'+safe(student.id)+
+   '" title="'+title+'" aria-label="'+title+'">'+content+
+   (trend?'<span class="evidence-trend" aria-hidden="true">'+trend+'</span>':'')+'</button>';
+  const help=isExperience?
    '<button type="button" class="experience-cell-help" data-experience-explain="'+column.kind+
    '" data-experience-scope="learner" data-experience-student="'+safe(student.id)+
    '" data-experience-window="'+safe(state.classExperienceWindow)+
    '" aria-label="Explain '+column.label+' for '+safe(student.name)+'">ⓘ</button>':'';
-  return content+help;
+  return '<span class="evidence-cell-layout">'+button+help+'</span>';
  };
 
  const modeLabel=across?'Last issued report':evidenceLabel(mode,{...evidenceCtx,subject});
@@ -293,7 +310,7 @@ function roster(ss,options={}){
   (across?'<button type="button" class="roster-clear-search" data-clear-search>Clear search</button>':'')+'</div>'+
   (options.controls||'')+table+mobile+
   (rows.length?'':'<p class="empty-message">No matching students in your assigned classes. Try a different name.</p>')+
-  '<p class="tiny roster-caption">Engagement and Belonging colours show four fixed bands from −2 to +2. MAP growth and IXL colours, when shown, indicate relative positions within this demonstration class (at least four comparable results), not official norms or proficiency. Other measures retain their own scales. Latest issued reports and assessments are historical, not current-year grades. Each measure uses its own scale. Select a learner to view the date, programme and history.</p>'+
+  '<p class="tiny roster-caption">Engagement and Belonging colours show four fixed bands from −2 to +2. MAP, IXL, Core Phonics and F&amp;P quartiles (where available) compare only with the same-grade fictional demonstration cohort, with at least 20 comparable results; they are not official norms. Other measures retain their own scales. Hover or focus on any cell to inspect its source value and select it to open the learner profile. Latest issued reports and assessments are historical, not current-year grades. Each measure uses its own scale. Select a learner to view the date, programme and history.</p>'+
   '</section>';
 }
 

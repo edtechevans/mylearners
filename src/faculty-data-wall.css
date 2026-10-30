@@ -1,0 +1,28 @@
+/* The four muted AISG learner evidence colours. */
+#app .roster-daily[data-roster-layout="everyday"] .evidence-cell-layout{display:flex;align-items:center;gap:5px;min-width:100px}
+#app .roster-daily[data-roster-layout="everyday"] .evidence-cell-open{
+ display:block;position:relative;flex:1;min-width:0;padding:0;margin:0;border:0;
+ border-radius:7px;background:transparent;text-align:center;font:inherit;color:inherit;cursor:pointer
+}
+#app .roster-daily[data-roster-layout="everyday"] .evidence-cell-open:focus-visible{outline:3px solid #176397;outline-offset:3px}
+#app .roster-daily[data-roster-layout="everyday"] .evidence-cell-open:hover .class-evidence-result{box-shadow:0 0 0 2px #153f607a,0 3px 10px #153f6020}
+#app .roster-daily[data-roster-layout="everyday"] .evidence-cell-open .class-evidence-result{
+ display:flex;width:100%;align-items:center;justify-content:center;min-height:42px;
+ padding:5px 7px;border-radius:7px;box-sizing:border-box;transition:box-shadow .12s ease
+}
+#app .roster-daily[data-roster-layout="everyday"] .evidence-cell-open .class-evidence-result.evidence-heat{margin:0;border:0}
+#app .roster-daily[data-roster-layout="everyday"] .evidence-cell-open .class-evidence-result.is-unavailable{background:#edf1f3;color:#5f737d}
+#app .roster-daily[data-roster-layout="everyday"] .evidence-cell-open .class-evidence-result.is-unavailable strong{color:#5f737d}
+#app .roster-daily[data-roster-layout="everyday"] .evidence-heat strong{font-size:14px;font-weight:800;letter-spacing:.015em;font-variant-numeric:tabular-nums}
+#app .roster-daily[data-roster-layout="everyday"] .evidence-trend{position:absolute;right:5px;top:3px;color:#fff;font-size:10px;font-weight:700;text-shadow:0 1px 2px #1c333355}
+#app .roster-daily[data-roster-layout="everyday"] .experience-cell-help{flex:0 0 22px;width:22px;height:22px;margin:0;font-size:12px}
+#app .roster-daily[data-roster-layout="everyday"] th[title]{cursor:help}
+#app .experience-index-meter{position:relative!important;height:13px!important;background:linear-gradient(to right,#a6373f 0%,#a6373f 25%,#e4a15f 25%,#e4a15f 50%,#a6bd88 50%,#a6bd88 75%,#246b4f 75%,#246b4f 100%)!important;border-radius:6px;overflow:visible!important;margin:13px 3px 14px}
+#app .experience-index-meter i{position:absolute!important;width:3px!important;height:21px!important;top:-4px!important;transform:translateX(-50%);background:#152c38!important;border:1px solid white;border-radius:2px;box-shadow:0 0 0 1px #18374c}
+#app .roster-daily .evidence-heat.band-low{background:#a6373f}
+#app .roster-daily .evidence-heat.band-mid-low{background:#e4a15f}
+#app .roster-daily .evidence-heat.band-mid-high{background:#a6bd88}
+#app .roster-daily .evidence-heat.band-high{background:#246b4f}
+#app .roster-daily .evidence-heat.band-mid-low strong,#app .roster-daily .evidence-heat.band-mid-high strong{color:#142b32}
+@media(prefers-reduced-motion:reduce){#app .roster-daily .evidence-cell-open .class-evidence-result{transition:none}}
+@media print{#app .roster-daily .evidence-heat{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
