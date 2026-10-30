@@ -300,6 +300,15 @@ try{
    assert(headers.length===7,'Expected learner, five measures and support information');
    assert(await evaluate("document.querySelectorAll('.roster-daily tbody .class-evidence-result').length>=20"),
     'Everyday columns should show per-learner values without extra clicks');
+   const geometry=await evaluate("(function(){const row=document.querySelector('.roster-daily[data-roster-layout=everyday] tbody tr');if(!row)return [];return [...row.cells].slice(2,-1).map(td=>{const r=td.querySelector('.evidence-cell-open .class-evidence-result')?.getBoundingClientRect();return r?{width:r.width,height:r.height,top:r.top}:null}).filter(Boolean)})()");
+   assert(geometry.length===4,'Grade 7 should show four adjacent evidence tiles');
+   for(const key of ['width','height','top'])assert(
+    Math.max(...geometry.map(r=>r[key]))-Math.min(...geometry.map(r=>r[key]))<2,
+    'Everyday evidence tiles must align in '+key);
+   const cards=await evaluate("Array.from(document.querySelectorAll('.faculty-daily-summary>.quick-tile[class*=index-band-]')).map(e=>e.querySelector('strong')?.textContent||'')");
+   assert(cards.length===2,'Engagement and Belonging summaries need value-driven colour bands');
+   assert(cards.every(value=>/^-?\d+(?:\.\d+)?$/.test(value)),'Summary tiles should display only numbers');
+
    await click('[data-roster-view="focused"]');
    assert(await evaluate("document.querySelector('.roster-daily')?.dataset.rosterLayout==='focused'"),
     'Focused evidence mode should remain available');

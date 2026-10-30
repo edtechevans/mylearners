@@ -8,7 +8,7 @@ test('class explanation shows exact selected scope, responses, three questions a
    {question:'I am interested in my classes.',value:0.65,favorable:70,n:20},
    {question:'I feel excited to participate in my classes.',value:0.61,favorable:60,n:20}
   ]});
- for(const text of ['How Engagement Is Calculated','+0.62<small> · −2 to +2</small>','20 of 20 eligible learners',
+ for(const text of ['How Engagement Is Calculated','+0.62</div>','20 of 20 eligible learners',
   'Strongly disagree','Disagree','Agree','Strongly agree',
   'mean of their three question scores','group index is the mean','65% answered Agree or Strongly agree',
   'Grade 7 · A','Fall 2026','not</strong> the percentage','data-experience-close']){

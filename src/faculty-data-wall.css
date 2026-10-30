@@ -37,3 +37,70 @@
 #app .sss-experience-with-help.index-band-mid-high .sss-evidence-tile{border-left:4px solid #a6bd88}
 #app .sss-experience-with-help.index-band-high .sss-evidence-tile{border-left:4px solid #246b4f}
 #app .experience-index-meter.is-missing{background:#edf1f3!important}
+
+
+/* Metric-driven, accessible rose/amber/sage/green Faculty summary washes.
+   Only the Engagement and Belonging summaries change; other tiles keep AISG colours. */
+#app .faculty-daily-summary>.quick-tile.index-band-low{
+ --tile-tint:#f1c5c7;--tile-base:#fff2f2;--tile-edge:#e3babf;--tile-ring:#db9fa788;
+}
+#app .faculty-daily-summary>.quick-tile.index-band-mid-low{
+ --tile-tint:#f6ddb4;--tile-base:#fff8eb;--tile-edge:#e9d1a7;--tile-ring:#e4a15f88;
+}
+#app .faculty-daily-summary>.quick-tile.index-band-mid-high{
+ --tile-tint:#d4e5bd;--tile-base:#f6faef;--tile-edge:#d4e3be;--tile-ring:#a6bd8899;
+}
+#app .faculty-daily-summary>.quick-tile.index-band-high{
+ --tile-tint:#b8dfca;--tile-base:#edf8f1;--tile-edge:#c0dccb;--tile-ring:#246b4f55;
+}
+#app .faculty-daily-summary>.quick-tile[class*="index-band-"]{
+ background:radial-gradient(ellipse at 100% 0%,var(--tile-tint) 0%,transparent 76%),var(--tile-base);
+ border-color:var(--tile-edge);color:#173f5d;
+}
+#app .faculty-daily-summary>.quick-tile[class*="index-band-"] strong{
+ color:#123b59;font-variant-numeric:tabular-nums;
+}
+/* The everyday table uses one explicitly sized track for each academic/experience
+   cell, regardless of source, status, label or explanation icon. */
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall{
+ table-layout:fixed;width:100%;min-width:1420px;
+}
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall col.roster-col-learner{width:19%}
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall col.roster-col-attendance{width:12%}
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall col.roster-col-support{width:16%}
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall thead th{
+ box-sizing:border-box;vertical-align:middle;
+}
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall thead th:nth-child(n+3):not(:last-child){
+ min-width:0;text-align:center;overflow-wrap:break-word;
+}
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall thead th:nth-child(n+3):not(:last-child) .ux-sort-button{
+ display:flex;align-items:center;justify-content:center;text-align:center;
+ width:100%;white-space:normal;min-height:43px;
+}
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall tbody td:nth-child(n+3):not(:last-child){
+ position:relative;vertical-align:middle;padding:7px 9px;
+}
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .evidence-cell-layout{
+ display:grid;grid-template-columns:minmax(0,1fr) 24px;
+ align-items:center;column-gap:8px;width:100%;min-width:0;
+}
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .evidence-cell-open{
+ grid-column:1;width:100%;min-width:0;
+}
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .evidence-cell-layout>.experience-cell-help{
+ grid-column:2;justify-self:center;align-self:center;margin:0;
+}
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall tbody td:nth-child(n+3):not(:last-child)>.evidence-preview-trigger{
+ position:absolute;right:10px;top:50%;transform:translateY(-50%);
+ width:22px;height:22px;min-width:22px;min-height:22px;
+ margin:0;display:inline-flex;align-items:center;justify-content:center;
+}
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .evidence-cell-open .class-evidence-result{
+ width:100%;height:58px;min-height:58px;max-height:58px;
+ display:flex;justify-content:center;align-items:center;box-sizing:border-box;
+ padding:5px 7px;margin:0;text-align:center;white-space:nowrap;
+}
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .evidence-cell-open .evidence-heat strong{
+ font-variant-numeric:tabular-nums;font-size:14px;line-height:1.2;
+}

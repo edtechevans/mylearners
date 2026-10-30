@@ -9,18 +9,18 @@ import {seedSupportDemo,loadDraftEntries,storeDraftEntries,createDraftEntry} fro
 import {renderFacultySupportPanel,renderSSSWorkspace,renderSupportForm} from './support-workspace-ui.mjs';
 import {CASE_MANAGERS,REFERRAL_STAGES,STRATEGIES,lastReferralStage} from './sss-leadership-data.mjs';
 import {renderSSSLeadershipDashboard,renderSSSProfileNavigation,renderSSSSummary,renderSSSPlans} from './sss-leadership-ui.mjs';
-import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=20261030wall2';
+import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=20261030wall3';
 import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs?v=20261030repair1';
-import {experienceDialogContent} from './experience-explain-modal.mjs?v=20261030repair1';
-import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs';
-import {resolveEvidencePreview} from './evidence-preview-context.mjs';
+import {experienceDialogContent} from './experience-explain-modal.mjs?v=20261030wall3';
+import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261030wall3';
+import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261030wall3';
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,READING_LEVELS} from './academic-journey-data.mjs';
 import {quartileBand,formatIndex,experienceBand} from './faculty-bands.mjs?v=20261030wall2';
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261028titles1';
 import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261030wall1';
-import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261030repair1';
+import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261030wall3';
 import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile} from './maia-demo.mjs';
 import {renderStudentOverview} from './student-daily-overview.mjs?v=20261028titles1';
 import {renderBoard} from './board-map-view.mjs?v=20261029dpaxis1';
@@ -113,7 +113,7 @@ function metricCard(ss,id,window='F26',scope='main'){
  const source=EXPERIENCE_WINDOWS.find(x=>x.key===window)?.label||window;
  const band=experienceBand(sum.value);
  return '<article class="metric"><div class="metric-top"><span class="eyebrow">'+safe(EXPERIENCE_METRICS[id].label)+' index</span><span class="tiny">Fictional '+safe(source)+' check-in</span></div>'+
- '<div class="metric-value'+(band?' index-'+band:'')+'">'+formatIndex(sum.value)+(sum.value===null?'':'<span> / ±2</span>')+'</div>'+
+ '<div class="metric-value'+(band?' index-'+band:'')+'">'+(Number.isFinite(sum.value)?sum.value.toFixed(2):'—')+'</div>'+
  (sum.value===null?'<div class="meter experience-index-meter is-missing" aria-label="No check-in responses"></div>':
  '<div class="meter experience-index-meter" role="img" aria-label="Four-band index from minus two to plus two"><i style="left:'+((sum.value+2)/4*100).toFixed(1)+'%"></i></div>')+
  '<p>'+safe(EXPERIENCE_METRICS[id].description)+'</p><div class="metric-foot"><span>'+sum.n+' of '+sum.eligible+' responses</span><span>'+safe(comparison)+'</span></div>'+
@@ -152,7 +152,7 @@ function scoreExplanation(id,ss,student){
  return '<section class="explain" id="score-explanation"><div class="row-between"><div><span class="eyebrow">HOW THIS INDEX WORKS</span><h2>Understanding '+safe(EXPERIENCE_METRICS[id].label)+'</h2></div>'+btn('close','Close ×','quiet')+'</div>'+
  '<p class="score-source">Source: fictional '+safe(windowLabel)+' student check-in · '+summary.n+' of '+summary.eligible+' responses</p>'+
  '<p>Responses are scored: <strong>Strongly disagree −2</strong> · <strong>Disagree −1</strong> · <strong>Agree +1</strong> · <strong>Strongly agree +2</strong>. The index is their mean, rounded to two decimals. Zero is an average, not a selectable response. It is <strong>not</strong> a percentage of students agreeing, an achievement score, or a label.</p>'+
- '<div class="explain-number">'+(Number.isFinite(summary.value)?(summary.value>0?'+':'')+summary.value.toFixed(2):'—')+(summary.value===null?'':'<small> (−2 to +2)</small>')+'</div>'+
+ '<div class="explain-number">'+(Number.isFinite(summary.value)?summary.value.toFixed(2):'—')+'</div>'+
  '<div class="explain-items">'+qs.map(q=>'<div><span>'+safe(q.question)+'</span><strong>'+fmt(student?q.points:q.value)+(student?'':'')+(student||q.value!==null?' / +2':'')+'</strong>'+
  (student?'<small>My response: '+safe(q.label)+'</small>':'<small>'+fmt(q.favorable)+'% agree or strongly agree · '+q.n+' responses</small>')+'</div>').join('')+'</div>'+
  '<p class="tiny">This is an exploratory AISG-created indicator, not a validated measurement. Use the underlying responses and wider context to understand the experience, never to rank students.</p></section>';
@@ -274,7 +274,11 @@ function roster(ss,options={}){
  const heading=across?'Students matching “'+safe(state.query.trim())+'”':'My Students';
  const context=across?rows.length+' of '+ss.length+' assigned students across all classes':
   rows.length+' of '+ss.length+' learners in '+safe(activeClass()?.name||'this class');
- const table='<div class="tablewrap roster-desktop"><table><thead><tr><th>Learner</th>'+
+ const evidenceColWidth=(53/Math.max(1,everydayColumns.length-1)).toFixed(4);
+ const colgroup=everyday?'<colgroup><col class="roster-col-learner"><col class="roster-col-attendance">'+
+  everydayColumns.slice(1).map(()=>'<col class="roster-col-evidence" style="width:'+evidenceColWidth+'%">').join('')+
+  '<col class="roster-col-support"></colgroup>':'';
+ const table='<div class="tablewrap roster-desktop"><table'+(everyday?' class="faculty-data-wall"':'')+'>'+colgroup+'<thead><tr><th>Learner</th>'+
   (across?'<th>Class</th>':'')+
   (everyday?everydayColumns.map(column=>'<th>'+safe(everydayHeading(column))+'</th>').join(''):
    '<th>Attendance</th><th>'+safe(modeLabel)+'</th>'+(compare==='none'?'':'<th>'+safe(compareLabel)+'</th>'))+
@@ -383,8 +387,8 @@ function learnerProfile(s,studentRole=false){
    renderFacultySupportPanel(s,supportEntries(),SSS_RECORDS.get(s.id))+guidance;
 }
 
-function quickStat(label,value,detail,action=''){
- return (action?'<button type="button" data-action="'+safe(action)+'" class="quick-tile quick-score">':'<div class="quick-tile">')+
+function quickStat(label,value,detail,action='',band=''){
+ return (action?'<button type="button" data-action="'+safe(action)+'" class="quick-tile quick-score'+(band?' '+safe(band):'')+'">':'<div class="quick-tile'+(band?' '+safe(band):'')+'">')+
  '<span>'+safe(label)+'</span><strong>'+fmt(value)+'</strong><small>'+detail+'</small>'+(action?'</button>':'</div>');
 }
 function faculty(){
@@ -398,9 +402,10 @@ function faculty(){
  const gradeHasCheckins=eligible(ss).length>0;
  const score=id=>{
   const sum=summarizeExperience(RECORDS,ss,id);
-  return quickStat(EXPERIENCE_METRICS[id].label,fmt(sum.value)+(sum.value===null?'':' (−2 to +2)'),
+  const band=experienceBand(sum.value);
+  return quickStat(EXPERIENCE_METRICS[id].label,Number.isFinite(sum.value)?sum.value.toFixed(2):'—',
    sum.value===null?'No check-in':sum.n+'/'+sum.eligible+' responses · How is this calculated?',
-   sum.value===null?'':'explain:faculty:'+id);
+   sum.value===null?'':'explain:faculty:'+id,band?'index-'+band:'');
  };
  const toolbar='<div class="toolbar faculty-toolbar faculty-daily-toolbar">'+
   '<label>My class '+selector('class',cs.map(c=>[c.id,c.name]),state.classId)+'</label>'+
@@ -467,9 +472,9 @@ function leader(){
    const change=experienceChange(RECORDS,ss,id,state.window);
    const comparison=change.delta===null?'No earlier comparable check-in':
     (change.delta>0?'+':'')+change.delta+' index points vs '+change.previousLabel;
-   return '<article class="leader-experience-card"><span class="leader-measure-label">'+
+   return '<article class="leader-experience-card'+(experienceBand(summary.value)?' index-'+experienceBand(summary.value):'')+'"><span class="leader-measure-label">'+
     safe(EXPERIENCE_METRICS[id].label)+'</span><div class="leader-experience-value">'+
-    fmt(summary.value)+(summary.value===null?'':'<small> / +2</small>')+'</div>'+
+    (Number.isFinite(summary.value)?summary.value.toFixed(2):'—')+'</div>'+
     '<p class="leader-experience-change">'+safe(comparison)+'</p>'+
     '<p class="leader-experience-count">'+summary.n+' of '+summary.eligible+
     ' eligible students responded</p>'+

@@ -6,7 +6,7 @@ import {latestMapGrowth} from './map-growth.mjs';
 import {academicFor,latestAcademic} from './academic-journey-data.mjs';
 import {experienceFor} from './experience-data.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
-import {PREVIEW_GUIDE,makePreview} from './evidence-previews.mjs';
+import {PREVIEW_GUIDE,makePreview} from './evidence-previews.mjs?v=20261030wall3';
 const tidy=v=>String(v??'').replace(/\s+/g,' ').trim();
 const value=v=>v===undefined||v===null||v===''?'Not available':String(v);
 const fmtDate=(v)=>/^\d{4}-\d{2}-\d{2}$/.test(String(v||''))?String(v):'See assessment record';

@@ -155,7 +155,7 @@ export function renderClassEvidencePanel(students,{
   if(pending.has(mode))return '<strong>Not connected</strong><span>No student results available in this demonstration</span>';
   if(mode==='engagement'||mode==='belonging'){
    const result=summarizeExperience(experience,students,mode,selectedWindow);
-   return '<strong>'+(result.value===null?'—':result.value.toFixed(2)+' (−2 to +2)')+'</strong>'+
+   return '<strong>'+(result.value===null?'—':result.value.toFixed(2))+'</strong>'+
     '<span>'+result.n+' of '+result.eligible+' check-ins · '+esc(recentWindow)+'</span>';
   }
   return '<strong>'+coverage+' of '+eligible+'</strong><span>learners with evidence'+

@@ -34,7 +34,7 @@ export function experienceDialogContent({metric='engagement',scopeLabel='Selecte
   '<button type="button" class="experience-modal-close" data-experience-close aria-label="Close explanation">×</button></div>'+
   '<div class="experience-modal-content '+color+'">'+
   '<div class="experience-score-band"><div><span class="experience-score-label">'+label+' index</span>'+
-  '<div class="experience-score">'+fmt(summary.value)+'<small> · −2 to +2</small></div></div>'+
+  '<div class="experience-score">'+fmt(summary.value)+'</div></div>'+
   '<div class="experience-score-context"><strong>'+esc(scopeLabel)+'</strong>'+
   '<span>'+esc(windowLabel)+'</span><span>'+coverage+'</span></div></div>'+
   '<h3>How the number is calculated</h3>'+
