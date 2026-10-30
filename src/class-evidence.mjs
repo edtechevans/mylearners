@@ -71,7 +71,7 @@ export function evidenceValue(student,{mode='report',academic,map,experience,mai
  }
  if(mode==='engagement'||mode==='belonging'){
   const entry=experienceEligible(student)?experienceFor(experience,student.id,mode,window):null;
-  return entry?{text:String(entry.value)+' / 100',detail:(EXPERIENCE_WINDOWS.find(x=>x.key===window)?.label||window)+' · check-in index',available:true}:
+  return entry?{text:String(entry.value.toFixed(2)+' (−2 to +2)',detail:(EXPERIENCE_WINDOWS.find(x=>x.key===window)?.label||window)+' · check-in index',available:true}:
    {text:'—',detail:'No check-in',available:false};
  }
  if(!academicModesFor(student.grade).includes(mode))
@@ -84,7 +84,9 @@ export function evidenceValue(student,{mode='report',academic,map,experience,mai
 }
 export function evidenceRosterColumn(student,ctx){
  const result=evidenceValue(student,ctx);
- return '<span class="class-evidence-result'+(result.available?'':' is-unavailable')+'">'+
+ const v=(ctx.mode==='engagement'||ctx.mode==='belonging')&&result.available?experienceFor(ctx.experience,student.id,ctx.mode,ctx.window||'F26')?.value:null;
+ const band=Number.isFinite(v)?(v< -1?'band-low':v<0?'band-mid-low':v<1?'band-mid-high':'band-high'):'';
+ return '<span class="class-evidence-result'+(result.available?'':' is-unavailable')+(band?' evidence-heat '+band:'')+'">'+
   '<strong>'+esc(result.text)+'</strong><small>'+esc(result.detail)+'</small></span>';
 }
 function reportBreakdown(students,academic,subject){
@@ -113,8 +115,8 @@ const modeHelp={
  ixl:'Illustrative IXL Mathematics diagnostic levels, not SmartScores, percentages or report-card grades.',
  core:'Fictional 50-item classroom decoding checks; not an official CORE Phonics Survey total or benchmark.',
  fp:'Fictional Fountas & Pinnell text levels describe text complexity, not a percentage, grade or a measure of the whole reader.',
- engagement:'Fictional AISG-style check-in index out of 100, not a percentage. Maia uses a separate fictional PERMA example and different scale.',
- belonging:'Fictional AISG-style check-in index out of 100, not a percentage. Maia uses a separate fictional PERMA example and different scale.',
+ engagement:'Fictional AISG-style check-in index from −2 to +2, not a percentage. Maia uses a separate fictional PERMA example and different scale.',
+ belonging:'Fictional AISG-style check-in index from −2 to +2, not a percentage. Maia uses a separate fictional PERMA example and different scale.',
  flourishing:'Synthetic MaiaLearning-style PERMA dimensions. The 0–10 display scale is illustrative, NOT confirmed Maia scoring. This is not a real Maia export, benchmark, diagnosis or combined wellbeing score.'
 };
 export function renderClassEvidencePanel(students,{
@@ -153,7 +155,7 @@ export function renderClassEvidencePanel(students,{
   if(pending.has(mode))return '<strong>Not connected</strong><span>No student results available in this demonstration</span>';
   if(mode==='engagement'||mode==='belonging'){
    const result=summarizeExperience(experience,students,mode,selectedWindow);
-   return '<strong>'+(result.value===null?'—':result.value+' / 100')+'</strong>'+
+   return '<strong>'+(result.value===null?'—':result.value.toFixed(2)+' (−2 to +2)')+'</strong>'+
     '<span>'+result.n+' of '+result.eligible+' check-ins · '+esc(recentWindow)+'</span>';
   }
   return '<strong>'+coverage+' of '+eligible+'</strong><span>learners with evidence'+
