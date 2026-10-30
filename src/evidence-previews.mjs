@@ -36,19 +36,6 @@ export function previewMarkup(p){
  '</div>';
 }
 export function hasPreviewMarker(node){return !!node?.closest?.('[data-evidence-preview]')}
-function iconButton(kind,id,title){
- const btn=document.createElement('button');
- btn.type='button';btn.className='evidence-preview-trigger';btn.dataset.evidencePreview=kind;
- if(id)btn.dataset.previewStudent=id;
- btn.setAttribute('aria-label','Preview '+title);
- btn.setAttribute('title','Preview information');
- btn.textContent='ⓘ';
- return btn;
-}
-function addInfoAfter(target,kind,id,label){
- if(!target||target.parentElement?.querySelector?.(':scope > .evidence-preview-trigger'))return;
- target.insertAdjacentElement?.('afterend',iconButton(kind,id,label));
-}
 function mark(node,kind){
  if(!node||node.dataset?.evidencePreview)return;
  node.dataset.evidencePreview=kind;
@@ -80,28 +67,45 @@ export function decorateEvidencePreviews(root,role){
  if(!root||typeof root.querySelectorAll!=='function')return;
  const q=(sel)=>[...root.querySelectorAll(sel)];
  if(role==='faculty'){
-  for(const btn of q('.roster-desktop tbody .student-link[data-student]'))addInfoAfter(btn,'student',btn.dataset.student,clean(btn.textContent));
+  // Values and learner links provide previews directly; no extra info buttons.
+  for(const btn of q('.roster-desktop tbody .student-link[data-student]')){
+   mark(btn,'student');
+   btn.dataset.previewStudent=btn.dataset.student;
+  }
   for(const tr of q('.roster-desktop tbody tr')){
    const id=tr.querySelector('.student-link[data-student]')?.dataset.student;
    if(!id)continue;
    const heads=[...tr.closest('table').querySelectorAll('thead th')].map(x=>clean(x.textContent).toLowerCase());
    [...tr.cells].forEach((cell,i)=>{
     if(i===0)return;
-    const h=heads[i]||'';
-    if(h.includes('attendance')&&!cell.querySelector('.evidence-preview-trigger'))cell.appendChild(iconButton('attendance',id,'attendance'));
-    if(h.includes('map math growth')&&!cell.querySelector('.evidence-preview-trigger'))cell.appendChild(iconButton('map',id,'MAP growth'));
-    if((h.includes('report')||h.includes('map')||h.includes('ixl')||h.includes('phonics')||h.includes('f&p'))&&!cell.querySelector('.experience-cell-help')){
-     const kind=guideKey(h);
-     const icon=iconButton('academic',id,h);
-     icon.dataset.previewMeasure=kind;
-     cell.appendChild(icon);
-    }
-    if(h==='support information'){
+    const heading=heads[i]||'';
+    if(heading==='support information'){
      cell.querySelectorAll('.pill').forEach(pill=>{
-      pill.dataset.evidencePreview='tag';pill.dataset.previewTag=clean(pill.textContent);
+      pill.dataset.evidencePreview='tag';
+      pill.dataset.previewTag=clean(pill.textContent);
       pill.setAttribute('tabindex','0');
      });
+     return;
     }
+    const kind=guideKey(heading);
+    const isExperience=kind==='engagement'||kind==='belonging';
+    const isAttendance=kind==='attendance';
+    const isAcademic=/map|ixl|report|phonics|f&p|mathematics|literacy|inquiry|reading|flourishing/i.test(heading);
+    if(!isExperience&&!isAttendance&&!isAcademic)return;
+    const target=cell.querySelector('.evidence-cell-open')||
+     cell.querySelector('.class-evidence-result')||cell.querySelector('.roster-mixed-academic')||cell;
+    mark(target,isExperience?'experience-cell':isAttendance?'attendance':kind==='map'?'map':'academic');
+    target.dataset.previewStudent=id;
+    target.dataset.previewMeasure=kind;
+    if(isExperience){
+     target.dataset.previewWindow=heading.includes('spring 2026')?'S26':
+      heading.includes('fall 2025')?'F25':'F26';
+    }else if(kind==='map'){
+     target.dataset.previewSubject=heading.includes('reading')?'Reading':
+      heading.includes('language usage')?'Language Usage':'Mathematics';
+    }
+    const band=clean(cell.querySelector('.evidence-heat strong')?.textContent);
+    if(/^Q[1-4]$/.test(band))target.dataset.previewBand=band;
    });
   }
   for(const button of q('.quick-summary .quick-score'))mark(button,'method');
@@ -143,7 +147,7 @@ export function decorateEvidencePreviews(root,role){
  for(const e of q('.experience-detail-link,[data-experience-explain]'))mark(e,'method');
 }
 /** Desktop and keyboard preview controller. Detailed popups are separate click actions.
- * On touch, tapping an info icon pins the preview; the main row's original navigation remains.
+ * On touch, tapping a noninteractive value pins the preview; learner buttons still navigate.
  */
 export function installEvidencePreviewController(root,resolve){
  if(!root?.addEventListener||typeof resolve!=='function')return {dismiss(){}};
@@ -212,11 +216,10 @@ export function installEvidencePreviewController(root,resolve){
  root.addEventListener('click',e=>{
   const trigger=parent(e);
   if(!trigger)return;
-  const infoIcon=trigger.matches?.('.evidence-preview-trigger');
   const coarsePointer=!!globalThis.matchMedia?.('(pointer: coarse)')?.matches;
   // Keep real navigation and form controls working normally on all devices.
-  if(!infoIcon&&(!coarsePointer||trigger.matches?.('button,a,summary')||
-   e.target.closest?.('button,a,summary,input,select,textarea')))return;
+  if(!coarsePointer||trigger.matches?.('button,a,summary')||
+   e.target.closest?.('button,a,summary,input,select,textarea'))return;
   e.preventDefault();e.stopPropagation();
   if(anchor===trigger&&pinned){dismiss();return}
   pinned=true;display(trigger);
