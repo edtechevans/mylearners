@@ -178,6 +178,22 @@ function roster(ss,options={}){
  const checkinLabel=EXPERIENCE_WINDOWS.find(w=>w.key===state.classExperienceWindow)?.label||'Fall 2026';
  const everydayHeading=column=>column.kind==='engagement'||column.kind==='belonging'?
   (column.kind==='engagement'?'Engagement':'Belonging')+' · '+checkinLabel:column.label;
+ const relativeBand=(student,column)=>{
+  // Exploratory within-class distribution, never a normative achievement level.
+  const values=ss.map(s=>{
+   const result=evidenceValue(s,{...evidenceCtx,mode:column.kind,subject:column.subject||'Mathematics',mapSubject:'Mathematics'});
+   if(!result.available)return null;
+   const value=Number.parseFloat(result.text);
+   return Number.isFinite(value)?{id:s.id,value}:null;
+  }).filter(Boolean);
+  if(values.length<4)return '';
+  const target=values.find(v=>v.id===student.id);
+  if(!target)return '';
+  const below=values.filter(v=>v.value<target.value).length;
+  const equal=values.filter(v=>v.value===target.value).length;
+  const rank=(below+equal/2)/values.length;
+  return rank<=.25?'band-low':rank<=.5?'band-mid-low':rank<=.75?'band-mid-high':'band-high';
+ };
  const everydayCell=(student,column)=>{
   if(column.kind==='attendance'){
    const attendance=attendanceSummary(DATA.attendance[student.id]||[]);
@@ -191,7 +207,11 @@ function roster(ss,options={}){
   const context={...evidenceCtx,mode:column.kind,subject,
    mapSubject:column.kind==='map'?'Mathematics':state.classMapSubject,
    maiaDimension:column.kind==='flourishing'?'relationships':state.maiaDimension};
-  const content=evidenceRosterColumn(student,context);
+  let content=evidenceRosterColumn(student,context);
+  if(column.kind==='map'||column.kind==='ixl'){
+   const band=relativeBand(student,column);
+   if(band)content=content.replace('class-evidence-result','class-evidence-result evidence-heat '+band);
+  }
   const help=(column.kind==='engagement'||column.kind==='belonging')?
    '<button type="button" class="experience-cell-help" data-experience-explain="'+column.kind+
    '" data-experience-scope="learner" data-experience-student="'+safe(student.id)+
@@ -273,7 +293,7 @@ function roster(ss,options={}){
   (across?'<button type="button" class="roster-clear-search" data-clear-search>Clear search</button>':'')+'</div>'+
   (options.controls||'')+table+mobile+
   (rows.length?'':'<p class="empty-message">No matching students in your assigned classes. Try a different name.</p>')+
-  '<p class="tiny roster-caption">Colour on Engagement and Belonging shows four fixed bands from −2 to +2; it is not a class ranking. Other measures keep their original scales. Latest issued reports and assessments are historical, not current-year grades. Each measure uses its own scale. Select a learner to view the date, programme and history.</p>'+
+  '<p class="tiny roster-caption">Engagement and Belonging colours show four fixed bands from −2 to +2. MAP growth and IXL colours, when shown, indicate relative positions within this demonstration class (at least four comparable results), not official norms or proficiency. Other measures retain their own scales. Latest issued reports and assessments are historical, not current-year grades. Each measure uses its own scale. Select a learner to view the date, programme and history.</p>'+
   '</section>';
 }
 
