@@ -23,7 +23,7 @@ export function everydayEvidenceForGrade(grade){
  if(n<0)return [COLUMN.attendance,COLUMN.earlyMath,COLUMN.earlyLiteracy,COLUMN.earlyInquiry];
  if(n===0)return [COLUMN.attendance,COLUMN.math,COLUMN.core,COLUMN.fp];
  if(n<=2)return [COLUMN.attendance,COLUMN.math,COLUMN.core,COLUMN.fp,COLUMN.ixl];
- if(n<=10)return [COLUMN.attendance,COLUMN.math,COLUMN.map,COLUMN.engagement,COLUMN.belonging];
+ if(n<=10)return [COLUMN.attendance,COLUMN.map,COLUMN.ixl,COLUMN.engagement,COLUMN.belonging];
  return [COLUMN.attendance,COLUMN.math,COLUMN.engagement,COLUMN.belonging,COLUMN.maia];
 }
 export const EVERYDAY_VIEW='everyday';
