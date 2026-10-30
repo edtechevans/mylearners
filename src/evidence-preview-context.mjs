@@ -119,6 +119,17 @@ export function resolveEvidencePreview(trigger,ctx){
   const student=person||learner(trigger.dataset.sssStudent,ctx);
   return student?studentPreview(student,ctx,kind==='sss-person'):null;
  }
+ if(kind==='leader-index'){
+  const metric=trigger.dataset.previewMeasure;
+  if(ctx.role!=='leader'||!['engagement','belonging'].includes(metric))return null;
+  const scope=trigger.dataset.previewGroup||'Selected group';
+  const label=PREVIEW_GUIDE[metric].label;
+  const shown=tidy(trigger.textContent)||'Not available';
+  return makePreview({title:label+' · '+scope,subtitle:'Current leader selection · fictional data',
+   rows:[['Displayed index',shown]],
+   note:PREVIEW_GUIDE[metric].description+' Select a class or use the detailed explanation for underlying question-level evidence.',
+   kind:'experience'});
+ }
  if(kind==='experience-cell'){
   const metric=trigger.dataset.previewMeasure;
   if(!person||!ctx.experience||!['engagement','belonging'].includes(metric))return null;

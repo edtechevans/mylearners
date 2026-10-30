@@ -104,3 +104,22 @@
 #app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .evidence-cell-open .evidence-heat strong{
  font-variant-numeric:tabular-nums;font-size:14px;line-height:1.2;
 }
+
+
+/* Direct value hover across all dashboard roles; reclaim space previously
+   reserved for a separate information icon in each evidence cell. */
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall{min-width:1200px}
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .evidence-cell-layout{
+ display:block;width:100%;min-width:0;
+}
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .evidence-cell-open{
+ display:block;width:100%;min-width:0;
+}
+#app .roster-daily [data-evidence-preview]:focus-visible,
+#app .leader-pattern-table [data-evidence-preview]:focus-visible{
+ outline:2px solid #286e94;outline-offset:3px;
+}
+#app .roster-daily .class-evidence-result[data-evidence-preview],
+#app .roster-daily td[data-evidence-preview],
+#app .leader-pattern-table td[data-evidence-preview]{cursor:help}
+#app .roster-daily .evidence-cell-open[data-evidence-preview]{cursor:pointer}

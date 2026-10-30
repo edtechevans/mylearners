@@ -204,7 +204,7 @@ export function renderSSSStudentProfile({
       value===undefined?'—':value.toFixed(2),'Fictional Fall 2026 student check-in')+
      '<button type="button" class="experience-detail-link" data-experience-explain="'+id+
      '" data-experience-scope="sss" data-experience-student="'+esc(student.id)+
-     '" data-experience-window="F26">ⓘ How is this calculated?</button></div>';
+     '" data-experience-window="F26">How is this calculated?</button></div>';
    }).join('')+'</div></section>':'';
  const learningTags=demoTagsForStudent(student).filter(tag=>!tag.restricted);
  const restricted=demoTagsForStudent(student).filter(tag=>tag.restricted);
