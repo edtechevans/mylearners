@@ -150,7 +150,7 @@ function scoreExplanation(id,ss,student){
  '<p class="score-source">Source: fictional '+safe(windowLabel)+' student check-in · '+summary.n+' of '+summary.eligible+' responses</p>'+
  '<p>Three responses are converted into points: <strong>Strongly disagree 0</strong> · <strong>Disagree 33</strong> · <strong>Agree 67</strong> · <strong>Strongly agree 100</strong>. The index is their average, rounded to a whole number. It is <strong>not</strong> a percentage of students agreeing, an achievement score, or a label.</p>'+
  '<div class="explain-number">'+fmt(summary.value)+(summary.value===null?'':'<small>/100</small>')+'</div>'+
- '<div class="explain-items">'+qs.map(q=>'<div><span>'+safe(q.question)+'</span><strong>'+fmt(student?q.points:q.value)+(student?'':'')+(student||q.value!==null?'/100':'')+'</strong>'+
+ '<div class="explain-items">'+qs.map(q=>'<div><span>'+safe(q.question)+'</span><strong>'+fmt(student?q.points:q.value)+(student?'':'')+(student||q.value!==null?' / +2':'')+'</strong>'+
  (student?'<small>My response: '+safe(q.label)+'</small>':'<small>'+fmt(q.favorable)+'% agree or strongly agree · '+q.n+' responses</small>')+'</div>').join('')+'</div>'+
  '<p class="tiny">This is an exploratory AISG-created indicator, not a validated measurement. Use the underlying responses and wider context to understand the experience, never to rank students.</p></section>';
 }
@@ -273,7 +273,7 @@ function roster(ss,options={}){
   (across?'<button type="button" class="roster-clear-search" data-clear-search>Clear search</button>':'')+'</div>'+
   (options.controls||'')+table+mobile+
   (rows.length?'':'<p class="empty-message">No matching students in your assigned classes. Try a different name.</p>')+
-  '<p class="tiny roster-caption">Latest issued reports and assessments are historical, not current-year grades. Each measure uses its own scale. Select a learner to view the date, programme and history.</p>'+
+  '<p class="tiny roster-caption">Colour on Engagement and Belonging shows four fixed bands from −2 to +2; it is not a class ranking. Other measures keep their original scales. Latest issued reports and assessments are historical, not current-year grades. Each measure uses its own scale. Select a learner to view the date, programme and history.</p>'+
   '</section>';
 }
 
@@ -359,7 +359,7 @@ function faculty(){
  const gradeHasCheckins=eligible(ss).length>0;
  const score=id=>{
   const sum=summarizeExperience(RECORDS,ss,id);
-  return quickStat(EXPERIENCE_METRICS[id].label,fmt(sum.value)+(sum.value===null?'':' / 100'),
+  return quickStat(EXPERIENCE_METRICS[id].label,fmt(sum.value)+(sum.value===null?'':' (−2 to +2)'),
    sum.value===null?'No check-in':sum.n+'/'+sum.eligible+' responses · How is this calculated?',
    sum.value===null?'':'explain:faculty:'+id);
  };
@@ -430,7 +430,7 @@ function leader(){
     (change.delta>0?'+':'')+change.delta+' index points vs '+change.previousLabel;
    return '<article class="leader-experience-card"><span class="leader-measure-label">'+
     safe(EXPERIENCE_METRICS[id].label)+'</span><div class="leader-experience-value">'+
-    fmt(summary.value)+(summary.value===null?'':'<small> / 100</small>')+'</div>'+
+    fmt(summary.value)+(summary.value===null?'':'<small> / +2</small>')+'</div>'+
     '<p class="leader-experience-change">'+safe(comparison)+'</p>'+
     '<p class="leader-experience-count">'+summary.n+' of '+summary.eligible+
     ' eligible students responded</p>'+
@@ -495,7 +495,7 @@ function leader(){
  const detailTable='<div class="tablewrap leader-pattern-table"><table><thead><tr>'+
   '<th scope="col">Group</th><th scope="col">Learners</th>'+
   '<th scope="col">Responses (G3+)</th>'+
-  '<th scope="col">Engagement / 100</th><th scope="col">Belonging / 100</th>'+
+  '<th scope="col">Engagement index</th><th scope="col">Belonging index</th>'+
   '</tr></thead><tbody>'+rows.map(([name,ss])=>{
    const e=summarizeExperience(RECORDS,ss,'engagement',state.window);
    const b=summarizeExperience(RECORDS,ss,'belonging',state.window);
