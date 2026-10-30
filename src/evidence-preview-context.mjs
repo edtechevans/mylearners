@@ -4,7 +4,7 @@
 import {attendanceSummary,gradeNumber} from './data.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
 import {academicFor,latestAcademic} from './academic-journey-data.mjs';
-import {experienceFor} from './experience-data.mjs';
+import {experienceFor,EXPERIENCE_WINDOWS} from './experience-data.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
 import {PREVIEW_GUIDE,makePreview} from './evidence-previews.mjs?v=20261030wall3';
 const tidy=v=>String(v??'').replace(/\s+/g,' ').trim();
@@ -119,6 +119,22 @@ export function resolveEvidencePreview(trigger,ctx){
   const student=person||learner(trigger.dataset.sssStudent,ctx);
   return student?studentPreview(student,ctx,kind==='sss-person'):null;
  }
+ if(kind==='experience-cell'){
+  const metric=trigger.dataset.previewMeasure;
+  if(!person||!ctx.experience||!['engagement','belonging'].includes(metric))return null;
+  const window=trigger.dataset.previewWindow||ctx.state.classExperienceWindow||'F26';
+  const entry=experienceFor(ctx.experience,person.id,metric,window);
+  const source=EXPERIENCE_WINDOWS.find(w=>w.key===window)?.label||window;
+  const fmt=v=>Number.isFinite(v)?(v>0?'+':'')+v.toFixed(2):'Not available';
+  return makePreview({
+   title:PREVIEW_GUIDE[metric].label+' · '+person.name,
+   subtitle:source+' · fictional student check-in',
+   rows:entry?[['Index',fmt(entry.value)],...entry.items.map(item=>[item.question,item.label])]:
+    [['Index','No response available']],
+   note:PREVIEW_GUIDE[metric].description+' Select the value to open the learner profile for more context.',
+   kind:'experience'
+  });
+ }
  if(kind==='academic'||kind==='attendance'||kind==='map'){
   const name=person?.name||'Learner';
   const academic=academicFor(ctx.academic,person.id);
@@ -130,18 +146,25 @@ export function resolveEvidencePreview(trigger,ctx){
     note:PREVIEW_GUIDE.attendance.description,kind:'academic'});
   }
   if(kind==='map'){
-   const m=latestMapGrowth(ctx.data.map[person.id]||[]);
-   return makePreview({title:'MAP Mathematics · '+name,subtitle:'Fictional comparable testing windows',
-    rows:[['Observed change',m.status==='comparable'?(m.actual>=0?'+':'')+m.actual+' RIT':'Not comparable']],
-    note:PREVIEW_GUIDE.map.description,kind:'academic'});
+   const subject=trigger.dataset.previewSubject||'Mathematics';
+   const m=latestMapGrowth(ctx.data.map[person.id]||[],subject);
+   const band=trigger.dataset.previewBand;
+   return makePreview({title:'MAP '+subject+' · '+name,subtitle:'Fictional comparable testing windows',
+    rows:[['Observed change',m.status==='comparable'?(m.actual>=0?'+':'')+m.actual+' RIT':'Not comparable'],
+     ...(band?[['Same-grade demo band',band]]:[])],
+    note:PREVIEW_GUIDE.map.description+(band?' The Q band is a same-grade demonstration comparison, not an official norm.':''),kind:'academic'});
   }
   const mode=trigger.dataset.previewMeasure||'report';
   const subject=ctx.state.academicSubject||'Mathematics';
   const latest=latestAcademic(academic,mode,subject);
+  const band=trigger.dataset.previewBand;
   return makePreview({title:PREVIEW_GUIDE[mode]?.label||'Academic result',subtitle:name,
-   rows:[['Displayed result',value(latest?.value)],['Subject',mode==='report'?subject:PREVIEW_GUIDE[mode]?.label||'Assessment'],
+   rows:[['Displayed result',value(latest?.value)],
+     ...(band?[['Same-grade demo band',band]]:[]),
+     ['Subject',mode==='report'?subject:PREVIEW_GUIDE[mode]?.label||'Assessment'],
      ['Assessment context',latest?.label||'No eligible result']],
-   note:(PREVIEW_GUIDE[mode]||PREVIEW_GUIDE.report).description,kind:'academic'});
+   note:(PREVIEW_GUIDE[mode]||PREVIEW_GUIDE.report).description+
+    (band?' The Q band is a relative same-grade fictional comparison, not a proficiency rating.':''),kind:'academic'});
  }
  if(kind==='tag'){
   const tag=tidy(trigger.dataset.previewTag||trigger.textContent);
