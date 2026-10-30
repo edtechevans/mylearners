@@ -115,7 +115,7 @@ function metricCard(ss,id,window='F26',scope='main'){
  return '<article class="metric"><div class="metric-top"><span class="eyebrow">'+safe(EXPERIENCE_METRICS[id].label)+' index</span><span class="tiny">Fictional '+safe(source)+' check-in</span></div>'+
  '<div class="metric-value'+(band?' index-'+band:'')+'">'+formatIndex(sum.value)+(sum.value===null?'':'<span> / ±2</span>')+'</div>'+
  (sum.value===null?'<div class="meter experience-index-meter is-missing" aria-label="No check-in responses"></div>':
- '<div class="meter experience-index-meter" role="img" aria-label="Four-band index from minus two to plus two"><i style="left:'+((sum.value+2)/4*100).toFixed(1))+'%"></i></div>')+
+ '<div class="meter experience-index-meter" role="img" aria-label="Four-band index from minus two to plus two"><i style="left:'+((sum.value+2)/4*100).toFixed(1)+'%"></i></div>')+
  '<p>'+safe(EXPERIENCE_METRICS[id].description)+'</p><div class="metric-foot"><span>'+sum.n+' of '+sum.eligible+' responses</span><span>'+safe(comparison)+'</span></div>'+
  (sum.value===null?'':btn('explain:'+scope+':'+id,'How is this calculated?','quiet'))+'</article>';
 }
