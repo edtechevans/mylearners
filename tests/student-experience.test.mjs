@@ -12,10 +12,10 @@ test('fictional school data and measures exist for three windows',()=>{
  assert.equal(records.size,800);
 });
 test('indices are transparent and require exactly three valid responses',()=>{
- assert.equal(calculateIndex([0,1,2]),33);
- assert.equal(calculateIndex([3,3,3]),100);
- assert.equal(calculateIndex([0,0,0]),0);
- assert.equal(calculateIndex([1,2,2]),56);
+ assert.equal(calculateIndex([0,1,2]),-0.67);
+ assert.equal(calculateIndex([3,3,3]),2);
+ assert.equal(calculateIndex([0,0,0]),-2);
+ assert.equal(calculateIndex([1,2,2]),0.33);
  assert.equal(calculateIndex([0,4,2]),null);
  assert.equal(calculateIndex([0,1]),null);
 });
@@ -30,7 +30,7 @@ test('each fictional learner index equals its three reported answer points',()=>
    const x=experienceFor(records,s.id,m,w.key);
    if(!x)continue;
    assert.equal(x.items.length,3);
-   assert.equal(x.value,Math.round(x.items.reduce((n,i)=>n+i.points,0)/3));
+   assert.equal(x.value,Math.round(x.items.reduce((n,i)=>n+i.points,0)/3*100)/100);
   }
  }
 });

@@ -71,7 +71,7 @@ export function evidenceValue(student,{mode='report',academic,map,experience,mai
  }
  if(mode==='engagement'||mode==='belonging'){
   const entry=experienceEligible(student)?experienceFor(experience,student.id,mode,window):null;
-  return entry?{text:String(entry.value.toFixed(2)+' (−2 to +2)',detail:(EXPERIENCE_WINDOWS.find(x=>x.key===window)?.label||window)+' · check-in index',available:true}:
+  return entry?{text:(entry.value>0?'+':'')+entry.value.toFixed(2),detail:(EXPERIENCE_WINDOWS.find(x=>x.key===window)?.label||window)+' · check-in index',available:true}:
    {text:'—',detail:'No check-in',available:false};
  }
  if(!academicModesFor(student.grade).includes(mode))

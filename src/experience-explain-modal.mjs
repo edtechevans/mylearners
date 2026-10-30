@@ -4,14 +4,14 @@
  */
 const esc=value=>String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
  .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-const fmt=value=>Number.isFinite(value)?String(value):'—';
+const fmt=value=>Number.isFinite(value)?(value>0?'+':'')+Number(value).toFixed(2):'—';
 const bound=value=>Math.max(0,Math.min(100,((Number(value)||0)+2)/4*100));
 export function experienceDialogContent({metric='engagement',scopeLabel='Selected learners',
  windowLabel='Fall 2026',summary={value:null,n:0,eligible:0},questions=[],individual=false}={}){
  if(!['engagement','belonging'].includes(metric))throw Error('Unknown student-experience measure');
  const label=metric==='engagement'?'Engagement':'Belonging';
  const color=metric==='engagement'?'engagement':'belonging';
- const coverage=(individual?'Individual fictional check-in':fmt(summary.n)+' of '+fmt(summary.eligible)+' eligible learners responded');
+ const coverage=(individual?'Individual fictional check-in':String(summary.n)+' of '+String(summary.eligible)+' eligible learners responded');
  const basis=individual?'The learner index is the mean of the three question scores (rounded to two decimals).':
   'Each learner receives the mean of their three question scores (rounded to two decimals). The group index is the mean of those learner indices (rounded to two decimals).';
  const cards=questions.map((q,index)=>{
@@ -19,8 +19,8 @@ export function experienceDialogContent({metric='engagement',scopeLabel='Selecte
   const num=Number.isFinite(points)?fmt(points)+' (−2 to +2)':'Not available';
   const extra=individual?
    '<span class="experience-answer">Response: '+esc(q.label||'Not recorded')+'</span>':
-   '<span class="experience-answer">'+(Number.isFinite(q.favorable)?fmt(q.favorable)+'% answered Agree or Strongly agree':'No responses')+
-   ' · '+fmt(q.n)+' responses</span>';
+   '<span class="experience-answer">'+(Number.isFinite(q.favorable)?String(q.favorable)+'% answered Agree or Strongly agree':'No responses')+
+   ' · '+String(q.n)+' responses</span>';
   return '<li class="experience-question">'+
    '<div class="experience-question-head"><span><b>'+String(index+1)+'.</b> '+esc(q.question)+'</span>'+
    '<strong>'+num+'</strong></div>'+

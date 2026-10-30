@@ -9,17 +9,17 @@ import {seedSupportDemo,loadDraftEntries,storeDraftEntries,createDraftEntry} fro
 import {renderFacultySupportPanel,renderSSSWorkspace,renderSupportForm} from './support-workspace-ui.mjs';
 import {CASE_MANAGERS,REFERRAL_STAGES,STRATEGIES,lastReferralStage} from './sss-leadership-data.mjs';
 import {renderSSSLeadershipDashboard,renderSSSProfileNavigation,renderSSSSummary,renderSSSPlans} from './sss-leadership-ui.mjs';
-import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=20261028titles1';
+import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=20261030repair1';
 import {portrait} from './portraits.mjs';
-import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs';
-import {experienceDialogContent} from './experience-explain-modal.mjs';
+import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs?v=20261030repair1';
+import {experienceDialogContent} from './experience-explain-modal.mjs?v=20261030repair1';
 import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs';
 import {resolveEvidencePreview} from './evidence-preview-context.mjs';
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic} from './academic-journey-data.mjs';
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261028titles1';
-import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs';
-import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261028sleek1';
+import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261030repair1';
+import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261030repair1';
 import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile} from './maia-demo.mjs';
 import {renderStudentOverview} from './student-daily-overview.mjs?v=20261028titles1';
 import {renderBoard} from './board-map-view.mjs?v=20261029dpaxis1';
@@ -111,8 +111,8 @@ function metricCard(ss,id,window='F26',scope='main'){
    (change.delta>0?'+':'')+change.delta+' vs '+change.previousLabel;
  const source=EXPERIENCE_WINDOWS.find(x=>x.key===window)?.label||window;
  return '<article class="metric"><div class="metric-top"><span class="eyebrow">'+safe(EXPERIENCE_METRICS[id].label)+' index</span><span class="tiny">Fictional '+safe(source)+' check-in</span></div>'+
- '<div class="metric-value">'+fmt(sum.value)+(sum.value===null?'':'<span>/100</span>')+'</div>'+
- '<div class="meter"><i style="width:'+(sum.value??0)+'%;background:var(--'+(id==='engagement'?'teal':'violet')+')"></i></div>'+
+ '<div class="metric-value">'+(Number.isFinite(sum.value)?(sum.value>0?'+':'')+sum.value.toFixed(2):'—')+(sum.value===null?'':'<span> / ±2</span>')+'</div>'+
+ '<div class="meter experience-index-meter" role="img" aria-label="Engagement and Belonging index from minus two to plus two"><i style="left:'+((sum.value===null?0:(sum.value+2)/4*100).toFixed(1))+'%"></i></div>'+
  '<p>'+safe(EXPERIENCE_METRICS[id].description)+'</p><div class="metric-foot"><span>'+sum.n+' of '+sum.eligible+' responses</span><span>'+safe(comparison)+'</span></div>'+
  (sum.value===null?'':btn('explain:'+scope+':'+id,'How is this calculated?','quiet'))+'</article>';
 }
@@ -148,8 +148,8 @@ function scoreExplanation(id,ss,student){
  const windowLabel=EXPERIENCE_WINDOWS.find(w=>w.key===state.window)?.label||state.window;
  return '<section class="explain" id="score-explanation"><div class="row-between"><div><span class="eyebrow">HOW THIS INDEX WORKS</span><h2>Understanding '+safe(EXPERIENCE_METRICS[id].label)+'</h2></div>'+btn('close','Close ×','quiet')+'</div>'+
  '<p class="score-source">Source: fictional '+safe(windowLabel)+' student check-in · '+summary.n+' of '+summary.eligible+' responses</p>'+
- '<p>Three responses are converted into points: <strong>Strongly disagree 0</strong> · <strong>Disagree 33</strong> · <strong>Agree 67</strong> · <strong>Strongly agree 100</strong>. The index is their average, rounded to a whole number. It is <strong>not</strong> a percentage of students agreeing, an achievement score, or a label.</p>'+
- '<div class="explain-number">'+fmt(summary.value)+(summary.value===null?'':'<small>/100</small>')+'</div>'+
+ '<p>Responses are scored: <strong>Strongly disagree −2</strong> · <strong>Disagree −1</strong> · <strong>Agree +1</strong> · <strong>Strongly agree +2</strong>. The index is their mean, rounded to two decimals. Zero is an average, not a selectable response. It is <strong>not</strong> a percentage of students agreeing, an achievement score, or a label.</p>'+
+ '<div class="explain-number">'+(Number.isFinite(summary.value)?(summary.value>0?'+':'')+summary.value.toFixed(2):'—')+(summary.value===null?'':'<small> (−2 to +2)</small>')+'</div>'+
  '<div class="explain-items">'+qs.map(q=>'<div><span>'+safe(q.question)+'</span><strong>'+fmt(student?q.points:q.value)+(student?'':'')+(student||q.value!==null?' / +2':'')+'</strong>'+
  (student?'<small>My response: '+safe(q.label)+'</small>':'<small>'+fmt(q.favorable)+'% agree or strongly agree · '+q.n+' responses</small>')+'</div>').join('')+'</div>'+
  '<p class="tiny">This is an exploratory AISG-created indicator, not a validated measurement. Use the underlying responses and wider context to understand the experience, never to rank students.</p></section>';

@@ -295,7 +295,7 @@ try{
    assert(await evaluate("document.querySelector('.roster-daily[data-roster-layout=everyday]')!==null"),
     'Faculty should open with everyday evidence visible');
    const headers=await evaluate("Array.from(document.querySelectorAll('.roster-daily thead th')).map(th=>th.textContent.trim())");
-   for(const expected of ['Learner','Attendance','Mathematics','MAP Mathematics growth','Engagement','Belonging','Support information'])
+   for(const expected of ['Learner','Attendance','MAP Mathematics growth','IXL Mathematics','Engagement','Belonging','Support information'])
     assert(headers.some(h=>h.includes(expected)),'Missing default evidence: '+expected);
    assert(headers.length===7,'Expected learner, five measures and support information');
    assert(await evaluate("document.querySelectorAll('.roster-daily tbody .class-evidence-result').length>=20"),

@@ -75,7 +75,7 @@ test('class MAP and wellbeing tabs read distinct fictional sources',()=>{
  }
  const engagement=renderClassEvidencePanel(students,{...ctx,mode:'engagement'});
  assert.match(engagement,/Maia-style PERMA examples are available separately/);
- assert.match(engagement,/check-in index out of 100/);
+ assert.match(engagement,/check-in index from −2 to +2/);
  const belonging=renderClassEvidencePanel(students,{...ctx,mode:'belonging'});
  assert.match(belonging,/Belonging/);
  assert.match(evidenceRosterColumn(student,{...ctx,mode:'engagement'}),/class-evidence-result/);
@@ -189,7 +189,7 @@ test('teachers can choose real check-in windows without treating an index as a p
  assert.match(spring,/data-class-window/);
  assert.match(spring,/value="S26" selected/);
  assert.match(spring,/Spring 2026/);
- assert.match(spring,/index out of 100/);
+ assert.match(spring,/index from −2 to +2/);
  assert.match(spring,/not a percentage/i);
  const first=learners[0];
  const a=evidenceValue(first,{...ctx,mode:'engagement',window:'F25'});

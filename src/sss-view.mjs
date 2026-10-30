@@ -200,7 +200,7 @@ export function renderSSSStudentProfile({
     const value=experienceFor(experienceRecords,student.id,id,'F26')?.value;
     return '<div class="sss-experience-with-help">'+
      evidenceTile(id==='engagement'?'Engagement':'Belonging',
-      value===undefined?'—':value+' / 100','Fictional Fall 2026 student check-in')+
+      value===undefined?'—':(value>0?'+':'')+value.toFixed(2)+' (−2 to +2)','Fictional Fall 2026 student check-in')+
      '<button type="button" class="experience-detail-link" data-experience-explain="'+id+
      '" data-experience-scope="sss" data-experience-student="'+esc(student.id)+
      '" data-experience-window="F26">ⓘ How is this calculated?</button></div>';

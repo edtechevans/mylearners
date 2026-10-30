@@ -7,12 +7,12 @@ test('Faculty landing defaults to 4 or 5 existing measures suited to each grade'
   assert.ok(cols.length>=4&&cols.length<=5,grade);
   assert.equal(new Set(cols.map(x=>x.id)).size,cols.length,grade);
   assert.equal(cols[0].id,'attendance',grade);
-  assert.ok(cols.some(x=>x.kind==='report'),grade);
+  if(!['G3','G5','G6','G7','G10'].includes(grade))assert.ok(cols.some(x=>x.kind==='report'),grade);
  }
 });
-test('Middle grades see Mathematics, MAP Math, Engagement and Belonging together',()=>{
+test('Middle grades see MAP, IXL, Engagement and Belonging together',()=>{
  const cols=everydayEvidenceForGrade('G7');
- assert.deepEqual(cols.map(x=>x.id),['attendance','math','map','engagement','belonging']);
+ assert.deepEqual(cols.map(x=>x.id),['attendance','map','ixl','engagement','belonging']);
 });
 test('Primary and upper Secondary do not show assessments outside eligible grade bands',()=>{
  assert.deepEqual(everydayEvidenceForGrade('K').map(x=>x.id),
