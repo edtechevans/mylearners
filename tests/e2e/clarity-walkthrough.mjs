@@ -161,8 +161,12 @@ try{
  assert((await evaluate('location.hash'))===beforePreviewHash,'Hover must not change navigation');
  const keyboardDismiss=await evaluate("(async()=>{document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));await new Promise(r=>setTimeout(r,70));return !document.querySelector('.evidence-preview-popup')})()");
  assert(keyboardDismiss,'Escape must close preview');
- await click('.roster-desktop [data-evidence-preview="student"]');
- assert(await evaluate('!!document.querySelector(".evidence-preview-popup")'),'Dedicated preview icon should work on click');
+ const iconCount=await evaluate('document.querySelectorAll(".roster-desktop .evidence-preview-trigger,.roster-desktop .experience-cell-help").length');
+ assert(iconCount===0,'Faculty data cells must not contain separate information icons');
+ const hoverValue=await evaluate("(async()=>{const a=document.querySelector('.roster-desktop .evidence-cell-open[data-evidence-preview=experience-cell]');if(!a)return false;a.dispatchEvent(new PointerEvent('pointerover',{bubbles:true,pointerType:'mouse'}));await new Promise(r=>setTimeout(r,470));const p=document.querySelector('.evidence-preview-popup');return !!p&&p.textContent.includes('Index')&&p.textContent.includes('student check-in')})()");
+ assert(hoverValue,'Hover over the value should reveal the actual Engagement or Belonging explanation');
+ await click('.roster-desktop .evidence-cell-open[data-evidence-preview="experience-cell"]');
+ assert(await evaluate('!!document.querySelector(".profile-head")'),'Clicking a value must still open its learner profile');
  await navigate('sss','.sss-overview');
  assert(await evaluate('document.querySelectorAll(".sss-roster-row[data-evidence-preview=sss-person]").length>0'),
   'SSS needs role-scoped roster preview targets');
