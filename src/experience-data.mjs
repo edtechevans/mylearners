@@ -11,10 +11,10 @@ export const EXPERIENCE_WINDOWS=Object.freeze([
  {key:'F26',label:'Fall 2026'}
 ]);
 export const EXPERIENCE_SCALE=Object.freeze([
- {label:'Strongly disagree',short:'Strongly disagree',points:0},
- {label:'Disagree',short:'Disagree',points:33},
- {label:'Agree',short:'Agree',points:67},
- {label:'Strongly agree',short:'Strongly agree',points:100}
+ {label:'Strongly disagree',short:'Strongly disagree',points:-2},
+ {label:'Disagree',short:'Disagree',points:-1},
+ {label:'Agree',short:'Agree',points:1},
+ {label:'Strongly agree',short:'Strongly agree',points:2}
 ]);
 export const EXPERIENCE_METRICS=Object.freeze({
  engagement:{
@@ -51,7 +51,7 @@ export const experienceEligible=student=>!!student&&gradeNumber(student.grade)>=
 export const questionsFor=(student,metric)=>EXPERIENCE_METRICS[metric]?.[gradeNumber(student.grade)<=5?'elementary':'secondary']||[];
 export function calculateIndex(responses){
  if(!Array.isArray(responses)||responses.length!==3||responses.some(v=>!Number.isInteger(v)||v<0||v>3))return null;
- return Math.round(responses.reduce((sum,r)=>sum+EXPERIENCE_SCALE[r].points,0)/3);
+ return Math.round(responses.reduce((sum,r)=>sum+EXPERIENCE_SCALE[r].points,0)/3*100)/100;
 }
 function simulatedAnswers(student,metric,periodIndex){
  const personal=rng(hash(student.id+'-'+metric+'-profile'));
@@ -98,7 +98,7 @@ export function summarizeExperience(records,students,metric,window='F26'){
  const eligible=(students||[]).filter(experienceEligible);
  const values=eligible.map(s=>experienceFor(records,s.id,metric,window)?.value).filter(Number.isFinite);
  return {
-  value:values.length?Math.round(values.reduce((a,b)=>a+b,0)/values.length):null,
+  value:values.length?Math.round(values.reduce((a,b)=>a+b,0)/values.length*100)/100:null,
   n:values.length,eligible:eligible.length,
   coverage:eligible.length?Math.round(values.length/eligible.length*100):null
  };
@@ -107,7 +107,7 @@ export function experienceQuestionSummary(records,students,metric,window='F26'){
  const eligible=(students||[]).filter(experienceEligible);
  return questionsFor(eligible[0]||{grade:'G7'},metric).map((question,i)=>{
   const values=eligible.map(s=>experienceFor(records,s.id,metric,window)?.items[i]).filter(Boolean);
-  return {question,n:values.length,value:values.length?Math.round(values.reduce((a,v)=>a+v.points,0)/values.length):null,
+  return {question,n:values.length,value:values.length?Math.round(values.reduce((a,v)=>a+v.points,0)/values.length*100)/100:null,
    favorable:values.length?Math.round(values.filter(x=>x.response>=2).length/values.length*100):null};
  });
 }
