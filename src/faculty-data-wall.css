@@ -26,3 +26,14 @@
 #app .roster-daily .evidence-heat.band-mid-low strong,#app .roster-daily .evidence-heat.band-mid-high strong{color:#142b32}
 @media(prefers-reduced-motion:reduce){#app .roster-daily .evidence-cell-open .class-evidence-result{transition:none}}
 @media print{#app .roster-daily .evidence-heat{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+/* Same fixed-index palette for Student, Leaders and SSS; absent data remains neutral. */
+#app .metric-value.index-band-low,#app .sss-experience-with-help.index-band-low strong{color:#a6373f}
+#app .metric-value.index-band-mid-low,#app .sss-experience-with-help.index-band-mid-low strong{color:#a26825}
+#app .metric-value.index-band-mid-high,#app .sss-experience-with-help.index-band-mid-high strong{color:#476a36}
+#app .metric-value.index-band-high,#app .sss-experience-with-help.index-band-high strong{color:#246b4f}
+#app .sss-experience-with-help.index-band-low .sss-evidence-tile{border-left:4px solid #a6373f}
+#app .sss-experience-with-help.index-band-mid-low .sss-evidence-tile{border-left:4px solid #e4a15f}
+#app .sss-experience-with-help.index-band-mid-high .sss-evidence-tile{border-left:4px solid #a6bd88}
+#app .sss-experience-with-help.index-band-high .sss-evidence-tile{border-left:4px solid #246b4f}
+#app .experience-index-meter.is-missing{background:#edf1f3!important}

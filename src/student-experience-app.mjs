@@ -9,7 +9,7 @@ import {seedSupportDemo,loadDraftEntries,storeDraftEntries,createDraftEntry} fro
 import {renderFacultySupportPanel,renderSSSWorkspace,renderSupportForm} from './support-workspace-ui.mjs';
 import {CASE_MANAGERS,REFERRAL_STAGES,STRATEGIES,lastReferralStage} from './sss-leadership-data.mjs';
 import {renderSSSLeadershipDashboard,renderSSSProfileNavigation,renderSSSSummary,renderSSSPlans} from './sss-leadership-ui.mjs';
-import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=20261030repair1';
+import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=20261030wall2';
 import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs?v=20261030repair1';
 import {experienceDialogContent} from './experience-explain-modal.mjs?v=20261030repair1';
@@ -17,7 +17,7 @@ import {decorateEvidencePreviews,installEvidencePreviewController} from './evide
 import {resolveEvidencePreview} from './evidence-preview-context.mjs';
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,READING_LEVELS} from './academic-journey-data.mjs';
-import {quartileBand,formatIndex} from './faculty-bands.mjs?v=20261030wall1';
+import {quartileBand,formatIndex,experienceBand} from './faculty-bands.mjs?v=20261030wall2';
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261028titles1';
 import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261030wall1';
 import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261030repair1';
@@ -111,9 +111,11 @@ function metricCard(ss,id,window='F26',scope='main'){
  const comparison=change.delta===null?(change.previousLabel?'No comparable previous check-in':'First available check-in'):
    (change.delta>0?'+':'')+change.delta+' vs '+change.previousLabel;
  const source=EXPERIENCE_WINDOWS.find(x=>x.key===window)?.label||window;
+ const band=experienceBand(sum.value);
  return '<article class="metric"><div class="metric-top"><span class="eyebrow">'+safe(EXPERIENCE_METRICS[id].label)+' index</span><span class="tiny">Fictional '+safe(source)+' check-in</span></div>'+
- '<div class="metric-value">'+(Number.isFinite(sum.value)?(sum.value>0?'+':'')+sum.value.toFixed(2):'—')+(sum.value===null?'':'<span> / ±2</span>')+'</div>'+
- '<div class="meter experience-index-meter" role="img" aria-label="Engagement and Belonging index from minus two to plus two"><i style="left:'+((sum.value===null?0:(sum.value+2)/4*100).toFixed(1))+'%"></i></div>'+
+ '<div class="metric-value'+(band?' index-'+band:'')+'">'+formatIndex(sum.value)+(sum.value===null?'':'<span> / ±2</span>')+'</div>'+
+ (sum.value===null?'<div class="meter experience-index-meter is-missing" aria-label="No check-in responses"></div>':
+ '<div class="meter experience-index-meter" role="img" aria-label="Four-band index from minus two to plus two"><i style="left:'+((sum.value+2)/4*100).toFixed(1))+'%"></i></div>')+
  '<p>'+safe(EXPERIENCE_METRICS[id].description)+'</p><div class="metric-foot"><span>'+sum.n+' of '+sum.eligible+' responses</span><span>'+safe(comparison)+'</span></div>'+
  (sum.value===null?'':btn('explain:'+scope+':'+id,'How is this calculated?','quiet'))+'</article>';
 }

@@ -1,4 +1,5 @@
 /** Read-only, completely fictional Student Support Services experience.
+import {experienceBand} from './faculty-bands.mjs?v=20261030wall2';
  * Shared student / academic / attendance / MAP / check-in models are passed in
  * by the main app; the only new records are synthetic membership and WIDA examples.
  * This file must never render genuine intervention notes, diagnoses or identifiers.
@@ -198,7 +199,7 @@ export function renderSSSStudentProfile({
    '<p>Fall 2026 check-in indices, not grades or diagnostic indicators.</p></div></div>'+
    '<div class="sss-experience-summary">'+['engagement','belonging'].map(id=>{
     const value=experienceFor(experienceRecords,student.id,id,'F26')?.value;
-    return '<div class="sss-experience-with-help">'+
+    return '<div class="sss-experience-with-help'+(Number.isFinite(value)?' index-'+experienceBand(value):'')+'">'+
      evidenceTile(id==='engagement'?'Engagement':'Belonging',
       value===undefined?'—':(value>0?'+':'')+value.toFixed(2)+' (−2 to +2)','Fictional Fall 2026 student check-in')+
      '<button type="button" class="experience-detail-link" data-experience-explain="'+id+
