@@ -38,5 +38,5 @@ test('HTML escapes learner-supplied text and rejects unknown metrics',()=>{
 test('unavailable response cases show a dash rather than treating missing as zero',()=>{
  const html=experienceDialogContent({summary:{value:null,n:0,eligible:20},questions:[]});
  assert.match(html,/Not|0 of 20/);
- assert.match(html,/—<small> · −2 to \+2/);
+ assert.match(html,/—<\/div>/);
 });
