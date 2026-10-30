@@ -13,8 +13,8 @@ import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=202610
 import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs?v=20261030repair1';
 import {experienceDialogContent} from './experience-explain-modal.mjs?v=20261030wall3';
-import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261030wall3';
-import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261030wall3';
+import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261030hover1';
+import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261030hover1';
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,READING_LEVELS} from './academic-journey-data.mjs';
 import {quartileBand,formatIndex,experienceBand} from './faculty-bands.mjs?v=20261030wall2';
@@ -94,7 +94,7 @@ const ownClasses=()=>DATA.classes.filter(c=>teacher().classIds.includes(c.id));
 const ownStudents=()=>DATA.students.filter(s=>teacher().classIds.includes(s.classId));
 const activeClass=()=>ownClasses().find(c=>c.id===state.classId)||ownClasses()[0];
 const previewController=installEvidencePreviewController(root,trigger=>resolveEvidencePreview(trigger,{
- role:state.role,state,data:DATA,academic:ACADEMIC_RECORDS,sssRecords:SSS_RECORDS,
+ role:state.role,state,data:DATA,academic:ACADEMIC_RECORDS,experience:RECORDS,sssRecords:SSS_RECORDS,
  allowedStudentIds:ownStudents().map(s=>s.id),
  allowedClassIds:ownClasses().map(c=>c.id)
 }));
@@ -229,14 +229,9 @@ function roster(ss,options={}){
   const trendDetail=change===null?'':'. Change since '+EXPERIENCE_WINDOWS[windowIndex-1].label+': '+formatIndex(change);
   const title=safe(detail+trendDetail+'. Select to open learner profile');
   const button='<button type="button" class="evidence-cell-open" data-student="'+safe(student.id)+
-   '" title="'+title+'" aria-label="'+title+'">'+content+
+   '" aria-label="'+title+'">'+content+
    (trend?'<span class="evidence-trend" aria-hidden="true">'+trend+'</span>':'')+'</button>';
-  const help=isExperience?
-   '<button type="button" class="experience-cell-help" data-experience-explain="'+column.kind+
-   '" data-experience-scope="learner" data-experience-student="'+safe(student.id)+
-   '" data-experience-window="'+safe(state.classExperienceWindow)+
-   '" aria-label="Explain '+column.label+' for '+safe(student.name)+'">ⓘ</button>':'';
-  return '<span class="evidence-cell-layout">'+button+help+'</span>';
+  return '<span class="evidence-cell-layout">'+button+'</span>';
  };
 
  const modeLabel=across?'Last issued report':evidenceLabel(mode,{...evidenceCtx,subject});
@@ -291,10 +286,7 @@ function roster(ss,options={}){
    (everyday?x.everydayCells.map(cell=>'<td>'+cell+'</td>').join(''):
     '<td>'+x.attendance+'</td><td>'+x.academics+'</td>'+(compare==='none'?'':'<td>'+x.compared+'</td>'))+
    (!everyday&&showMap?'<td>'+safe(x.growth)+'</td>':'')+
-   (!everyday&&showSEL?'<td>'+x.eng+
-     '<button type="button" class="experience-cell-help" data-experience-explain="engagement" data-experience-scope="learner" data-experience-student="'+safe(x.student.id)+'" data-experience-window="F26" aria-label="Explain engagement for '+safe(x.student.name)+'">ⓘ</button></td>'+
-    '<td>'+x.bel+
-     '<button type="button" class="experience-cell-help" data-experience-explain="belonging" data-experience-scope="learner" data-experience-student="'+safe(x.student.id)+'" data-experience-window="F26" aria-label="Explain belonging for '+safe(x.student.name)+'">ⓘ</button></td>':'')+
+   (!everyday&&showSEL?'<td>'+x.eng+'</td><td>'+x.bel+'</td>':'')+
    '<td>'+(x.sss?'<span class="pill sss-faculty-indicator" title="Fictional SSS programme membership">SSS</span> ':'')+
     x.tags.map(t=>pill(t.label)).join(' ')+'</td></tr>').join('')+'</tbody></table></div>';
  const mobile='<div class="roster-mobile">'+data.map(x=>
