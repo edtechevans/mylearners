@@ -43,7 +43,7 @@ const client=await connect();
 const cases=[];let failed=false;
 async function evaluate(js){
  const r=await client.command('Runtime.evaluate',{expression:js,returnByValue:true,awaitPromise:true});
- if(r.exceptionDetails)throw Error(r.exceptionDetails.text||'Browser evaluation failed');
+ if(r.exceptionDetails)throw Error(r.exceptionDetails.exception?.description||r.exceptionDetails.text||'Browser evaluation failed');
  return r.result?.value;
 }
 async function viewport(width,height){
@@ -76,7 +76,7 @@ const inspect='('+function(){
  const navRect=nav&&rect(nav),mainRect=main&&rect(main);
  const labels=buttons.map(b=>({name:b.textContent.trim(),r:rect(b)}));
  const wide=innerWidth>=1180&&!document.querySelector('#app.board-presentation-mode');
- const overlap=wide&&navRect&&mainRect?mainRect.left<navRect.right-4:false;
+ const overlap=wide&&navRect&&heading?rect(heading).top<navRect.bottom-6:false;
  const clipped=labels.some(x=>x.r.left<0||x.r.right>innerWidth+1||x.r.top<0||x.r.bottom>innerHeight+1);
  const cards=[...document.querySelectorAll('.board-overview-cards .board-overview-card')].map(rect);
  const collisions=cards.some((r,i)=>cards.slice(i+1).some(s=>
@@ -84,11 +84,13 @@ const inspect='('+function(){
  const visible=heading&&rect(heading).width>0&&rect(heading).top>=-1;
  const stylesheet=[...document.querySelectorAll('link[rel=stylesheet]')].some(x=>x.href.includes('clarity-design.css')&&x.sheet);
  const paletteLoaded=[...document.querySelectorAll('link[rel=stylesheet]')].some(x=>x.href.includes('sitewide-palette.css')&&x.sheet);
+ const visionLoaded=[...document.querySelectorAll('link[rel=stylesheet]')].some(x=>x.href.includes('vision-ui.css')&&x.sheet);
+ const headerFill=nav?getComputedStyle(nav).backgroundColor:'none';
  const tiles=[...document.querySelectorAll(
   '.faculty-daily-summary>.quick-tile,.leader-learning-grid>.leader-stat,'+
   '.sss-count-grid>.sss-number,.student-landing-grid>.student-today-tile,'+
   '.board-strength-grid>.board-strength-card'
- )].map(e=>({r:rect(e),fill:getComputedStyle(e).backgroundImage}));
+ )].map(e=>({r:rect(e),fill:getComputedStyle(e).backgroundImage,ring:getComputedStyle(e,'::before').content}));
  const tileOverlaps=tiles.some((a,i)=>tiles.slice(i+1).some(b=>
    Math.min(a.r.right,b.r.right)-Math.max(a.r.left,b.r.left)>8&&
    Math.min(a.r.bottom,b.r.bottom)-Math.max(a.r.top,b.r.top)>8));
@@ -99,9 +101,9 @@ const inspect='('+function(){
   mainRect,navRect,navButtons:labels.map(x=>x.name),
   horizontalOverflow:document.documentElement.scrollWidth-innerWidth,
   navClipped:clipped,overlappingNavigation:overlap,overlappingBoardCards:collisions,
-  visibleHeading:!!visible,clarityLoaded:!!stylesheet,paletteLoaded,
+  visibleHeading:!!visible,clarityLoaded:!!stylesheet,paletteLoaded,visionLoaded,headerFill,
   tileCount:tiles.length,tileShadeCount:shadeCount,tileOverlaps,
-  tileGradientApplied:tiles.every(x=>x.fill.includes('radial-gradient')),
+  tileRingsRemoved:tiles.every(x=>x.ring==='none'||x.ring==='normal'),
   headings:[...document.querySelectorAll('h1')].map(e=>e.textContent.trim()).slice(0,2),
   focusables:[...document.querySelectorAll('button,select,input,[href]')].filter(e=>e.getBoundingClientRect().width>0).length
  };
@@ -113,17 +115,17 @@ async function run(name,route,selector,width,height,interaction){
   if(interaction)await interaction();
   Object.assign(record,await evaluate(inspect));await screenshot(name);
   assert(record.clarityLoaded,'Clarity stylesheet did not load');
-  assert(record.paletteLoaded,'Sitewide three-tone stylesheet did not load');
+  assert(record.paletteLoaded,'Shared evidence palette did not load');
+  assert(record.visionLoaded,'Vision design system did not load');
   if(/^(faculty|student|sss|leader|board)-\d+x\d+$/.test(name)){
    assert(record.tileCount>=3,'Expected at least three high-level summary tiles in '+name);
-   assert(record.tileGradientApplied,'The soft radial shading must appear on each summary tile');
-   assert(record.tileShadeCount>=3,'Sky, mint and lilac should all appear in the overview tiles');
+   assert(record.tileRingsRemoved,'Legacy decorative rings should not appear on tiles');
    assert(!record.tileOverlaps,'Summary tiles should not overlap');
   }
   if(name.startsWith('board-dp-')&&interaction)
    assert(record.headings.some(Boolean),'Board page heading must remain present after section navigation');
   else assert(record.visibleHeading,'Heading is not visible');
-  assert(!record.overlappingNavigation,'Sidebar overlaps dashboard content');
+  assert(!record.overlappingNavigation,'Global navigation obscures the workspace heading');
   assert(!record.navClipped,'Navigation contains offscreen buttons');
   assert(!record.overlappingBoardCards,'Board overview cards overlap');
   if(record.horizontalOverflow>4){
@@ -132,8 +134,10 @@ async function run(name,route,selector,width,height,interaction){
   }
   assert(record.horizontalOverflow<=4,'Document overflows horizontally by '+record.horizontalOverflow+'px');
   assert(record.focusables>=5,'No working interactive controls found');
-  if(width>=1180)assert(record.navigationPosition==='fixed','Desktop side rail not fixed');
-  if(width<1180)assert(record.navigationPosition!=='fixed','Compact navigation is a sidebar');
+  if(width>=1180)assert(record.navigationPosition==='fixed','Desktop product masthead must remain fixed');
+  if(width<1180)assert(record.navigationPosition!=='fixed','Responsive masthead should remain in document flow');
+  assert(record.headerFill==='rgb(10, 31, 46)'||record.headerFill==='rgb(16, 40, 58)',
+   'The AISG navy product masthead should be visible');
   assert(record.font.includes('Noto Sans'),'Noto Sans design system missing');
   record.status='pass';
  }catch(e){failed=true;record.status='fail';record.error=String(e.message||e)}
@@ -302,6 +306,10 @@ try{
    for(const expected of ['Learner','Attendance','MAP Mathematics growth','IXL Mathematics','Engagement','Belonging','Support information'])
     assert(headers.some(h=>h.includes(expected)),'Missing default evidence: '+expected);
    assert(headers.length===7,'Expected learner, five measures and support information');
+   assert(await evaluate("document.querySelector('.roster-daily').getBoundingClientRect().top<innerHeight-80"),
+    'The Faculty data wall should begin within the first viewport');
+   assert(await evaluate("document.querySelector('.top .brand-kicker')?.textContent.includes('LEARNING INTELLIGENCE')"),
+    'The new product identity should be readable');
 
    assert(await evaluate("!!document.querySelector('.class-evidence-advanced:not([open])')"),
     'Everyday evidence options should begin collapsed');
