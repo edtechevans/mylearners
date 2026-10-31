@@ -116,7 +116,11 @@ test('Diploma preserves spreadsheet historic pass rates and plots the full eleve
  assert.doesNotMatch(missing,/class="board-dp-graphic-value">—/);
  assert.equal((missing.match(/<g class="board-dp-point/g)||[]).length,11);
  const latest=renderBoardDP({boardDpYear:'2026',boardDpMetric:'average',boardDpRange:'recent'});
- assert.equal((latest.match(/<g class="board-dp-point/g)||[]).length,11);
+ assert.equal((latest.match(/<g class="board-dp-point/g)||[]).length,10,
+  'Default overall worldwide decade begins in May 2017');
+ const recipientChart=renderBoardDP({boardDpYear:'2026',boardDpMetric:'average',boardDpRange:'recent',boardDpWorldBasis:'recipients'});
+ assert.equal((recipientChart.match(/<g class="board-dp-point/g)||[]).length,11,
+  'The recipient-matched historical chart retains the official 2016 AISG point');
  assert.doesNotMatch(latest,/confirmation pending|unconfirmed|verification pending/i);
  assert.match(latest,/IB School Statistics \(school 001832\)/);
 });
