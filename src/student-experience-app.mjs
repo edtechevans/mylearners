@@ -27,9 +27,9 @@ import {renderBoard} from './board-map-view.mjs?v=20261029dpaxis1';
 import {renderTrendPointDetails} from './board-map-overview.mjs?v=20261029dpaxis1';
 import {renderDPPointDetails} from './board-dp-view.mjs?v=20261031dp-audit1';
 import {renderDPSubjectPointDetails} from './board-dp-subjects.mjs';
-import {DP_RECORDS} from './board-dp-data.mjs?v=20261029verifiedglobal1';
+import {DP_RECORDS} from './board-dp-data.mjs?v=20261031dp-world1';
 import {boardWindowFor,BOARD_DATA} from './board-map-data.mjs';
-import {parseBoardHash} from './board-map-links.mjs?v=20261029dpaxis1';
+import {parseBoardHash} from './board-map-links.mjs?v=20261031dp-world1';
 const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(DATA.students),
  ACADEMIC_RECORDS=createAcademicDemoRecords(DATA.students),
  MAIA_RECORDS=createMaiaDemoRecords(DATA.students),
