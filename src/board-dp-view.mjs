@@ -25,21 +25,32 @@ function matchedGlobalGaps(){
 
 /** The focused axis improves discriminability without implying a zero baseline.
  * Full-scale view remains a single click away and is supported in deep links. */
-function dpScaleControls(metric,scale='focus'){
+const basisName=basis=>basis==='overall'?'all Diploma/retake results':'Diploma recipients only';
+function dpWorldBasisControls(metric,basis='recipients'){
+ if(metric!=='average')return '';
+ return '<div class="board-dp-basis-control" role="group" aria-label="Worldwide Diploma comparison population">'+
+ '<span>World series</span>'+
+ '<button type="button" data-board-dp-basis="recipients" aria-pressed="'+(basis!=='overall')+
+ '" class="'+(basis!=='overall'?'active':'')+'">Diploma recipients</button>'+
+ '<button type="button" data-board-dp-basis="overall" aria-pressed="'+(basis==='overall')+
+ '" class="'+(basis==='overall'?'active':'')+'">All DP results</button></div>';
+}
+function dpScaleControls(metric,scale='focus',worldBasis='recipients'){
  if(metric!=='average')return '';
  const mode=scale==='full'?'full':'focus';
  return '<div class="board-dp-scale-control" role="group" aria-label="Diploma average score chart scale">'+
  '<span class="board-dp-scale-label">Chart scale</span>'+
  '<button type="button" data-board-dp-scale="focus" aria-pressed="'+(mode==='focus')+
- '" class="'+(mode==='focus'?'active':'')+'">Focused · 30–40</button>'+
+ '" class="'+(mode==='focus'?'active':'')+'">Focused · '+(worldBasis==='overall'?'20–40':'30–40')+'</button>'+
  '<button type="button" data-board-dp-scale="full" aria-pressed="'+(mode==='full')+
  '" class="'+(mode==='full'?'active':'')+'">Full · 0–45</button></div>';
 }
-const dpScaleNote=(metric,scale='focus')=>metric==='average'?
+const dpScaleNote=(metric,scale='focus',worldBasis='recipients')=>metric==='average'?
  '<p class="board-dp-scale-note" role="note">'+
  (scale==='full'?'Full Diploma scoring scale displayed (0–45).':
- 'Focused axis begins at <strong>30, not zero</strong> (30–40 out of 45). This magnifies visible differences; switch to Full scale for context.')+
- ' AISG and world averages, year labels and calculations are unchanged.</p>':'';
+ 'Focused axis begins at <strong>'+(worldBasis==='overall'?'20':'30')+', not zero</strong> ('+
+ (worldBasis==='overall'?'20–40':'30–40')+' out of 45). This magnifies visible differences; switch to Full scale for context.')+
+ ' The reported scores do not change with the axis or reference population.</p>':'';
 
 function dpRangeHighlight(metric){
  const values=DP_RECORDS.map(r=>r[metric]).filter(Number.isFinite);
@@ -55,30 +66,38 @@ function dpRangeHighlight(metric){
  '<small>Across '+n+' recorded graduating years · cohorts differ</small></div></div>';
 }
 
-export function renderDPPointDetails(key){
+export function renderDPPointDetails(key,worldBasis='recipients'){
  const match=/^(average|passRate):(\d{4})$/.exec(String(key||''));
- const item=match?dpPoint(match[2],match[1]):null;
+ const item=match?dpPoint(match[2],match[1],worldBasis):null;
  if(!item)return '<p>Select a year to see the school outcome.</p>';
  const {row,metric,value,label,worldValue}=item;
  return '<div class="board-dp-point-title"><div><span class="eyebrow">IB DIPLOMA · '+safe(row.year)+'</span>'+
  '<h3>'+safe(label)+'</h3></div><strong>'+valueText(value,metric)+(metric==='average'?'<small> / 45</small>':'')+'</strong></div>'+
  (Number.isFinite(worldValue)?'<p class="board-dp-global-point">'+
-  (metric==='average'?'World Diploma recipients · '+valueText(worldValue,metric)+' / 45 · matched recipient cohort · AISG '+delta(value,worldValue)+' points':
+  (metric==='average'?(worldBasis==='overall'?
+   'World all Diploma/retake results · '+worldValue.toFixed(2)+' / 45 · broader than AISG Diploma recipients; not a matched score gap':
+   'World Diploma recipients · '+valueText(worldValue,metric)+' / 45 · matched recipient category · AISG '+delta(value,worldValue)+' points'):
    'World Diploma award rate · '+valueText(worldValue,metric)+' · AISG '+percentage(value-worldValue)+' percentage points higher')+'</p>':
   '<p>Worldwide comparison unavailable for this earlier year or measure.</p>')+
+ (metric==='average'&&Number.isFinite(row.worldAverage)&&Number.isFinite(row.worldAwardedAverage)?
+  '<p class="board-dp-global-point"><strong>Other worldwide reference:</strong> '+
+   (worldBasis==='overall'?'Diploma recipients '+valueText(row.worldAwardedAverage,'average'):
+    'All Diploma/retake results '+row.worldAverage.toFixed(2))+' / 45.</p>':'')+
  (row.candidates?'<p><strong>AISG candidate count:</strong> '+row.candidates+' Diploma/retake candidates · '+row.passes+' Diplomas awarded.</p>':'')+
  (Number.isFinite(row.meanGrade)?'<p><strong>AISG mean subject grade:</strong> '+row.meanGrade.toFixed(2)+' / 7 (Diploma awardees).</p>':'')+
 
  (row.covid?'<p class="board-dp-caveat">'+safe(row.covid)+'</p>':'')+
  '<p class="board-dp-point-footnote">Annual graduating cohorts differ; participation and qualification measures are not interchangeable.</p>';
 }
-function dpLineChart(metric,{range='all',selectedYear=null,compareWorld=false,scale='focus'}={}){
- const meta=metricMeta(metric),all=dpMetricSeries(metric);
- const items=range==='recent'?all.slice(-3):all;
+function dpLineChart(metric,{range='all',selectedYear=null,compareWorld=false,scale='focus',worldBasis='recipients'}={}){
+ const meta=metricMeta(metric),all=dpMetricSeries(metric,worldBasis);
+ const scoped=metric==='average'&&worldBasis==='overall'&&compareWorld?all.filter(r=>r.end>=2017):all;
+ const items=range==='recent'?scoped.slice(-3):scoped;
  const width=920,height=330,left=58,right=28,top=75,bottom=257;
  const availableValues=items.flatMap(r=>[r.value,...(compareWorld?[r.worldValue]:[])]).filter(Number.isFinite);
- const focus=metric==='average'&&scale!=='full'&&availableValues.every(n=>n>=30&&n<=40);
- const min=focus?30:0,max=focus?40:meta.max;
+ const focusMin=worldBasis==='overall'?20:30;
+ const focus=metric==='average'&&scale!=='full'&&availableValues.every(n=>n>=focusMin&&n<=40);
+ const min=focus?focusMin:0,max=focus?40:meta.max;
  const xp=i=>left+(width-left-right)*(i/Math.max(1,items.length-1));
  const yp=n=>bottom-((n-min)/(max-min))*(bottom-top);
  const pathFor=(field,color,dashed=false)=>{
@@ -91,16 +110,18 @@ function dpLineChart(metric,{range='all',selectedYear=null,compareWorld=false,sc
    '" fill="none" stroke="'+color+'" stroke-width="'+(dashed?'2.6':'3.3')+'" stroke-linecap="round" stroke-linejoin="round"'+
    (dashed?' stroke-dasharray="7 7"':'')+'/>').join('');
  };
- const lines=pathFor('value','#176397')+(compareWorld?pathFor('worldValue','#13847c',true):'');
+ const lines=pathFor('value','#173d60')+(compareWorld?pathFor('worldValue','#b3444b',true):'');
  const worldPoints=compareWorld?items.map((r,i)=>Number.isFinite(r.worldValue)?
   '<g class="board-dp-world-hover" data-board-dp-world-point="'+metric+':'+r.end+
   '" role="button" tabindex="0" aria-label="'+safe(r.year+', World IB '+meta.label+
-  ' '+valueText(r.worldValue,metric)+'. Hover or focus for comparisons and AISG candidate counts.')+'">'+
+  ' '+valueText(r.worldValue,metric)+'. '+(metric==='average'&&worldBasis==='overall'?
+    'Includes unsuccessful Diploma candidates; not a matched cohort.':'Hover or focus for details.')+'">'+
   '<circle cx="'+xp(i)+'" cy="'+yp(r.worldValue)+'" r="15" fill="transparent"/>'+
-  '<circle class="board-dp-world-point" cx="'+xp(i)+'" cy="'+yp(r.worldValue)+'" r="4.6" fill="#13847c" stroke="#fff" stroke-width="1.4"/>'+
+  '<circle class="board-dp-world-point" cx="'+xp(i)+'" cy="'+yp(r.worldValue)+'" r="4.6" fill="#b3444b" stroke="#fff" stroke-width="1.4"/>'+
   '<text class="board-dp-world-value" text-anchor="middle" x="'+xp(i)+'" y="'+(yp(r.worldValue)+21)+'">'+
-  (metric==='average'?r.worldValue.toFixed(1):Math.round(r.worldValue)+'%')+'</text></g>':'').join(''):'';
- const tickValues=focus?[30,32,34,36,38,40]:[0,.25,.5,.75,1].map(frac=>Math.round(max*frac));
+  (metric==='average'?r.worldValue.toFixed(worldBasis==='overall'?2:1):Math.round(r.worldValue)+'%')+'</text></g>':'').join(''):'';
+ const tickValues=focus?(worldBasis==='overall'?[20,25,30,35,40]:[30,32,34,36,38,40]):
+  [0,.25,.5,.75,1].map(frac=>Math.round(max*frac));
  const ticks=tickValues.map(val=>{
   const y=yp(val);
   return '<line class="board-trend-grid" x1="'+left+'" y1="'+y+'" x2="'+(width-right)+'" y2="'+y+'"/>'+
@@ -120,15 +141,15 @@ function dpLineChart(metric,{range='all',selectedYear=null,compareWorld=false,sc
  }).join('');
  return '<svg class="board-dp-svg" viewBox="0 0 '+width+' '+height+'" role="group" aria-label="'+safe(meta.label)+
   ' by AISG graduating year'+(compareWorld?', with global IB reference':'')+
-  '. '+(focus?'Focused y-axis 30 to 40, truncated above zero.':'Full y-axis from 0 to '+max+'.')+'" xmlns="http://www.w3.org/2000/svg">'+
+  '. '+(focus?'Focused y-axis '+focusMin+' to 40, truncated above zero.':'Full y-axis from 0 to '+max+'.')+'" xmlns="http://www.w3.org/2000/svg">'+
   '<text class="board-trend-axislabel" x="'+left+'" y="22">'+safe(meta.label)+(metric==='average'?' · out of 45':' · percentage')+'</text>'+
   '<text class="board-dp-axis-mode" text-anchor="end" x="'+(width-right)+'" y="22">'+
-  (focus?'FOCUSED AXIS · 30–40 (NOT ZERO-BASED)':'FULL AXIS · 0–'+max)+'</text>'+
+  (focus?'FOCUSED AXIS · '+focusMin+'–40 (NOT ZERO-BASED)':'FULL AXIS · 0–'+max)+'</text>'+
   ticks+lines+worldPoints+marks+'</svg>';
 }
 function dpOutcomesTable(){
  return '<details class="board-details board-dp-table"><summary>Detailed results by graduating year <span>+</span></summary>'+
- '<p>Average-point gaps compare AISG Diploma recipients with worldwide Diploma recipients only (same award category). The separate worldwide overall DP mean includes unsuccessful Diploma candidates and is <strong>not</strong> the benchmark used for the gap. A dash means unavailable, not zero.</p>'+
+ '<p>Two world averages are shown separately: <strong>Diploma recipients</strong> (same award category as AISG) and <strong>all Diploma/retake results</strong> (includes unsuccessful Diploma candidates). Score gaps use only matched Diploma recipients. Missing results are dashes, not zeros.</p>'+
  '<div class="tablewrap"><table class="board-table board-dp-detail-table"><thead><tr>'+
  '<th>Class</th><th>AISG recipients /45</th><th>World recipients /45</th><th>Matched gap</th><th>World overall /45</th>'+
  '<th>Diploma pass</th><th>World pass</th><th>Candidates / cohort</th><th>Diplomas awarded</th>'+
