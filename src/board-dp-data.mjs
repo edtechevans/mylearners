@@ -5,10 +5,11 @@
  * IB official report is authoritative for Diploma awards, candidate counts and averages.
  * World Diploma results: official IB May final bulletins 2016–2025;
  * May 2026 uses the IB provisional bulletin and July 2026 announcement.
- * worldAverage = worldwide mean among ALL Diploma/retake results.
+ * worldAverage = worldwide mean among ALL Diploma/retake results, including candidates not awarded the Diploma.
  * worldAwardedAverage = mean of Diploma recipients only (MATCHED to AISG school mean).
  * Global awardee mean is unavailable from the verified historical source for May 2016;
- * comparison graph begins at May 2017, while AISG school history begins in 2016.
+ * recipient-matched comparison graph begins at May 2017, while AISG school history begins in 2016.
+ * The May 2021 FINAL worldwide overall result is 32.98 (not 32.97 in an older graphic).
  *
  * No identifying records or inferred examination cohort counts,
  * and no mixing DP/CP world recipients with Diploma candidates.
@@ -57,26 +58,32 @@ export const DP_METHODS=Object.freeze({
  current:'The May 2026 AISG IB School Statistics reports 34 average points among successful Diploma candidates and 52 awards from 56 Diploma/retake candidates (92.9%, displayed as 93%).',
  pathways:'Grade 12 pathways are enrollment information, not examination candidate or pass counts. Do not divide examinations by pathway entries.',
  boundary:'DP results cover graduating cohorts; MAP covers Grades 3–10. Do not combine them into a single attainment percentage.',
- comparison:'IB overall worldwide Diploma mean and worldwide Diploma-recipient mean are DIFFERENT populations. Compare AISG recipient-only Diploma mean with worldAwardedAverage for May 2017–2026. IB 2016 awardee-only global mean not independently established, so omit that world chart point. May 2026 statistics are provisional; historical May sessions use final IB bulletins. Worldwide pass rates reflect Diploma/retake results. Values retain original source precision.',
+ comparison:'Two IB world series are available. Worldwide overall Diploma/retake mean includes candidates not awarded a Diploma; it provides broad historical context but is NOT like-for-like with AISG recipients. Worldwide Diploma-recipient mean covers the same award category as AISG and is appropriate for score gaps. The 2016 worldwide recipient mean is unavailable, so matched gaps use 2017–2026 only. The worldwide overall May 2021 mean is 32.98 in the final IB bulletin (an older graphic used 32.97). May 2026 worldwide figures are provisional; earlier years use final IB bulletins. Pass rates reflect Diploma/retake results.',
  covid:'The school summary flags examination cancellation in 2020 and altered assessment arrangements in 2021–2022. Compare those years with care.',
  discrepancy2024:'For 2024, the school summary records 15 high scorers out of 35 for that indicator, but 38 Diploma candidates overall. The high-score denominator is retained exactly as supplied and not silently changed.',
  discrepancy2023:'The bilingual Diploma figure for 2023 is 14/55 in the school summary, a different denominator from the 50 Diploma passes. Historical denominators are displayed as supplied and not reconciled by assumption.'
 });
+export const DP_WORLD_BASES=Object.freeze([
+ {id:'recipients',label:'Diploma recipients only',
+  meaning:'Same Diploma-awarded category as the AISG school mean; published values are rounded.'},
+ {id:'overall',label:'All Diploma/retake results',
+  meaning:'Includes candidates not awarded a Diploma; this is wider than the AISG recipient-only cohort.'}
+]);
 export const dpVerified=(row)=>!!row&&Number.isFinite(row.average);
 export const dpPassCount=(row)=>Number.isFinite(row?.passes)&&Number.isFinite(row?.candidates)?row.passes+'/'+row.candidates:null;
 export const dpParticipation=(row)=>{
  if(!row||!Number.isFinite(row.candidates))return null;
  return Number.isFinite(row.cohort)?Math.round(100*row.candidates/row.cohort):row.participationPct??null;
 };
-export function dpMetricSeries(metric='average'){
+export function dpMetricSeries(metric='average',worldBasis='recipients'){
  const key=metric==='passRate'?'passRate':'average';
- const world=key==='average'?'worldAwardedAverage':'worldPassRate';
+ const world=key==='average'?(worldBasis==='overall'?'worldAverage':'worldAwardedAverage'):'worldPassRate';
  return DP_RECORDS.map(row=>({year:row.year,end:row.end,value:row[key],
   worldValue:row[world]??null,provisional:false}));
 }
-export function dpPoint(year,metric='average'){
+export function dpPoint(year,metric='average',worldBasis='recipients'){
  const row=DP_RECORDS.find(r=>r.end===Number(year));if(!row)return null;
  const key=metric==='passRate'?'passRate':'average';
- return {row,metric:key,value:row[key],worldValue:row[key==='average'?'worldAwardedAverage':'worldPassRate']??null,
+ return {row,metric:key,value:row[key],worldValue:row[key==='average'?(worldBasis==='overall'?'worldAverage':'worldAwardedAverage'):'worldPassRate']??null,
   label:DP_METRICS.find(m=>m.id===key).label};
 }
