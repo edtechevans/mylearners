@@ -63,6 +63,17 @@ test('every grade class renders a single selector and correctly scoped tab group
   if(g==='G12')assert.doesNotMatch(html,/data-class-evidence="map"/);
  }
 });
+test('Faculty everyday view hides advanced evidence without removing the controls',()=>{
+ const students=group('G7');
+ const everyday=renderClassEvidencePanel(students,{...ctx,rosterView:'everyday'});
+ assert.match(everyday,/<details class="class-evidence-advanced">/);
+ assert.match(everyday,/Explore and customise evidence/);
+ assert.match(everyday,/data-class-evidence="map"/);
+ assert.match(everyday,/data-class-compare/);
+ const focused=renderClassEvidencePanel(students,{...ctx,rosterView:'focused'});
+ assert.doesNotMatch(focused,/class-evidence-advanced/);
+ assert.match(focused,/class-evidence-navigation/);
+});
 test('class MAP and wellbeing tabs read distinct fictional sources',()=>{
  const students=group('G7'),student=students[0];
  const html=renderClassEvidencePanel(students,{...ctx,mode:'map'});
