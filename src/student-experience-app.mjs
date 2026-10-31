@@ -745,7 +745,7 @@ function render(){
  const content=state.role==='board'?renderBoard(state):state.role==='leader'?leader():
   state.role==='sss'?sss():state.role==='student'?student():faculty();
  document.body.classList.toggle('board-drawer-open',state.role==='board'&&state.boardView==='explore'&&!!state.boardMapDetailsOpen);
- root.dataset.workspace=state.role;
+ if(root.dataset)root.dataset.workspace=state.role;
  root.innerHTML=header()+'<main class="container" id="main" tabindex="-1">'+content+'</main><footer>'+
  (state.role==='board'?'AISG Board · Aggregated MAP and IB Diploma outcomes · No individual student scores published':
  'My Learners demonstration · Learners, assessments and student check-ins fictional')+
