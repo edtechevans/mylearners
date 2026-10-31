@@ -115,7 +115,7 @@ function dpLineChart(metric,{range='all',selectedYear=null,compareWorld=false,sc
   '<g class="board-dp-world-hover" data-board-dp-world-point="'+metric+':'+r.end+
   '" role="button" tabindex="0" aria-label="'+safe(r.year+', World IB '+meta.label+
   ' '+valueText(r.worldValue,metric)+'. '+(metric==='average'&&worldBasis==='overall'?
-    'Includes unsuccessful Diploma candidates; not a matched cohort.':'Hover or focus for details.')+'">'+
+    'Includes unsuccessful Diploma candidates; not a matched cohort.':'Hover or focus for details.'))+'">'+
   '<circle cx="'+xp(i)+'" cy="'+yp(r.worldValue)+'" r="15" fill="transparent"/>'+
   '<circle class="board-dp-world-point" cx="'+xp(i)+'" cy="'+yp(r.worldValue)+'" r="4.6" fill="#b3444b" stroke="#fff" stroke-width="1.4"/>'+
   '<text class="board-dp-world-value" text-anchor="middle" x="'+xp(i)+'" y="'+(yp(r.worldValue)+21)+'">'+
