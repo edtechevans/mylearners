@@ -309,6 +309,8 @@ try{
    assert(headers.length===7,'Expected learner, five measures and support information');
    assert(await evaluate("document.querySelector('.roster-daily').getBoundingClientRect().top<innerHeight-80"),
     'The Faculty data wall should begin within the first viewport');
+   assert(await evaluate("(function(){const row=document.querySelector('.faculty-data-wall tbody tr');return !!row&&row.getBoundingClientRect().top<innerHeight-55})()"),
+    'At least the first learner row should appear within the desktop viewport');
    assert(await evaluate("document.querySelector('.top .brand-kicker')?.textContent.includes('LEARNING INTELLIGENCE')"),
     'The new product identity should be readable');
 
