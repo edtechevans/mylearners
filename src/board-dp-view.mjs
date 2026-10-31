@@ -201,6 +201,7 @@ export function renderBoardDP(state){
  const end=DP_RECORDS.some(r=>r.end===Number(state.boardDpYear))?Number(state.boardDpYear):DP_RECORDS.at(-1).end;
  const selected=DP_RECORDS.find(r=>r.end===end);
  const comparison=state.boardDpGlobal!==false;
+ const worldBasis=state.boardDpWorldBasis==='overall'?'overall':'recipients';
  const verified=DP_RECORDS.filter(r=>Number.isFinite(r.average));
  const highAwardYears=verified.filter(r=>r.passRate>=90).length;
  const detailNote='Different graduating cohorts each year; these are not matched student growth scores.';
@@ -208,8 +209,10 @@ export function renderBoardDP(state){
  const worldOverall=selected.worldAverage;
  const worldPass=selected.worldPassRate;
  const international='<div class="board-dp-world-strip" aria-label="International Diploma comparisons">'+
-  mini('World Diploma recipients',headlinePoints(worldAvg)+' /45',
-   Number.isFinite(worldAvg)?'Matched awardee-only mean · AISG '+delta(selected.average,worldAvg)+' points':'Recipient-only global mean unavailable for this year')+
+  mini('World all DP results',Number.isFinite(worldOverall)?worldOverall.toFixed(2)+' /45':'—',
+   'All Diploma/retake results · includes candidates not awarded the Diploma')+
+  mini('World Diploma recipients',Number.isFinite(worldAvg)?points(worldAvg)+' /45':'—',
+   Number.isFinite(worldAvg)?'Same award category as AISG · matched AISG '+delta(selected.average,worldAvg)+' points':'Recipient-only global mean unavailable for this year')+
   mini('World Diploma pass rate',Number.isFinite(worldPass)?Math.round(worldPass)+'%':'—',
    Number.isFinite(worldPass)?'AISG '+percentage(selected.passRate-worldPass).replace('%',' percentage points')+' vs world':'Global pass-rate result unavailable for this year')+
   mini('Diploma/retake candidates',selected.candidates?
@@ -250,7 +253,7 @@ export function renderBoardDP(state){
  international+
  '<p class="board-dp-graphic-footnote">'+
  'AISG May '+end+' Diploma awards and averages are sourced from official IB School Statistics (school 001832). '+
- 'Worldwide Diploma-recipient mean is compared with AISG Diploma-recipient mean (same award category). The separately published world overall DP mean for '+end+' is '+points(worldOverall)+' /45 and includes a broader candidate population. IB May 2026 provisional bulletin; historical IB May bulletins. Summary scores are rounded; hover for exact results.</p></section>'+
+ 'Two worldwide means are available: <strong>Diploma recipients</strong> (matched award category) and <strong>all Diploma/retake results</strong> (wider population). The overall series provides context, not a like-for-like AISG score gap. May 2026 world data are provisional; earlier years use IB final bulletins. The final May 2021 worldwide overall mean is 32.98. AISG school averages are IB-published rounded figures.</p></section>'+
  '<section id="board-dp-history" class="board-panel board-dp-panel"><div class="board-dp-chart-top"><div>'+
  '<span class="eyebrow">HISTORICAL OUTCOMES</span>'+
  '<h3>'+(metric==='average'?'Diploma Average Points':'Diploma Pass Rate')+' Over Time</h3>'+
@@ -260,20 +263,22 @@ export function renderBoardDP(state){
  '" class="'+(metric==='average'?'active':'')+'">Average points</button>'+
  '<button type="button" data-board-dp-metric="passRate" aria-pressed="'+(metric==='passRate')+
  '" class="'+(metric==='passRate'?'active':'')+'">Pass rate</button></div></div>'+
- '<div class="board-dp-trend-controls"><span class="board-dp-legend"><i class="board-dp-key-aisg"></i>AISG'+
- (comparison?'<i class="board-dp-key-world"></i>World IB · '+(metric==='average'?'Diploma recipients':'Diploma award rate'):'')+'</span>'+
- '<div class="board-dp-chart-actions">'+dpScaleControls(metric,state.boardDpScale)+
+ '<div class="board-dp-trend-controls"><span class="board-dp-legend"><i class="board-dp-key-aisg"></i>AISG recipients'+
+ (comparison?'<i class="board-dp-key-world"></i>World IB · '+(metric==='average'?basisName(worldBasis):'Diploma award rate'):'')+'</span>'+
+ '<div class="board-dp-chart-actions">'+dpWorldBasisControls(metric,worldBasis)+dpScaleControls(metric,state.boardDpScale,worldBasis)+
  '<button type="button" class="board-dp-global-toggle" data-board-dp-global aria-pressed="'+comparison+'">'+
  (comparison?'Show AISG only':'Compare with world')+'</button></div></div>'+
  dpRangeHighlight(metric)+
  '<p class="board-dp-swipe">Hover or focus an AISG or world point to see precise scores and AISG candidate counts. Select an AISG year to inspect its outcome.</p>'+
  '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Explore Diploma outcomes by school year">'+
- dpLineChart(metric,{selectedYear:end,compareWorld:comparison,scale:state.boardDpScale})+'</div>'+
- dpScaleNote(metric,state.boardDpScale)+
- (metric==='average'&&comparison?matchedGlobalGaps():'')+
+ dpLineChart(metric,{selectedYear:end,compareWorld:comparison,scale:state.boardDpScale,worldBasis})+'</div>'+
+ dpScaleNote(metric,state.boardDpScale,worldBasis)+
+ (metric==='average'&&comparison&&worldBasis==='recipients'?matchedGlobalGaps():'')+
+ (metric==='average'&&comparison&&worldBasis==='overall'?
+  '<p class="board-dp-population-note"><strong>Different populations:</strong> AISG average covers Diploma recipients; the world overall average includes Diploma/retake candidates who did not receive a Diploma. This is context, not a matched school gap. Select “Diploma recipients” for like-category comparison.</p>':'')+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
  '<div class="board-dp-inspector" aria-live="polite"><p>Hover or select a year to inspect its outcome.</p></div>'+
- '<p class="board-chart-caption">Average-point charts use a clearly labelled focused 30–40 axis by default, with full 0–45 available. Pass-rate charts retain their full 0–100% scale. The dashed line compares worldwide <strong>Diploma-recipient means</strong> for average points, or worldwide Diploma award rates for pass rates. The 2020–22 years had altered assessment arrangements.</p></section>'+ renderDiplomaSubjectSection(state)+
+ '<p class="board-chart-caption">Average-point charts label the focused axis, with full 0–45 available. Pass rates use 0–100%. Worldwide averages use the <strong>selected population</strong>. Only the recipient-matched category produces calculated score gaps. The 2020–22 sessions had altered assessment arrangements.</p></section>'+ renderDiplomaSubjectSection(state)+
 
  achievements+
  dpPathways()+
