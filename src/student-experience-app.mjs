@@ -20,7 +20,7 @@ import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,RE
 import {quartileBand,formatIndex,experienceBand} from './faculty-bands.mjs?v=20261030wall2';
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261028titles1';
 import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261030wall1';
-import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261030wall3';
+import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261031v2';
 import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile} from './maia-demo.mjs';
 import {renderStudentOverview} from './student-daily-overview.mjs?v=20261028titles1';
 import {renderBoard} from './board-map-view.mjs?v=20261029dpaxis1';
@@ -309,9 +309,20 @@ function roster(ss,options={}){
  return '<section class="roster roster-daily" data-roster-layout="'+(everyday?'everyday':'focused')+'" aria-label="'+(across?'Search across assigned students':'My class roster')+'">'+
   '<div class="sectionhead"><div><h2>'+heading+'</h2><span class="tiny">'+context+'</span></div>'+
   (across?'<button type="button" class="roster-clear-search" data-clear-search>Clear search</button>':'')+'</div>'+
-  (options.controls||'')+table+mobile+
+  (options.controls||'')+
+  (everyday?'<div class="faculty-evidence-legend" aria-label="Understanding the evidence colours">'+
+   '<strong>Four evidence bands</strong><span class="faculty-legend-swatches">'+
+   '<span class="faculty-legend-chip band-low">Q1</span>'+
+   '<span class="faculty-legend-chip band-mid-low">Q2</span>'+
+   '<span class="faculty-legend-chip band-mid-high">Q3</span>'+
+   '<span class="faculty-legend-chip band-high">Q4</span></span>'+
+   '<span class="faculty-legend-caption">Academic: relative same-grade demo quartiles · Experience: fixed index bands</span>'+
+   '<details><summary>Interpret colours</summary><p>MAP and IXL bands compare learners within the same fictional grade cohort, not official NWEA or IXL benchmarks. Engagement and Belonging use four fixed ranges from −2 to +2. Missing evidence is grey. A colour describes evidence, never a child.</p></details></div>':'')+
+  table+mobile+
   (rows.length?'':'<p class="empty-message">No matching students in your assigned classes. Try a different name.</p>')+
-  '<p class="tiny roster-caption">Engagement and Belonging colours show four fixed bands from −2 to +2. MAP, IXL, Core Phonics and F&amp;P quartiles (where available) compare only with the same-grade fictional demonstration cohort, with at least 20 comparable results; they are not official norms. Other measures retain their own scales. Hover or focus on any cell to inspect its source value and select it to open the learner profile. Latest issued reports and assessments are historical, not current-year grades. Each measure uses its own scale. Select a learner to view the date, programme and history.</p>'+
+  '<details class="faculty-inquiry-prompt"><summary>From evidence to action</summary>'+
+   '<p>Notice a pattern, check the source and date, and consider what more you might need to know. Select a learner to review their context and use the existing classroom response or follow-up tools. Do not draw conclusions from colour alone.</p></details>'+
+  '<p class="tiny roster-caption">Sources and windows vary. Academic quartiles compare fictional same-grade cohorts with at least 20 results, not official norms. Student voice uses fixed index ranges. Select a learner to review the source, date, programme and history.</p>'+
   '</section>';
 }
 
@@ -407,7 +418,9 @@ function faculty(){
   '<label class="search-label">Find any assigned student'+
    '<input data-query placeholder="Search across all my classes..." value="'+safe(state.query)+
    '" aria-label="Search for a student across all assigned classes"></label>'+
-  '<label class="faculty-demo-picker">Faculty demo '+selector('teacher',DATA.teachers.map(t=>[t.id,t.name]),state.teacher)+'</label></div>';
+  '<details class="faculty-demo-options"><summary>Demo controls</summary>'+
+   '<label class="faculty-demo-picker">Faculty demo '+
+   selector('teacher',DATA.teachers.map(t=>[t.id,t.name]),state.teacher)+'</label></details></div>';
  const summary=searching?'':'<div class="quick-summary faculty-daily-summary">'+
   quickStat('My Class',ss.length,'Learners in '+safe(activeClass()?.name||'this class'))+
   quickStat('Attendance',fmt(meanAttendance)+'%','Through 8 Oct 2026')+

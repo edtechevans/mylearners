@@ -104,14 +104,18 @@ function decorate(table,index){
  empty.textContent='No matching records. Try resetting the filters.';
  empty.hidden=true;
  shell.insertBefore(panel,table);
- if(role()==='board'){
+ if(role()==='board'||(role()==='faculty'&&table.closest('.roster-daily'))){
   const controls=document.createElement('details');
-  controls.className='ux-board-table-controls';
+  const faculty=role()==='faculty';
+  controls.className=faculty?'ux-faculty-table-controls':'ux-board-table-controls';
   const heading=document.createElement('summary');
-  heading.textContent='Table tools · search, columns and export';
+  heading.textContent=faculty?'Table tools · filters, columns and saved views':
+   'Table tools · search, columns and export';
   controls.appendChild(heading);
   panel.parentNode.insertBefore(controls,panel);
   controls.appendChild(panel);
+  // Expose active filters rather than hiding an applied setting.
+  if(faculty&&(s.search||Object.values(s.fields).some(clean)||s.hidden.length))controls.open=true;
  }
  shell.appendChild(caption);shell.appendChild(empty);
  [...table.querySelectorAll('thead th')].forEach((th,i)=>{

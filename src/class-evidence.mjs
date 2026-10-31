@@ -215,6 +215,7 @@ export function renderClassEvidencePanel(students,{
   '" class="'+(rosterView==='everyday'?'active':'')+'">Everyday columns</button>'+
   '<button type="button" data-roster-view="focused" aria-pressed="'+(rosterView==='focused')+
   '" class="'+(rosterView==='focused'?'active':'')+'">Focused evidence</button></div>'+
+  (rosterView==='everyday'?'<details class="class-evidence-advanced"><summary>Explore and customise evidence</summary><div class="class-evidence-advanced-body">':'')+
   '<div class="class-evidence-navigation">'+tabs+'</div>'+
   '<div class="class-evidence-controls">'+compareSelect+(filters.length?
    '<div class="class-evidence-filter-row">'+filters.join('')+'</div>':'')+'</div>'+
@@ -223,5 +224,5 @@ export function renderClassEvidencePanel(students,{
   (paired!=='none'?'<p class="class-evidence-comparison-note">Two measures shown separately, with their own units and dates. No combined score.</p>':'')+
   '<details class="class-evidence-methodology"><summary>About this measure</summary>'+
   '<p class="class-evidence-help">'+esc(modeHelp[selected])+'</p>'+note+'</details>'+breakdown+
-  '</section>';
+  (rosterView==='everyday'?'</div></details>':'')+'</section>';
 }
