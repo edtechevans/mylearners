@@ -341,6 +341,9 @@ try{
    const journey=await evaluate("(function(){const cell=document.querySelector('.roster-desktop .evidence-cell-open[data-evidence-preview=experience-cell]');if(!cell)return {error:'no cell'};const original=window.matchMedia;window.matchMedia=function(q){return q==='(pointer: coarse)'?{matches:true}:original.call(window,q)};try{cell.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}));const preview=!!document.querySelector('.evidence-preview-popup')&&!document.querySelector('.profile-head');cell.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}));const profile=!!document.querySelector('.profile-head');return {preview,profile}}finally{window.matchMedia=original}})()");
    assert(journey.preview,'First touch should reveal the check-in explanation without navigating');
    assert(journey.profile,'Second touch should open the learner profile');
+   await click('[data-action="back"]');
+   assert(await evaluate("!!document.querySelector('.roster-daily')"),
+    'Returning from a touch preview should preserve the Faculty class view');
   });
  await run('faculty-profile-1440','faculty','.faculty-daily-toolbar',1440,900,
   async()=>{await click('.student-link');assert(await evaluate("!!document.querySelector('.profile-head')"),'Faculty profile did not open')});
