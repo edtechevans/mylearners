@@ -324,7 +324,7 @@ try{
     'Learner names should stay visible during horizontal scrolling');
    assert(await evaluate("document.querySelectorAll('.faculty-data-wall tbody td[data-ux-sort-value]').length>=80"),
     'Evidence cells must provide raw values for sorting');
-   const numericSort=await evaluate("(function(){const h=document.querySelector('.faculty-data-wall thead [data-ux-sort="2"]');if(!h)return false;h.click();const v=[...document.querySelectorAll('.faculty-data-wall tbody tr td:nth-child(3)')].map(td=>td.getAttribute('data-ux-sort-value')).filter(x=>x!==null&&x!=='').map(Number);return v.length>5&&v.every((n,i)=>i===0||n>=v[i-1])})()");
+   const numericSort=await evaluate("(function(){const h=document.querySelector('.faculty-data-wall thead [data-ux-sort=\"2\"]');if(!h)return false;h.click();const v=[...document.querySelectorAll('.faculty-data-wall tbody tr td:nth-child(3)')].map(td=>td.getAttribute('data-ux-sort-value')).filter(x=>x!==null&&x!=='').map(Number);return v.length>5&&v.every((n,i)=>i===0||n>=v[i-1])})()");
    assert(numericSort,'MAP must sort by actual growth rather than the Q band');
 
    assert(await evaluate("document.querySelectorAll('.roster-daily tbody .class-evidence-result').length>=20"),
