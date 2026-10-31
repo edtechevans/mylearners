@@ -178,6 +178,8 @@ function roster(ss,options={}){
  // evidence. Focused mode preserves the original single-measure comparison UX.
  const everyday=!across&&state.rosterView===EVERYDAY_VIEW;
  const everydayColumns=everyday?everydayEvidenceForGrade(grade):[];
+ const hasAcademicBands=everydayColumns.some(c=>['map','ixl','core','fp'].includes(c.kind));
+ const hasExperienceBands=everydayColumns.some(c=>['engagement','belonging'].includes(c.kind));
  const checkinLabel=EXPERIENCE_WINDOWS.find(w=>w.key===state.classExperienceWindow)?.label||'Fall 2026';
  const everydayHeading=column=>column.kind==='engagement'||column.kind==='belonging'?
   (column.kind==='engagement'?'Engagement':'Belonging')+' · '+checkinLabel:column.label;
@@ -310,13 +312,16 @@ function roster(ss,options={}){
   '<div class="sectionhead"><div><h2>'+heading+'</h2><span class="tiny">'+context+'</span></div>'+
   (across?'<button type="button" class="roster-clear-search" data-clear-search>Clear search</button>':'')+'</div>'+
   (options.controls||'')+
-  (everyday?'<div class="faculty-evidence-legend" aria-label="Understanding the evidence colours">'+
-   '<strong>Four evidence bands</strong><span class="faculty-legend-swatches">'+
-   '<span class="faculty-legend-chip band-low">Q1</span>'+
-   '<span class="faculty-legend-chip band-mid-low">Q2</span>'+
-   '<span class="faculty-legend-chip band-mid-high">Q3</span>'+
-   '<span class="faculty-legend-chip band-high">Q4</span></span>'+
-   '<span class="faculty-legend-caption">Academic: relative same-grade demo quartiles · Experience: fixed index bands</span>'+
+  (everyday&&(hasAcademicBands||hasExperienceBands)?'<div class="faculty-evidence-legend" aria-label="Understanding the evidence colours">'+
+   '<strong>'+(hasAcademicBands?'Four academic evidence bands':'Four fixed experience bands')+'</strong>'+
+   '<span class="faculty-legend-swatches">'+
+   '<span class="faculty-legend-chip band-low">'+(hasAcademicBands?'Q1':'−2')+'</span>'+
+   '<span class="faculty-legend-chip band-mid-low">'+(hasAcademicBands?'Q2':'−1')+'</span>'+
+   '<span class="faculty-legend-chip band-mid-high">'+(hasAcademicBands?'Q3':'0')+'</span>'+
+   '<span class="faculty-legend-chip band-high">'+(hasAcademicBands?'Q4':'+1')+'</span></span>'+
+   '<span class="faculty-legend-caption">'+(hasAcademicBands?
+     'Academic: relative same-grade demo quartiles'+(hasExperienceBands?' · Experience: fixed −2 to +2 bands':''):
+     'Student experience: fixed −2 to +2 index ranges, not quartiles')+'</span>'+
    '<details><summary>Interpret colours</summary><p>MAP and IXL bands compare learners within the same fictional grade cohort, not official NWEA or IXL benchmarks. Engagement and Belonging use four fixed ranges from −2 to +2. Missing evidence is grey. A colour describes evidence, never a child.</p></details></div>':'')+
   table+mobile+
   (rows.length?'':'<p class="empty-message">No matching students in your assigned classes. Try a different name.</p>')+
