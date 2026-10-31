@@ -512,3 +512,47 @@ body{font-family:'Noto Sans','Aptos',system-ui,'Segoe UI',sans-serif;letter-spac
  #app>main.container{margin:0!important;padding:12px 0!important}
  #app :is(.quick-tile,.board-strength-card,.student-today-tile){-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+/* FINAL ART-DIRECTION PASS
+   One accessible reading sequence: page title -> class -> evidence -> people.
+   The panel still contains the same view buttons and advanced options. */
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"]>.sectionhead{
+ display:none!important
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .class-evidence-panel{
+ display:flex!important;align-items:center!important;flex-wrap:wrap!important;
+ justify-content:space-between!important;gap:4px 12px!important;
+ min-height:50px!important;padding:8px 12px!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .class-evidence-panel>.class-evidence-heading{
+ display:none!important
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .class-evidence-panel .class-roster-view-switch{
+ margin:0!important;flex:0 0 auto
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .class-evidence-panel>.class-evidence-advanced{
+ margin:0!important;padding:0!important;border:0!important;flex:0 0 auto
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .class-evidence-panel>.class-evidence-advanced>summary{
+ padding:8px 3px!important;font-size:11.5px!important
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .class-evidence-panel>.class-evidence-advanced[open]{
+ flex:1 1 100%
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .class-evidence-panel>.class-evidence-advanced[open]>.class-evidence-advanced-body{
+ padding:10px 2px 4px!important
+}
+#app[data-workspace="board"] .board-strength-card:first-child .board-strength-action{
+ color:#fff!important;text-decoration-color:#fff!important;opacity:.97!important
+}
+#app[data-workspace="board"] .board-strength-card:first-child:hover .board-strength-action{
+ text-decoration:underline!important;text-underline-offset:3px!important
+}
+@media(max-width:700px){
+ #app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .class-evidence-panel{
+  align-items:flex-start!important;gap:8px!important
+ }
+ #app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .class-evidence-panel>.class-evidence-advanced{
+  flex:1 1 100%
+ }
+}
