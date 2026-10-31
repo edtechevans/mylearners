@@ -1,5 +1,5 @@
 /** Board-only IB Diploma outcomes; distinct from MAP grades and growth. */
-import {DP_RECORDS,DP_GRADE12_PATHWAYS,DP_METRICS,DP_METHODS,dpMetricSeries,dpPoint,dpParticipation,dpPassCount} from './board-dp-data.mjs?v=20261029verifiedglobal1';
+import {DP_RECORDS,DP_GRADE12_PATHWAYS,DP_METRICS,DP_METHODS,dpMetricSeries,dpPoint,dpParticipation,dpPassCount} from './board-dp-data.mjs?v=20261031dp-world1';
 import {renderDiplomaSubjectSection} from './board-dp-subjects.mjs';
 const safe=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const metricMeta=id=>DP_METRICS.find(m=>m.id===id)||DP_METRICS[0];
