@@ -25,7 +25,7 @@ import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile}
 import {renderStudentOverview} from './student-daily-overview.mjs?v=20261028titles1';
 import {renderBoard} from './board-map-view.mjs?v=20261029dpaxis1';
 import {renderTrendPointDetails} from './board-map-overview.mjs?v=20261029dpaxis1';
-import {renderDPPointDetails} from './board-dp-view.mjs?v=20261029dpaxis1';
+import {renderDPPointDetails} from './board-dp-view.mjs?v=20261031dp-audit1';
 import {renderDPSubjectPointDetails} from './board-dp-subjects.mjs';
 import {DP_RECORDS} from './board-dp-data.mjs?v=20261029verifiedglobal1';
 import {boardWindowFor,BOARD_DATA} from './board-map-data.mjs';
@@ -82,7 +82,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all'),
  boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardTrendRange:'recent',boardOverviewChart:'dp',
  boardMapDetailsOpen:false,boardMapCompareSeasons:false,boardMapGrowthOpen:false,
- boardDpMetric:'passRate',boardDpScale:'focus',boardDpGlobal:true,
+ boardDpMetric:'passRate',boardDpScale:'focus',boardDpWorldBasis:'recipients',boardDpGlobal:true,
  boardDpYear:String(DP_RECORDS.at(-1).end),boardDpRange:'all',boardDpSubject:'math-aa-sl'};
 recallFaculty();
 if(state.role==='leader')state.classId='';
@@ -779,7 +779,7 @@ function showDPPoint(point){
  const key=point?.dataset?.boardDpPoint,inspector=root.querySelector('.board-dp-inspector');
  if(!inspector||!key||pinnedChartKey&&pinnedChartKey!==key)return;
  if(inspector.dataset.activePoint!==key){
-  inspector.innerHTML=renderDPPointDetails(key);
+  inspector.innerHTML=renderDPPointDetails(key,state.boardDpWorldBasis);
   inspector.dataset.activePoint=key;
   root.querySelectorAll('.board-dp-point.is-active').forEach(x=>x.classList.remove('is-active'));
   point.classList.add('is-active');
@@ -831,7 +831,7 @@ function placeBoardFloat(point,e){
  if(!key)return;
  const tooltipKey=(subject?'subject:':dp?'dp:':'map:')+key;
  if(tooltip.dataset.activePoint!==tooltipKey){
-  tooltip.innerHTML=subject?renderDPSubjectPointDetails(key):dp?renderDPPointDetails(key):renderTrendPointDetails(key);
+  tooltip.innerHTML=subject?renderDPSubjectPointDetails(key):dp?renderDPPointDetails(key,state.boardDpWorldBasis):renderTrendPointDetails(key);
   tooltip.dataset.activePoint=tooltipKey;
  }
  tooltip.hidden=false;
@@ -1135,6 +1135,12 @@ root.addEventListener('click',e=>{
   state.boardDpScale=scaleChoice.dataset.boardDpScale==='full'?'full':'focus';
   render();
   root.querySelector('[data-board-dp-scale="'+state.boardDpScale+'"]')?.focus({preventScroll:true});
+  return;
+ }
+ const basisToggle=e.target.closest('[data-board-dp-basis]');
+ if(basisToggle&&state.role==='board'){
+  state.boardDpWorldBasis=basisToggle.dataset.boardDpBasis==='overall'?'overall':'recipients';
+  render();root.querySelector('[data-board-dp-basis="'+state.boardDpWorldBasis+'"]')?.focus({preventScroll:true});
   return;
  }
  const worldToggle=e.target.closest('[data-board-dp-global]');
