@@ -90,6 +90,53 @@ test('Board Diploma presents historical AISG vs global outcomes immediately afte
  assert.match(html,/board-dp-matched-gaps/);
 });
 
+test('2017–2026 graphic matches official AISG history and overall worldwide results',()=>{
+ const decade=DP_RECORDS.filter(r=>r.end>=2017);
+ assert.deepEqual(decade.map(r=>r.end),[2017,2018,2019,2020,2021,2022,2023,2024,2025,2026]);
+ assert.deepEqual(decade.map(r=>r.average),[33,34,32,36,37,36,34,34,34,34]);
+ assert.deepEqual(decade.map(r=>r.worldAverage),
+  [29.88,29.76,29.65,31.33,32.98,32,30.24,30.32,30.58,30.88]);
+ assert.equal(dpPoint(2021,'average','overall').worldValue,32.98,
+  'The official May 2021 final IB worldwide average is 32.98, not 32.97 in the older illustration');
+ assert.equal(dpPoint(2026,'average','overall').worldValue,30.88);
+ assert.equal(dpPoint(2026,'average','recipients').worldValue,33);
+ assert.equal(dpMetricSeries('average','overall').at(-1).worldValue,30.88);
+ assert.equal(dpMetricSeries('average').at(-1).worldValue,33);
+ const html=renderBoardDP({boardDpMetric:'average',boardDpWorldBasis:'overall',boardDpGlobal:true});
+ assert.match(html,/data-board-dp-basis="overall" aria-pressed="true"/);
+ assert.match(html,/World IB · all Diploma\/retake results/);
+ assert.match(html,/FOCUSED AXIS · 20–40 \(NOT ZERO-BASED\)/);
+ assert.match(html,/Focused y-axis 20 to 40, truncated above zero/);
+ assert.match(html,/32\.98/);
+ assert.match(html,/30\.88/);
+ assert.equal((html.match(/data-board-dp-world-point="average:20\d\d"/g)||[]).length,10,
+  'The overall world reference spans exactly May 2017–2026');
+ assert.doesNotMatch(html,/data-board-dp-point="average:2016"/,
+  '2016 remains available in the school history table, but the worldwide overall comparison is a decade');
+ assert.doesNotMatch(html,/board-dp-matched-gaps/,'Never calculate recipient-only matched gaps from all candidate results');
+ assert.match(html,/Different populations/);
+ assert.match(renderDPPointDetails('average:2019','overall'),/not a matched score gap/);
+ assert.doesNotMatch(renderDPPointDetails('average:2019','overall'),/AISG \+2\.35 points/);
+ const same=renderBoardDP({boardDpMetric:'average',boardDpWorldBasis:'recipients',boardDpGlobal:true});
+ assert.match(same,/data-board-dp-basis="recipients" aria-pressed="true"/);
+ assert.match(same,/board-dp-matched-gaps/);
+ assert.match(renderDPPointDetails('average:2019','recipients'),/-0\.23 points/);
+ const overview=renderDPOverviewTrend({boardDpMetric:'average',boardDpWorldBasis:'overall'});
+ assert.match(overview,/World IB · all Diploma\/retake results/);
+ assert.match(overview,/data-board-dp-basis="overall" aria-pressed="true"/);
+ assert.doesNotMatch(overview,/board-dp-matched-gaps/);
+});
+test('Worldwide DP comparison selection survives Board deep links',()=>{
+ const url=boardHash({boardView:'dp',boardDpMetric:'average',boardDpWorldBasis:'overall'});
+ assert.match(url,/world=overall/);
+ assert.equal(parseBoardHash(url).boardDpWorldBasis,'overall');
+ assert.equal(parseBoardHash('#/board?view=dp&world=recipients').boardDpWorldBasis,'recipients');
+ assert.equal(parseBoardHash('#/board?view=dp&world=wrong').boardDpWorldBasis,'recipients');
+ assert.equal(parseBoardHash('#/board?view=overview&chart=dp&world=overall').boardDpWorldBasis,'overall');
+ assert.match(boardHash({boardView:'overview',boardOverviewChart:'dp',boardDpWorldBasis:'overall'}),/world=overall/);
+ const pass=renderBoardDP({boardDpMetric:'passRate',boardDpWorldBasis:'overall'});
+ assert.doesNotMatch(pass,/class="board-dp-basis-control"/,'Pass rate keeps Diploma/retake candidate basis');
+});
 test('Focused 30–40 point axis is explicit, readable and reversible to 0–45',()=>{
  const focused=renderBoardDP({boardDpMetric:'average',boardDpScale:'focus',boardDpGlobal:true});
  const full=renderBoardDP({boardDpMetric:'average',boardDpScale:'full',boardDpGlobal:true});
