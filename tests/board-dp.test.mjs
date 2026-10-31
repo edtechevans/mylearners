@@ -35,7 +35,7 @@ test('Eleven-year Diploma chart keeps full scale and supports actual global refe
  assert.equal(passes.at(-1).worldValue,82.6);
  assert.equal(dpPoint(2018,'average').value,34);
  assert.equal(dpPoint(2026,'passRate').value,93);
- const html=renderBoardDP({boardDpMetric:'average',boardDpGlobal:true});
+ const html=renderBoardDP({boardDpMetric:'average',boardDpGlobal:true,boardDpWorldBasis:'recipients'});
  assert.match(html,/board-dp-graphic-grid/);
  assert.match(html,/IB Diploma Results/);
  assert.match(html,/Long-term Diploma success/);
@@ -77,7 +77,7 @@ test('Eleven-year Diploma chart keeps full scale and supports actual global refe
  assert.equal(DP_RECORDS.find(r=>r.end===2021).highScore,44);
 });
 test('Board Diploma presents historical AISG vs global outcomes immediately after At a Glance',()=>{
- const html=renderBoardDP({boardDpMetric:'average',boardDpGlobal:true});
+ const html=renderBoardDP({boardDpMetric:'average',boardDpGlobal:true,boardDpWorldBasis:'recipients'});
  const ids=['board-dp-outcomes','board-dp-history','board-dp-subjects'];
  const offsets=ids.map(id=>html.indexOf('id="'+id+'"'));
  assert.ok(offsets.every(i=>i>=0), 'All Diploma sections remain accessible');
@@ -131,15 +131,48 @@ test('Worldwide DP comparison selection survives Board deep links',()=>{
  assert.match(url,/world=overall/);
  assert.equal(parseBoardHash(url).boardDpWorldBasis,'overall');
  assert.equal(parseBoardHash('#/board?view=dp&world=recipients').boardDpWorldBasis,'recipients');
- assert.equal(parseBoardHash('#/board?view=dp&world=wrong').boardDpWorldBasis,'recipients');
+ assert.equal(parseBoardHash('#/board?view=dp&world=wrong').boardDpWorldBasis,'overall');
  assert.equal(parseBoardHash('#/board?view=overview&chart=dp&world=overall').boardDpWorldBasis,'overall');
  assert.match(boardHash({boardView:'overview',boardOverviewChart:'dp',boardDpWorldBasis:'overall'}),/world=overall/);
  const pass=renderBoardDP({boardDpMetric:'passRate',boardDpWorldBasis:'overall'});
  assert.doesNotMatch(pass,/class="board-dp-basis-control"/,'Pass rate keeps Diploma/retake candidate basis');
 });
+
+test('Board landing and Diploma page use average points vs worldwide overall by default',()=>{
+ const landing=parseBoardHash('#/board');
+ assert.equal(landing.boardView,'overview');
+ assert.equal(landing.boardOverviewChart,'dp');
+ assert.equal(landing.boardDpMetric,'average');
+ assert.equal(landing.boardDpWorldBasis,'overall');
+ const details=parseBoardHash('#/board?view=dp');
+ assert.equal(details.boardDpMetric,'average');
+ assert.equal(details.boardDpWorldBasis,'overall');
+ const history=renderDPOverviewTrend({});
+ assert.match(history,/data-board-dp-metric="average" aria-pressed="true"/);
+ assert.match(history,/data-board-dp-basis="overall" aria-pressed="true"/);
+ assert.match(history,/World IB · all Diploma\/retake results/);
+ assert.match(history,/30\.88/);
+ assert.equal((history.match(/data-board-dp-world-point="average:20\d\d"/g)||[]).length,10);
+ assert.doesNotMatch(history,/board-dp-matched-gaps/);
+ assert.match(history,/Context only:/);
+ const page=renderBoardDP({});
+ assert.match(page,/data-board-dp-metric="average" aria-pressed="true"/);
+ assert.match(page,/data-board-dp-basis="overall" aria-pressed="true"/);
+ assert.match(page,/data-board-dp-world-point="average:2026"/);
+ assert.match(page,/30\.88/);
+ assert.doesNotMatch(page,/board-dp-matched-gaps/);
+ const recipientsLink=boardHash({boardView:'dp',boardDpMetric:'average',boardDpWorldBasis:'recipients'});
+ assert.match(recipientsLink,/world=recipients/);
+ const restored=parseBoardHash(recipientsLink);
+ assert.equal(restored.boardDpWorldBasis,'recipients');
+ assert.equal(restored.boardDpMetric,'average');
+ const recipients=renderBoardDP(restored);
+ assert.match(recipients,/board-dp-matched-gaps/);
+ assert.match(recipients,/data-board-dp-basis="recipients" aria-pressed="true"/);
+});
 test('Focused 30–40 point axis is explicit, readable and reversible to 0–45',()=>{
- const focused=renderBoardDP({boardDpMetric:'average',boardDpScale:'focus',boardDpGlobal:true});
- const full=renderBoardDP({boardDpMetric:'average',boardDpScale:'full',boardDpGlobal:true});
+ const focused=renderBoardDP({boardDpMetric:'average',boardDpScale:'focus',boardDpGlobal:true,boardDpWorldBasis:'recipients'});
+ const full=renderBoardDP({boardDpMetric:'average',boardDpScale:'full',boardDpGlobal:true,boardDpWorldBasis:'recipients'});
  const svg=html=>html.match(/<svg class="board-dp-svg"[\s\S]*?<\/svg>/)?.[0]||'';
  const f=svg(focused),g=svg(full);
  assert.match(f,/Focused y-axis 30 to 40, truncated above zero/);
@@ -168,11 +201,11 @@ test('Focused 30–40 point axis is explicit, readable and reversible to 0–45'
  assert.doesNotMatch(pass,/data-board-dp-scale=/);
 });
 test('Board Overview uses the same clearly disclosed zoom toggle as the Diploma page',()=>{
- const overview=renderDPOverviewTrend({boardDpMetric:'average'});
+ const overview=renderDPOverviewTrend({boardDpMetric:'average',boardDpWorldBasis:'recipients'});
  assert.match(overview,/FOCUSED AXIS · 30–40/);
  assert.match(overview,/data-board-dp-scale="full"/);
  assert.match(overview,/begins at <strong>30, not zero<\/strong>/);
- const full=renderDPOverviewTrend({boardDpMetric:'average',boardDpScale:'full'});
+ const full=renderDPOverviewTrend({boardDpMetric:'average',boardDpScale:'full',boardDpWorldBasis:'recipients'});
  assert.match(full,/FULL AXIS · 0–45/);
  assert.match(full,/Full Diploma scoring scale displayed/);
  const pass=renderDPOverviewTrend({boardDpMetric:'passRate'});

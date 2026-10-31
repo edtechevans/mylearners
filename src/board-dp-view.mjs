@@ -201,7 +201,7 @@ export function renderBoardDP(state){
  const end=DP_RECORDS.some(r=>r.end===Number(state.boardDpYear))?Number(state.boardDpYear):DP_RECORDS.at(-1).end;
  const selected=DP_RECORDS.find(r=>r.end===end);
  const comparison=state.boardDpGlobal!==false;
- const worldBasis=state.boardDpWorldBasis==='overall'?'overall':'recipients';
+ const worldBasis=state.boardDpWorldBasis==='recipients'?'recipients':'overall';
  const verified=DP_RECORDS.filter(r=>Number.isFinite(r.average));
  const highAwardYears=verified.filter(r=>r.passRate>=90).length;
  const detailNote='Different graduating cohorts each year; these are not matched student growth scores.';
@@ -294,8 +294,8 @@ export function renderBoardDP(state){
 
 /** One concise historical visual shared with the Board's Overview. */
 export function renderDPOverviewTrend(state){
- const selected=state.boardDpMetric==='average'?'average':'passRate';
- const worldBasis=state.boardDpWorldBasis==='overall'?'overall':'recipients';
+ const selected=state.boardDpMetric==='passRate'?'passRate':'average';
+ const worldBasis=state.boardDpWorldBasis==='recipients'?'recipients':'overall';
  return '<div class="board-dp-overview-trend">'+
  '<div class="board-dp-chart-top"><div><span class="eyebrow">GRADUATION OUTCOMES · IB DIPLOMA</span>'+
  '<h2>Diploma Outcomes Over Time</h2>'+

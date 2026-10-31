@@ -1,7 +1,10 @@
-test('Plain Board overview leads with historical Diploma award-rate evidence while MAP remains one click away',()=>{
+test('Plain Board overview leads with average Diploma points against world overall while MAP remains one click away',()=>{
  const html=renderBoardOverview({});
  assert.match(html,/A Decade of Academic Strength/);
- assert.match(html,/data-board-dp-point="passRate:2026"/);
+ assert.match(html,/data-board-dp-point="average:2026"/);
+ assert.match(html,/World IB · all Diploma\/retake results/);
+ assert.match(html,/data-board-dp-basis="overall" aria-pressed="true"/);
+ assert.match(html,/30\.88/);
  assert.match(html,/ENGLISH A HL/);
  assert.match(html,/10 \/ 11/);
  assert.match(html,/24 \/ 24/);
@@ -188,5 +191,6 @@ test('Deep linking into the Diploma historical chart restores its selected measu
  assert.equal(parsed.boardOverviewChart,'dp');
  assert.equal(parsed.boardDpMetric,'passRate');
  assert.equal(parseBoardHash('#/board').boardOverviewChart,'dp');
- assert.equal(parseBoardHash('#/board').boardDpMetric,'passRate');
+ assert.equal(parseBoardHash('#/board').boardDpMetric,'average');
+ assert.equal(parseBoardHash('#/board').boardDpWorldBasis,'overall');
 });

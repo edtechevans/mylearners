@@ -184,9 +184,36 @@ try{
  assert(await evaluate('document.querySelectorAll("[data-evidence-preview=board-card]").length>=3'),
   'Board result cards need concise previews');
  console.log('PASS evidence previews: Faculty pointer, Escape, click, SSS, Leaders and Board');
+ await run('board-landing-average-overall-1440','board','.board-dp-overview-trend',1440,900,
+  async()=>{
+   assert(await evaluate("document.querySelector('.board-dp-overview-trend [data-board-dp-metric=average]')?.getAttribute('aria-pressed')==='true'"),
+    'Unparameterized Board should land on average Diploma points, not pass rates');
+   assert(await evaluate("document.querySelector('.board-dp-overview-trend [data-board-dp-basis=overall]')?.getAttribute('aria-pressed')==='true'"),
+    'World overall should be the initial comparison when opening Board');
+   assert(await evaluate("document.querySelectorAll('.board-dp-overview-trend .board-dp-world-point').length===10"),
+    'Worldwide overall decade should contain exactly May 2017–2026');
+   assert(await evaluate("document.querySelector('.board-dp-overview-trend .board-dp-svg')?.textContent.includes('30.88')"),
+    'Default worldwide overall trend must show the published 2026 30.88');
+   assert(await evaluate("!!document.querySelector('.board-dp-overview-trend .board-dp-population-note')"),
+    'Different AISG/world candidate populations must be explicitly disclosed');
+  });
+ await run('board-dp-default-average-overall-1440','board?view=dp','.board-dp',1440,900,
+  async()=>{
+   assert(await evaluate("document.querySelector('.board-dp [data-board-dp-metric=average]')?.getAttribute('aria-pressed')==='true'"),
+    'Dedicated Diploma view should open on average points');
+   assert(await evaluate("document.querySelector('.board-dp [data-board-dp-basis=overall]')?.getAttribute('aria-pressed')==='true'"),
+    'Dedicated Diploma view should default to world overall');
+   assert(await evaluate("document.querySelectorAll('.board-dp .board-dp-world-point').length===10"),
+    'Worldwide overall graph contains ten verified years');
+   await click('[data-board-dp-basis=recipients]');
+   assert(await evaluate("document.querySelector('[data-board-dp-basis=recipients]')?.getAttribute('aria-pressed')==='true'"),
+    'Teachers and leaders can still switch to matched Diploma-recipient results');
+   assert(await evaluate("!!document.querySelector('.board-dp-matched-gaps')"),
+    'Only matched recipient scores should produce calculated differences');
+  });
  await run('board-map-1440','board?view=explore&window=fall2026&subject=math','.board-controls',1440,900);
  await run('board-dp-1440','board?view=dp&metric=average','.board-dp',1440,900);
- await run('board-dp-focused-average-axis-1440','board?view=dp&metric=average','.board-dp',1440,900,
+ await run('board-dp-focused-average-axis-1440','board?view=dp&metric=average&world=recipients','.board-dp',1440,900,
   async()=>{
    assert(await evaluate("document.querySelector('.board-dp-svg')?.getAttribute('aria-label')?.includes('Focused y-axis 30 to 40')"),
     'Average-point chart should default to a clearly labelled 30–40 axis');
@@ -205,7 +232,7 @@ try{
    assert(await evaluate("document.querySelectorAll('[data-board-dp-point]').length===11"),
     'All eleven AISG values must remain available in both modes');
   });
- await run('board-overview-focused-average-axis-1440','board?view=overview&chart=dp&metric=average','.board-dp-overview-trend',1440,900,
+ await run('board-overview-focused-average-axis-1440','board?view=overview&chart=dp&metric=average&world=recipients','.board-dp-overview-trend',1440,900,
   async()=>{
    assert(await evaluate("document.querySelector('.board-dp-svg')?.getAttribute('aria-label')?.includes('Focused y-axis 30 to 40')"),
     'Board Overview should use the same focused average-points scale');
@@ -234,7 +261,7 @@ try{
    assert(await evaluate("!!document.querySelector('.board-dp-matched-gaps')"),
     'Matched recipient comparison must show properly grounded score differences');
   });
- await run('board-dp-global-2025-1440','board?view=dp&metric=average','.board-dp',1440,900,
+ await run('board-dp-global-2025-1440','board?view=dp&metric=average&world=recipients','.board-dp',1440,900,
   async()=>{
    const select=await evaluate("(function(){const s=document.querySelector('[data-board-dp-select=\"year\"]');s.value='2025';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
    assert(select,'DP graduation year selector missing');await sleep(180);

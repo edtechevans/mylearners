@@ -29,9 +29,9 @@ export function parseBoardHash(hash){
  return {
   boardView:clean(params.get('view'),views,'overview'),
   boardOverviewChart:params.get('chart')==='map'?'map':'dp',
-  boardDpMetric:clean(params.get('metric'),dpMetrics,params.get('view')==='dp'?'average':'passRate'),
+  boardDpMetric:clean(params.get('metric'),dpMetrics,'average'),
   boardDpScale:clean(params.get('scale'),dpScales,'focus'),
-  boardDpWorldBasis:clean(params.get('world'),dpWorldBases,'recipients'),
+  boardDpWorldBasis:clean(params.get('world'),dpWorldBases,'overall'),
   boardDpSubject:clean(params.get('course'),dpCourses,DP_SUBJECT_DEFAULT),
   boardDpYear:clean(params.get('year'),dpYears,currentDpYear),
   boardDpRange:clean(params.get('range'),dpRanges,'all'),
@@ -53,7 +53,7 @@ export function boardHash(state){
  if(view==='dp'){
   params.set('metric',clean(state.boardDpMetric,dpMetrics,'average'));
   if(state.boardDpScale==='full')params.set('scale','full');
-  if(state.boardDpWorldBasis==='overall')params.set('world','overall');
+  if(dpWorldBases.has(state.boardDpWorldBasis))params.set('world',state.boardDpWorldBasis);
   if(dpCourses.has(state.boardDpSubject)&&state.boardDpSubject!==DP_SUBJECT_DEFAULT)params.set('course',state.boardDpSubject);
   const year=String(state.boardDpYear??currentDpYear);
   if(dpYears.has(year)&&year!==currentDpYear)params.set('year',year);
@@ -63,7 +63,7 @@ export function boardHash(state){
    params.set('chart','dp');
    params.set('metric',clean(state.boardDpMetric,dpMetrics,'average'));
    if(state.boardDpScale==='full')params.set('scale','full');
-   if(state.boardDpWorldBasis==='overall')params.set('world','overall');
+   if(dpWorldBases.has(state.boardDpWorldBasis))params.set('world',state.boardDpWorldBasis);
   }else{
    params.set('term',clean(state.boardTrendTerm,trends,'fall'));
    params.set('focus',clean(state.boardTrendFocus,focuses,'all'));

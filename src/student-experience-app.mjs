@@ -25,11 +25,11 @@ import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile}
 import {renderStudentOverview} from './student-daily-overview.mjs?v=20261028titles1';
 import {renderBoard} from './board-map-view.mjs?v=20261029dpaxis1';
 import {renderTrendPointDetails} from './board-map-overview.mjs?v=20261029dpaxis1';
-import {renderDPPointDetails} from './board-dp-view.mjs?v=20261031dp-audit1';
+import {renderDPPointDetails} from './board-dp-view.mjs?v=20261031dp-default1';
 import {renderDPSubjectPointDetails} from './board-dp-subjects.mjs';
 import {DP_RECORDS} from './board-dp-data.mjs?v=20261031dp-world1';
 import {boardWindowFor,BOARD_DATA} from './board-map-data.mjs';
-import {parseBoardHash} from './board-map-links.mjs?v=20261031dp-world1';
+import {parseBoardHash} from './board-map-links.mjs?v=20261031dp-default1';
 const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(DATA.students),
  ACADEMIC_RECORDS=createAcademicDemoRecords(DATA.students),
  MAIA_RECORDS=createMaiaDemoRecords(DATA.students),
@@ -82,7 +82,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  boardDivision:saved('my-board-division','all'),boardGrade:saved('my-board-grade','all'),
  boardView:'overview',boardTrendTerm:'fall',boardTrendFocus:'all',boardTrendRange:'recent',boardOverviewChart:'dp',
  boardMapDetailsOpen:false,boardMapCompareSeasons:false,boardMapGrowthOpen:false,
- boardDpMetric:'passRate',boardDpScale:'focus',boardDpWorldBasis:'recipients',boardDpGlobal:true,
+ boardDpMetric:'average',boardDpScale:'focus',boardDpWorldBasis:'overall',boardDpGlobal:true,
  boardDpYear:String(DP_RECORDS.at(-1).end),boardDpRange:'all',boardDpSubject:'math-aa-sl'};
 recallFaculty();
 if(state.role==='leader')state.classId='';
