@@ -295,24 +295,29 @@ export function renderBoardDP(state){
 /** One concise historical visual shared with the Board's Overview. */
 export function renderDPOverviewTrend(state){
  const selected=state.boardDpMetric==='average'?'average':'passRate';
+ const worldBasis=state.boardDpWorldBasis==='overall'?'overall':'recipients';
  return '<div class="board-dp-overview-trend">'+
  '<div class="board-dp-chart-top"><div><span class="eyebrow">GRADUATION OUTCOMES · IB DIPLOMA</span>'+
  '<h2>Diploma Outcomes Over Time</h2>'+
- '<p>'+DP_RECORDS.length+' graduating years · '+(selected==='average'?'AISG vs worldwide Diploma recipients · points out of 45':'AISG vs worldwide Diploma award rates · percentage')+'</p></div>'+
+ '<p>'+DP_RECORDS.length+' AISG graduating years · '+(selected==='average'?'World IB '+basisName(worldBasis)+' · points out of 45':'AISG vs worldwide Diploma award rates · percentage')+'</p></div>'+
  '<div class="board-segmented" role="group" aria-label="IB Diploma historical measure">'+
  '<button type="button" data-board-dp-metric="average" aria-pressed="'+(selected==='average')+'" class="'+(selected==='average'?'active':'')+'">Average points</button>'+
  '<button type="button" data-board-dp-metric="passRate" aria-pressed="'+(selected==='passRate')+'" class="'+(selected==='passRate'?'active':'')+'">Pass rate</button></div></div>'+
  dpRangeHighlight(selected)+
- (selected==='average'?'<div class="board-dp-overview-scale">'+dpScaleControls(selected,state.boardDpScale)+'</div>':'')+
- '<div class="board-dp-overview-legend" role="note"><span><i class="board-dp-key-aisg"></i> AISG</span><span><i class="board-dp-key-world"></i> World IB · '+(selected==='average'?'Diploma recipients only':'Diploma awards')+'</span>'+
- '<small>'+(selected==='average'?'The plotted worldwide mean is for Diploma recipients, not all Diploma candidates.':'Worldwide Diploma award rate; all eleven May sessions.')+'</small></div>'+
+ (selected==='average'?'<div class="board-dp-overview-scale">'+dpWorldBasisControls(selected,worldBasis)+dpScaleControls(selected,state.boardDpScale,worldBasis)+'</div>':'')+
+ '<div class="board-dp-overview-legend" role="note"><span><i class="board-dp-key-aisg"></i> AISG Diploma recipients</span><span><i class="board-dp-key-world"></i> World IB · '+(selected==='average'?basisName(worldBasis):'Diploma awards')+'</span>'+
+ '<small>'+(selected==='average'?(worldBasis==='overall'?
+  'Worldwide overall average includes unsuccessful Diploma/retake candidates; AISG average is recipients only.':
+  'Same awarded-Diploma category; 2016 worldwide recipient-only mean unavailable.'):'Worldwide Diploma award rate; all eleven May sessions.')+'</small></div>'+
  '<p class="board-dp-swipe">Hover or focus any plotted point for precise AISG/world data and AISG candidate counts.</p>'+
- '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Scroll to inspect Diploma outcomes">'+dpLineChart(selected,{compareWorld:true,scale:state.boardDpScale})+'</div>'+
- dpScaleNote(selected,state.boardDpScale)+
- (selected==='average'?matchedGlobalGaps():'')+
+ '<div class="board-dp-chart-scroll" tabindex="0" aria-label="Scroll to inspect Diploma outcomes">'+dpLineChart(selected,{compareWorld:true,scale:state.boardDpScale,worldBasis})+'</div>'+
+ dpScaleNote(selected,state.boardDpScale,worldBasis)+
+ (selected==='average'&&worldBasis==='recipients'?matchedGlobalGaps():'')+
+ (selected==='average'&&worldBasis==='overall'?
+  '<p class="board-dp-population-note">Context only: AISG average covers Diploma recipients; the worldwide overall average includes Diploma/retake candidates not awarded a Diploma. Select “Diploma recipients” for a matched award-category comparison.</p>':'')+
  '<div class="board-floating-tooltip" role="tooltip" hidden></div>'+
  '<div class="board-dp-inspector" aria-live="polite"><p>Select a year to understand its reported outcome.</p></div>'+
- '<div class="board-overview-chartfoot"><span>Official IB school and worldwide bulletins · May 2016–2026. Exact AISG and world values appear on hover. The 2016 recipient-only world mean is unavailable. Different graduating cohorts do not represent individual growth.</span>'+
+ '<div class="board-overview-chartfoot"><span>Official AISG 001832 school statistics and world IB bulletins · school May 2016–2026; overall world reference May 2017–2026. The 2016 recipient-only world mean is unavailable. The final May 2021 worldwide overall score is 32.98.</span>'+
  '<button type="button" data-board-view="dp" class="board-inline-link">Explore IB Diploma details ›</button></div>'+
  '</div>';
 }
