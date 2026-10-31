@@ -156,3 +156,32 @@
  .board-view .board-dp-scale-control{display:none}
  .board-view .board-dp-scale-note{font-size:10px}
 }
+
+
+/* Audit 2026-10-31: make population choice explicit and readable. */
+.board-view .board-dp-world-strip{grid-template-columns:repeat(4,minmax(0,1fr))}
+.board-view .board-dp-basis-control{
+ display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px;
+ border:1px solid #cedee8;background:#f5f9fb;padding:4px;border-radius:10px
+}
+.board-view .board-dp-basis-control>span{
+ font-weight:760;color:#47677d;font-size:11px;padding:0 7px
+}
+.board-view .board-dp-basis-control button{
+ border:0;min-height:33px;border-radius:7px;background:transparent;color:#395f77;
+ padding:7px 10px;font:750 11px/1.35 'Noto Sans',Arial,sans-serif;cursor:pointer
+}
+.board-view .board-dp-basis-control button[aria-pressed="true"]{background:#123b59;color:#fff}
+.board-view .board-dp-basis-control button:focus-visible{outline:3px solid #5da7d3;outline-offset:2px}
+.board-view .board-dp-population-note{
+ margin:10px 0;padding:13px 16px;background:#fbf7ef;
+ border:1px solid #e8dfce;border-radius:11px;font-size:12px;line-height:1.65;color:#5e5140
+}
+.board-view .board-dp-key-world{border-top-color:#b3444b}
+.board-view .board-dp-overview-scale{gap:8px;flex-wrap:wrap}
+@media(max-width:1120px){.board-view .board-dp-world-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){
+ .board-view .board-dp-world-strip{grid-template-columns:1fr}
+ .board-view .board-dp-basis-control{width:100%;justify-content:flex-start}
+ .board-view .board-dp-basis-control button{flex:1 1 auto}
+}
