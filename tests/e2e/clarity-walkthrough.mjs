@@ -458,6 +458,16 @@ try{
    assert(await evaluate("document.querySelector('.roster-daily tbody')?.textContent.includes('Spring 2026')"),
     'Comparison cells should show their source period');
   });
+ await run('faculty-grade-12-fixed-bands-1440','faculty','.faculty-daily-toolbar',1440,900,
+  async()=>{
+   await click('[data-roster-view="everyday"]');
+   const changed=await evaluate("(function(){const s=document.querySelector('[data-select=class]');if(!s)return false;s.value='G12-A';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
+   assert(changed,'A Secondary Grade 12 demo class must be selectable');
+   await sleep(190);
+   const legend=await evaluate("document.querySelector('.faculty-evidence-legend')?.textContent||''");
+   assert(legend.includes('Four fixed experience bands'),'Grade 12 requires fixed survey bands');
+   assert(!legend.includes('Q1'),'Grade 12 should not be told its experience index uses academic quartiles');
+  });
  await run('faculty-one-measure-reset-960','faculty','.faculty-daily-toolbar',960,850,
   async()=>{
    const switched=await evaluate("(function(){const s=document.querySelector('[data-class-compare]');if(!s)return false;s.value='none';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
