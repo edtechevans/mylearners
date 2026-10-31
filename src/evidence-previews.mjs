@@ -217,6 +217,13 @@ export function installEvidencePreviewController(root,resolve){
   const trigger=parent(e);
   if(!trigger)return;
   const coarsePointer=!!globalThis.matchMedia?.('(pointer: coarse)')?.matches;
+  // First touch explains a coloured cell; a second touch opens the learner.
+  // stopImmediatePropagation prevents the app's delegated navigation on tap one.
+  if(coarsePointer&&trigger.matches?.('.evidence-cell-open')){
+   if(anchor===trigger&&pinned){dismiss();return}
+   e.preventDefault();e.stopImmediatePropagation?.();
+   pinned=true;display(trigger);return;
+  }
   // Keep real navigation and form controls working normally on all devices.
   if(!coarsePointer||trigger.matches?.('button,a,summary')||
    e.target.closest?.('button,a,summary,input,select,textarea'))return;

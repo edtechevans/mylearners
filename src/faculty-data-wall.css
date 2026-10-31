@@ -123,3 +123,69 @@
 #app .roster-daily td[data-evidence-preview],
 #app .leader-pattern-table td[data-evidence-preview]{cursor:help}
 #app .roster-daily .evidence-cell-open[data-evidence-preview]{cursor:pointer}
+
+
+/* My Learners 2.1 — scan-first Faculty workspace and transparent evidence UI. */
+#app .faculty-demo-options{position:relative;margin-left:auto;align-self:end;min-width:128px}
+#app .faculty-demo-options>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:7px;
+ font-size:12px;line-height:1.4;font-weight:700;color:#355e75;padding:10px 13px;
+ border:1px solid #d5e3ea;border-radius:10px;background:#fff}
+#app .faculty-demo-options>summary::-webkit-details-marker{display:none}
+#app .faculty-demo-options>summary:after{content:"⌄";font-size:15px}
+#app .faculty-demo-options[open]>summary{background:#ecf4f8;border-color:#accbdc}
+#app .faculty-demo-options>.faculty-demo-picker{position:absolute;right:0;top:calc(100% + 7px);
+ display:grid;gap:6px;min-width:244px;padding:14px;background:#fff;border:1px solid #cee0e9;
+ border-radius:12px;box-shadow:0 14px 34px #123a5a23;z-index:80}
+#app .faculty-demo-options>.faculty-demo-picker select{max-width:100%;width:100%}
+#app .class-evidence-panel{padding:13px 17px}
+#app .class-evidence-panel .class-evidence-heading{margin-bottom:6px}
+#app .class-evidence-panel .class-evidence-heading h3{font-size:17px}
+#app .class-evidence-advanced{margin-top:11px;border-top:1px solid #e0eaf0}
+#app .class-evidence-advanced>summary{cursor:pointer;color:#285b78;font-size:12.5px;font-weight:750;padding:12px 4px}
+#app .class-evidence-advanced>summary:hover{color:#164362}
+#app .class-evidence-advanced-body{padding:0 3px 10px}
+#app .roster-daily .ux-faculty-table-controls{margin:9px 0 11px}
+#app .ux-faculty-table-controls>summary{display:inline-flex;align-items:center;cursor:pointer;
+ background:#fff;color:#275872;border:1px solid #ccdfe9;border-radius:9px;padding:8px 12px;
+ font-size:12px;font-weight:750;list-style:none}
+#app .ux-faculty-table-controls>summary::-webkit-details-marker{display:none}
+#app .ux-faculty-table-controls>summary:after{content:"⌄";margin-left:9px;font-size:15px}
+#app .ux-faculty-table-controls[open]>summary{background:#edf5f9}
+#app .ux-faculty-table-controls .ux-data-tools{margin:8px 0;background:#f9fbfc}
+#app .faculty-evidence-legend{display:flex;flex-wrap:wrap;align-items:center;gap:7px 12px;
+ margin:13px 0 8px;padding:9px 12px;border-radius:10px;border:1px solid #e2eaf0;
+ background:#f9fbfc;color:#4e687a}
+#app .faculty-evidence-legend>strong{font-size:11.5px;color:#294e65}
+#app .faculty-legend-swatches{display:inline-flex;gap:4px;align-items:center}
+#app .faculty-legend-chip{display:inline-flex;min-width:32px;align-items:center;justify-content:center;
+ padding:4px 6px;border-radius:5px;font-size:11px;font-weight:800;color:#fff}
+#app .faculty-legend-chip.band-low{background:#a6373f}
+#app .faculty-legend-chip.band-mid-low{background:#e4a15f;color:#17313b}
+#app .faculty-legend-chip.band-mid-high{background:#a6bd88;color:#17313b}
+#app .faculty-legend-chip.band-high{background:#246b4f}
+#app .faculty-legend-caption{font-size:11.5px;line-height:1.45}
+#app .faculty-evidence-legend details{position:relative;font-size:11.5px;margin-left:auto;max-width:100%}
+#app .faculty-evidence-legend summary{cursor:pointer;color:#235b7a;font-weight:700}
+#app .faculty-evidence-legend details p{position:absolute;right:0;top:100%;z-index:45;
+ min-width:min(340px,80vw);margin:6px 0;padding:13px 15px;background:#fff;
+ border:1px solid #cadce7;border-radius:10px;box-shadow:0 10px 30px #123a5a22;line-height:1.6}
+#app .faculty-inquiry-prompt{margin:12px 0 2px;border-top:1px solid #e6edf1;padding-top:9px}
+#app .faculty-inquiry-prompt>summary{width:max-content;max-width:100%;cursor:pointer;
+ font-size:12px;font-weight:750;color:#275d7c}
+#app .faculty-inquiry-prompt p{max-width:85ch;font-size:12px;line-height:1.6;color:#425f73}
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall thead th:first-child{
+ position:sticky;left:0;z-index:5;background:#f6f9fb;box-shadow:4px 0 8px -8px #1a4266a0
+}
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall tbody td:first-child{
+ position:sticky;left:0;z-index:3;background:#fff;box-shadow:4px 0 8px -8px #1a4266a0
+}
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall tbody tr:hover td:first-child{
+ background:#f4f8fb
+}
+#app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall tbody td:first-child:focus-within{z-index:6}
+@media(max-width:900px){
+ #app .faculty-demo-options{margin-left:0;align-self:center}
+ #app .faculty-evidence-legend details{margin-left:0}
+ #app .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall{min-width:1100px}
+}
+@media(prefers-reduced-motion:reduce){#app .class-evidence-advanced *{transition:none}}

@@ -5,6 +5,15 @@
    Detail tables, profiles, records and evidence panels stay neutral.
 */
 :root{
+ --aisg-ink:#173f5d;
+ --aisg-muted:#506e7f;
+ --aisg-line:#dce7ed;
+ --aisg-radius-md:12px;
+ --aisg-focus:#267fae;
+ --aisg-evidence-low:#a6373f;
+ --aisg-evidence-mid-low:#e4a15f;
+ --aisg-evidence-mid-high:#a6bd88;
+ --aisg-evidence-high:#246b4f;
  --aisg-wash-sky:#dff1fa;
  --aisg-wash-mint:#dff4ee;
  --aisg-wash-lilac:#ebe5fc;
@@ -170,4 +179,19 @@
   .sss-count-grid>.sss-number,
   .student-landing-grid>.student-today-tile
  ){background:#fff!important;box-shadow:none}
+}
+
+
+/* One consistent interaction system across the five role-specific perspectives. */
+#app :is(.faculty-toolbar,.leader-controls,.sss-filters,.board-nav-row,.academic-student-picker) :is(button,select,input,summary){
+ min-height:39px
+}
+#app :is(.faculty-daily-summary,.leader-learning-grid,.sss-count-grid,.student-landing-grid) strong{
+ font-variant-numeric:tabular-nums
+}
+#app :is(.faculty-evidence-legend,.leader-support-inquiry,.student-landing-foot,.sss-brief) p{
+ line-height:1.6
+}
+#app :is(.class-evidence-advanced,.faculty-demo-options,.ux-faculty-table-controls) summary:focus-visible{
+ outline:3px solid var(--aisg-focus);outline-offset:3px
 }
