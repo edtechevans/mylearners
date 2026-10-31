@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {normaliseNumber,compareEvidence,exportCsv,filteredRecords,parsePreferences,sortEvidenceRows} from '../src/daily-ux-core.mjs';
+import {normaliseNumber,compareEvidence,compareEvidenceSource,exportCsv,filteredRecords,parsePreferences,sortEvidenceRows} from '../src/daily-ux-core.mjs';
 test('numbers retain their evidence units without merging scales',()=>{
  assert.equal(normaliseNumber('95%'),95);
  assert.equal(normaliseNumber('+8 RIT'),8);
@@ -9,6 +9,15 @@ test('numbers retain their evidence units without merging scales',()=>{
  assert.equal(normaliseNumber('—'),null);
  assert.equal(normaliseNumber('Not collected'),null);
  assert.equal(compareEvidence('4','12'),-8);
+});
+test('academic evidence sorts by numeric source rather than visual quartile and missing is last',()=>{
+ assert.equal(compareEvidenceSource('Q3','Q2','6','5'),1);
+ assert.equal(compareEvidenceSource('Q3','Q2','6','5',true),-1);
+ assert.equal(compareEvidenceSource('Q1','Q1','2','8'),-6);
+ assert.equal(compareEvidenceSource('Q1','Q1','2','8',true),6);
+ assert.equal(compareEvidenceSource('—','Q4','','12'),1);
+ assert.equal(compareEvidenceSource('—','Q4','','12',true),1);
+ assert.equal(compareEvidenceSource('87%','93%'),-6);
 });
 test('search and scoped column filters preserve the underlying records',()=>{
  const input=[['Ana','85%','MAP'],['Bea','96%','Report'],['Sam','90%','MAP']];

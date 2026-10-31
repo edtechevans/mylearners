@@ -13,6 +13,18 @@ export function compareEvidence(a,b){
  if(nb!==null)return 1;
  return safeText(a).localeCompare(safeText(b),undefined,{numeric:true,sensitivity:'base'});
 }
+
+/** Source-aware sorting. Blank evidence is always last in either direction. */
+export function compareEvidenceSource(aDisplay,bDisplay,aSource=null,bSource=null,descending=false){
+ const marked=aSource!==null||bSource!==null;
+ if(!marked)return compareEvidence(aDisplay,bDisplay)*(descending?-1:1);
+ const a=normaliseNumber(aSource===null?aDisplay:aSource);
+ const b=normaliseNumber(bSource===null?bDisplay:bSource);
+ if(a===null&&b===null)return 0;
+ if(a===null)return 1;
+ if(b===null)return -1;
+ return (a-b)*(descending?-1:1);
+}
 export function csvEscape(value){
  const text=safeText(value).replace(/\s+/g,' ');
  return /[",\r\n]/.test(text)?'"'+text.replace(/"/g,'""')+'"':text;

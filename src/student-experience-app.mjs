@@ -196,6 +196,12 @@ function roster(ss,options={}){
   if(!gradeReferences.has(key))gradeReferences.set(key,gradeCohort.map(s=>evidenceNumeric(s,column)).filter(Number.isFinite));
   return quartileBand(evidenceNumeric(student,column),gradeReferences.get(key),20);
  };
+ const everydaySort=(student,column)=>{
+  if(column.kind==='attendance')return attendanceSummary(DATA.attendance[student.id]||[]).rate;
+  if(column.kind==='engagement'||column.kind==='belonging')
+   return experienceFor(RECORDS,student.id,column.kind,state.classExperienceWindow)?.value??null;
+  return evidenceNumeric(student,column);
+ };
  const everydayCell=(student,column)=>{
   if(column.kind==='attendance'){
    const attendance=attendanceSummary(DATA.attendance[student.id]||[]);
@@ -257,7 +263,8 @@ function roster(ss,options={}){
    evidenceRosterColumn(student,{...evidenceCtx,subject,mode});
   const compared=compare==='none'?'':evidenceRosterColumn(student,{...evidenceCtx,subject,mode:compare});
   return {student,attendance:fmt(attendance.rate)+'%',growth:growthText,
-   eng:engagement,bel:belonging,everydayCells:everydayColumns.map(column=>everydayCell(student,column)),academics,
+   eng:engagement,bel:belonging,everydayCells:everydayColumns.map(column=>everydayCell(student,column)),
+   everydaySortValues:everydayColumns.map(column=>everydaySort(student,column)),academics,
    compared,tags:demoTagsForStudent(student),
    sss:SSS_RECORDS.has(student.id)};
  });
@@ -278,7 +285,8 @@ function roster(ss,options={}){
   data.map(x=>'<tr><td><button class="student-link" data-student="'+x.student.id+
    '"><img src="'+portrait(x.student.portraitSeed)+'" alt="">'+safe(x.student.name)+'</button></td>'+
    (across?'<td><span class="roster-class-label">'+safe(x.student.classId)+'</span></td>':'')+
-   (everyday?x.everydayCells.map(cell=>'<td>'+cell+'</td>').join(''):
+   (everyday?x.everydayCells.map((cell,i)=>'<td data-ux-sort-value="'+
+    (Number.isFinite(x.everydaySortValues[i])?String(x.everydaySortValues[i]):'')+'">'+cell+'</td>').join(''):
     '<td>'+x.attendance+'</td><td>'+x.academics+'</td>'+(compare==='none'?'':'<td>'+x.compared+'</td>'))+
    (!everyday&&showMap?'<td>'+safe(x.growth)+'</td>':'')+
    (!everyday&&showSEL?'<td>'+x.eng+'</td><td>'+x.bel+'</td>':'')+

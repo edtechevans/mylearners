@@ -2,7 +2,7 @@
  * Additive presentation layer over the existing read-only demonstration.
  * No source scores, scopes, app routes or student records are changed.
  */
-import {safeText,compareEvidence,exportCsv,parsePreferences,filteredRecords} from './daily-ux-core.mjs';
+import {safeText,compareEvidenceSource,exportCsv,parsePreferences,filteredRecords} from './daily-ux-core.mjs?v=20261031v1';
 const root=document.getElementById('app');
 const states=new Map();
 const clean=x=>String(x??'').replace(/\s+/g,' ').trim();
@@ -39,9 +39,10 @@ function apply(table,s){
  let matches=0;
  const body=table.tBodies?.[0];
  if(body && Number.isInteger(s.order)){
-  const col=s.order, multiplier=s.desc?-1:1;
-  rows.sort((a,b)=>compareEvidence(a.cells[col]?.textContent,b.cells[col]?.textContent)*multiplier)
-    .forEach(row=>body.appendChild(row));
+  const col=s.order;
+  const source=cell=>cell?.hasAttribute('data-ux-sort-value')?cell.getAttribute('data-ux-sort-value'):null;
+  rows.sort((a,b)=>compareEvidenceSource(a.cells[col]?.textContent,b.cells[col]?.textContent,
+   source(a.cells[col]),source(b.cells[col]),s.desc)).forEach(row=>body.appendChild(row));
  }
  const visibleRows=[...table.querySelectorAll('tbody tr')];
  for(const tr of visibleRows){
