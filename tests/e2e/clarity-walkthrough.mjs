@@ -240,8 +240,8 @@ try{
    assert(select,'DP graduation year selector missing');await sleep(180);
    assert(await evaluate("document.querySelector('.board-dp-comparison-panel')?.textContent.includes('34')"),
     '2025 official AISG Diploma mean is 34');
-   assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('33')"),
-    'The 2025 world Diploma-recipient average rounds to 33');
+   assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('32.8')"),
+    'The 2025 world Diploma-recipient average must be 32.8, not a rounded 33');
    assert(await evaluate("document.querySelector('.board-dp-world-strip')?.textContent.includes('42 / 51')"),
     'Cohort participation should use 42 of 51');
    assert(await evaluate("document.querySelectorAll('.board-dp-world-point').length>=3"),
