@@ -302,6 +302,22 @@ try{
    for(const expected of ['Learner','Attendance','MAP Mathematics growth','IXL Mathematics','Engagement','Belonging','Support information'])
     assert(headers.some(h=>h.includes(expected)),'Missing default evidence: '+expected);
    assert(headers.length===7,'Expected learner, five measures and support information');
+
+   assert(await evaluate("!!document.querySelector('.class-evidence-advanced:not([open])')"),
+    'Everyday evidence options should begin collapsed');
+   assert(await evaluate("!!document.querySelector('.faculty-demo-options:not([open])')"),
+    'Demo staff selection should be secondary');
+   assert(await evaluate("!!document.querySelector('.ux-faculty-table-controls:not([open])')"),
+    'Table filters and saved views should not compete with the data wall');
+   assert(await evaluate("!!document.querySelector('.faculty-evidence-legend')"),
+    'Four evidence bands need a clear interpretation legend');
+   assert(await evaluate("getComputedStyle(document.querySelector('.faculty-data-wall tbody td:first-child')).position==='sticky'"),
+    'Learner names should stay visible during horizontal scrolling');
+   assert(await evaluate("document.querySelectorAll('.faculty-data-wall tbody td[data-ux-sort-value]').length>=80"),
+    'Evidence cells must provide raw values for sorting');
+   const numericSort=await evaluate("(function(){const h=document.querySelector('.faculty-data-wall thead [data-ux-sort=2]');if(!h)return false;h.click();const v=[...document.querySelectorAll('.faculty-data-wall tbody tr td:nth-child(3)')].map(td=>td.getAttribute('data-ux-sort-value')).filter(x=>x!==null&&x!=='').map(Number);return v.length>5&&v.every((n,i)=>i===0||n>=v[i-1])})()");
+   assert(numericSort,'MAP must sort by actual growth rather than the Q band');
+
    assert(await evaluate("document.querySelectorAll('.roster-daily tbody .class-evidence-result').length>=20"),
     'Everyday columns should show per-learner values without extra clicks');
    const geometry=await evaluate("(function(){const row=document.querySelector('.roster-daily[data-roster-layout=everyday] tbody tr');if(!row)return [];return [...row.cells].slice(2,-1).map(td=>{const r=td.querySelector('.evidence-cell-open .class-evidence-result')?.getBoundingClientRect();return r?{width:r.width,height:r.height,top:r.top}:null}).filter(Boolean)})()");
