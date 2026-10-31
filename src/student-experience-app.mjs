@@ -130,9 +130,9 @@ const ROLE_DESCRIPTION=Object.freeze({
 });
 function header(){
  return '<button type="button" class="skip-link" data-skip-main>Skip to main content</button>'+
- '<header class="top"><div class="brand"><img src="assets/aisg-logo.webp" alt="AISG logo">'+
- '<div><strong>My Learners</strong><span>Understand the whole learner</span></div></div>'+
- '<nav class="roles" aria-label="Dashboard views"><span class="roles-label">DASHBOARDS</span>'+
+ '<header class="top"><div class="brand"><span class="brand-emblem"><img src="assets/aisg-logo.webp" alt="AISG logo"></span>'+
+ '<div><span class="brand-kicker">AISG / LEARNING INTELLIGENCE</span><strong>My Learners</strong><span class="brand-tagline">Engagement for All</span></div></div>'+
+ '<nav class="roles" aria-label="Dashboard views"><span class="roles-label">WORKSPACES</span>'+
  ROLE_IDS.map(r=>'<button type="button" data-role="'+r+'" aria-pressed="'+(state.role===r)+
  '" aria-label="Open '+ROLE_DESCRIPTION[r]+'" title="'+ROLE_DESCRIPTION[r]+
  '" class="'+(state.role===r?'selected':'')+'">'+ROLE_DISPLAY[r]+'</button>').join('')+
@@ -745,6 +745,7 @@ function render(){
  const content=state.role==='board'?renderBoard(state):state.role==='leader'?leader():
   state.role==='sss'?sss():state.role==='student'?student():faculty();
  document.body.classList.toggle('board-drawer-open',state.role==='board'&&state.boardView==='explore'&&!!state.boardMapDetailsOpen);
+ root.dataset.workspace=state.role;
  root.innerHTML=header()+'<main class="container" id="main" tabindex="-1">'+content+'</main><footer>'+
  (state.role==='board'?'AISG Board · Aggregated MAP and IB Diploma outcomes · No individual student scores published':
  'My Learners demonstration · Learners, assessments and student check-ins fictional')+
