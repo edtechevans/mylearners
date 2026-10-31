@@ -214,6 +214,26 @@ try{
     'Overview full-scale toggle should work');
   });
 
+ await run('board-dp-world-population-1440','board?view=dp&metric=average&world=overall','.board-dp',1440,900,
+  async()=>{
+   assert(await evaluate("document.querySelector('[data-board-dp-basis=overall]')?.getAttribute('aria-pressed')==='true'"),
+    'Board link should restore the official overall Diploma-results comparison');
+   assert(await evaluate("document.querySelectorAll('.board-dp-world-point').length===10"),
+    'Overall worldwide comparison should show the 2017–2026 decade');
+   assert(await evaluate("document.querySelector('.board-dp-svg')?.textContent.includes('32.98')"),
+    'Final 2021 global overall figure must be 32.98, not 32.97');
+   assert(await evaluate("document.querySelector('.board-dp-svg')?.textContent.includes('30.88')"),
+    'Overall May 2026 worldwide average must be 30.88');
+   assert(await evaluate("!!document.querySelector('.board-dp-population-note')"),
+    'Cross-population comparison must disclose its different denominators');
+   assert(await evaluate("!document.querySelector('.board-dp-matched-gaps')"),
+    'Cross-population comparison must not invent matched gaps');
+   await click('[data-board-dp-basis=recipients]');
+   assert(await evaluate("document.querySelector('[data-board-dp-basis=recipients]')?.getAttribute('aria-pressed')==='true'"),
+    'Board toggle must return to worldwide Diploma recipients');
+   assert(await evaluate("!!document.querySelector('.board-dp-matched-gaps')"),
+    'Matched recipient comparison must show properly grounded score differences');
+  });
  await run('board-dp-global-2025-1440','board?view=dp&metric=average','.board-dp',1440,900,
   async()=>{
    const select=await evaluate("(function(){const s=document.querySelector('[data-board-dp-select=\"year\"]');s.value='2025';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
