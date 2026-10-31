@@ -97,6 +97,22 @@ body{font-family:'Noto Sans','Aptos',system-ui,'Segoe UI',sans-serif;letter-spac
  box-shadow:none!important;padding:10px 14px!important;min-height:39px!important;
  transition:background .14s,color .14s,border-color .14s
 }
+/* The retired sidebar gave role buttons width:100%. Reset those dimensions
+   explicitly so five destinations remain in one legible product masthead. */
+#app .top nav.roles{
+ position:static!important;flex:0 0 auto!important;
+ width:max-content!important;max-width:none!important;
+ min-width:0!important;overflow:visible!important
+}
+#app .top nav.roles>button,
+#app .top nav.roles .ux-nav-button{
+ display:inline-flex!important;align-items:center!important;
+ justify-content:center!important;flex:0 0 auto!important;
+ width:auto!important;max-width:none!important;min-width:max-content!important;
+ text-align:center!important;white-space:nowrap!important;
+}
+#app .top .brand{width:auto!important;max-width:none!important}
+#app .top .brand>div{overflow:hidden}
 #app .top .roles button.selected{
  background:#fff!important;color:var(--ml-ink)!important;
  font-weight:800!important;border-color:#fff!important
@@ -141,7 +157,8 @@ body{font-family:'Noto Sans','Aptos',system-ui,'Segoe UI',sans-serif;letter-spac
   align-items:center!important;gap:14px!important
  }
  #app .top .brand{flex:none}
- #app .top .roles{width:auto!important;flex:1 1 auto!important;min-width:0;gap:2px}
+ #app .top nav.roles{flex:1 1 auto!important;max-width:100%!important;
+  overflow-x:auto!important;gap:2px;justify-content:flex-end!important;scrollbar-width:none}
  #app .top .roles-label{display:none!important}
  #app .top .roles button{font-size:11.5px!important;padding:9px 9px!important}
  #app>main.container{margin:0 auto!important;max-width:1450px!important;
@@ -168,6 +185,8 @@ body{font-family:'Noto Sans','Aptos',system-ui,'Segoe UI',sans-serif;letter-spac
  }
  #app .top .roles::-webkit-scrollbar{display:none}
  #app .top .roles-label{display:none!important}
+ #app .top nav.roles{width:100%!important;max-width:100%!important;
+  overflow-x:auto!important;justify-content:flex-start!important}
  #app .top .roles button{min-width:fit-content;scroll-snap-align:start}
  #app>main.container{max-width:none!important;margin:0!important;
   padding:23px 17px 58px!important}
@@ -448,6 +467,12 @@ body{font-family:'Noto Sans','Aptos',system-ui,'Segoe UI',sans-serif;letter-spac
  color:#fff!important
 }
 #app[data-workspace="board"] .board-strength-card:first-child button{color:#fff!important}
+#app[data-workspace="board"] .board-strength-card:first-child :is(a,button,[role="link"]){
+ color:#fff!important;text-decoration-color:#ffffffa8!important
+}
+#app[data-workspace="board"] .board-strength-card:first-child :is(a,button):hover{
+ color:#fff!important;text-decoration:underline!important
+}
 #app[data-workspace="board"] .board-strength-number{
  font-size:clamp(33px,3vw,46px)!important;line-height:1.08!important;
  letter-spacing:-.068em!important
