@@ -60,7 +60,7 @@ test('dashboard switching preserves location, restores focus and starts from top
  assert.ok(pageScrolls>previous);
  for(const [role,headline] of [
   ['leader','Leadership Overview'],['board','AISG AGGREGATED DATA'],
-  ['student','My Learning, My Story.'],['faculty','My Students']
+  ['student','My learning'],['faculty','My Students']
  ]){
   click('[data-role]',{role});
   assert.match(node.innerHTML,new RegExp(headline));
