@@ -156,6 +156,39 @@ try{
    ['sss','.sss-overview'],['leader','.leader-learning-grid'],['board','.board-view']
   ])await run(role+'-'+screen,role,selector,width,height);
  }
+ // Design-system acceptance: chart-first storytelling and learner rows above fold.
+ await run('design-board-chart-first-1440','board','.board-historical-chart',1440,900,async()=>{
+  const a=await evaluate("(function(){const x=document.querySelector('.board-historical-chart').getBoundingClientRect();const y=document.querySelector('.board-strength-grid').getBoundingClientRect();return {chart:x.top,cards:y.top,css:[...document.querySelectorAll('link[rel=stylesheet]')].some(l=>l.href.includes('design-system-refinement.css')&&l.sheet)}})()");
+  assert(a.css,'Sitewide token layer must load after the brand theme');
+  assert(a.chart<a.cards,'The historic IB Diploma graph must precede celebratory cards');
+  assert(a.chart<850,'Historical evidence should begin within the first desktop viewport');
+ });
+ await run('design-faculty-rows-1440','faculty','.faculty-data-wall',1440,900,async()=>{
+  const a=await evaluate("(function(){const rows=[...document.querySelectorAll('.faculty-data-wall tbody tr')];const time=document.querySelector('.heading-meta .asof');return {visible:rows.filter(r=>r.getBoundingClientRect().top<innerHeight).length,color:getComputedStyle(time).color,font:parseFloat(getComputedStyle(time).fontSize),cols:getComputedStyle(document.querySelector('.faculty-daily-toolbar')).gridTemplateColumns}})()");
+  assert(a.visible>=3,'The initial Faculty viewport should show at least three learners');
+  assert(a.color==='rgb(86, 109, 117)','Metadata text must meet the improved contrast standard');
+  assert(a.font>=12,'Timestamp text must be at least 12px');
+  assert(a.cols.split(' ').length>=3,'Faculty controls should align on one desktop toolbar row');
+ });
+ // Mobile reflow is checked without penalising intentionally scrollable
+ // workspace navigation or independent horizontal evidence tables.
+ for(const width of [390,768]){
+  const height=width===390?844:1024;
+  for(const [role,selector] of [['faculty','.faculty-daily-toolbar'],
+   ['student','.student-landing'],['sss','.support-leadership'],
+   ['leader','.leader-learning-grid'],['board','.board-view']]){
+   await viewport(width,height);
+   await navigate(role,selector);
+   const a=await evaluate("(function(){const role=document.querySelector('#app')?.dataset.workspace;const nav=document.querySelector('.top nav.roles');const m=document.querySelector('#main');return {role,overflow:document.documentElement.scrollWidth-innerWidth,mainWidth:m?.getBoundingClientRect().width,navScroll:nav?.scrollWidth,navWidth:nav?.clientWidth,loaded:[...document.querySelectorAll('link[rel=stylesheet]')].some(l=>l.href.includes('design-system-refinement.css')&&l.sheet)}})()");
+   assert(a.role===role,'Mobile role view must remain accessible');
+   assert(a.loaded,'Mobile view must load the canonical design tokens');
+   assert(a.mainWidth>width*.7,'Mobile content must not collapse');
+   assert(a.overflow<=4,'Mobile page has unexpected horizontal overflow: '+role+' '+width+'px '+a.overflow);
+   await screenshot('design-'+role+'-'+width);
+   cases.push({name:'design-'+role+'-'+width,route:role,width,height,status:'pass'});
+   console.log('PASS design-'+role+'-'+width+' overflow='+a.overflow);
+  }
+ }
  // New interaction coverage: actual hover, keyboard, click and role-bound previews.
  await viewport(1440,900);
  await navigate('faculty','.roster-desktop .student-link');
