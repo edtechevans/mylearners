@@ -230,14 +230,16 @@ export function renderBoardOverview(state){
  '<div class="board-overview-intro"><div><span class="eyebrow">OUR LEARNING STORY · AT A GLANCE</span>'+
  '<h2>A Decade of Academic Strength</h2>'+
  '<p>Eleven May Diploma sessions, enduring subject achievement, and the latest MAP evidence · selected indicators, not a composite score.</p></div></div>'+
- '<div class="board-strength-grid">'+strengthCards+'</div>'+
- '<div class="board-track-record-note"><div><span class="eyebrow">LATEST DIPLOMA EVIDENCE · MAY 2026</span><strong>93% awarded the Diploma</strong><span>52 of 56 Diploma/retake candidates · worldwide provisional Diploma award rate 82.6%</span></div><div><span class="eyebrow">HOW TO READ THIS</span><p>MAP and IB Diploma measure different learners and outcomes. All historic comparisons use reported cohorts; the 2020–2022 IB sessions had altered assessment arrangements.</p></div></div>'+
  '<div class="board-history-switch"><div><span class="eyebrow">EXPLORE THE EVIDENCE</span>'+
- '<h3>Explore the Historical Evidence</h3><p>Select the Diploma award-rate record or MAP grade-level comparisons.</p></div>'+
+ '<h3>Our Results Over Time</h3><p>Explore published Diploma average points and award rates, or compare MAP grade-level outcomes.</p></div>'+
  '<div class="board-segmented" role="group" aria-label="Historical outcomes view">'+
  tabButton('dp','Diploma awards · 2016–26',chartMode,'data-board-overview-chart')+
  tabButton('map','MAP regional history',chartMode,'data-board-overview-chart')+'</div></div>'+
  '<section class="board-panel board-historical-chart" aria-label="Historical learning outcomes">'+
  (chartMode==='dp'?renderDPOverviewTrend(state):mapPanel)+'</section>'+
+ '<div class="board-strength-heading"><span class="eyebrow">MORE REASONS TO CELEBRATE</span><h3>Evidence of Sustained Strength</h3></div>'+
+ '<div class="board-strength-grid">'+strengthCards+'</div>'+
+ '<div class="board-track-record-note"><div><span class="eyebrow">LATEST DIPLOMA EVIDENCE · MAY 2026</span><strong>93% awarded the Diploma</strong><span>52 of 56 Diploma/retake candidates · worldwide provisional Diploma award rate 82.6%</span></div><div><span class="eyebrow">HOW TO READ THIS</span><p>MAP and IB Diploma measure different learners and outcomes. All historic comparisons use reported cohorts; the 2020–2022 IB sessions had altered assessment arrangements.</p></div></div>'+
+
  '</div>';
 }

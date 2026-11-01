@@ -12,11 +12,10 @@ const open=(id,tab,text)=>'<button type="button" class="support-small-button" da
 
 export function renderSSSLeadershipDashboard(students,records,entries,selectedManager='All'){
  const m=supportLeadership(students,records,entries,selectedManager);
+ // Action counts already appear in their respective queues, where a team can act.
+ // Show caseload and intervention context once instead of repeating queue totals.
  const stats=[
   ['Students Supported',m.selected.length,'Fictional active cohort'],
-  ['Reviews Due',m.due.length,'By 27 Nov 2026'],
-  ['Open Actions',m.pending.length,'Follow-up ownership'],
-  ['Referrals Pending',m.referrals.length,'Awaiting team decisions'],
   ['At Sample Target',m.monitoring.atTarget,'Of '+m.monitoring.monitored+' illustrative intervention series']
  ];
  const metric=([title,value,foot])=>'<div class="support-lead-metric"><span>'+e(title)+'</span>'+

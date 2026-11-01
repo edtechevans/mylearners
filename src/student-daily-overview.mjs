@@ -58,7 +58,7 @@ export function renderStudentOverview(student,records,{attendance,mathGrowth,ref
  ['A result to recognise','Recent learning progress','My next step'];
  return '<section class="student-landing student-stage-'+style+'" aria-label="My learning today">'+
   '<div class="student-landing-intro"><div><span class="student-overline">MY LEARNING TODAY</span>'+
-  '<h2>Hello, '+esc(student.first)+'!</h2><p>'+esc(intro)+'</p></div>'+
+  '<h2>Learning today</h2><p>'+esc(intro)+'</p></div>'+
   '<span class="student-demo-label">Fictional learning example</span></div>'+
   '<div class="student-landing-grid">'+
   '<article class="student-today-tile student-today-celebrate">'+

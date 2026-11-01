@@ -657,7 +657,7 @@ function student(){
  const ss=DATA.students.filter(s=>s.grade===current);
  const chosen=ss.find(s=>s.id===state.studentId)||ss[0];
  if(chosen&&!ss.some(x=>x.id===state.studentId))state.studentId=chosen.id;
- return heading('My Learning, My Story.','Explore my school reports, skills and wellbeing in one place.')+
+ return heading('My learning','A personal view of my growth, school reports and reflections.')+
  '<div class="toolbar academic-student-picker"><label>Demo grade '+selector('student-grade',
  grades.map(g=>[g,g==='K'?'Kindergarten':g]),current)+'</label>'+
  '<label>Student demo '+selector('student',ss.map(s=>[s.id,s.name]),state.studentId)+'</label></div>'+

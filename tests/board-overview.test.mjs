@@ -69,6 +69,10 @@ test('Board Overview communicates four defensible strengths in a clear schoolwid
  assert.equal((html.match(/data-board-dp-go=/g)||[]).length,2);
  assert.match(html,/24 \/ 24/);assert.match(html,/95%/);
  assert.match(html,/IB DIPLOMA · 2016–2026/);assert.match(html,/93%/);
+ assert.ok(html.indexOf('board-historical-chart') < html.indexOf('board-strength-grid'),
+  'The main longitudinal evidence should appear before celebratory metric cards');
+ assert.match(html,/board-strength-heading/);
+ assert.match(html,/Our Results Over Time/);
  assert.match(html,/board-track-record-note/);assert.doesNotMatch(html,/confirmation pending|unconfirmed|verification pending/i);
  assert.match(html,/data-board-overview-chart="map"/);
  assert.match(html,/data-board-overview-chart="dp"/);

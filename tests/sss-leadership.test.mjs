@@ -22,7 +22,13 @@ test('SSS leadership is based on one stable fictional student cohort and action 
  assert.equal(overview.monitoring.monitored,cohort.length);
  assert.ok(overview.due.length<=cohort.length);
  assert.match(renderSSSLeadershipDashboard(cohort,records,entries),/What Needs Our Attention/);
- assert.match(renderSSSLeadershipDashboard(cohort,records,entries),/Reviews Due/);
+ const leadership=renderSSSLeadershipDashboard(cohort,records,entries);
+ assert.match(leadership,/Upcoming Reviews/);
+ assert.match(leadership,/Open Follow-ups/);
+ assert.match(leadership,/Referrals for Discussion/);
+ assert.equal((leadership.match(/class="support-lead-metric"/g)||[]).length,2,
+  'Show caseload and monitoring once; use actionable queue headings for reviews, follow-ups and referrals');
+ assert.equal((leadership.match(/class="support-queue"/g)||[]).length,3);
  const only=supportLeadership(cohort,records,entries,managerFor(learner));
  assert.ok(only.selected.every(s=>managerFor(s)===managerFor(learner)));
 });
