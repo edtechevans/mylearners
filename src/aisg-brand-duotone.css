@@ -1,0 +1,213 @@
+/* AISG My Learners | Red + Navy brand art direction | 2026-11-02
+   A signature two-colour identity: navy establishes structure and trust;
+   AISG red carries editorial energy and selection. Data/assessment colours
+   retain their established, independent meanings (quartiles and indices).
+   Load after vision-ui.css. This file intentionally does NOT style bands,
+   learning metrics, cohort values, chart markers, or student status flags. */
+:root{
+  --aisg-brand-navy:#10324e;
+  --aisg-brand-navy-deep:#0b263e;
+  --aisg-brand-red:#a71f35;
+  --aisg-brand-red-deep:#88182d;
+  --aisg-brand-red-light:#f1a9b3;
+  --aisg-brand-rose:#fff4f4;
+  --aisg-brand-rose-line:#ebcfd4;
+  --aisg-brand-neutral:#f8f7f4;
+  --ml-navy:var(--aisg-brand-navy);
+  --ml-navy-deep:var(--aisg-brand-navy-deep);
+  --ml-red:var(--aisg-brand-red);
+  --ml-warm:var(--aisg-brand-neutral);
+  --clarity-navy:var(--aisg-brand-navy);
+}
+body,#app{background:var(--aisg-brand-neutral)!important}
+
+/* 01 — Product masthead: navy foundation, crimson end-cap, clear selected role.
+   This is brand navigation rather than a judgement about learner outcomes. */
+#app .top{
+  background:linear-gradient(103deg,#0b263e 0%,#10324e 61%,#51243b 82%,#781c32 100%)!important;
+  border-bottom:3px solid var(--aisg-brand-red)!important;
+  box-shadow:0 8px 28px rgba(11,38,62,.15)!important
+}
+#app .top .brand .brand-kicker{color:#f4b4bd!important}
+#app .top .brand .brand-tagline{color:#e1e6eb!important}
+#app .top .brand-emblem{
+  border-bottom:3px solid var(--aisg-brand-red)!important;
+  padding-bottom:3px!important;
+  box-shadow:0 0 0 1px #ffffff38,inset 0 0 0 1px #e9ecec!important
+}
+#app .top nav.roles{
+  background:rgba(4,22,39,.25)!important;
+  border:1px solid rgba(255,255,255,.08)!important
+}
+#app .top nav.roles button.selected{
+  background:var(--aisg-brand-red)!important;
+  border-color:var(--aisg-brand-red)!important;
+  color:#fff!important;
+  box-shadow:0 2px 9px rgba(34,7,17,.2)!important
+}
+#app .top nav.roles button.selected:hover{background:var(--aisg-brand-red-deep)!important}
+#app .top nav.roles button:hover:not(.selected){
+  background:rgba(255,255,255,.14)!important;
+  color:#fff!important
+}
+#app .top :is(.ux-nav-button,.ux-command-launch):hover{
+  background:rgba(255,255,255,.14)!important;
+  border-color:#ffffff62!important
+}
+
+/* 02 — Editorial hierarchy: scarlet marks sections, ink stays navy. */
+#app .heading .eyebrow,
+#app[data-workspace="board"] .board-overview-intro .eyebrow,
+#app[data-workspace="board"] .board-strength-eyebrow{
+  color:var(--aisg-brand-red)!important
+}
+#app[data-workspace="board"] .board-overview-intro h2{
+  position:relative;
+  padding-bottom:13px!important;
+  color:var(--aisg-brand-navy)!important
+}
+#app[data-workspace="board"] .board-overview-intro h2::after{
+  content:"";position:absolute;bottom:0;left:0;
+  width:76px;height:4px;background:var(--aisg-brand-red);
+  border-radius:3px
+}
+
+/* 03 — Board cover: designed 2-colour composition, not a generic blue gradient.
+   The red occupies the right-hand brand panel, away from the title. */
+#app[data-workspace="board"] .board-heading{
+  background:linear-gradient(110deg,
+    #0b2b44 0%,#153951 63%,#94223a 63.2%,#a71f35 100%)!important;
+  border:1px solid rgba(11,38,62,.14)!important;
+  box-shadow:0 12px 30px rgba(13,39,63,.085)!important
+}
+#app[data-workspace="board"] .board-heading::after{
+  background-image:radial-gradient(circle,#ffe3e6 1.2px,transparent 1.55px)!important;
+  opacity:.22!important
+}
+#app[data-workspace="board"] .board-heading :is(h1,p,.eyebrow,span){
+  color:#fff!important
+}
+#app[data-workspace="board"] .board-provenance-badge{
+  background:rgba(255,255,255,.13)!important;
+  border:1px solid rgba(255,255,255,.42)!important;
+  box-shadow:0 3px 14px rgba(48,10,18,.08)!important
+}
+#app[data-workspace="board"] .board-provenance-badge :is(strong,small){
+  color:#fff!important
+}
+
+/* 04 — Board celebration cards: one crimson hero, alternating red/navy
+   editorial trim on white cards. Red here is AISG branding, NOT a risk band. */
+#app[data-workspace="board"] .board-strength-card:first-child{
+  background:linear-gradient(150deg,#b52c43 0%,#8c1c30 100%)!important;
+  border:1px solid #972039!important;
+  box-shadow:0 9px 22px rgba(123,27,44,.14)!important
+}
+#app[data-workspace="board"] .board-strength-card:first-child
+ :is(.board-strength-eyebrow,.board-strength-number,.board-strength-caption,.board-strength-action){
+  color:#fff!important
+}
+#app[data-workspace="board"] .board-strength-card:not(:first-child){
+  background:#fff!important;
+  border-top:4px solid var(--aisg-brand-navy)!important
+}
+#app[data-workspace="board"] .board-strength-card:nth-child(2),
+#app[data-workspace="board"] .board-strength-card:nth-child(4){
+  border-top-color:var(--aisg-brand-red)!important
+}
+#app[data-workspace="board"] .board-strength-card:nth-child(2) .board-strength-number,
+#app[data-workspace="board"] .board-strength-card:nth-child(4) .board-strength-number{
+  color:var(--aisg-brand-red)!important
+}
+#app[data-workspace="board"] .board-strength-card:not(:first-child) .board-strength-action{
+  color:var(--aisg-brand-red)!important
+}
+#app[data-workspace="board"] .board-strength-card:not(:first-child)
+ .board-strength-eyebrow{
+  color:var(--aisg-brand-navy)!important
+}
+#app[data-workspace="board"] .board-track-record-note{
+  background:linear-gradient(93deg,#fff2f2 0%,#faf8f5 72%,#f2f5f4 100%)!important;
+  border:1px solid var(--aisg-brand-rose-line)!important;
+  border-left:4px solid var(--aisg-brand-red)!important
+}
+
+/* 05 — Interactive Board navigation: red identifies the selected UI control.
+   Chart series themselves keep navy (AISG) and muted red (world); unchanged. */
+#app[data-workspace="board"] .board-nav-tabs button.active{
+  background:#fff!important;
+  color:var(--aisg-brand-red)!important;
+  box-shadow:inset 0 -3px 0 var(--aisg-brand-red),0 1px 4px rgba(13,38,61,.08)!important
+}
+#app[data-workspace="board"] .board-nav-tabs button:hover:not(.active){
+  background:#f6e9eb!important;
+  color:var(--aisg-brand-red)!important
+}
+#app[data-workspace="board"] .board-segmented button.active,
+#app[data-workspace="board"] .board-segmented button[aria-pressed="true"]{
+  color:var(--aisg-brand-red)!important;
+  box-shadow:inset 0 -3px 0 var(--aisg-brand-red),0 1px 3px rgba(13,38,61,.09)!important
+}
+#app[data-workspace="board"] .board-dp-basis-control button[aria-pressed="true"]{
+  background:var(--aisg-brand-red)!important;
+  color:#fff!important
+}
+#app[data-workspace="board"] .board-dp-basis-control button:not([aria-pressed="true"]):hover{
+  background:#fae8eb!important;color:var(--aisg-brand-red)!important
+}
+#app[data-workspace="board"] :is(.board-copy-link,.board-dp-global-toggle,.board-action-primary):hover{
+  border-color:var(--aisg-brand-red)!important;
+  color:var(--aisg-brand-red)!important
+}
+/* Differentiate Board editorial callouts without recolouring graph series. */
+#app[data-workspace="board"] .board-strength-interpretation{
+  border-left:4px solid var(--aisg-brand-red)!important;
+  background:#fff6f5!important
+}
+
+/* 06 — Repeat the visual identity in other workspaces without giving red an
+   achievement, wellbeing, support eligibility or safeguarding meaning. */
+#app[data-workspace="student"] .student-landing-grid .student-today-tile:first-child{
+  background:linear-gradient(125deg,#10304b 0%,#173b53 72%,#872238 100%)!important;
+  border-color:#163950!important
+}
+#app[data-workspace="student"] .student-landing-grid .student-today-tile:nth-child(2){
+  background:#fff7f5!important;
+  border-color:#eedcdd!important
+}
+#app[data-workspace="student"] .student-landing-grid .student-today-tile:first-child
+ .student-today-icon{
+  background:#f7d7db!important;color:var(--aisg-brand-navy)!important
+}
+#app[data-workspace="leader"] .leader-learning-grid>.leader-stat:first-child{
+  background:linear-gradient(120deg,#10304c 0%,#153b56 72%,#8a1e35 100%)!important;
+  border-color:#15354f!important
+}
+/* Other Leader and SSS tiles stay neutral: their figures may describe support
+   needs, so brand red must not suggest a negative student classification. */
+#app[data-workspace="faculty"] .class-roster-view-switch button[aria-pressed="true"]{
+  color:var(--aisg-brand-red)!important;
+  box-shadow:inset 0 -3px 0 var(--aisg-brand-red)!important
+}
+
+/* Responsive: keep the title legible on both colour fields; avoid red panel
+   colliding with controls when it stacks beneath the Board hero. */
+@media(max-width:800px){
+ #app .top{background:linear-gradient(115deg,#0b263e 0%,#10324e 63%,#672038 100%)!important}
+ #app[data-workspace="board"] .board-heading{
+   background:linear-gradient(145deg,#0c2c46 0%,#153950 71%,#951f37 71.2%,#a71f35 100%)!important
+ }
+ #app[data-workspace="board"] .board-overview-intro h2::after{width:58px}
+}
+@media(prefers-reduced-motion:reduce){
+ #app .top nav.roles button{transition:none!important}
+}
+@media print{
+ #app .top{background:#fff!important;border-bottom:2px solid #a71f35!important;box-shadow:none!important}
+ #app .top .brand strong{color:#10324e!important}
+ #app .top .brand .brand-kicker{color:#a71f35!important}
+ #app[data-workspace="board"] .board-heading,
+ #app[data-workspace="board"] .board-strength-card:first-child{
+  -webkit-print-color-adjust:exact;print-color-adjust:exact
+ }
+}

@@ -211,6 +211,21 @@ try{
    assert(await evaluate("!!document.querySelector('.board-dp-matched-gaps')"),
     'Only matched recipient scores should produce calculated differences');
   });
+ await run('aisg-red-navy-board-1440','board','.board-heading',1440,900,
+  async()=>{
+   const theme=await evaluate("(function(){const app=document.querySelector('#app');const nav=document.querySelector('.top');const active=nav?.querySelector('.roles button.selected');const hero=document.querySelector('.board-heading');const first=document.querySelector('.board-strength-card');const second=document.querySelector('.board-strength-card:nth-child(2)');const label=document.querySelector('.board-nav-tabs button.active');return {workspace:app?.dataset.workspace,nav:getComputedStyle(nav).backgroundImage,active:getComputedStyle(active).backgroundColor,hero:getComputedStyle(hero).backgroundImage,featured:getComputedStyle(first).backgroundImage,secondBorder:getComputedStyle(second).borderTopColor,label:getComputedStyle(label).color,styleLoaded:[...document.querySelectorAll('link[rel=stylesheet]')].some(x=>x.href.includes('aisg-brand-duotone.css')&&x.sheet)}})()");
+   assert(theme.styleLoaded,'AISG final red/navy brand stylesheet must load');
+   assert(theme.workspace==='board','Correct role should be themed');
+   assert(theme.nav.includes('rgb(120, 28, 50)')&&theme.nav.includes('rgb(11, 38, 62)'),
+    'Masthead needs both AISG deep red and navy');
+   assert(theme.active==='rgb(167, 31, 53)','Board selected workspace should be AISG crimson');
+   assert(theme.hero.includes('rgb(167, 31, 53)')&&theme.hero.includes('rgb(11, 43, 68)'),
+    'Board cover must feature a clear red/navy brand split');
+   assert(theme.featured.includes('rgb(181, 44, 67)'),
+    'Board featured editorial card should have its own crimson identity');
+   assert(theme.secondBorder==='rgb(167, 31, 53)','Board secondary editorial card needs a crimson accent');
+   assert(theme.label==='rgb(167, 31, 53)','Selected Board tab should use brand red');
+  });
  await run('board-map-1440','board?view=explore&window=fall2026&subject=math','.board-controls',1440,900);
  await run('board-dp-1440','board?view=dp&metric=average','.board-dp',1440,900);
  await run('board-dp-focused-average-axis-1440','board?view=dp&metric=average&world=recipients','.board-dp',1440,900,
