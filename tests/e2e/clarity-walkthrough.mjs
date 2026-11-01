@@ -86,7 +86,7 @@ const inspect='('+function(){
  const stylesheet=[...document.querySelectorAll('link[rel=stylesheet]')].some(x=>x.href.includes('clarity-design.css')&&x.sheet);
  const paletteLoaded=[...document.querySelectorAll('link[rel=stylesheet]')].some(x=>x.href.includes('sitewide-palette.css')&&x.sheet);
  const visionLoaded=[...document.querySelectorAll('link[rel=stylesheet]')].some(x=>x.href.includes('vision-ui.css')&&x.sheet);
- const headerFill=nav?getComputedStyle(nav).backgroundColor:'none';
+ const headerFill=nav?getComputedStyle(nav).backgroundImage:'none';
  const tiles=[...document.querySelectorAll(
   '.faculty-daily-summary>.quick-tile,.leader-learning-grid>.leader-stat,'+
   '.sss-count-grid>.sss-number,.student-landing-grid>.student-today-tile,'+
@@ -137,8 +137,9 @@ async function run(name,route,selector,width,height,interaction){
   assert(record.focusables>=5,'No working interactive controls found');
   if(width>=1180)assert(record.navigationPosition==='fixed','Desktop product masthead must remain fixed');
   if(width<1180)assert(record.navigationPosition!=='fixed','Responsive masthead should remain in document flow');
-  assert(record.headerFill==='rgb(10, 31, 46)'||record.headerFill==='rgb(16, 40, 58)',
-   'The AISG navy product masthead should be visible');
+  assert(record.headerFill.includes('linear-gradient')&&record.headerFill.includes('rgb(11, 38, 62)')&&
+   (record.headerFill.includes('rgb(120, 28, 50)')||record.headerFill.includes('rgb(103, 32, 56)')),
+   'AISG masthead must display both navy and red, including responsive layouts');
   assert(record.font.includes('Noto Sans'),'Noto Sans design system missing');
   record.status='pass';
  }catch(e){failed=true;record.status='fail';record.error=String(e.message||e)}
