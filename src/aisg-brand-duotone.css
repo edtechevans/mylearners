@@ -190,6 +190,23 @@ body,#app{background:var(--aisg-brand-neutral)!important}
   box-shadow:inset 0 -3px 0 var(--aisg-brand-red)!important
 }
 
+/* Student reflection is an action, not an assessment. Replace the former
+   unrelated purple CTA and icon with the AISG brand red. */
+#app[data-workspace="student"] .student-today-goal{
+  --student-accent:var(--aisg-brand-red)!important;
+  --student-tint:var(--aisg-brand-rose)!important;
+  --student-edge:var(--aisg-brand-rose-line)!important
+}
+#app[data-workspace="student"] .student-save-goal{
+  background:var(--aisg-brand-red)!important;
+  border-color:var(--aisg-brand-red)!important;
+  color:#fff!important
+}
+#app[data-workspace="student"] .student-save-goal:hover{
+  background:var(--aisg-brand-red-deep)!important;
+  border-color:var(--aisg-brand-red-deep)!important
+}
+
 /* Responsive: keep the title legible on both colour fields; avoid red panel
    colliding with controls when it stacks beneath the Board hero. */
 @media(max-width:800px){

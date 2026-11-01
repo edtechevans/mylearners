@@ -212,6 +212,14 @@ try{
    assert(await evaluate("!!document.querySelector('.board-dp-matched-gaps')"),
     'Only matched recipient scores should produce calculated differences');
   });
+ await run('aisg-red-navy-student-1440','student','.student-landing-grid',1440,900,
+  async()=>{
+   const bg=await evaluate("getComputedStyle(document.querySelector('.student-save-goal')).backgroundColor");
+   assert(bg==='rgb(167, 31, 53)',
+    'The student reflection action should now use AISG red rather than unrelated purple');
+   assert(await evaluate("getComputedStyle(document.querySelector('.student-today-goal')).getPropertyValue('--student-accent').trim()==='var(--aisg-brand-red)'"),
+    'The reflection icon should use the same red identity');
+  });
  await run('aisg-red-navy-board-1440','board','.board-heading',1440,900,
   async()=>{
    const theme=await evaluate("(function(){const app=document.querySelector('#app');const nav=document.querySelector('.top');const active=nav?.querySelector('.roles button.selected');const hero=document.querySelector('.board-heading');const first=document.querySelector('.board-strength-card');const second=document.querySelector('.board-strength-card:nth-child(2)');const label=document.querySelector('.board-nav-tabs button.active');return {workspace:app?.dataset.workspace,nav:getComputedStyle(nav).backgroundImage,active:getComputedStyle(active).backgroundColor,hero:getComputedStyle(hero).backgroundImage,featured:getComputedStyle(first).backgroundImage,secondBorder:getComputedStyle(second).borderTopColor,label:getComputedStyle(label).color,styleLoaded:[...document.querySelectorAll('link[rel=stylesheet]')].some(x=>x.href.includes('aisg-brand-duotone.css')&&x.sheet)}})()");

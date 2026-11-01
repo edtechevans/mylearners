@@ -19,7 +19,7 @@ test('AISG red and navy tokens load after the existing design system',()=>{
  assert.match(brand,/--aisg-brand-red:#a71f35/);
  assert.match(brand,/--aisg-brand-navy:#10324e/);
  assert.match(brand,/--aisg-brand-navy-deep:#0b263e/);
- assert.ok(html.includes('aisg-brand-duotone.css?v=20261102r1'));
+ assert.ok(html.includes('aisg-brand-duotone.css?v=20261102r2'));
  assert.ok(html.indexOf('vision-ui.css')<html.indexOf('aisg-brand-duotone.css'));
 });
 test('Brand navigation and Board editorial hero feature red and navy, not more navy tiles',()=>{
