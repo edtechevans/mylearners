@@ -217,7 +217,7 @@ try{
    const bg=await evaluate("getComputedStyle(document.querySelector('.student-save-goal')).backgroundColor");
    assert(bg==='rgb(167, 31, 53)',
     'The student reflection action should now use AISG red rather than unrelated purple');
-   assert(await evaluate("getComputedStyle(document.querySelector('.student-today-goal')).getPropertyValue('--student-accent').trim()==='var(--aisg-brand-red)'"),
+   assert(await evaluate("getComputedStyle(document.querySelector('.student-today-goal .student-symbol')).color==='rgb(167, 31, 53)'"),
     'The reflection icon should use the same red identity');
   });
  await run('aisg-red-navy-board-1440','board','.board-heading',1440,900,
