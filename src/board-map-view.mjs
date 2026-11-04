@@ -6,6 +6,7 @@ import {BOARD_DATA,BOARD_SUBJECTS,BOARD_GRADE_LIST,BOARD_SCHOOL_YEARS,
  BOARD_METHODS,boardRows,boardSummary,boardWindowFor} from './board-map-data.mjs';
 import {esc} from './v2-ui.mjs';
 import {renderBoardOverview} from './board-map-overview.mjs?v=20261029ibsubjects2';
+import {renderBoardClimate} from './board-climate-view.mjs?v=20261104climate1';
 import {renderBoardDP} from './board-dp-view.mjs?v=20261029dpaxis1';
 import {renderMapComparisonTiles} from './board-comparison-tiles.mjs';
 const safe=v=>esc(v??'');
@@ -118,17 +119,19 @@ export function renderBoard(state){
  const rows=boardRows(active,selectedSubject,division,selectedGrade);
  const summary=boardSummary(active,selectedSubject,division,selectedGrade);
  const name=BOARD_SUBJECTS.find(x=>x.id===selectedSubject).label;
- const explore=state.boardView==='explore',diploma=state.boardView==='dp';
+ const explore=state.boardView==='explore',diploma=state.boardView==='dp',climate=state.boardView==='climate';
  const header='<section class="board-view">'+
  '<div class="heading board-heading"><div><div class="eyebrow">AISG · BOARD · LEARNING EVIDENCE</div>'+
- '<h1>Learning at AISG</h1><p>MAP covers Grades 3–10. IB Diploma outcomes cover graduating cohorts. The two measures are separate.</p></div>'+
+ '<h1>Learning at AISG</h1><p>Academic achievement and school community experience, presented through distinct evidence sources.</p></div>'+
  '<div class="board-provenance-badge"><strong>AISG AGGREGATED DATA</strong><small>No student records</small></div></div>'+
  '<div class="board-nav-row"><nav class="board-nav-tabs" aria-label="Board dashboard sections">'+
- '<button type="button" data-board-view="overview" aria-current="'+(!explore&&!diploma?'page':'false')+'" class="'+(!explore&&!diploma?'active':'')+'">Overview</button>'+
+ '<button type="button" data-board-view="overview" aria-current="'+(!explore&&!diploma&&!climate?'page':'false')+'" class="'+(!explore&&!diploma&&!climate?'active':'')+'">Overview</button>'+
  '<button type="button" data-board-view="explore" aria-current="'+explore+'" class="'+(explore?'active':'')+'">MAP</button>'+
- '<button type="button" data-board-view="dp" aria-current="'+diploma+'" class="'+(diploma?'active':'')+'">IB Diploma</button>'+
+ '<button type="button" data-board-view="dp" aria-current="'+diploma+'" class="'+(diploma?'active':'')+'">IB Diploma</button>'+ 
+ '<button type="button" data-board-view="climate" aria-current="'+climate+'" class="'+(climate?'active':'')+'">Climate &amp; Wellbeing</button>'+ 
  '</nav></div>';
  if(diploma)return header+renderBoardDP(state)+'</section>';
+ if(climate)return header+renderBoardClimate()+'</section>';
  if(!explore)return header+renderBoardOverview(state)+'</section>';
  const filters='<div class="board-controls board-simple-controls">'+
  '<div class="board-control-group"><span class="board-filter-label">School year</span>'+
