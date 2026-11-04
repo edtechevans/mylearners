@@ -1,0 +1,39 @@
+/* Board: Climate & Wellbeing · restrained AISG editorial presentation */
+.board-view .cw-dashboard{--cw-accent:#a52a43;--cw-navy:#173449;--cw-muted:#657580;--cw-line:#e5e8ec;max-width:1380px;margin:0 auto 32px;color:var(--cw-navy)}
+.board-view .cw-hero{padding:clamp(24px,4vw,54px);border-radius:19px;background:linear-gradient(116deg,#791d35 0%,#a52a43 55%,#25354b 100%);color:#fff;position:relative;overflow:hidden}
+.board-view .cw-hero:after{content:"";position:absolute;width:320px;height:320px;border:1px solid #ffffff22;border-radius:50%;right:-72px;top:-120px;pointer-events:none;box-shadow:0 0 0 48px #ffffff0b,0 0 0 100px #ffffff06}
+.board-view .cw-hero .eyebrow{font-size:11px;letter-spacing:.16em;color:#ffced6!important}
+.board-view .cw-hero h2{font-size:clamp(28px,3.8vw,52px);line-height:1.08;max-width:810px;letter-spacing:-.04em;color:white!important;margin:12px 0 16px}
+.board-view .cw-hero p{font-size:clamp(13px,1.4vw,17px);line-height:1.6;max-width:710px;color:#f3e4e9!important;margin:0}
+.board-view .cw-hero-tag{display:inline-block;margin-top:23px;border:1px solid #ffffff66;border-radius:99px;color:#fff;font-size:11px;padding:8px 14px}
+.board-view .cw-section{margin-top:35px}
+.board-view .cw-section-heading{margin-bottom:15px}
+.board-view .cw-section-heading .eyebrow{color:#a52a43;font-size:10px;letter-spacing:.14em}
+.board-view .cw-section-heading h2{font-size:clamp(21px,2.4vw,29px);letter-spacing:-.03em;color:#173449;margin:5px 0}
+.board-view .cw-section-heading p{font-size:13px;color:#657580;line-height:1.55;margin:2px 0 0}
+.board-view .cw-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.board-view .cw-grid-headline{grid-template-columns:repeat(4,minmax(0,1fr))}
+.board-view .cw-tile{background:#fff;border:1px solid var(--cw-line);border-radius:14px;padding:20px;display:flex;flex-direction:column;min-height:184px;box-shadow:0 6px 25px #101f3510}
+.board-view .cw-tile-featured{border-top:4px solid #a52a43}
+.board-view .cw-audience{color:#7d4c5b;text-transform:uppercase;font-size:10px;letter-spacing:.085em;font-weight:760}
+.board-view .cw-value{font-size:clamp(34px,3.2vw,46px);letter-spacing:-.055em;color:#a52a43;line-height:1.15;margin:11px 0 8px;font-variant-numeric:tabular-nums}
+.board-view .cw-tile h3{font-size:14px;line-height:1.38;color:#20384c;font-weight:700;margin:0 0 9px}
+.board-view .cw-tile-end{margin-top:auto;font-size:11px;color:#647784;padding-top:7px}
+.board-view .cw-change{font-weight:750;color:#237a5c}
+.board-view .cw-change small{font-weight:500;color:#6b7a84}
+.board-view .cw-trend-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.board-view .cw-trend-card{border:1px solid var(--cw-line);border-radius:15px;padding:20px;background:#fff;min-width:0}
+.board-view .cw-trend-title{display:flex;align-items:start;justify-content:space-between;gap:13px}
+.board-view .cw-trend-title h3{font-size:14px;color:#20384c;margin:6px 0 0}
+.board-view .cw-trend-title strong{color:#a52a43;font-size:25px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.board-view .cw-spark{display:block;width:100%;height:auto;color:#667783}
+.board-view .cw-trend-caption{font-size:11px;color:#657580;margin:0}
+.board-view .cw-method{border:1px solid var(--cw-line);border-radius:12px;background:#f7f8fa;margin-top:34px}
+.board-view .cw-method summary{padding:17px 20px;font-size:13px;font-weight:750;cursor:pointer;color:#28435a}
+.board-view .cw-method summary span{float:right}
+.board-view .cw-method>div{padding:0 20px 18px;color:#586e7a;font-size:12px;line-height:1.7}
+.board-view .cw-method p{margin:9px 0}
+@media(max-width:1100px){.board-view .cw-grid-headline{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:750px){.board-view .cw-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.board-view .cw-trend-grid{grid-template-columns:1fr}.board-view .cw-tile{padding:14px;min-height:160px}.board-view .cw-hero{border-radius:12px}.board-view .cw-trend-card{padding:13px}}
+@media(max-width:430px){.board-view .cw-grid{grid-template-columns:1fr}.board-view .cw-tile{min-height:130px}.board-view .cw-value{font-size:38px}}
+@media print{.board-view .cw-tile,.board-view .cw-trend-card,.board-view .cw-hero{break-inside:avoid;print-color-adjust:exact;-webkit-print-color-adjust:exact}.board-view .cw-method{display:block}}
