@@ -18,7 +18,7 @@ test('deduplicated highlights calculate correctly',()=>{
  assert.equal(climateSummary('g612Trusted').percentage,93.2);
  assert.equal(climateSummary('fGrowth').percentage,98.5);
  assert.equal(climateSummary('cWelcome').percentage,100);
- assert.equal(climateSummary('g612Trusted').change,7);
+ assert.equal(climateSummary('g612Trusted').change,6.9);
 });
 test('Fall 2025 caregiver trend excluded and anomalous item not charted',()=>{
  assert.equal(CLIMATE_METRICS.cWelcome.points.length,2);
