@@ -747,7 +747,7 @@ function render(){
  document.body.classList.toggle('board-drawer-open',state.role==='board'&&state.boardView==='explore'&&!!state.boardMapDetailsOpen);
  if(root.dataset)root.dataset.workspace=state.role;
  root.innerHTML=header()+'<main class="container" id="main" tabindex="-1">'+content+'</main><footer>'+
- (state.role==='board'?'AISG Board · Aggregated MAP and IB Diploma outcomes · No individual student scores published':
+ (state.role==='board'?'AISG Board · Aggregated MAP, IB Diploma and Climate & Wellbeing outcomes · No individual responses published':
  'My Learners demonstration · Learners, assessments and student check-ins fictional')+
  '</footer>'+(state.supportForm?renderSupportForm(state.supportForm,DATA.userIndex.get(state.supportForm.studentId),SUPPORT_DRAFTS):'');
  if(state.role==='board'&&state.boardView==='explore'&&state.boardMapDetailsOpen){
@@ -1094,7 +1094,7 @@ root.addEventListener('click',e=>{
  if(timeRange){state.boardTrendRange=timeRange.dataset.boardTrendRange==='all'?'all':'recent';render();return}
  const boardView=e.target.closest('[data-board-view]');
  if(boardView){
-  state.boardView=['overview','explore','dp'].includes(boardView.dataset.boardView)?
+  state.boardView=['overview','explore','dp','climate'].includes(boardView.dataset.boardView)?
   boardView.dataset.boardView:'overview';
   render();globalThis.window?.scrollTo?.(0,0);return;
  }
