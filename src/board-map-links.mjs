@@ -2,7 +2,7 @@
 import {BOARD_DATA,BOARD_GRADE_LIST} from './board-map-data.mjs';
 import {DP_RECORDS} from './board-dp-data.mjs';
 import {DIPLOMA_SUBJECTS,DP_SUBJECT_DEFAULT} from './board-dp-subjects.mjs';
-const views=new Set(['overview','explore','dp']);
+const views=new Set(['overview','explore','dp','climate']);
 const subjects=new Set(['math','reading','language']);
 const divisions=new Set(['all','elementary','secondary']);
 const trends=new Set(['fall','spring']);
