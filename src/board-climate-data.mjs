@@ -71,7 +71,7 @@ export function climateSummary(id){
  const latest=m.points.at(-1),previous=m.points.length>1?m.points.at(-2):null;
  const percentage=climatePercentage(latest),previousPercentage=climatePercentage(previous);
  const change=percentage!==null&&previousPercentage!==null?
-  Math.round((percentage-previousPercentage)*10)/10:null;
+  Math.round((latest.favourable/latest.respondents-previous.favourable/previous.respondents)*1000)/10:null;
  return {metric:m,latest,previous,percentage,previousPercentage,change};
 }
 export function climateIsSafeToPublish(id){
