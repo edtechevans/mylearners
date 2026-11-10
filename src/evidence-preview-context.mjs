@@ -24,9 +24,10 @@ const facultyGroup=ctx=>{
 };
 const leaderGroup=(ctx,groupLabel='')=>{
  const state=ctx.state;
- const divisions=state.division==='All'?['Elementary','Secondary']:[state.division];
+ const division=state.division||'All',gradeSelection=state.grade||'All';
+ const divisions=division==='All'?['Elementary','Secondary']:[division];
  const selected=ctx.data.students.filter(s=>divisions.includes(s.division)&&
-  (state.grade==='All'||s.grade===state.grade)&&
+  (gradeSelection==='All'||s.grade===gradeSelection)&&
   (!state.classId||s.classId===state.classId));
  if(!groupLabel)return selected;
  const label=groupLabel.trim();
