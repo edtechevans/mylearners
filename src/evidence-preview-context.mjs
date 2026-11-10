@@ -3,7 +3,7 @@
  */
 import {attendanceSummary,gradeNumber} from './data.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
-import {academicFor,latestAcademic} from './academic-journey-data.mjs';
+import {academicFor,latestAcademic,facultyDemoReport} from './academic-journey-data.mjs';
 import {experienceFor,EXPERIENCE_WINDOWS} from './experience-data.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
 import {PREVIEW_GUIDE,makePreview} from './evidence-previews.mjs?v=20261030wall3';
@@ -167,13 +167,15 @@ export function resolveEvidencePreview(trigger,ctx){
   }
   const mode=trigger.dataset.previewMeasure||'report';
   const subject=trigger.dataset.evidenceSubject||ctx.state.academicSubject||'Mathematics';
-  const latest=latestAcademic(academic,mode,subject);
+  const report=mode==='report'&&ctx.role==='faculty'?facultyDemoReport(academic):null;
+  const sample=report?.subjects.find(x=>x.subject===subject);
+  const latest=sample?{...sample,label:report.year}:latestAcademic(academic,mode,subject);
   const band=trigger.dataset.previewBand;
   return makePreview({title:PREVIEW_GUIDE[mode]?.label||'Academic result',subtitle:name,
    rows:[['Displayed result',value(trigger.dataset.evidenceValue||latest?.value)],
      ...(band?[['Same-grade demo group',band]]:[]),
      ['Subject',mode==='report'?subject:PREVIEW_GUIDE[mode]?.label||'Assessment'],
-     ['Assessment context',trigger.dataset.evidenceContext||latest?.label||'No eligible result']],
+     ['Assessment context',trigger.dataset.evidenceContext||(report?'2026–27 synthetic TEST DATA · NOT ISSUED':latest?.label)||'No eligible result']],
    note:(PREVIEW_GUIDE[mode]||PREVIEW_GUIDE.report).description+
     (band?' The colour is a relative same-grade fictional comparison, not a proficiency rating.':''),kind:'academic'});
  }
