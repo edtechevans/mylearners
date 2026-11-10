@@ -18,6 +18,8 @@ import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261030h
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,READING_LEVELS} from './academic-journey-data.mjs';
 import {quartileBand,formatIndex,experienceBand} from './faculty-bands.mjs?v=20261030wall2';
+import {facultyRosterEvidenceColumns,reportGradeBand} from './report-card-signals.mjs';
+import {renderLeaderReportFollowup} from './leader-report-followup.mjs';
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261028titles1';
 import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261030wall1';
 import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261031v2';
@@ -74,7 +76,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  classEvidence:'report',classMapSubject:'Mathematics',classCompare:'none',classExperienceWindow:'F26',rosterView:EVERYDAY_VIEW,
  maiaDimension:'relationships',maiaWindow:'F26',
  studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
-  leaderSupportOpen:false,
+  leaderSupportOpen:false,leaderReportScope:'secondary',leaderReportQuery:'',leaderReportMultiple:false,leaderReportExpanded:false,
  sssGrade:'All',sssQuery:'',sssStudentId:'',sssOpenGrades:['G3'],sssAcademicOpen:false,
   supportForm:null,supportFilter:'all',supportQuery:'',
   sssManager:'All',sssPanel:'summary',supportBarrier:'All',
@@ -177,8 +179,9 @@ function roster(ss,options={}){
  // The everyday view is a deliberately small, grade-aware selection of existing
  // evidence. Focused mode preserves the original single-measure comparison UX.
  const everyday=!across&&state.rosterView===EVERYDAY_VIEW;
- const everydayColumns=everyday?everydayEvidenceForGrade(grade):[];
- const hasAcademicBands=everydayColumns.some(c=>['map','ixl','core','fp'].includes(c.kind));
+ const everydayColumns=everyday?facultyRosterEvidenceColumns(ss,ACADEMIC_RECORDS,everydayEvidenceForGrade(grade)):[];
+ const hasAcademicBands=everydayColumns.some(c=>['map','ixl','core','fp','flourishing'].includes(c.kind));
+ const hasNumericReports=everydayColumns.some(c=>c.kind==='report'&&ss.some(student=>{const r=academicFor(ACADEMIC_RECORDS,student.id).reports?.[0];return reportGradeBand(r?.subjects?.find(x=>x.subject===c.subject)?.value,r?.scale)}));
  const hasExperienceBands=everydayColumns.some(c=>['engagement','belonging'].includes(c.kind));
  const checkinLabel=EXPERIENCE_WINDOWS.find(w=>w.key===state.classExperienceWindow)?.label||'Fall 2026';
  const everydayHeading=column=>column.kind==='engagement'||column.kind==='belonging'?
@@ -193,7 +196,7 @@ function roster(ss,options={}){
   return Number.isFinite(value)?value:null;
  };
  const relativeBand=(student,column)=>{
-  if(!['map','ixl','core','fp'].includes(column.kind))return null;
+  if(!['map','ixl','core','fp','flourishing'].includes(column.kind))return null;
   const key=column.kind+'|'+(column.subject||'');
   if(!gradeReferences.has(key))gradeReferences.set(key,gradeCohort.map(s=>evidenceNumeric(s,column)).filter(Number.isFinite));
   return quartileBand(evidenceNumeric(student,column),gradeReferences.get(key),20);
@@ -202,6 +205,11 @@ function roster(ss,options={}){
   if(column.kind==='attendance')return attendanceSummary(DATA.attendance[student.id]||[]).rate;
   if(column.kind==='engagement'||column.kind==='belonging')
    return experienceFor(RECORDS,student.id,column.kind,state.classExperienceWindow)?.value??null;
+  if(column.kind==='report'){
+   const report=academicFor(ACADEMIC_RECORDS,student.id).reports?.[0];
+   const item=report?.subjects?.find(x=>x.subject===column.subject);
+   return report?.scale==='1–7'&&item?Number(item.value):null;
+  }
   return evidenceNumeric(student,column);
  };
  const everydayCell=(student,column)=>{
@@ -210,38 +218,48 @@ function roster(ss,options={}){
    const value=attendance.rate===null||attendance.rate===undefined?'—':fmt(attendance.rate)+'%';
    return '<span class="class-evidence-result"><strong>'+safe(value)+'</strong><small>Through 8 Oct 2026</small></span>';
   }
-  const reports=academicFor(ACADEMIC_RECORDS,student.id).reports?.[0]?.subjects||[];
-  const subject=column.kind==='report'&&(column.id==='math'&&
-   !reports.some(x=>x.subject==='Mathematics')&&reports.some(x=>x.subject==='Early Mathematics'))?
-   'Early Mathematics':column.subject||state.academicSubject;
-  const context={...evidenceCtx,mode:column.kind,subject,
+  const report=academicFor(ACADEMIC_RECORDS,student.id).reports?.[0];
+  const entry=column.kind==='report'?report?.subjects?.find(x=>x.subject===column.subject):null;
+  const context={...evidenceCtx,mode:column.kind,subject:column.subject||state.academicSubject,
    mapSubject:column.kind==='map'?'Mathematics':state.classMapSubject,
    maiaDimension:column.kind==='flourishing'?'relationships':state.maiaDimension};
-  const result=evidenceValue(student,context);
+  const result=column.kind==='report'?(entry?
+   {text:String(entry.value),detail:'Issued '+report.year+' · '+report.grade+' · '+report.framework,available:true}:
+   {text:'—',detail:'No issued subject result',available:false}):evidenceValue(student,context);
   const quartile=relativeBand(student,column);
-  const content=quartile?
-   '<span class="class-evidence-result evidence-heat '+quartile.band+'"><strong>'+quartile.label+
-   '</strong><small>'+safe(result.text)+'</small></span>':evidenceRosterColumn(student,context);
+  const gradeBand=column.kind==='report'?reportGradeBand(entry?.value,report?.scale):null;
+  const inferredBand=column.kind==='engagement'||column.kind==='belonging'?
+   experienceBand(experienceFor(RECORDS,student.id,column.kind,state.classExperienceWindow)?.value):
+   quartile?.band||null;
+  const band=gradeBand||inferredBand;
+  const content=column.kind==='report'?
+   '<span class="class-evidence-result'+(gradeBand?' evidence-heat '+gradeBand:'')+
+   (result.available?'':' is-unavailable')+'"><strong>'+safe(result.text)+'</strong></span>':
+   '<span class="class-evidence-result'+(band?' evidence-heat '+band:'')+
+   (result.available?'':' is-unavailable')+'"><strong class="evidence-visually-hidden">'+
+   safe(result.available?'Evidence available':'No evidence')+'</strong>'+
+   (result.available?'<span class="evidence-band-mark" aria-hidden="true"></span>':
+    '<span class="evidence-missing" aria-hidden="true">—</span>')+'</span>';
   const isExperience=column.kind==='engagement'||column.kind==='belonging';
   const windowIndex=EXPERIENCE_WINDOWS.findIndex(w=>w.key===state.classExperienceWindow);
   const prior=windowIndex>0&&isExperience?
    experienceFor(RECORDS,student.id,column.kind,EXPERIENCE_WINDOWS[windowIndex-1].key):null;
   const current=isExperience?experienceFor(RECORDS,student.id,column.kind,state.classExperienceWindow):null;
   const change=prior&&current?Math.round((current.value-prior.value)*100)/100:null;
-  const trend=change===null?'':change>0?'↑':change<0?'↓':'→';
-  const detail=quartile?
-   column.label+': '+quartile.label+' among '+quartile.count+
-   ' same-grade fictional demo results; actual result '+result.text+'. This is not an official norm.':
+  const trendDetail=change===null?'':'. Change since '+EXPERIENCE_WINDOWS[windowIndex-1].label+': '+formatIndex(change);
+  const detail=column.kind==='report'?
+   column.label+': '+result.text+'. '+result.detail+'. Fixed 1–7 report thresholds where applicable.':
+   quartile?column.label+': fictional same-grade group '+quartile.quartile+' of 4 among '+quartile.count+
+   ' results; actual value '+result.text+'. Not an official norm.':
    column.label+': '+result.text+'. '+result.detail+
    (isExperience?'. Fixed four-band −2 to +2 index.':'');
-  const trendDetail=change===null?'':'. Change since '+EXPERIENCE_WINDOWS[windowIndex-1].label+': '+formatIndex(change);
   const title=safe(detail+trendDetail+'. Select to open learner profile');
   const button='<button type="button" class="evidence-cell-open" data-student="'+safe(student.id)+
-   '" aria-label="'+title+'">'+content+
-   (trend?'<span class="evidence-trend" aria-hidden="true">'+trend+'</span>':'')+'</button>';
+   '" data-evidence-value="'+safe(result.text)+'" data-evidence-subject="'+safe(column.subject||'')+
+   '" data-evidence-context="'+safe(result.detail)+'" title="'+title+'" aria-label="'+title+'">'+content+'</button>';
   return '<span class="evidence-cell-layout">'+button+'</span>';
  };
-
+ 
  const modeLabel=across?'Last issued report':evidenceLabel(mode,{...evidenceCtx,subject});
  const compareLabel=compare==='none'?'':evidenceLabel(compare,{...evidenceCtx,subject});
  const query=state.query.trim().toLowerCase();
