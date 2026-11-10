@@ -969,8 +969,19 @@ root.addEventListener('keydown',e=>{
 root.addEventListener('click',e=>{
  const facultyLow=e.target.closest('[data-faculty-low-filter]');
  if(facultyLow&&state.role==='faculty'){
-  state.facultyLowOnly=facultyLow.dataset.facultyLowFilter==='low';
-  render();root.querySelector('[data-faculty-low-filter="'+(state.facultyLowOnly?'low':'all')+'"]')?.focus({preventScroll:true});return;
+  const requested=facultyLow.dataset.facultyLowFilter;
+  state.facultyGradeFilter=requested==='2'||requested==='3'?requested:'all';
+  render();
+  root.querySelector('[data-faculty-low-filter="'+state.facultyGradeFilter+'"]')?.focus({preventScroll:true});
+  return;
+ }
+ const leaderThreshold=e.target.closest('[data-leader-report-threshold]');
+ if(leaderThreshold&&state.role==='leader'){
+  state.leaderReportThreshold=leaderThreshold.dataset.leaderReportThreshold==='2'?2:3;
+  state.leaderReportExpanded=false;
+  render();
+  root.querySelector('[data-leader-report-threshold="'+state.leaderReportThreshold+'"]')?.focus({preventScroll:true});
+  return;
  }
  if(e.target.closest('[data-leader-report-multiple]')&&state.role==='leader'){state.leaderReportMultiple=!state.leaderReportMultiple;state.leaderReportExpanded=false;render();return;}
  if(e.target.closest('[data-leader-report-expand]')&&state.role==='leader'){state.leaderReportExpanded=!state.leaderReportExpanded;render();return;}
