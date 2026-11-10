@@ -209,22 +209,30 @@ test('teachers can choose real check-in windows without treating an index as a p
  if(b.available)assert.match(b.detail,/Fall 2026/);
 });
 
-test('Subject-result filter renders in the visible class evidence toolbar rather than the hidden roster heading',()=>{
+test('2 and 3 or below filters render together in the visible class toolbar with separate counts',()=>{
  const students=group('G7');
  const html=renderClassEvidencePanel(students,{
-  ...ctx,rosterView:'everyday',lowGradeFilter:{total:20,count:9,active:false}
+  ...ctx,rosterView:'everyday',lowGradeFilter:{total:20,count3:9,count2:4,active:'all'}
  });
  assert.match(html,/class-roster-view-switch/);
  assert.match(html,/<\/div><div class="faculty-concern-filter"/);
  assert.match(html,/Filter students/);
  assert.match(html,/All students <b>20<\/b>/);
  assert.match(html,/3 or below <b>9<\/b>/);
- assert.match(html,/data-faculty-low-filter="low" aria-pressed="false"/);
+ assert.match(html,/2 or below <b>4<\/b>/);
+ assert.match(html,/data-faculty-low-filter="3" aria-pressed="false"/);
+ assert.match(html,/data-faculty-low-filter="2" aria-pressed="false"/);
  const selected=renderClassEvidencePanel(students,{
-  ...ctx,rosterView:'focused',lowGradeFilter:{total:20,count:9,active:true}
+  ...ctx,rosterView:'focused',lowGradeFilter:{total:20,count3:9,count2:4,active:'2'}
  });
- assert.match(selected,/data-faculty-low-filter="low" aria-pressed="true"/);
- assert.match(selected,/aria-label="Show 9 students with at least one subject result of 3 or below"/);
+ assert.match(selected,/data-faculty-low-filter="2" aria-pressed="true"/);
+ assert.match(selected,/data-faculty-low-filter="3" aria-pressed="false"/);
+ assert.match(selected,/aria-label="Show 4 students with at least one subject result of 2 or below"/);
+ const third=renderClassEvidencePanel(students,{
+  ...ctx,rosterView:'everyday',lowGradeFilter:{total:20,count3:9,count2:4,active:'3'}
+ });
+ assert.match(third,/data-faculty-low-filter="3" aria-pressed="true"/);
  const elementary=renderClassEvidencePanel(group('G3'),{...ctx,rosterView:'everyday'});
  assert.doesNotMatch(elementary,/data-faculty-low-filter/);
+
 });
