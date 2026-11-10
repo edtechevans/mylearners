@@ -13,8 +13,8 @@ import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=202610
 import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs?v=20261030repair1';
 import {experienceDialogContent} from './experience-explain-modal.mjs?v=20261030wall3';
-import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261110subjects3';
-import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261110grades2';
+import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261110timeline1';
+import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261110timeline1';
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,READING_LEVELS,facultyDemoReport} from './academic-journey-data.mjs';
 import {quartileBand,formatIndex,experienceBand} from './faculty-bands.mjs?v=20261030wall2';
@@ -97,7 +97,7 @@ const ownClasses=()=>DATA.classes.filter(c=>teacher().classIds.includes(c.id));
 const ownStudents=()=>DATA.students.filter(s=>teacher().classIds.includes(s.classId));
 const activeClass=()=>ownClasses().find(c=>c.id===state.classId)||ownClasses()[0];
 const previewController=installEvidencePreviewController(root,trigger=>resolveEvidencePreview(trigger,{
- role:state.role,state,data:DATA,academic:ACADEMIC_RECORDS,experience:RECORDS,sssRecords:SSS_RECORDS,
+ role:state.role,state,data:DATA,academic:ACADEMIC_RECORDS,experience:RECORDS,maia:MAIA_RECORDS,sssRecords:SSS_RECORDS,
  allowedStudentIds:ownStudents().map(s=>s.id),
  allowedClassIds:ownClasses().map(c=>c.id)
 }));
@@ -248,23 +248,10 @@ function roster(ss,options={}){
    safe(result.available?'Evidence available':'No evidence')+'</strong>'+
    (result.available?'<span class="evidence-band-mark" aria-hidden="true"></span>':
     '<span class="evidence-missing" aria-hidden="true">—</span>')+'</span>';
-  const isExperience=column.kind==='engagement'||column.kind==='belonging';
-  const windowIndex=EXPERIENCE_WINDOWS.findIndex(w=>w.key===state.classExperienceWindow);
-  const prior=windowIndex>0&&isExperience?
-   experienceFor(RECORDS,student.id,column.kind,EXPERIENCE_WINDOWS[windowIndex-1].key):null;
-  const current=isExperience?experienceFor(RECORDS,student.id,column.kind,state.classExperienceWindow):null;
-  const change=prior&&current?Math.round((current.value-prior.value)*100)/100:null;
-  const trendDetail=change===null?'':'. Change since '+EXPERIENCE_WINDOWS[windowIndex-1].label+': '+formatIndex(change);
-  const detail=column.kind==='report'?
-   column.label+': '+result.text+'. '+result.detail+'. Fixed 1–7 report thresholds where applicable.':
-   quartile?column.label+': fictional same-grade group '+quartile.quartile+' of 4 among '+quartile.count+
-   ' results; actual value '+result.text+'. Not an official norm.':
-   column.label+': '+result.text+'. '+result.detail+
-   (isExperience?'. Fixed four-band −2 to +2 index.':'');
-  const title=safe(detail+trendDetail+'. Select to open learner profile');
+  const title=safe(column.label+': '+result.text+'. Select to open learner profile');
   const button='<button type="button" class="evidence-cell-open" data-student="'+safe(student.id)+
    '" data-evidence-value="'+safe(result.text)+'" data-evidence-subject="'+safe(column.subject||'')+
-   '" data-evidence-context="'+safe(result.detail)+'" title="'+title+'" aria-label="'+title+'">'+content+'</button>';
+   '" data-evidence-context="'+safe(result.detail)+'" aria-label="'+title+'">'+content+'</button>';
   return '<span class="evidence-cell-layout">'+button+'</span>';
  };
  
