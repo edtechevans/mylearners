@@ -18,6 +18,7 @@ import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261110g
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,READING_LEVELS,facultyDemoReport} from './academic-journey-data.mjs';
 import {quartileBand,formatIndex,experienceBand} from './faculty-bands.mjs?v=20261030wall2';
+import {leaderExperienceChange,leaderExperienceScale,leaderExperienceLegend,leaderExperienceBandLabel} from './leader-experience-bands.mjs';
 import {facultyRosterEvidenceColumns,reportGradeBand,hasLowReportGrade} from './report-card-signals.mjs?v=20261110grades3';
 import {renderLeaderReportFollowup} from './leader-report-followup.mjs?v=20261110grades3';
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261028titles1';
@@ -521,11 +522,16 @@ function leader(){
   const cards=METRIC_IDS.map(id=>{
    const summary=summarizeExperience(RECORDS,ss,id,state.window);
    const change=experienceChange(RECORDS,ss,id,state.window);
-   const comparison=change.delta===null?'No earlier comparable check-in':
-    (change.delta>0?'+':'')+change.delta+' index points vs '+change.previousLabel;
-   return '<article class="leader-experience-card'+(experienceBand(summary.value)?' index-'+experienceBand(summary.value):'')+'"><span class="leader-measure-label">'+
-    safe(EXPERIENCE_METRICS[id].label)+'</span><div class="leader-experience-value">'+
+   const band=experienceBand(summary.value);
+   const interval=leaderExperienceBandLabel(summary.value);
+   const metricLabel=EXPERIENCE_METRICS[id].label;
+   const comparison=leaderExperienceChange(change.delta,change.previousLabel);
+   return '<article class="leader-experience-card'+(band?' index-'+band:'')+'">'+
+    '<span class="leader-measure-label">'+safe(metricLabel)+'</span>'+
+    '<div class="leader-experience-value">'+
     (Number.isFinite(summary.value)?summary.value.toFixed(2):'—')+'</div>'+
+    (interval?'<span class="leader-experience-interval">'+safe(interval.label)+' index band</span>':'')+
+    leaderExperienceScale(summary.value,metricLabel)+
     '<p class="leader-experience-change">'+safe(comparison)+'</p>'+
     '<p class="leader-experience-count">'+summary.n+' of '+summary.eligible+
     ' eligible students responded</p>'+
@@ -640,7 +646,7 @@ function leader(){
   '<p>Engagement and belonging · '+safe(selectedWindow)+' · response counts included.</p></div>'+
   '<label class="leader-window-select">Check-in period '+
   selector('window',EXPERIENCE_WINDOWS.map(w=>[w.key,w.label]),state.window)+
-  '</label></div>'+experience+
+  '</label></div>'+leaderExperienceLegend()+experience+
   (splitExperience?'<p class="leader-data-note">Elementary and Secondary students answer different questions; their indices are intentionally shown separately.</p>':'')+
   '</section>'+
   (secondaryOnly?renderLeaderReportFollowup({students:group,academic:ACADEMIC_RECORDS,
