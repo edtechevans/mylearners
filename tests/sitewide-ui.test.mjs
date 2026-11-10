@@ -96,6 +96,14 @@ test('Leaders use a simple four-metric overview with grade-eligible academic che
  assert.match(node.innerHTML,/Leadership Overview/);
  assert.match(node.innerHTML,/Whole school · Fictional data · Fall 2026/);
  assert.doesNotMatch(node.innerHTML,/leader-report-followup/,'Review is hidden on whole-school landing');
+ assert.match(node.innerHTML,/leader-experience-legend/,'Four-colour index key should be visible');
+ assert.equal((node.innerHTML.match(/class="leader-experience-scale/g)||[]).length,4,
+  'Elementary and Secondary Engagement and Belonging need a four-segment scale');
+ assert.equal((node.innerHTML.match(/leader-experience-marker" style="left:/g)||[]).length,4);
+ assert.equal((node.innerHTML.match(/class="leader-experience-card index-band-mid-high"/g)||[]).length,4,
+  'Existing Fall 2026 demo indices are all in the 0 to below +1 fixed band');
+ assert.doesNotMatch(node.innerHTML,/0\.14999999999999997|0\.09999999999999998|0\.24000000000000002/,
+  'Display comparisons must round binary floating-point noise');
  assert.equal((node.innerHTML.match(/<article class="leader-stat">/g)||[]).length,4);
  assert.match(node.innerHTML,/Report card coverage/);
  assert.match(node.innerHTML,/leader-evidence-strip/);
