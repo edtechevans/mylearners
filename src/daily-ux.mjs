@@ -368,6 +368,16 @@ function decorate(table,index){
   });
  }
  table.querySelector('thead').addEventListener('click',e=>{
+  const grip=e.target.closest('[data-ux-drag]');
+  if(grip&&isFacultyColumns){
+   // Clicking the move handle offers an accessible alternative to dragging.
+   const controls=panel.closest('.ux-faculty-table-controls');
+   if(controls)controls.open=true;
+   const summary=panel.querySelector('[data-ux-columns]');
+   if(summary){summary.closest('details').open=true;summary.focus({preventScroll:true})}
+   return;
+  }
+  if(e.target.closest('[data-ux-resize]'))return;
   const btn=e.target.closest('[data-ux-sort]');
   if(!btn)return;
   const i=Number(btn.dataset.uxSort);
@@ -523,7 +533,21 @@ function enhance(){
  for(const table of scopes)decorate(table,i++);
 }
 buildFinder();
-root?.addEventListener('click',e=>{if(e.target.closest('[data-role]'))dialog?.open&&dialog.close()});
+root?.addEventListener('click',e=>{
+ if(e.target.closest('[data-role]'))dialog?.open&&dialog.close();
+ const arrange=e.target.closest('[data-ux-customize-columns]');
+ if(!arrange)return;
+ const roster=arrange.closest('.roster-daily');
+ const controls=roster?.querySelector('.ux-faculty-table-controls');
+ if(!controls)return;
+ controls.open=true;
+ const summary=controls.querySelector('[data-ux-columns]');
+ if(summary){
+  summary.closest('details').open=true;
+  summary.focus({preventScroll:true});
+  controls.scrollIntoView?.({block:'nearest',behavior:'smooth'});
+ }
+});
 document.addEventListener('keydown',e=>{
  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){
   e.preventDefault();openFinder();
