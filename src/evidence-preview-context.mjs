@@ -176,8 +176,10 @@ export function resolveEvidencePreview(trigger,ctx){
      ...(band?[['Same-grade demo group',band]]:[]),
      ['Subject',mode==='report'?subject:PREVIEW_GUIDE[mode]?.label||'Assessment'],
      ['Assessment context',trigger.dataset.evidenceContext||(report?'2026–27 synthetic TEST DATA · NOT ISSUED':latest?.label)||'No eligible result']],
-   note:(PREVIEW_GUIDE[mode]||PREVIEW_GUIDE.report).description+
-    (band?' The colour is a relative same-grade fictional comparison, not a proficiency rating.':''),kind:'academic'});
+   note:(mode==='report'&&ctx.role==='faculty'?
+     'Synthetic 2026–27 test grade, not an issued report card. The 1–7 display bands apply to MYP/DP example grades only. Historical issued records are kept separately.':
+     (PREVIEW_GUIDE[mode]||PREVIEW_GUIDE.report).description)+
+    (band?' This colour compares a fictional same-grade cohort, not an external norm.':''),kind:'academic'});
  }
  if(kind==='tag'){
   const tag=tidy(trigger.dataset.previewTag||trigger.textContent);
