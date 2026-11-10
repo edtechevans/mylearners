@@ -5,12 +5,39 @@ import {attendanceSummary,gradeNumber} from './data.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
 import {academicFor,latestAcademic,facultyDemoReport} from './academic-journey-data.mjs';
 import {experienceFor,EXPERIENCE_WINDOWS} from './experience-data.mjs';
+import {reportProgress,issuedReportProgress,academicCheckinProgress,mapProgress,experienceProgress,groupExperienceProgress,maiaProgress} from './evidence-progress.mjs';
+import {MAIA_DEFAULT_DIMENSION} from './maia-demo.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
 import {PREVIEW_GUIDE,makePreview} from './evidence-previews.mjs?v=20261030wall3';
 const tidy=v=>String(v??'').replace(/\s+/g,' ').trim();
 const value=v=>v===undefined||v===null||v===''?'Not available':String(v);
 const fmtDate=(v)=>/^\d{4}-\d{2}-\d{2}$/.test(String(v||''))?String(v):'See assessment record';
 const t=(node,selector)=>tidy(node?.querySelector?.(selector)?.textContent);
+const compact=(title,subtitle,trend,kind='academic',fallback='')=>makePreview({
+ title,subtitle,kind,trend,
+ rows:trend?.points?.length?[]:(fallback?[['Current',fallback]]:[])
+});
+const facultyGroup=ctx=>{
+ const classes=ctx.data.classes.filter(c=>ctx.allowedClassIds?.includes(c.id));
+ const current=classes.find(c=>c.id===ctx.state.classId)||classes[0];
+ return (current?.studentIds||[]).map(id=>ctx.data.userIndex.get(id)).filter(Boolean);
+};
+const leaderGroup=(ctx,groupLabel='')=>{
+ const state=ctx.state;
+ const divisions=state.division==='All'?['Elementary','Secondary']:[state.division];
+ const selected=ctx.data.students.filter(s=>divisions.includes(s.division)&&
+  (state.grade==='All'||s.grade===state.grade)&&
+  (!state.classId||s.classId===state.classId));
+ if(!groupLabel)return selected;
+ const label=groupLabel.trim();
+ const matchedGrade=label.match(/^Grade\s+(\d+)$/i);
+ const grade=matchedGrade?'G'+matchedGrade[1]:label;
+ const byGrade=selected.filter(s=>s.grade===grade);
+ if(byGrade.length)return byGrade;
+ const matchingClass=ctx.data.classes.find(c=>c.name===label||c.id===label);
+ const byClass=matchingClass?selected.filter(s=>s.classId===matchingClass.id):[];
+ return byClass.length?byClass:selected;
+};
 function simpleGuide(key,contextLabel='',displayed=''){
  const guide=PREVIEW_GUIDE[key]||PREVIEW_GUIDE.report;
  return makePreview({title:guide.label,subtitle:contextLabel||guide.source,
