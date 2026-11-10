@@ -468,7 +468,7 @@ try{
    await click('[data-ux-restore-columns]');
    assert(await evaluate("(function(){const t=document.querySelector('.faculty-data-wall'),h=[...t.querySelectorAll('thead th')].map(x=>Number(x.dataset.uxOrigin));return h.every((x,i)=>x===i)&&!t.querySelector('[data-ux-column-hidden]')})()"),
     'Restore default columns must undo drag, sizing and hiding');
-   await evaluate("(function(){const e=document.querySelector('.ux-faculty-table-controls');if(e)e.open=false})()");
+   await evaluate("(function(){const e=document.querySelector('.ux-faculty-table-controls');if(e)e.open=false;window.scrollTo({top:0,behavior:'instant'})})()");
    const baselineCount=await evaluate("document.querySelectorAll('.roster-daily tbody .student-link').length");
     await click('[data-faculty-low-filter="low"]');
     assert(await evaluate("document.querySelector('[data-faculty-low-filter=low]')?.getAttribute('aria-pressed')==='true'"),
