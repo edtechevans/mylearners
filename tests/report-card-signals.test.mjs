@@ -45,6 +45,14 @@ test('Leaders panel has report-source context and actionable filters',()=>{
  assert.match(html,/leader-report-fourband/);
  assert.match(html,/data-leader-report-query/);
  assert.match(html,/data-leader-report-multiple/);
+ assert.match(html,/data-leader-report-threshold="3" aria-pressed="true"/);
+ assert.match(html,/data-leader-report-threshold="2" aria-pressed="false"/);
+ const narrower=renderLeaderReportFollowup({students:group('G7'),academic,threshold:2});
+ assert.match(narrower,/Students with 2 or below/);
+ assert.match(narrower,/Subjects at 2 or below/);
+ assert.match(narrower,/data-leader-report-threshold="2" aria-pressed="true"/);
+ assert.match(narrower,/Two or more subjects at 2 or below/);
+ assert.doesNotMatch(narrower,/<h2[^>]*>Students with 3 or below<\/h2>/);
  assert.match(html,/2026–27/);
  assert.match(html,/TEST DATA/);
  assert.match(html,/Not issued/);
@@ -93,14 +101,25 @@ test('All four colours are exercised by numeric Secondary test grades',()=>{
 test('Faculty filters only Secondary learners with at least one numeric subject result of 3 or below',()=>{
  for(const g of ['G6','G7','G10','G11','G12']){
   const students=group(g);
-  const summary=leaderReportSignalSummary(students,academic);
-  assert.equal(students.filter(s=>hasLowReportGrade(s,academic)).length,summary.flagged);
-  assert.ok(summary.flagged>0, 'Each demo grade should exercise the 3 or below filter');
+  const three=leaderReportSignalSummary(students,academic,3);
+  const two=leaderReportSignalSummary(students,academic,2);
+  assert.equal(students.filter(s=>hasLowReportGrade(s,academic)).length,three.flagged);
+  assert.equal(students.filter(s=>hasLowReportGrade(s,academic,2)).length,two.flagged);
+  assert.ok(three.flagged>0,'Each demo grade exercises the 3 or below filter');
+  assert.ok(two.flagged>0,'Each demo grade exercises the 2 or below filter');
+  assert.ok(two.flagged<=three.flagged,'2 or below is a subset of 3 or below');
+  assert.ok(two.lowSubjectResults<=three.lowSubjectResults);
+  assert.ok(two.rows.every(x=>x.low.every(item=>item.value<=2)));
  }
  for(const g of ['PK3','K','G1','G3','G5']){
   assert.equal(group(g).filter(s=>hasLowReportGrade(s,academic)).length,0,g);
  }
  assert.equal(hasLowReportGrade(null,academic),false);
+ assert.equal(hasLowReportGrade(null,academic,2),false);
+ const secondary=group('G7');
+ assert.ok(secondary.some(student=>
+  hasLowReportGrade(student,academic,3)&&!hasLowReportGrade(student,academic,2)),
+  'The two filters should differ in at least one demo learner');
 });
 test('Leaders display all four colour bands for every synthetic subject profile',()=>{
  const html=renderLeaderReportFollowup({students:group('G7'),academic});
