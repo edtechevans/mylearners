@@ -452,7 +452,8 @@
 /* Respect motion preferences. Never animate recurring data updates when
    the OS requests less movement. */
 @media(prefers-reduced-motion:reduce){
- #app :is(button,summary,select,input,textarea,[tabindex]),
+ #app #main :is(button,summary,select,input,textarea,[tabindex]),
+ #app .top nav.roles button,
  .evidence-preview-popup{
   animation:none!important;
   transition:none!important;
