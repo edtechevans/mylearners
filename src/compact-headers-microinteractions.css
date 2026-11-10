@@ -51,7 +51,7 @@
  letter-spacing:-.041em!important;
 }
 #app:is([data-workspace="faculty"],[data-workspace="student"],[data-workspace="sss"],[data-workspace="leader"]) .heading p{
- font-size:11.3px!important;
+ font-size:12px!important;
  line-height:1.38!important;
  max-width:80ch!important;
 }
@@ -67,7 +67,7 @@
  line-height:1.28!important;
 }
 #app:is([data-workspace="faculty"],[data-workspace="student"],[data-workspace="sss"],[data-workspace="leader"]) .heading-meta .asof{
- font-size:10.3px!important;
+ font-size:12px!important;
  line-height:1.32!important;
 }
 #app[data-workspace="faculty"] .heading{
@@ -383,7 +383,7 @@
   margin:2px 0!important;
  }
  #app:is([data-workspace="faculty"],[data-workspace="student"],[data-workspace="sss"],[data-workspace="leader"]) .heading p{
-  font-size:10.5px!important;
+  font-size:11.5px!important;
   line-height:1.35!important;
  }
  #app:is([data-workspace="faculty"],[data-workspace="student"],[data-workspace="sss"],[data-workspace="leader"]) .heading .heading-meta{
@@ -400,7 +400,7 @@
   padding:4px 7px!important;
  }
  #app:is([data-workspace="faculty"],[data-workspace="student"],[data-workspace="sss"],[data-workspace="leader"]) .heading-meta .asof{
-  font-size:9.5px!important;
+  font-size:11px!important;
  }
  #app[data-workspace="leader"] .leader-welcome{
   display:block!important;
@@ -458,6 +458,15 @@
   transition:none!important;
   transform:none!important;
   scroll-behavior:auto!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ #app .leader-division-choice:hover,
+ #app :is(.leader-review-open,.leader-save-view button,.leader-deep-nav button,
+  .support-small-button,.class-roster-view-switch button,.faculty-concern-filter button,
+  .leader-grade-bar button,.leader-review-toolbar button):active:not(:disabled){
+  transform:none!important;
+  box-shadow:none!important;
  }
 }
 /* UI needs no transient hover treatment in exported/printed reports. */
