@@ -192,39 +192,32 @@ export function resolveEvidencePreview(trigger,ctx){
    experienceProgress(ctx.experience,person.id,metric,window),'experience','—');
  }
  if(kind==='academic'||kind==='attendance'||kind==='map'){
-  const name=person?.name||'Learner';
+  if(!person)return null;
   const academic=academicFor(ctx.academic,person.id);
   if(kind==='attendance'){
    const att=attendanceSummary(ctx.data.attendance[person.id]||[]);
-   return makePreview({title:'Attendance · '+name,subtitle:'Fictional school attendance register',
-    rows:[['Recorded rate',att.rate===null?'Not available':att.rate+'%'],
-      ['Recording period','Through 8 Oct 2026']],
-    note:PREVIEW_GUIDE.attendance.description,kind:'academic'});
+   return compact('Attendance',person.name,null,'academic',
+    att.rate===null?'—':att.rate+'%');
   }
   if(kind==='map'){
    const subject=trigger.dataset.previewSubject||'Mathematics';
-   const m=latestMapGrowth(ctx.data.map[person.id]||[],subject);
-   const band=trigger.dataset.previewBand;
-   return makePreview({title:'MAP '+subject+' · '+name,subtitle:'Fictional comparable testing windows',
-    rows:[['Observed change',m.status==='comparable'?(m.actual>=0?'+':'')+m.actual+' RIT':'Not comparable'],
-     ...(band?[['Same-grade demo band',band]]:[])],
-    note:PREVIEW_GUIDE.map.description+(band?' The colour is a same-grade demonstration comparison, not an official norm.':''),kind:'academic'});
+   return compact('MAP '+subject,person.name,
+    mapProgress(ctx.data.map[person.id]||[],subject),'academic','—');
   }
   const mode=trigger.dataset.previewMeasure||'report';
   const subject=trigger.dataset.evidenceSubject||ctx.state.academicSubject||'Mathematics';
-  const report=mode==='report'&&ctx.role==='faculty'?facultyDemoReport(academic):null;
-  const sample=report?.subjects.find(x=>x.subject===subject);
-  const latest=sample?{...sample,label:report.year}:latestAcademic(academic,mode,subject);
-  const band=trigger.dataset.previewBand;
-  return makePreview({title:mode==='report'&&ctx.role==='faculty'?'2026–27 test report grade':PREVIEW_GUIDE[mode]?.label||'Academic result',subtitle:name,
-   rows:[['Displayed result',value(trigger.dataset.evidenceValue||latest?.value)],
-     ...(band?[['Same-grade demo group',band]]:[]),
-     ['Subject',mode==='report'?subject:PREVIEW_GUIDE[mode]?.label||'Assessment'],
-     ['Assessment context',trigger.dataset.evidenceContext||(report?'2026–27 synthetic TEST DATA · NOT ISSUED':latest?.label)||'No eligible result']],
-   note:(mode==='report'&&ctx.role==='faculty'?
-     'Synthetic 2026–27 test grade, not an issued report card. The 1–7 display bands apply to MYP/DP example grades only. Historical issued records are kept separately.':
-     (PREVIEW_GUIDE[mode]||PREVIEW_GUIDE.report).description)+
-    (band?' This colour compares a fictional same-grade cohort, not an external norm.':''),kind:'academic'});
+  if(mode==='report')
+   return compact(subject,person.name,reportProgress(academic,subject),'academic','—');
+  if(['ixl','core','fp'].includes(mode))
+   return compact(PREVIEW_GUIDE[mode].label,person.name,
+    academicCheckinProgress(academic,mode),'academic','—');
+  if(mode==='flourishing'){
+   const dimension=ctx.state.maiaDimension||MAIA_DEFAULT_DIMENSION;
+   return compact('Maia · '+dimension,person.name,
+    maiaProgress(ctx.maia,person.id,dimension,ctx.state.maiaWindow||'F26'),'experience','—');
+  }
+  return compact(PREVIEW_GUIDE[mode]?.label||'Assessment',person.name,null,'academic',
+   value(trigger.dataset.evidenceValue));
  }
  if(kind==='tag'){
   const tag=tidy(trigger.dataset.previewTag||trigger.textContent);
@@ -234,12 +227,13 @@ export function resolveEvidencePreview(trigger,ctx){
     kind:'support'});
  }
  if(kind==='issued'){
-  const parent=trigger.closest('.academic-profile');
-  const year=t(parent,'.academic-report-meta strong');
-  const scale=t(parent,'.academic-report-meta span');
-  return makePreview({title:t(trigger,'span')||'Issued result',subtitle:year+' · '+scale,
-   rows:[['Issued value',t(trigger,'strong')||'Not available']],
-   note:PREVIEW_GUIDE.report.description,kind:'academic'});
+  const student=learner(ctx.state.studentId,ctx);
+  if(!student)return null;
+  const subject=t(trigger,'span')||'Subject';
+  const year=t(trigger.closest?.('.academic-profile'),'.academic-report-meta strong');
+  return compact(subject,student.name,
+   issuedReportProgress(academicFor(ctx.academic,student.id),subject,year),
+   'academic',t(trigger,'strong')||'—');
  }
  if(kind==='method'){
   const id=trigger.dataset.experienceExplain||'';
