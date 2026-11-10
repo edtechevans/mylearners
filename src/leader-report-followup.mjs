@@ -40,7 +40,7 @@ export function renderLeaderReportFollowup({students,academic,query='',multiple=
   '<th scope="col">Subjects at 3 or below</th><th scope="col">Total</th>'+
   '<th scope="col">All subject results</th><th scope="col">Test period</th>'+
   '</tr></thead><tbody>'+
-  shown.map(x=>'<tr data-preview-student="'+esc(x.student.id)+'"><th scope="row"><strong>'+esc(x.student.name)+'</strong></th>+
+  shown.map(x=>'<tr data-preview-student="'+esc(x.student.id)+'"><th scope="row"><strong>'+esc(x.student.name)+'</strong></th>'+
    '<td>'+esc(x.student.grade)+' · '+esc(x.student.classId)+'</td>'+
    '<td><div class="leader-report-subjects">'+x.low.map(item=>pill(item,x.report.scale)).join('')+'</div>'+
    '<details class="leader-report-all"><summary>View all '+x.outcomes.length+
