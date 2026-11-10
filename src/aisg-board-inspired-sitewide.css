@@ -1,0 +1,376 @@
+/* AISG My Learners | Board-inspired sitewide art direction | 11 Nov 2026
+   Brings the Board's navy field, red cut, dotted texture and editorial hierarchy
+   to the four working dashboards. Presentation only: NEVER recolour report
+   results, check-in bands, attendance signals, academic charts or SSS status.
+   Kept last in the cascade to replace older blue-grey decorative styling. */
+:root{
+  --aisg-editorial-navy:#0b2b44;
+  --aisg-editorial-navy-mid:#153951;
+  --aisg-editorial-crimson:#a71f35;
+  --aisg-editorial-crimson-deep:#88182d;
+  --aisg-editorial-ink:#102f45;
+  --aisg-editorial-quiet:#536f7e;
+  --aisg-editorial-line:#d7e3e9;
+  --aisg-editorial-shadow:0 10px 29px rgba(11,38,62,.075);
+}
+
+/* A single visual signature for Faculty, Student, SSS and Leaders.
+   The Board hero already carries this pattern and is intentionally untouched. */
+#app[data-workspace="faculty"] .heading,
+#app[data-workspace="student"] .heading,
+#app[data-workspace="sss"] .heading,
+#app[data-workspace="leader"] .heading{
+  isolation:isolate!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(145px,234px)!important;
+  align-items:center!important;
+  gap:16px 26px!important;
+  position:relative!important;
+  overflow:hidden!important;
+  padding:22px clamp(19px,3.2vw,41px)!important;
+  margin:0 0 18px!important;
+  min-height:154px;
+  background:linear-gradient(110deg,#0b2b44 0%,#153951 65.5%,#94223a 65.8%,#a71f35 100%)!important;
+  border:1px solid rgba(11,38,62,.16)!important;
+  border-radius:19px!important;
+  box-shadow:var(--aisg-editorial-shadow)!important;
+}
+#app[data-workspace="faculty"] .heading::after,
+#app[data-workspace="student"] .heading::after,
+#app[data-workspace="sss"] .heading::after,
+#app[data-workspace="leader"] .heading::after{
+  content:"";
+  position:absolute;
+  z-index:0;
+  right:0;
+  top:0;
+  bottom:0;
+  width:34%;
+  pointer-events:none;
+  opacity:.22;
+  background-image:radial-gradient(circle,#ffe3e6 1.15px,transparent 1.5px);
+  background-size:17px 17px;
+  background-position:10px 7px;
+}
+#app[data-workspace="faculty"] .heading>div,
+#app[data-workspace="student"] .heading>div,
+#app[data-workspace="sss"] .heading>div,
+#app[data-workspace="leader"] .heading>div{
+  position:relative;
+  min-width:0;
+  z-index:1;
+}
+#app[data-workspace="faculty"] .heading .eyebrow,
+#app[data-workspace="student"] .heading .eyebrow,
+#app[data-workspace="sss"] .heading .eyebrow,
+#app[data-workspace="leader"] .heading .eyebrow{
+  color:#f0b3be!important;
+  font-size:10px!important;
+  font-weight:850!important;
+  letter-spacing:.145em!important;
+}
+#app[data-workspace="faculty"] .heading h1,
+#app[data-workspace="student"] .heading h1,
+#app[data-workspace="sss"] .heading h1,
+#app[data-workspace="leader"] .heading h1{
+  color:#fff!important;
+  font-size:clamp(29px,3.1vw,43px)!important;
+  font-weight:850!important;
+  line-height:1.1!important;
+  letter-spacing:-.053em!important;
+  margin:5px 0 7px!important;
+  text-wrap:balance;
+}
+#app[data-workspace="faculty"] .heading p,
+#app[data-workspace="student"] .heading p,
+#app[data-workspace="sss"] .heading p,
+#app[data-workspace="leader"] .heading p{
+  color:#e0e9f1!important;
+  font-size:12.5px!important;
+  line-height:1.52!important;
+  max-width:65ch!important;
+  margin:0!important;
+}
+#app[data-workspace="faculty"] .heading .heading-meta,
+#app[data-workspace="student"] .heading .heading-meta,
+#app[data-workspace="sss"] .heading .heading-meta,
+#app[data-workspace="leader"] .heading .heading-meta{
+  justify-self:end;
+  align-self:center;
+  display:grid;
+  justify-items:center;
+  gap:5px;
+  max-width:230px;
+  text-align:center;
+}
+#app[data-workspace="faculty"] .heading-meta .demo,
+#app[data-workspace="student"] .heading-meta .demo,
+#app[data-workspace="sss"] .heading-meta .demo,
+#app[data-workspace="leader"] .heading-meta .demo{
+  display:block;
+  white-space:normal;
+  background:rgba(255,255,255,.14)!important;
+  border:1px solid rgba(255,255,255,.55)!important;
+  border-radius:12px!important;
+  color:#fff!important;
+  font-size:10px!important;
+  line-height:1.42!important;
+  font-weight:850!important;
+  padding:10px 13px!important;
+  letter-spacing:.075em!important;
+  box-shadow:0 2px 9px rgba(40,9,17,.08);
+}
+#app[data-workspace="faculty"] .heading-meta .asof,
+#app[data-workspace="student"] .heading-meta .asof,
+#app[data-workspace="sss"] .heading-meta .asof,
+#app[data-workspace="leader"] .heading-meta .asof{
+  color:#ffe2e6!important;
+  font-size:11px!important;
+  line-height:1.42!important;
+  font-weight:650!important;
+  text-align:center;
+}
+
+/* Faculty is the densest daily view. Keep its title compact so the class
+   selector, summary and first learner rows remain within the initial screen. */
+#app[data-workspace="faculty"] .heading{
+  min-height:112px!important;
+  padding:13px clamp(19px,2.5vw,29px)!important;
+  margin-bottom:9px!important;
+  border-radius:14px!important;
+}
+#app[data-workspace="faculty"] .heading h1{
+  font-size:clamp(28px,2.7vw,36px)!important;
+  margin:3px 0 4px!important;
+}
+#app[data-workspace="faculty"] .heading p{
+  font-size:11.5px!important;
+  line-height:1.42!important;
+}
+#app[data-workspace="faculty"] .heading-meta .demo{padding:7px 10px!important}
+#app[data-workspace="student"] .heading{
+  min-height:128px!important;
+  padding-block:18px!important;
+  margin-bottom:12px!important;
+}
+
+/* Board-style ink, red editorial labels and one controlled underline.
+   Do not apply these to chart legends, gauges or subject-result cells. */
+#app:not([data-workspace="board"]) :is(
+ .sectionhead h2,.support-section-head h2,
+ .leader-daily-sectionhead h2,.leader-sectionhead h2,
+ .student-landing-intro h2,.student-checkin-preview-heading h2,
+ .student-landing-summary-heading h2,.sss-overview h2
+){
+  color:var(--aisg-editorial-ink)!important;
+  letter-spacing:-.038em!important;
+}
+#app:not([data-workspace="board"]) :is(
+ .support-section-head .eyebrow,.leader-daily-sectionhead>div>span,
+ .leader-sectionhead .eyebrow,.student-landing-intro .eyebrow,
+ .student-checkin-preview-heading .eyebrow,.sss-overview .eyebrow,
+ .leader-daily-eyebrow,.leader-division-eyebrow
+){
+  color:var(--aisg-editorial-crimson)!important;
+  letter-spacing:.115em!important;
+}
+#app[data-workspace="student"] .student-landing-intro h2,
+#app[data-workspace="sss"] .support-section-head h2,
+#app[data-workspace="leader"] .leader-daily-sectionhead h2{
+  position:relative;
+  padding-bottom:10px;
+}
+#app[data-workspace="student"] .student-landing-intro h2::after,
+#app[data-workspace="sss"] .support-section-head h2::after,
+#app[data-workspace="leader"] .leader-daily-sectionhead h2::after{
+  content:"";
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:68px;
+  height:3px;
+  border-radius:4px;
+  background:var(--aisg-editorial-crimson);
+}
+/* Reuse Board's crisp white panels and fine borders, rather than adding new
+   colours to any achievement, support or wellbeing signal. */
+#app:not([data-workspace="board"]) :is(
+ .academic-student-picker,.faculty-daily-toolbar,.roster-daily,
+ .support-leadership,.support-queue,.support-snapshot-card,
+ .leader-review-section,.leader-division-choice,
+ .student-landing-intro,.leader-welcome
+){
+  border-color:var(--aisg-editorial-line)!important;
+  box-shadow:0 5px 19px rgba(11,38,62,.055)!important;
+}
+#app:not([data-workspace="board"]) :is(
+ .faculty-daily-toolbar,.academic-student-picker,.sss-filters,
+ .leader-scope-controls
+){
+  background:#fff!important;
+  border-radius:13px!important;
+}
+#app:not([data-workspace="board"]) :is(
+ .ux-source-strip,.faculty-evidence-legend,.class-evidence-panel,
+ .ux-data-tools,.leader-deep-nav
+){
+  background:#f8fafb!important;
+  border-color:#dce5e9!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall thead th{
+  background:#edf2f4!important;
+  color:#486575!important;
+  border-bottom:1px solid #cad9df!important;
+}
+#app[data-workspace="faculty"] .faculty-daily-summary>.quick-tile:not([class*="index-band-"]):first-child{
+  background:linear-gradient(112deg,#0b2b44 0%,#173d55 78%,#87273d 100%)!important;
+  border:1px solid #183950!important;
+  border-top:3px solid #a71f35!important;
+  box-shadow:0 5px 16px rgba(11,38,62,.09)!important;
+}
+#app[data-workspace="faculty"] .faculty-daily-summary>.quick-tile:not([class*="index-band-"]):first-child :is(span,strong,small){
+  color:#fff!important;
+}
+#app[data-workspace="faculty"] .faculty-daily-summary>.quick-tile:not([class*="index-band-"]):nth-child(2){
+  background:#fff!important;
+  border-top:3px solid var(--aisg-editorial-navy)!important;
+}
+
+/* Existing Student hero tile is navy; extend its contrast treatment only to
+   editorial text. Check-in/index cards keep their original four evidence bands. */
+#app[data-workspace="student"] .student-landing-grid .student-today-tile:first-child :is(
+ .student-today-kicker,.student-today-number,.student-today-title,
+ .student-today-foot,.student-today-value
+){color:#fff!important}
+#app[data-workspace="student"] .student-landing-grid .student-today-tile:not(:first-child):not([class*="index-band-"]){
+  border-top:3px solid var(--aisg-editorial-navy)!important;
+}
+
+/* SSS cards cannot imply severity by decorative red. Use neutral navy trim,
+   reserving crimson for navigation and primary workflow controls. */
+#app[data-workspace="sss"] .support-lead-metric{
+  background:#fff!important;
+  border-top:3px solid var(--aisg-editorial-navy)!important;
+}
+#app[data-workspace="sss"] .support-queue{
+  background:#fff!important;
+  border-top:3px solid #284d67!important;
+}
+#app[data-workspace="sss"] .support-profile-tabs button.is-active{
+  background:var(--aisg-editorial-navy)!important;
+  border-color:var(--aisg-editorial-navy)!important;
+  color:#fff!important;
+}
+#app[data-workspace="sss"] .support-new.primary{
+  background:var(--aisg-editorial-crimson)!important;
+  border-color:var(--aisg-editorial-crimson)!important;
+  color:#fff!important;
+}
+
+/* Leadership: keep each priority card's semantic stripe intact; apply the
+   School Board's editorial red to optional navigation, not concern scores. */
+#app[data-workspace="leader"] .leader-welcome{
+  background:linear-gradient(118deg,#fff 0%,#fcfbf8 100%)!important;
+  border-left:4px solid var(--aisg-editorial-crimson)!important;
+  border-top:1px solid var(--aisg-editorial-line)!important;
+}
+#app[data-workspace="leader"] .leader-division-choice{
+  background:#fff!important;
+  border-radius:15px!important;
+}
+#app[data-workspace="leader"] .leader-division-choice.secondary{
+  border-top-color:var(--aisg-editorial-navy)!important;
+}
+#app[data-workspace="leader"] .leader-division-choice.elementary{
+  border-top-color:var(--aisg-editorial-crimson)!important;
+}
+#app[data-workspace="leader"] .leader-choice-go{
+  color:var(--aisg-editorial-crimson)!important;
+}
+#app[data-workspace="leader"] .leader-grade-bar button[aria-pressed="true"]{
+  background:var(--aisg-editorial-navy)!important;
+  border-color:var(--aisg-editorial-navy)!important;
+  color:#fff!important;
+}
+
+/* Controls: the red accent means a selected PRODUCT VIEW, not an academic
+   threshold. Do not target concern, performance or experience buttons. */
+#app[data-workspace="faculty"] .class-roster-view-switch button[aria-pressed="true"]{
+  box-shadow:inset 0 -3px 0 var(--aisg-editorial-crimson)!important;
+  color:var(--aisg-editorial-crimson)!important;
+}
+#app:not([data-workspace="board"]) :is(
+ .ux-faculty-table-controls>summary,.ux-menu>summary,
+ .class-evidence-advanced>summary,.leader-detail>summary,
+ .academic-student-picker select,.leader-scope-controls select,.sss-filters select
+){
+  border-radius:9px!important;
+}
+#app:not([data-workspace="board"]) :is(
+ button,select,input,textarea,summary,[tabindex]
+):focus-visible{
+  outline:3px solid #4f9cc6!important;
+  outline-offset:3px!important;
+}
+
+/* A compact, intentionally designed brand cover at small widths; avoid
+   squeezing a red-column badge beside long translations or learner names. */
+@media(max-width:850px){
+ #app[data-workspace="faculty"] .heading,
+ #app[data-workspace="student"] .heading,
+ #app[data-workspace="sss"] .heading,
+ #app[data-workspace="leader"] .heading{
+  grid-template-columns:minmax(0,1fr)!important;
+  min-height:0!important;
+  padding:17px 19px!important;
+  gap:10px!important;
+  background:linear-gradient(135deg,#0b2b44 0%,#153951 85%,#a71f35 85.2%,#a71f35 100%)!important;
+ }
+ #app:not([data-workspace="board"]) .heading::after{
+  width:25%!important;opacity:.13!important;
+ }
+ #app:not([data-workspace="board"]) .heading .heading-meta{
+  display:flex!important;justify-self:start!important;justify-content:flex-start!important;
+  align-items:center!important;flex-wrap:wrap!important;gap:7px 10px!important;
+  max-width:100%!important;text-align:left!important;
+ }
+ #app:not([data-workspace="board"]) .heading-meta .demo{
+  padding:5px 9px!important;font-size:9px!important;border-radius:8px!important;
+ }
+ #app:not([data-workspace="board"]) .heading-meta .asof{font-size:10px!important;text-align:left!important}
+ #app:not([data-workspace="board"]) .heading h1{
+  font-size:clamp(25px,5.2vw,34px)!important;
+ }
+ #app:not([data-workspace="board"]) .heading p{font-size:11px!important}
+}
+@media(max-width:480px){
+ #app:not([data-workspace="board"]) .heading{
+  padding:13px 15px!important;margin-bottom:10px!important;
+  border-radius:12px!important;
+ }
+ #app:not([data-workspace="board"]) .heading h1{
+  font-size:clamp(23px,6.1vw,29px)!important;
+  letter-spacing:-.045em!important;
+ }
+ #app:not([data-workspace="board"]) .heading-meta .asof{line-height:1.25!important}
+ #app:not([data-workspace="board"]) .heading .heading-meta{gap:5px 8px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #app:not([data-workspace="board"]) .leader-division-choice{transition:none!important}
+}
+@media print{
+ #app:not([data-workspace="board"]) .heading{
+  background:#fff!important;
+  color:#0b2b44!important;
+  border:2px solid #a71f35!important;
+  box-shadow:none!important;
+ }
+ #app:not([data-workspace="board"]) .heading::after{display:none!important}
+ #app:not([data-workspace="board"]) .heading :is(h1,p,.eyebrow){color:#0b2b44!important}
+ #app:not([data-workspace="board"]) .heading-meta :is(.demo,.asof){
+  color:#0b2b44!important;background:#fff!important;border-color:#a71f35!important;
+ }
+ #app:not([data-workspace="board"]) .faculty-daily-summary>.quick-tile:not([class*="index-band-"]):first-child{
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+ }
+}

@@ -124,6 +124,19 @@ async function run(name,route,selector,width,height,interaction){
   assert(record.clarityLoaded,'Clarity stylesheet did not load');
   assert(record.paletteLoaded,'Shared evidence palette did not load');
   assert(record.visionLoaded,'Vision design system did not load');
+  if(/^(faculty|student|sss|leader)-\d+x\d+$/.test(name)){
+   const brand=await evaluate("(function(){const h=document.querySelector('.heading'),link=[...document.querySelectorAll('link[rel=stylesheet]')].find(x=>x.href.includes('aisg-board-inspired-sitewide.css'));if(!h)return {exists:false};const c=getComputedStyle(h),title=h.querySelector('h1'),badge=h.querySelector('.heading-meta .demo'),r=h.getBoundingClientRect();return {exists:true,loaded:!!link?.sheet,background:c.backgroundImage,titleColor:title?getComputedStyle(title).color:null,badgeColor:badge?getComputedStyle(badge).color:null,width:r.width,left:r.left,right:r.right,height:r.height,columns:c.gridTemplateColumns}})()");
+   assert(brand.exists&&brand.loaded,'Sitewide branded cover must render for '+name);
+   assert(brand.background.includes('rgb(11, 43, 68)')&&brand.background.includes('rgb(167, 31, 53)'),
+    'Cover must use Board navy and crimson on '+name);
+   assert(brand.titleColor==='rgb(255, 255, 255)'&&brand.badgeColor==='rgb(255, 255, 255)',
+    'Title and demo badge need readable contrast on '+name);
+   assert(brand.right<=width+2&&brand.left>=-2,'Branded cover must fit viewport on '+name);
+   if(name.startsWith('faculty-')&&width>=1180)assert(brand.height<=139,'Faculty cover must keep first learner rows visible');
+   if(width<=850)assert(brand.columns.trim().split(' ').length===1,
+    'Mobile cover should stack title and provenance rather than squeeze columns');
+  }
+
   if(/^(faculty|student|sss|leader|board)-\d+x\d+$/.test(name)){
    assert(record.tileCount>=3,'Expected at least three high-level summary tiles in '+name);
    assert(record.tileRingsRemoved,'Legacy decorative rings should not appear on tiles');
