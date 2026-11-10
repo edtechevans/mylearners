@@ -1,9 +1,12 @@
 /** AISG My Learners: deterministic, strictly fictional academic evidence.
  *
- * 1) Report card outcomes by subject: most recent *issued* years only.
- *    PK–G5 are illustrative developmental descriptors; G6–10 are illustrative
- *    MYP grades 1–7; G11–12 are illustrative DP course grades 1–7.
- *    Programme scales are NOT comparable longitudinally.
+ * 1) Two separate synthetic report sources:
+ *    - 2026–27 non-issued TEST snapshot: all learners and all current-grade
+ *      subjects have example results, for Faculty/Leaders UI testing.
+ *    - Previously issued fictional historical reports, retained unchanged.
+ *    PK–G5 use developmental descriptors; G6–10 MYP and G11–12 DP use 1–7.
+ *    Testing results are not actual or issued school grades. Programme scales
+ *    are NOT comparable longitudinally.
  * 2) IXL Mathematics: simulated overall diagnostic levels for G1–10 (0–1300).
  *    Not IXL practice SmartScores and not a percentage.
  * 3) Core Phonics: a *mock classroom 50-item decoding check*, not an official
@@ -14,6 +17,7 @@
  */
 import {hash,rng,clamp,gradeNumber,GRADES} from './data.mjs';
 
+export const DEMO_REPORT_YEAR='2026–27';
 export const REPORT_PERIODS=Object.freeze([
  {end:2026,label:'2025–26'},
  {end:2025,label:'2024–25'},
@@ -80,6 +84,32 @@ const reportValue=(student,subject,year,grade)=>{
   PRIMARY_DESCRIPTORS[clamp(Math.round(tendency-3),0,3)]:
   String(clamp(Math.round(tendency),1,7));
 };
+/** Graded examples for testing the current-year Faculty and Leaders views only.
+ * Never mark these as issued or incorporate them into historical report tabs.
+ * A deterministic distribution exercises all four report-card colour thresholds.
+ */
+function testNumericGrade(student,subject){
+ const draw=hash(student.id+'|'+subject+'|2026-27-report-test')%100;
+ const cutoffs=[2,6,16,34,59,82,100];
+ return String(1+cutoffs.findIndex(limit=>draw<limit));
+}
+function createWorkingReport(student){
+ const grade=student.grade,framework=reportFrameworkFor(grade);
+ const scale=gradeNumber(grade)<=5?'descriptors':'1–7';
+ return {
+  year:DEMO_REPORT_YEAR,end:2027,grade,framework,scale,
+  issued:false,testing:true,simulated:true,
+  subjects:reportSubjectsFor(grade).map(subject=>({
+   subject,value:scale==='1–7'?testNumericGrade(student,subject):
+    reportValue(student,subject,2027,grade),scale,framework
+  }))
+ };
+}
+/** The latest in-progress demonstration grade set; not a published report. */
+export function facultyDemoReport(record){
+ return record?.workingReport||record?.reports?.[0]||null;
+}
+
 function createReports(student){
  return REPORT_PERIODS.flatMap(period=>{
   const grade=issuer(student,period);
@@ -154,7 +184,7 @@ export function createAcademicDemoRecords(students){
  for(const student of students||[]){
   if(!/^DEMO-\d{4}$/.test(student.id))throw Error('Only fictional student identifiers are accepted');
   records.set(student.id,{
-   reports:createReports(student),ixl:createIXL(student),
+   reports:createReports(student),workingReport:createWorkingReport(student),ixl:createIXL(student),
    core:createCore(student),fp:createFP(student)
   });
  }
