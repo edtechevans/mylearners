@@ -48,6 +48,6 @@ test('daily interaction layer is additive and connected to site shell',()=>{
  assert.match(css,/prefers-reduced-motion/);
  assert.match(css,/:focus-visible/);
  for(const feature of ['data-ux-drag','dragstart','dragover','drop','data-ux-resize','pointerdown','data-ux-column-width','data-ux-restore-columns','mylearners-faculty-columns-v1','sourceCell(tr,i)'])assert.ok(js.includes(feature),'Missing column customisation: '+feature);
- assert.match(html,/faculty-column-layout\\.css/);
+ assert.ok(html.includes('faculty-column-layout.css'));
  assert.doesNotMatch(js,/fetch\(|XMLHttpRequest|sendBeacon|localStorage\.setItem\('student-/);
 });
