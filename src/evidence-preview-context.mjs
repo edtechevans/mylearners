@@ -124,7 +124,7 @@ export function resolveEvidencePreview(trigger,ctx){
   if(ctx.role!=='leader'||!['engagement','belonging'].includes(metric))return null;
   const scope=trigger.dataset.previewGroup||'Selected group';
   const label=PREVIEW_GUIDE[metric].label;
-  const shown=tidy(trigger.textContent)||'Not available';
+  const shown=tidy(trigger.dataset.evidenceValue||trigger.textContent)||'Not available';
   return makePreview({title:label+' · '+scope,subtitle:'Current leader selection · fictional data',
    rows:[['Displayed index',shown]],
    note:PREVIEW_GUIDE[metric].description+' Select a class or use the detailed explanation for underlying question-level evidence.',
@@ -163,19 +163,19 @@ export function resolveEvidencePreview(trigger,ctx){
    return makePreview({title:'MAP '+subject+' · '+name,subtitle:'Fictional comparable testing windows',
     rows:[['Observed change',m.status==='comparable'?(m.actual>=0?'+':'')+m.actual+' RIT':'Not comparable'],
      ...(band?[['Same-grade demo band',band]]:[])],
-    note:PREVIEW_GUIDE.map.description+(band?' The Q band is a same-grade demonstration comparison, not an official norm.':''),kind:'academic'});
+    note:PREVIEW_GUIDE.map.description+(band?' The colour is a same-grade demonstration comparison, not an official norm.':''),kind:'academic'});
   }
   const mode=trigger.dataset.previewMeasure||'report';
-  const subject=ctx.state.academicSubject||'Mathematics';
+  const subject=trigger.dataset.evidenceSubject||ctx.state.academicSubject||'Mathematics';
   const latest=latestAcademic(academic,mode,subject);
   const band=trigger.dataset.previewBand;
   return makePreview({title:PREVIEW_GUIDE[mode]?.label||'Academic result',subtitle:name,
-   rows:[['Displayed result',value(latest?.value)],
-     ...(band?[['Same-grade demo band',band]]:[]),
+   rows:[['Displayed result',value(trigger.dataset.evidenceValue||latest?.value)],
+     ...(band?[['Same-grade demo group',band]]:[]),
      ['Subject',mode==='report'?subject:PREVIEW_GUIDE[mode]?.label||'Assessment'],
-     ['Assessment context',latest?.label||'No eligible result']],
+     ['Assessment context',trigger.dataset.evidenceContext||latest?.label||'No eligible result']],
    note:(PREVIEW_GUIDE[mode]||PREVIEW_GUIDE.report).description+
-    (band?' The Q band is a relative same-grade fictional comparison, not a proficiency rating.':''),kind:'academic'});
+    (band?' The colour is a relative same-grade fictional comparison, not a proficiency rating.':''),kind:'academic'});
  }
  if(kind==='tag'){
   const tag=tidy(trigger.dataset.previewTag||trigger.textContent);
