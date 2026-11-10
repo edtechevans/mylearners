@@ -132,6 +132,13 @@ async function run(name,route,selector,width,height,interaction){
    assert(brand.titleColor==='rgb(255, 255, 255)'&&brand.badgeColor==='rgb(255, 255, 255)',
     'Title and demo badge need readable contrast on '+name);
    assert(brand.right<=width+2&&brand.left>=-2,'Branded cover must fit viewport on '+name);
+   const compactLoaded=await evaluate("!![...document.querySelectorAll('link[rel=stylesheet]')].find(x=>x.href.includes('compact-headers-microinteractions.css')&&x.sheet)");
+   assert(compactLoaded,'Compact operational stylesheet must load for '+name);
+   if(width>=1180){
+    assert(brand.height<=118,'Daily '+name+' banner must be under 118px; got '+brand.height);
+    if(name.startsWith('faculty-'))assert(brand.height<=105,'Faculty banner should preserve roster space');
+   }
+
    if(name.startsWith('faculty-')&&width>=1180)assert(brand.height<=139,'Faculty cover must keep first learner rows visible');
    if(width<=850)assert(brand.columns.trim().split(' ').length===1,
     'Mobile cover should stack title and provenance rather than squeeze columns');
@@ -175,6 +182,31 @@ try{
    ['sss','.sss-overview'],['leader','.leader-division-grid'],['board','.board-view']
   ])await run(role+'-'+screen,role,selector,width,height);
  }
+ // Daily-workspace acceptance: users should reach actionable content without scrolling.
+ await run('compact-leader-landing-1440','leader','.leader-division-grid',1440,900,async()=>{
+  const a=await evaluate("(function(){const welcome=document.querySelector('.leader-welcome')?.getBoundingClientRect(),cards=document.querySelector('.leader-division-grid')?.getBoundingClientRect();return {welcome:welcome?.height,cardsTop:cards?.top}})()");
+  assert(a.welcome<=165,'Leader welcome still too tall: '+a.welcome);
+  assert(a.cardsTop<=570,'Division choices need to start higher on desktop: '+a.cardsTop);
+ });
+ await run('compact-leader-priorities-1440','leader','.leader-division-grid',1440,900,async()=>{
+  await click('[data-leader-division="Secondary"]');
+  const a=await evaluate("(function(){const header=document.querySelector('.leader-division-hero')?.getBoundingClientRect(),section=document.querySelector('#leader-daily-priorities')?.getBoundingClientRect(),grade=document.querySelector('.leader-grade-bar');return {hero:header?.height,attentionTop:section?.top,gradeChoices:grade?.querySelectorAll('button').length}})()");
+  assert(a.hero<=220,'Secondary context block still too tall: '+a.hero);
+  assert(a.attentionTop<=750,'Secondary attention tiles must begin within first desktop screen: '+a.attentionTop);
+  assert(a.gradeChoices>=8,'Compaction must keep Grades 6–12 controls');
+ });
+ await run('microinteraction-motion-preference-1440','leader','.leader-division-grid',1440,900,async()=>{
+  const normal=await evaluate("getComputedStyle(document.querySelector('.leader-division-choice')).transitionDuration");
+  assert(normal.includes('0.12s'),'Leader division cards need brief tactile transitions');
+  try{
+   await client.command('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+   const reduced=await evaluate("getComputedStyle(document.querySelector('.leader-division-choice')).transitionDuration");
+   assert(reduced.split(',').every(x=>x.trim()==='0s'),
+    'Reduced motion must remove these transitions: '+reduced);
+  }finally{
+   await client.command('Emulation.setEmulatedMedia',{features:[]});
+  }
+ });
  // Design-system acceptance: chart-first storytelling and learner rows above fold.
  await run('design-board-chart-first-1440','board','.board-historical-chart',1440,900,async()=>{
   const a=await evaluate("(function(){const x=document.querySelector('.board-historical-chart').getBoundingClientRect();const y=document.querySelector('.board-strength-grid').getBoundingClientRect();return {chart:x.top,cards:y.top,css:[...document.querySelectorAll('link[rel=stylesheet]')].some(l=>l.href.includes('design-system-refinement.css')&&l.sheet)}})()");
@@ -202,6 +234,14 @@ try{
    assert(a.role===role,'Mobile role view must remain accessible');
    assert(a.loaded,'Mobile view must load the canonical design tokens');
    assert(a.mainWidth>width*.7,'Mobile content must not collapse');
+   if(role!=='board'){
+    const compact=await evaluate("(function(){const h=document.querySelector('.heading');const b=h?.getBoundingClientRect();const styles=h?getComputedStyle(h):null;return {height:b?.height||0,columns:styles?.gridTemplateColumns||''}})()");
+    assert(compact.height>0&&compact.height<=180,
+     'Operational mobile banner should remain compact: '+role+' '+width+'px '+compact.height);
+    assert(compact.columns.trim().split(' ').length===1,
+     'Mobile title and provenance must stack cleanly: '+role);
+   }
+
    assert(a.overflow<=4,'Mobile page has unexpected horizontal overflow: '+role+' '+width+'px '+a.overflow);
    await screenshot('design-'+role+'-'+width);
    cases.push({name:'design-'+role+'-'+width,route:role,width,height,status:'pass'});

@@ -1,0 +1,478 @@
+/* My Learners | Operational density + responsive microinteractions | Nov 2026
+   Intention: the right evidence is visible sooner. Board remains presentation-led.
+   All transitions are on interaction surfaces only; grades, indices and chart
+   encodings retain their fixed meanings and are not animated or recoloured. */
+:root{
+ --ml-motion-quick:120ms;
+ --ml-motion-ease:cubic-bezier(.2,.8,.2,1);
+ --ml-interaction-ring:#4f9cc6;
+ --ml-interaction-hover:#f2f7f9;
+}
+
+/* Recover the unused margin between the navigation bar and working content.
+   Board's storytelling cover retains its existing scale and spacing. */
+@media(min-width:1180px){
+ #app:not([data-workspace="board"])>main.container{
+  padding-top:94px!important;
+ }
+}
+@media(min-width:801px) and (max-width:1179px){
+ #app:not([data-workspace="board"])>main.container{
+  padding-top:16px!important;
+ }
+}
+@media(max-width:800px){
+ #app:not([data-workspace="board"])>main.container{
+  padding-top:11px!important;
+ }
+}
+
+/* A short operational cover across the four working spaces.
+   The Board's large opening banner intentionally remains untouched. */
+#app:is([data-workspace="faculty"],[data-workspace="student"],[data-workspace="sss"],[data-workspace="leader"]) .heading{
+ min-height:0!important;
+ grid-template-columns:minmax(0,1fr) minmax(145px,206px)!important;
+ align-items:center!important;
+ padding:12px clamp(16px,2.2vw,27px)!important;
+ gap:8px 18px!important;
+ margin:0 0 11px!important;
+ border-radius:13px!important;
+ box-shadow:0 5px 17px rgba(11,38,62,.085)!important;
+}
+#app:is([data-workspace="faculty"],[data-workspace="student"],[data-workspace="sss"],[data-workspace="leader"]) .heading .eyebrow{
+ font-size:9px!important;
+ line-height:1.3!important;
+ letter-spacing:.12em!important;
+}
+#app:is([data-workspace="faculty"],[data-workspace="student"],[data-workspace="sss"],[data-workspace="leader"]) .heading h1{
+ font-size:clamp(24px,2.4vw,31px)!important;
+ line-height:1.09!important;
+ margin:3px 0 4px!important;
+ letter-spacing:-.041em!important;
+}
+#app:is([data-workspace="faculty"],[data-workspace="student"],[data-workspace="sss"],[data-workspace="leader"]) .heading p{
+ font-size:12px!important;
+ line-height:1.38!important;
+ max-width:80ch!important;
+}
+#app:is([data-workspace="faculty"],[data-workspace="student"],[data-workspace="sss"],[data-workspace="leader"]) .heading .heading-meta{
+ gap:3px!important;
+ max-width:206px!important;
+}
+#app:is([data-workspace="faculty"],[data-workspace="student"],[data-workspace="sss"],[data-workspace="leader"]) .heading-meta .demo{
+ padding:5px 9px!important;
+ border-radius:8px!important;
+ font-size:9px!important;
+ letter-spacing:.06em!important;
+ line-height:1.28!important;
+}
+#app:is([data-workspace="faculty"],[data-workspace="student"],[data-workspace="sss"],[data-workspace="leader"]) .heading-meta .asof{
+ font-size:12px!important;
+ line-height:1.32!important;
+}
+#app[data-workspace="faculty"] .heading{
+ padding:9px clamp(16px,2vw,24px)!important;
+ margin-bottom:8px!important;
+}
+#app[data-workspace="faculty"] .heading h1{font-size:clamp(24px,2.25vw,29px)!important}
+#app[data-workspace="student"] .heading,
+#app[data-workspace="sss"] .heading,
+#app[data-workspace="leader"] .heading{
+ margin-bottom:10px!important;
+}
+
+/* Leader landing: remove the stacked double-hero effect.
+   The school/Elementary/Secondary choices follow a concise orientation. */
+#app[data-workspace="leader"] .leader-welcome{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) minmax(170px,218px)!important;
+ align-items:center!important;
+ column-gap:16px!important;
+ row-gap:2px!important;
+ padding:12px clamp(14px,1.6vw,21px)!important;
+ margin:0 0 14px!important;
+ border-radius:12px!important;
+ box-shadow:none!important;
+}
+#app[data-workspace="leader"] .leader-welcome>.leader-daily-eyebrow{
+ grid-column:1;grid-row:1;
+ font-size:9px!important;
+ margin:0!important;
+}
+#app[data-workspace="leader"] .leader-welcome>h2{
+ grid-column:1;grid-row:2;
+ max-width:none!important;
+ font-size:clamp(18px,1.9vw,23px)!important;
+ line-height:1.2!important;
+ letter-spacing:-.028em!important;
+ margin:2px 0 2px!important;
+ padding:0!important;
+}
+#app[data-workspace="leader"] .leader-welcome>p{
+ grid-column:1;grid-row:3;
+ max-width:90ch!important;
+ font-size:11px!important;
+ line-height:1.45!important;
+ margin:0!important;
+}
+#app[data-workspace="leader"] .leader-welcome .leader-school-division-select{
+ grid-column:2;
+ grid-row:1/4;
+ align-self:center!important;
+ display:grid!important;
+ grid-template-columns:1fr!important;
+ align-items:center!important;
+ gap:4px!important;
+ font-size:11px!important;
+}
+#app[data-workspace="leader"] .leader-welcome .leader-school-division-select select{
+ min-height:38px!important;
+ min-width:0!important;
+ width:100%!important;
+ max-width:100%!important;
+}
+#app[data-workspace="leader"] .leader-welcome .leader-daily-sources{
+ grid-column:1/-1;
+ display:flex!important;
+ align-items:center!important;
+ gap:5px!important;
+ flex-wrap:wrap!important;
+ margin-top:5px!important;
+}
+#app[data-workspace="leader"] .leader-welcome .leader-daily-source{
+ display:inline-flex!important;
+ flex-direction:row!important;
+ align-items:baseline!important;
+ gap:6px!important;
+ padding:4px 8px!important;
+ border-radius:7px!important;
+}
+#app[data-workspace="leader"] .leader-welcome .leader-daily-source strong{
+ font-size:9px!important;
+ white-space:nowrap!important;
+}
+#app[data-workspace="leader"] .leader-welcome .leader-daily-source small{
+ font-size:9.5px!important;
+ line-height:1.25!important;
+}
+#app[data-workspace="leader"] .leader-welcome .leader-saved-open{
+ grid-column:1/-1;
+ justify-self:start!important;
+ margin:4px 0 0!important;
+ padding:6px 9px!important;
+}
+#app[data-workspace="leader"] .leader-schoolwide>.leader-daily-section{
+ margin-bottom:17px!important;
+}
+#app[data-workspace="leader"] .leader-daily-sectionhead{
+ margin:0 0 9px!important;
+}
+#app[data-workspace="leader"] .leader-daily-sectionhead h2{
+ font-size:clamp(18px,1.7vw,20px)!important;
+}
+#app[data-workspace="leader"] .leader-division-grid{
+ gap:11px!important;
+}
+#app[data-workspace="leader"] .leader-division-choice{
+ padding:15px 18px!important;
+ gap:5px!important;
+ border-radius:12px!important;
+}
+#app[data-workspace="leader"] .leader-division-choice>strong{
+ font-size:23px!important;
+}
+#app[data-workspace="leader"] .leader-division-description{
+ min-height:0!important;
+ font-size:11.5px!important;
+ line-height:1.4!important;
+}
+#app[data-workspace="leader"] .leader-choice-facts{
+ padding:8px 0!important;
+ margin:3px 0!important;
+ gap:4px 10px!important;
+}
+#app[data-workspace="leader"] .leader-choice-facts span{font-size:10px!important}
+#app[data-workspace="leader"] .leader-choice-facts b{font-size:14px!important}
+#app[data-workspace="leader"] .leader-choice-go{font-size:11px!important}
+
+/* Leader division: strip repeated whitespace but preserve grade choices and
+   every source-date label. The first attention tiles appear sooner. */
+#app[data-workspace="leader"] .leader-scope-controls{
+ gap:8px!important;
+ margin:0 0 9px!important;
+}
+#app[data-workspace="leader"] .leader-division-hero{
+ padding:12px 16px!important;
+ margin:0 0 13px!important;
+ border-radius:11px!important;
+}
+#app[data-workspace="leader"] .leader-breadcrumbs{
+ margin-bottom:5px!important;
+ gap:5px!important;
+}
+#app[data-workspace="leader"] .leader-division-hero-row{
+ gap:7px 16px!important;
+}
+#app[data-workspace="leader"] .leader-division-hero h2{
+ font-size:clamp(20px,2vw,24px)!important;
+ line-height:1.18!important;
+ margin:2px 0!important;
+}
+#app[data-workspace="leader"] .leader-division-hero p{
+ font-size:11px!important;
+ line-height:1.38!important;
+ margin:3px 0 0!important;
+}
+#app[data-workspace="leader"] .leader-grade-bar{
+ margin:9px 0!important;
+ gap:5px!important;
+}
+#app[data-workspace="leader"] .leader-grade-bar button{
+ min-height:34px!important;
+ padding:6px 10px!important;
+}
+#app[data-workspace="leader"] .leader-division-hero .leader-daily-sources{
+ gap:5px!important;
+ margin:7px 0 0!important;
+}
+#app[data-workspace="leader"] .leader-division-hero .leader-daily-source{
+ padding:5px 8px!important;
+ border-radius:7px!important;
+}
+#app[data-workspace="leader"] .leader-division-hero .leader-daily-source strong,
+#app[data-workspace="leader"] .leader-division-hero .leader-daily-source small{
+ font-size:9px!important;
+ line-height:1.25!important;
+}
+#app[data-workspace="leader"] .leader-daily-section{
+ margin-bottom:18px!important;
+}
+
+/* Other daily contexts: retain their own tools, simply remove unnecessary
+   margin between the banner and the first purposeful action. */
+#app[data-workspace="student"] .student-landing{
+ margin-top:8px!important;
+}
+#app[data-workspace="student"] .student-landing-intro{
+ margin-top:3px!important;
+ margin-bottom:8px!important;
+}
+#app[data-workspace="sss"] .sss-overview{
+ margin-bottom:15px!important;
+}
+#app[data-workspace="sss"] .support-leadership{
+ margin-top:11px!important;
+}
+#app[data-workspace="faculty"] .faculty-daily-toolbar{
+ margin-bottom:8px!important;
+}
+
+/* Interaction tokens: feedback should confirm an action without turning the
+   whole dashboard into a moving surface. Button focus remains visible. */
+#app :is(
+ .top nav.roles button,.ux-nav-button,.ux-command-launch,
+ .class-roster-view-switch button,.faculty-concern-filter button,
+ .leader-grade-bar button,.leader-review-toolbar button,
+ .leader-review-open,.leader-division-choice,.leader-save-view button,
+ .leader-deep-nav button,.student-save-goal,.support-small-button,
+ .support-profile-tabs button,.board-nav-tabs button
+){
+ transition:
+  background-color var(--ml-motion-quick) ease,
+  border-color var(--ml-motion-quick) ease,
+  color var(--ml-motion-quick) ease,
+  box-shadow var(--ml-motion-quick) var(--ml-motion-ease),
+  transform var(--ml-motion-quick) var(--ml-motion-ease)!important;
+ -webkit-tap-highlight-color:transparent;
+ touch-action:manipulation;
+}
+@media(hover:hover) and (pointer:fine){
+ /* Only actual buttons and selectable views lift. Passive data tiles stay still. */
+ #app .leader-division-choice:hover{
+  transform:translateY(-2px)!important;
+  box-shadow:0 11px 25px rgba(11,43,68,.11)!important;
+ }
+ #app :is(.leader-review-open,.leader-save-view button,
+  .leader-deep-nav button,.support-small-button,
+  .class-roster-view-switch button,.faculty-concern-filter button,
+  .leader-grade-bar button,.leader-review-toolbar button):hover:not(:disabled){
+  box-shadow:0 3px 12px rgba(11,43,68,.11)!important;
+ }
+ #app :is(.leader-student-open,.student-link):hover{
+  text-decoration:underline;
+  text-underline-offset:3px;
+ }
+ #app .leader-review-table tbody tr:hover{
+  background:#f2f7f9!important;
+ }
+ #app .roster-daily tbody tr:hover td:first-child{
+  box-shadow:inset 3px 0 0 rgba(27,92,124,.42);
+ }
+ #app :is(input,select,textarea):hover:not(:disabled):not(:focus){
+  border-color:#7c9caf!important;
+ }
+}
+@media(hover:hover) and (pointer:fine){
+ #app :is(.leader-review-open,.leader-save-view button,
+  .leader-deep-nav button,.support-small-button,
+  .class-roster-view-switch button,.faculty-concern-filter button,
+  .leader-grade-bar button,.leader-review-toolbar button):active:not(:disabled){
+  transform:translateY(1px)!important;
+  box-shadow:none!important;
+ }
+}
+/* Intentionally animate only the transient evidence popup, not its underlying
+   subject cells, index bands or any chart marks. */
+.evidence-preview-popup{
+ animation:ml-preview-enter 140ms var(--ml-motion-ease) both;
+ transform-origin:50% 0;
+}
+@keyframes ml-preview-enter{
+ from{opacity:0;transform:translateY(4px)}
+ to{opacity:1;transform:translateY(0)}
+}
+#app :is(.leader-detail>summary,.class-evidence-advanced>summary,
+ .ux-menu>summary,.student-detail-section>summary){
+ transition:background-color var(--ml-motion-quick) ease,
+  color var(--ml-motion-quick) ease!important;
+}
+@media(hover:hover) and (pointer:fine){
+ #app :is(.leader-detail>summary,.class-evidence-advanced>summary,
+  .ux-menu>summary,.student-detail-section>summary):hover{
+  background-color:#f4f8fa!important;
+ }
+}
+#app :is(button,select,input,textarea,summary,[tabindex]):focus-visible{
+ outline:3px solid var(--ml-interaction-ring)!important;
+ outline-offset:3px!important;
+}
+
+/* Touch is first class: tap response, generous actionable targets and no
+   hover-only movement or information. Existing click-to-preview stays intact. */
+@media(hover:none), (pointer:coarse){
+ #app :is(
+  .faculty-concern-filter button,.leader-grade-bar button,
+  .leader-review-toolbar button,.leader-review-open,
+  .leader-deep-nav button,.support-small-button,
+  .support-profile-tabs button,.class-roster-view-switch button
+ ){
+  min-height:42px!important;
+ }
+ #app :is(.leader-division-choice,.leader-review-open,
+  .support-small-button,.leader-grade-bar button):hover{
+  transform:none!important;
+ }
+ #app :is(.leader-division-choice,.leader-review-open,.faculty-concern-filter button,
+  .leader-grade-bar button):active:not(:disabled){
+  filter:brightness(.97);
+ }
+}
+
+/* Small widths: one compact brand row, with the provenance still readable. */
+@media(max-width:850px){
+ #app:is([data-workspace="faculty"],[data-workspace="student"],[data-workspace="sss"],[data-workspace="leader"]) .heading{
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:4px!important;
+  padding:10px 15px!important;
+  min-height:0!important;
+  margin:0 0 9px!important;
+  border-radius:11px!important;
+ }
+ #app:is([data-workspace="faculty"],[data-workspace="student"],[data-workspace="sss"],[data-workspace="leader"]) .heading h1{
+  font-size:clamp(23px,4.7vw,29px)!important;
+  margin:2px 0!important;
+ }
+ #app:is([data-workspace="faculty"],[data-workspace="student"],[data-workspace="sss"],[data-workspace="leader"]) .heading p{
+  font-size:11.5px!important;
+  line-height:1.35!important;
+ }
+ #app:is([data-workspace="faculty"],[data-workspace="student"],[data-workspace="sss"],[data-workspace="leader"]) .heading .heading-meta{
+  justify-self:start!important;
+  max-width:100%!important;
+  display:flex!important;
+  flex-direction:row!important;
+  justify-content:flex-start!important;
+  align-items:center!important;
+  flex-wrap:wrap!important;
+  gap:5px 10px!important;
+ }
+ #app:is([data-workspace="faculty"],[data-workspace="student"],[data-workspace="sss"],[data-workspace="leader"]) .heading-meta .demo{
+  padding:4px 7px!important;
+ }
+ #app:is([data-workspace="faculty"],[data-workspace="student"],[data-workspace="sss"],[data-workspace="leader"]) .heading-meta .asof{
+  font-size:11px!important;
+ }
+ #app[data-workspace="leader"] .leader-welcome{
+  display:block!important;
+  padding:11px 13px!important;
+  margin-bottom:12px!important;
+ }
+ #app[data-workspace="leader"] .leader-welcome>h2{
+  font-size:20px!important;
+  margin:4px 0!important;
+ }
+ #app[data-workspace="leader"] .leader-welcome .leader-school-division-select{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:wrap!important;
+  gap:7px!important;
+  margin:8px 0 0!important;
+ }
+ #app[data-workspace="leader"] .leader-welcome .leader-school-division-select select{
+  min-width:148px!important;
+  width:auto!important;
+  max-width:100%!important;
+ }
+ #app[data-workspace="leader"] .leader-welcome .leader-daily-sources{
+  margin-top:8px!important;
+ }
+ #app[data-workspace="leader"] .leader-welcome .leader-daily-source{
+  max-width:100%;
+ }
+ #app[data-workspace="leader"] .leader-division-hero{
+  padding:11px 13px!important;
+ }
+}
+@media(max-width:480px){
+ #app[data-workspace="leader"] .leader-welcome .leader-daily-source{
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:3px!important;
+  flex-direction:column!important;
+  flex:1 1 100%!important;
+ }
+ #app[data-workspace="leader"] .leader-welcome .leader-school-division-select select{
+  flex:1 1 100%!important;
+  width:100%!important;
+ }
+ #app[data-workspace="leader"] .leader-grade-bar{
+  gap:5px!important;
+ }
+}
+/* Respect motion preferences. Never animate recurring data updates when
+   the OS requests less movement. */
+@media(prefers-reduced-motion:reduce){
+ #app #main :is(button,summary,select,input,textarea,[tabindex]),
+ #app .top nav.roles button,
+ .evidence-preview-popup{
+  animation:none!important;
+  transition:none!important;
+  transform:none!important;
+  scroll-behavior:auto!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ #app .leader-division-choice:hover,
+ #app :is(.leader-review-open,.leader-save-view button,.leader-deep-nav button,
+  .support-small-button,.class-roster-view-switch button,.faculty-concern-filter button,
+  .leader-grade-bar button,.leader-review-toolbar button):active:not(:disabled){
+  transform:none!important;
+  box-shadow:none!important;
+ }
+}
+/* UI needs no transient hover treatment in exported/printed reports. */
+@media print{
+ .evidence-preview-popup{animation:none!important}
+ #app :is(.leader-division-choice,.leader-review-open,
+  .faculty-concern-filter button){transform:none!important;box-shadow:none!important}
+}
