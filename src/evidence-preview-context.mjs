@@ -171,7 +171,7 @@ export function resolveEvidencePreview(trigger,ctx){
   const sample=report?.subjects.find(x=>x.subject===subject);
   const latest=sample?{...sample,label:report.year}:latestAcademic(academic,mode,subject);
   const band=trigger.dataset.previewBand;
-  return makePreview({title:PREVIEW_GUIDE[mode]?.label||'Academic result',subtitle:name,
+  return makePreview({title:mode==='report'&&ctx.role==='faculty'?'2026–27 test report grade':PREVIEW_GUIDE[mode]?.label||'Academic result',subtitle:name,
    rows:[['Displayed result',value(trigger.dataset.evidenceValue||latest?.value)],
      ...(band?[['Same-grade demo group',band]]:[]),
      ['Subject',mode==='report'?subject:PREVIEW_GUIDE[mode]?.label||'Assessment'],
