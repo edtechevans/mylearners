@@ -253,6 +253,26 @@ try{
    assert(await evaluate("getComputedStyle(document.querySelector('.student-today-goal .student-symbol')).color==='rgb(167, 31, 53)'"),
     'The reflection icon should use the same red identity');
   });
+ await run('faculty-experience-scales-1440','faculty','.faculty-daily-summary',1440,900,
+  async()=>{
+   const result=await evaluate("(function(){const cards=[...document.querySelectorAll('.faculty-daily-summary .faculty-index-gauge')];return {count:cards.length,bands:cards.map(x=>x.querySelectorAll('.leader-experience-segments>span:not(.leader-experience-marker)').length),markers:cards.map(x=>!!x.querySelector('.leader-experience-marker')),dots:cards.map(x=>!!x.querySelector('.faculty-summary-colour-mark')),clicks:cards.map(x=>x.dataset.action||''),fills:cards.map(x=>getComputedStyle(x).backgroundColor)}})()");
+   assert(result.count===2&&result.bands.every(n=>n===4)&&result.markers.every(Boolean),
+    'Faculty Engagement and Belonging must show a four-colour scale');
+   assert(result.dots.every(v=>!v)&&result.clicks.every(x=>x.startsWith('explain:faculty:')),
+    'Faculty summary must remain colour-only and retain explanation actions');
+   assert(result.fills.every(x=>x!=='rgb(255, 255, 255)'),
+    'Faculty check-in tiles need band-specific soft background colours');
+  });
+ await run('student-experience-scales-1440','student','.student-checkin-preview',1440,900,
+  async()=>{
+   const result=await evaluate("(function(){const compact=[...document.querySelectorAll('.student-checkin-preview-tile')],personal=[...document.querySelectorAll('.student-wellbeing-content .experience-metric-card')],first=[...document.querySelectorAll('.student-landing-grid .student-today-tile')];return {compact:compact.length,personal:personal.length,learning:first.length,gauges:[...compact,...personal].map(e=>e.querySelectorAll('.leader-experience-segments>span:not(.leader-experience-marker)').length),markers:[...compact,...personal].map(e=>!!e.querySelector('.leader-experience-marker')),fills:compact.map(e=>getComputedStyle(e).backgroundColor)}})()");
+   assert(result.compact===2&&result.personal===2&&result.learning===3,
+    'Student landing must retain three learning tiles and show two personal check-ins');
+   assert(result.gauges.every(n=>n===4)&&result.markers.every(Boolean),
+    'Student summary and detailed check-ins need the same four-band index scale');
+   assert(result.fills.every(x=>x!=='rgb(255, 255, 255)'),
+    'Student personal experience tiles need band-specific background tints');
+  });
  await run('aisg-red-navy-board-1440','board','.board-heading',1440,900,
   async()=>{
    const theme=await evaluate("(function(){const app=document.querySelector('#app');const nav=document.querySelector('.top');const active=nav?.querySelector('.roles button.selected');const hero=document.querySelector('.board-heading');const first=document.querySelector('.board-strength-card');const second=document.querySelector('.board-strength-card:nth-child(2)');const label=document.querySelector('.board-nav-tabs button.active');return {workspace:app?.dataset.workspace,nav:getComputedStyle(nav).backgroundImage,active:getComputedStyle(active).backgroundColor,hero:getComputedStyle(hero).backgroundImage,featured:getComputedStyle(first).backgroundImage,secondBorder:getComputedStyle(second).borderTopColor,label:getComputedStyle(label).color,styleLoaded:[...document.querySelectorAll('link[rel=stylesheet]')].some(x=>x.href.includes('aisg-brand-duotone.css')&&x.sheet)}})()");

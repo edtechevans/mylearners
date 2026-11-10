@@ -140,3 +140,34 @@ test('Faculty grade filter appears with test subjects and toggles without hiding
  click('[data-faculty-low-filter]',{facultyLowFilter:'all'});
  assert.equal((node.innerHTML.match(/<button class="student-link"/g)||[]).length,before);
 });
+
+test('Faculty summary shows two colour-only scales and Faculty learner profiles retain detailed gauges',()=>{
+ click('[data-role]',{role:'faculty'});
+ assert.equal((node.innerHTML.match(/class="quick-tile quick-score faculty-index-gauge/g)||[]).length,2);
+ assert.equal((node.innerHTML.match(/class="leader-experience-scale/g)||[]).length,2);
+ assert.doesNotMatch(node.innerHTML,/faculty-summary-colour-mark|<strong[^>]*>●<\/strong>/);
+ assert.match(node.innerHTML,/data-action="explain:faculty:engagement"/);
+ assert.match(node.innerHTML,/data-action="explain:faculty:belonging"/);
+ const id=node.innerHTML.match(/class="student-link" data-student="([^"]+)"/)?.[1];
+ assert.ok(id,'Faculty table should include learners');
+ click('[data-student]',{student:id});
+ assert.equal((node.innerHTML.match(/class="metric experience-metric-card/g)||[]).length,2);
+ assert.equal((node.innerHTML.match(/class="leader-experience-scale/g)||[]).length,2);
+});
+test('Student landing and expanded personal check-in cards share the scale without replacing learning tiles',()=>{
+ click('[data-role]',{role:'student'});
+ assert.match(node.innerHTML,/student-landing-grid/);
+ assert.match(node.innerHTML,/student-checkin-preview-grid/);
+ assert.equal((node.innerHTML.match(/class="student-checkin-preview-tile/g)||[]).length,2);
+ assert.equal((node.innerHTML.match(/class="metric experience-metric-card/g)||[]).length,2);
+ assert.equal((node.innerHTML.match(/class="leader-experience-scale/g)||[]).length,4);
+ assert.match(node.innerHTML,/class="student-today-tile student-today-celebrate"/);
+ assert.match(node.innerHTML,/class="student-today-tile student-today-progress"/);
+ assert.match(node.innerHTML,/class="student-today-tile student-today-goal"/);
+ assert.match(node.innerHTML,/These colours describe my experience, not my ability or a school grade/);
+ events.change({target:{closest(query){
+  return query==='[data-select]'?{dataset:{select:'student-grade'},value:'G2'}:null;
+ }}});
+ assert.doesNotMatch(node.innerHTML,/student-checkin-preview-grid|metric experience-metric-card/);
+ assert.match(node.innerHTML,/check-ins begin in Grade 3/);
+});
