@@ -101,7 +101,7 @@ export function renderLeaderWholeSchool({students,data,academic,records,sssRecor
    '<h2 id="leader-welcome-title">What deserves leadership attention today?</h2>'+
    '<p>Choose a division to see daily priorities, then drill into a grade and learner evidence. '+
    'The schoolwide view stays aggregated; it does not rank or label children.</p>'+
-   ''<label class="leader-school-division-select">Division <select data-select="division" aria-label="Choose leadership division">'+
+   '<label class="leader-school-division-select">Division <select data-select="division" aria-label="Choose leadership division">'+
     '<option value="All" selected>Whole school</option><option value="Elementary">Elementary</option>'+
     '<option value="Secondary">Secondary</option></select></label>'+
    '<div class="leader-daily-sources">'+
