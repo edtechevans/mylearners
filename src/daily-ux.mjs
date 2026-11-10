@@ -189,8 +189,53 @@ function decorate(table,index){
   if(th.querySelector('[data-ux-sort]'))return;
   const content=th.innerHTML;
   th.innerHTML='<button type="button" class="ux-sort-button" data-ux-sort="'+i+'" aria-sort="none" aria-label="Sort by '+safe(headers[i])+'">'+content+'</button>';
+  if(isFacultyColumns&&i>0&&i<headers.length-1){
+   th.insertAdjacentHTML('beforeend',
+    '<button type="button" class="ux-column-grip" draggable="true" data-ux-drag="'+i+
+    '" title="Drag to reorder '+safe(headers[i])+'" aria-label="Drag to reorder '+safe(headers[i])+'">⠿</button>'+
+    '<span class="ux-column-resize" role="separator" tabindex="0" aria-orientation="vertical"'+
+    ' data-ux-resize="'+i+'" aria-label="Resize '+safe(headers[i])+': drag or use arrow keys"></span>');
+  }
  });
+ if(isFacultyColumns)arrangeFacultyColumns(table,s);
  const render=()=>apply(table,s);
+ function syncColumnList(){
+  if(!isFacultyColumns)return;
+  const list=panel.querySelector('[data-ux-column-list]');
+  if(!list)return;
+  const mid=s.columnOrder.filter(i=>i>0&&i<headers.length-1);
+  list.innerHTML=s.columnOrder.map(i=>{
+   const movable=i>0&&i<headers.length-1;
+   const at=mid.indexOf(i);
+   const size=widthPreset(s.widths[i]);
+   const choice=movable?'<select data-ux-column-width="'+i+'" aria-label="Width of '+safe(headers[i])+'">'+
+    Object.entries(COLUMN_WIDTHS).map(([name,n])=>
+     '<option value="'+name+'"'+(size===name?' selected':'')+'>'+name[0].toUpperCase()+name.slice(1)+' ('+n+'px)</option>').join('')+
+    (size==='custom'?'<option value="custom" selected>Custom</option>':'')+'</select>':'';
+   return '<div class="ux-column-config" data-ux-column-row="'+i+'">'+
+    '<label class="ux-column-row"><input type="checkbox" data-ux-column="'+i+'"'+
+     (!s.hidden.includes(i)?' checked':'')+(i===0?' disabled':'')+
+     '><span>'+safe(headers[i])+'</span></label>'+
+    (movable?'<div class="ux-column-move"><button type="button" data-ux-move-left="'+i+'"'+
+     (at===0?' disabled':'')+' aria-label="Move '+safe(headers[i])+' left">←</button>'+
+     '<button type="button" data-ux-move-right="'+i+'"'+
+     (at===mid.length-1?' disabled':'')+' aria-label="Move '+safe(headers[i])+' right">→</button>'+
+     choice+'</div>':'<span class="ux-column-fixed">'+(i===0?'Fixed first':'Fixed last')+'</span>')+
+    '</div>';
+  }).join('');
+ }
+ function recordLayout(){
+  if(!isFacultyColumns)return;
+  persistLayout(key,s);
+  const note=table.closest('.ux-table-shell')?.querySelector('[data-ux-layout-announcement]');
+  if(note)note.textContent='Column layout updated and saved on this device.';
+ }
+ function updateArrangement(){
+  if(!isFacultyColumns)return;
+  arrangeFacultyColumns(table,s);
+  syncColumnList();render();recordLayout();
+ }
+ syncColumnList();
  panel.addEventListener('input',e=>{
   if(e.target.matches('[data-ux-search]'))s.search=e.target.value;
   else if(e.target.matches('[data-ux-field]'))s.fields[e.target.dataset.uxField]=e.target.value;
