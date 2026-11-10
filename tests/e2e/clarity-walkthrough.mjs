@@ -50,7 +50,13 @@ async function viewport(width,height){
  await client.command('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});
 }
 async function navigate(route,selector){
- await client.command('Page.navigate',{url:ROOT+'#/'+route});
+ // An SPA does not necessarily reload when navigating to its current hash.
+ // Force a fresh document for repeated role journeys so division state cannot
+ // leak from the previous screenshot scenario.
+ const target='#/'+route;
+ const same=await evaluate('location.hash==='+JSON.stringify(target)).catch(()=>false);
+ if(same)await client.command('Page.reload',{ignoreCache:true});
+ else await client.command('Page.navigate',{url:ROOT+target});
  for(let i=0;i<100;i++){
   const ready=await evaluate("document.readyState==='complete'&&!!document.querySelector("+JSON.stringify(selector)+")").catch(()=>false);
   if(ready){await sleep(250);return}
