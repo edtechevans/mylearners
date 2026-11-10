@@ -268,7 +268,7 @@ function roster(ss,options={}){
  const concernCount=numericEligible?ss.filter(s=>hasLowReportGrade(s,ACADEMIC_RECORDS)).length:0;
  const rows=ss.filter(s=>(!query||s.name.toLowerCase().includes(query))&&
   (!lowOnly||hasLowReportGrade(s,ACADEMIC_RECORDS)));
- const concernFilter=numericEligible?
+ const concernFilter=across&&numericEligible?
   '<div class="faculty-concern-filter" role="group" aria-label="Filter learners by subject results">'+
   '<span>Show learners</span>'+
   '<button type="button" data-faculty-low-filter="all" aria-pressed="'+(!lowOnly)+'" '+
@@ -466,10 +466,12 @@ function faculty(){
   quickStat('Attendance',fmt(meanAttendance)+'%','Through 8 Oct 2026')+
   (gradeHasCheckins?score('engagement')+score('belonging'):
    '<div class="quick-note">Student-reported experience indices start at Grade 3 in this demo.</div>')+'</div>';
+ const lowGradeFilter=ss.some(s=>facultyDemoReport(academicFor(ACADEMIC_RECORDS,s.id))?.scale==='1–7')?
+  {total:ss.length,count:ss.filter(s=>hasLowReportGrade(s,ACADEMIC_RECORDS)).length,active:state.facultyLowOnly}:null;
  const reportControls=searching?'':renderClassEvidencePanel(ss,{
   academic:ACADEMIC_RECORDS,map:DATA.map,experience:RECORDS,maia:MAIA_RECORDS,
   maiaDimension:state.maiaDimension,maiaWindow:state.maiaWindow,
-  rosterView:state.rosterView,mode:state.classEvidence,subject:state.academicSubject,
+  rosterView:state.rosterView,lowGradeFilter,mode:state.classEvidence,subject:state.academicSubject,
   mapSubject:state.classMapSubject,compare:state.classCompare,window:state.classExperienceWindow});
  return heading('My students','Find a learner, see essential information, or choose a class result.')+
   toolbar+summary+
