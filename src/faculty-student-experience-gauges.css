@@ -1,0 +1,160 @@
+/* Shared four-band student-experience scales in Faculty and Student.
+   Fixed −2 to +2 index intervals only; never use these for MAP or report grades. */
+#app .faculty-index-gauge,
+#app .experience-metric-card,
+#app .student-checkin-preview-tile{
+ --experience-band:#90a1ad;
+ --experience-tint:#f8fafb;
+ --experience-border:#d8e1e6;
+}
+#app :is(.faculty-index-gauge,.experience-metric-card,.student-checkin-preview-tile).index-band-low{
+ --experience-band:#a6373f;--experience-tint:#fff2f1;--experience-border:#e8c2c6;
+}
+#app :is(.faculty-index-gauge,.experience-metric-card,.student-checkin-preview-tile).index-band-mid-low{
+ --experience-band:#e4a15f;--experience-tint:#fff5eb;--experience-border:#f0d2b1;
+}
+#app :is(.faculty-index-gauge,.experience-metric-card,.student-checkin-preview-tile).index-band-mid-high{
+ --experience-band:#a6bd88;--experience-tint:#f3f7e9;--experience-border:#c8d8b5;
+}
+#app :is(.faculty-index-gauge,.experience-metric-card,.student-checkin-preview-tile).index-band-high{
+ --experience-band:#246b4f;--experience-tint:#edf7f0;--experience-border:#b3d3c2;
+}
+#app[data-workspace="faculty"] .faculty-daily-summary>.quick-tile.faculty-index-gauge{
+ background:var(--experience-tint)!important;
+ border:1px solid var(--experience-border)!important;
+ border-top:4px solid var(--experience-band)!important;
+ gap:3px!important;
+ padding:10px 13px!important;
+ min-height:90px!important;
+ justify-content:center;
+}
+#app[data-workspace="faculty"] .faculty-index-gauge .leader-experience-scale{
+ padding:4px 2px 3px!important;
+ margin:1px 0 2px!important;
+}
+#app[data-workspace="faculty"] .faculty-index-gauge .leader-experience-segments{
+ height:12px;
+}
+#app[data-workspace="faculty"] .faculty-index-gauge small{
+ font-size:10.5px!important;
+ color:#3e6071!important;
+ line-height:1.4!important;
+}
+#app[data-workspace="faculty"] .faculty-index-gauge>span{
+ font-size:11px!important;
+ font-weight:800!important;
+ color:#294e60!important;
+}
+/* Full-size personal check-in cards: same scale as the Leaders view. */
+#app :is([data-workspace="faculty"],[data-workspace="student"]) .experience-metric-card{
+ background:var(--experience-tint)!important;
+ border:1px solid var(--experience-border)!important;
+ border-top:5px solid var(--experience-band)!important;
+ padding:20px!important;
+}
+#app .experience-metric-card .metric-value{
+ margin:6px 0 5px;
+ color:#17394d;
+}
+#app .experience-metric-card .experience-metric-interval{
+ display:block;
+ font-size:11px;
+ line-height:1.5;
+ font-weight:750;
+ color:#40616b;
+}
+#app .experience-metric-card .leader-experience-scale{
+ margin:10px 0 0;
+ padding:3px 2px 6px;
+}
+#app .experience-metric-card .metric-foot{
+ margin-top:12px;
+ gap:8px;
+ flex-wrap:wrap;
+}
+#app .experience-metric-card>.action.quiet{
+ margin-top:12px;
+}
+#app .experience-metric-card .leader-experience-segments{
+ height:14px;
+}
+/* Student front page: visible, compact personal check-in indicators.
+   Keep academic progress and reflection tiles intact. */
+#app[data-workspace="student"] .student-checkin-preview{
+ margin:16px 0 24px;
+ padding:0;
+}
+#app[data-workspace="student"] .student-checkin-preview-heading{
+ display:flex;
+ align-items:baseline;
+ justify-content:space-between;
+ gap:8px 16px;
+ flex-wrap:wrap;
+ margin:0 2px 10px;
+}
+#app[data-workspace="student"] .student-checkin-preview-heading h2{
+ margin:0;
+ color:#173c53;
+ font-size:18px;
+}
+#app[data-workspace="student"] .student-checkin-preview-heading span{
+ font-size:11.5px;
+ font-weight:650;
+ color:#5a7580;
+}
+#app[data-workspace="student"] .student-checkin-preview-grid{
+ display:grid;
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:12px;
+}
+#app[data-workspace="student"] .student-checkin-preview-tile{
+ padding:15px 18px;
+ border:1px solid var(--experience-border);
+ border-top:4px solid var(--experience-band);
+ border-radius:14px;
+ background:var(--experience-tint);
+ min-width:0;
+}
+#app[data-workspace="student"] .student-checkin-preview-tile h3{
+ margin:0 0 5px;
+ font-size:13px;
+ font-weight:800;
+ color:#234b60;
+}
+#app[data-workspace="student"] .student-checkin-preview-value{
+ display:block;
+ font-size:27px;
+ line-height:1.25;
+ color:#17394d;
+ font-variant-numeric:tabular-nums;
+ letter-spacing:-.035em;
+}
+#app[data-workspace="student"] .student-checkin-preview-tile .leader-experience-scale{
+ padding:6px 2px 3px;
+ margin:3px 0 4px;
+}
+#app[data-workspace="student"] .student-checkin-preview-tile .leader-experience-segments{
+ height:12px;
+}
+#app[data-workspace="student"] .student-checkin-preview-tile p{
+ font-size:11px;
+ color:#52707a;
+ margin:5px 0 0;
+}
+#app[data-workspace="student"] .student-checkin-preview-note{
+ margin:8px 2px 0;
+ color:#607682;
+ line-height:1.55;
+ font-size:11.5px;
+}
+@media(max-width:620px){
+ #app[data-workspace="student"] .student-checkin-preview-grid{grid-template-columns:1fr}
+ #app .experience-metric-card{padding:16px!important}
+}
+@media print{
+ #app .faculty-index-gauge,
+ #app .experience-metric-card,
+ #app .student-checkin-preview-tile{
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+ }
+}
