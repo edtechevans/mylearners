@@ -42,8 +42,8 @@ test('semantic grades, indices, support and Board cover are not recoloured',()=>
     '.leader-grade-flag{','.experience-metric-card{']){
    assert.ok(!css.includes(sel),'Semantic evidence must not get blanket styles: '+sel);
  }
- assert.match(css,/support case/);
- assert.match(css,/Evidence/);
+ assert.match(css,/\.support-lead-metric\{/);
+ assert.match(css,/\.leader-division-choice\{/);
 });
 test('focus, responsive, reduced-motion and print treatments are present',()=>{
  assert.match(css,/:focus-visible\{/);
