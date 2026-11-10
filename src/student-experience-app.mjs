@@ -13,16 +13,16 @@ import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=202610
 import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs?v=20261030repair1';
 import {experienceDialogContent} from './experience-explain-modal.mjs?v=20261030wall3';
-import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261031v3';
-import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261030hover1';
+import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261110subjects3';
+import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261110grades2';
 import {esc} from './v2-ui.mjs';
-import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,READING_LEVELS} from './academic-journey-data.mjs';
+import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,READING_LEVELS,facultyDemoReport} from './academic-journey-data.mjs';
 import {quartileBand,formatIndex,experienceBand} from './faculty-bands.mjs?v=20261030wall2';
-import {facultyRosterEvidenceColumns,reportGradeBand} from './report-card-signals.mjs';
-import {renderLeaderReportFollowup} from './leader-report-followup.mjs';
+import {facultyRosterEvidenceColumns,reportGradeBand,hasLowReportGrade} from './report-card-signals.mjs?v=20261110grades3';
+import {renderLeaderReportFollowup} from './leader-report-followup.mjs?v=20261110grades3';
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261028titles1';
 import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261030wall1';
-import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261031v2';
+import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261110grades2';
 import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile} from './maia-demo.mjs';
 import {renderStudentOverview} from './student-daily-overview.mjs?v=20261028titles1';
 import {renderBoard} from './board-map-view.mjs?v=20261029dpaxis1';
@@ -71,12 +71,12 @@ const initialHash=String(globalThis.location?.hash||'').replace(/^#\//,'').split
 const initialRole=ROLE_IDS.includes(initialHash)?initialHash:saved('my-role','faculty');
 const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  teacher:saved('my-teacher',DEFAULT_TEACHER_ID),
- division:'All',grade:'All',classId:'',studentId:'',query:'',metric:'engagement',window:'F26',details:false,checkin:false,
+ division:'All',grade:'All',classId:'',studentId:'',query:'',facultyLowOnly:false,metric:'engagement',window:'F26',details:false,checkin:false,
  academicMode:'report',academicSubject:'Mathematics',academicReportYear:'',studentGrade:'G7',
  classEvidence:'report',classMapSubject:'Mathematics',classCompare:'none',classExperienceWindow:'F26',rosterView:EVERYDAY_VIEW,
  maiaDimension:'relationships',maiaWindow:'F26',
  studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
-  leaderSupportOpen:false,leaderReportScope:'secondary',leaderReportQuery:'',leaderReportMultiple:false,leaderReportExpanded:false,
+  leaderSupportOpen:false,leaderReportQuery:'',leaderReportMultiple:false,leaderReportExpanded:false,
  sssGrade:'All',sssQuery:'',sssStudentId:'',sssOpenGrades:['G3'],sssAcademicOpen:false,
   supportForm:null,supportFilter:'all',supportQuery:'',
   sssManager:'All',sssPanel:'summary',supportBarrier:'All',
@@ -173,7 +173,7 @@ function roster(ss,options={}){
   experience:RECORDS,maia:MAIA_RECORDS,maiaDimension:state.maiaDimension,maiaWindow:state.maiaWindow,
   subject:state.academicSubject,mapSubject:state.classMapSubject,
   window:state.classExperienceWindow};
- const reportSubjects=academicFor(ACADEMIC_RECORDS,ss[0]?.id).reports?.[0]?.subjects||[];
+ const reportSubjects=facultyDemoReport(academicFor(ACADEMIC_RECORDS,ss[0]?.id))?.subjects||[];
  const subject=reportSubjects.some(x=>x.subject===state.academicSubject)?
   state.academicSubject:reportSubjects[0]?.subject||'';
  // The everyday view is a deliberately small, grade-aware selection of existing
@@ -181,7 +181,7 @@ function roster(ss,options={}){
  const everyday=!across&&state.rosterView===EVERYDAY_VIEW;
  const everydayColumns=everyday?facultyRosterEvidenceColumns(ss,ACADEMIC_RECORDS,everydayEvidenceForGrade(grade)):[];
  const hasAcademicBands=everydayColumns.some(c=>['map','ixl','core','fp','flourishing'].includes(c.kind));
- const hasNumericReports=everydayColumns.some(c=>c.kind==='report'&&ss.some(student=>{const r=academicFor(ACADEMIC_RECORDS,student.id).reports?.[0];return reportGradeBand(r?.subjects?.find(x=>x.subject===c.subject)?.value,r?.scale)}));
+ const hasNumericReports=everydayColumns.some(c=>c.kind==='report'&&ss.some(student=>{const r=facultyDemoReport(academicFor(ACADEMIC_RECORDS,student.id));return reportGradeBand(r?.subjects?.find(x=>x.subject===c.subject)?.value,r?.scale)}));
  const hasExperienceBands=everydayColumns.some(c=>['engagement','belonging'].includes(c.kind));
  const checkinLabel=EXPERIENCE_WINDOWS.find(w=>w.key===state.classExperienceWindow)?.label||'Fall 2026';
  const everydayHeading=column=>column.kind==='engagement'||column.kind==='belonging'?
@@ -206,7 +206,7 @@ function roster(ss,options={}){
   if(column.kind==='engagement'||column.kind==='belonging')
    return experienceFor(RECORDS,student.id,column.kind,state.classExperienceWindow)?.value??null;
   if(column.kind==='report'){
-   const report=academicFor(ACADEMIC_RECORDS,student.id).reports?.[0];
+   const report=facultyDemoReport(academicFor(ACADEMIC_RECORDS,student.id));
    const item=report?.subjects?.find(x=>x.subject===column.subject);
    return report?.scale==='1–7'&&item?Number(item.value):null;
   }
@@ -218,14 +218,14 @@ function roster(ss,options={}){
    const value=attendance.rate===null||attendance.rate===undefined?'—':fmt(attendance.rate)+'%';
    return '<span class="class-evidence-result"><strong>'+safe(value)+'</strong><small>Through 8 Oct 2026</small></span>';
   }
-  const report=academicFor(ACADEMIC_RECORDS,student.id).reports?.[0];
+  const report=facultyDemoReport(academicFor(ACADEMIC_RECORDS,student.id));
   const entry=column.kind==='report'?report?.subjects?.find(x=>x.subject===column.subject):null;
   const context={...evidenceCtx,mode:column.kind,subject:column.subject||state.academicSubject,
    mapSubject:column.kind==='map'?'Mathematics':state.classMapSubject,
    maiaDimension:column.kind==='flourishing'?'relationships':state.maiaDimension};
   const result=column.kind==='report'?(entry?
-   {text:String(entry.value),detail:'Issued '+report.year+' · '+report.grade+' · '+report.framework,available:true}:
-   {text:'—',detail:'No issued subject result',available:false}):evidenceValue(student,context);
+   {text:String(entry.value),detail:'2026–27 TEST DATA · NOT ISSUED · '+report.grade+' · '+report.framework,available:true}:
+   {text:'—',detail:'No current test subject grade',available:false}):evidenceValue(student,context);
   const quartile=relativeBand(student,column);
   const gradeBand=column.kind==='report'?reportGradeBand(entry?.value,report?.scale):null;
   const inferredBand=column.kind==='engagement'||column.kind==='belonging'?
@@ -260,10 +260,23 @@ function roster(ss,options={}){
   return '<span class="evidence-cell-layout">'+button+'</span>';
  };
  
- const modeLabel=across?'Last issued report':evidenceLabel(mode,{...evidenceCtx,subject});
+ const modeLabel=across?'2026–27 demo test report':evidenceLabel(mode,{...evidenceCtx,subject});
  const compareLabel=compare==='none'?'':evidenceLabel(compare,{...evidenceCtx,subject});
  const query=state.query.trim().toLowerCase();
- const rows=ss.filter(s=>!query||s.name.toLowerCase().includes(query));
+ const numericEligible=ss.some(s=>facultyDemoReport(academicFor(ACADEMIC_RECORDS,s.id))?.scale==='1–7');
+ const lowOnly=numericEligible&&state.facultyLowOnly;
+ const concernCount=numericEligible?ss.filter(s=>hasLowReportGrade(s,ACADEMIC_RECORDS)).length:0;
+ const rows=ss.filter(s=>(!query||s.name.toLowerCase().includes(query))&&
+  (!lowOnly||hasLowReportGrade(s,ACADEMIC_RECORDS)));
+ const concernFilter=numericEligible?
+  '<div class="faculty-concern-filter" role="group" aria-label="Filter learners by subject results">'+
+  '<span>Show learners</span>'+
+  '<button type="button" data-faculty-low-filter="all" aria-pressed="'+(!lowOnly)+'" '+
+  'class="'+(!lowOnly?'active':'')+'">All learners</button>'+
+  '<button type="button" data-faculty-low-filter="low" aria-pressed="'+lowOnly+'" '+
+  'class="'+(lowOnly?'active':'')+'">3 or below <b>'+concernCount+'</b></button>'+
+  '<small>At least one subject · 2026–27 test data</small></div>':'';
+
  const showMap=across&&rows.some(s=>gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10);
  const showSEL=across&&rows.some(s=>experienceEligible(s));
  const data=rows.map(student=>{
@@ -274,12 +287,12 @@ function roster(ss,options={}){
   const eligibleMap=gradeNumber(student.grade)>=3&&gradeNumber(student.grade)<=10;
   const growthText=eligibleMap?(growth.status==='comparable'?(growth.actual>=0?'+':'')+growth.actual+' RIT':'Not yet comparable'):'—';
   const rec=academicFor(ACADEMIC_RECORDS,student.id);
-  const latest=rec.reports?.[0]||null;
+  const latest=facultyDemoReport(rec);
   const mixSubject=latest?.subjects.find(x=>x.subject==='Mathematics'||x.subject==='Early Mathematics')?.subject
    ||latest?.subjects[0]?.subject||'';
   const academics=across?
-   '<span class="roster-mixed-academic">'+classAcademicCell(student,ACADEMIC_RECORDS,'report',mixSubject)+
-   (latest?'<small>'+safe(mixSubject)+' · '+safe(latest.year)+' ('+safe(latest.grade)+')</small>':'<small>No issued report</small>')+'</span>':
+   '<span class="roster-mixed-academic">'+evidenceRosterColumn(student,{...evidenceCtx,subject:mixSubject,mode:'report'})+
+   (latest?'<small>'+safe(mixSubject)+' · '+safe(latest.year)+' TEST · not issued</small>':'<small>No test grade</small>')+'</span>':
    evidenceRosterColumn(student,{...evidenceCtx,subject,mode});
   const compared=compare==='none'?'':evidenceRosterColumn(student,{...evidenceCtx,subject,mode:compare});
   return {student,attendance:fmt(attendance.rate)+'%',growth:growthText,
@@ -330,6 +343,8 @@ function roster(ss,options={}){
   '<div class="sectionhead"><div><h2>'+heading+'</h2><span class="tiny">'+context+'</span></div>'+
   (across?'<button type="button" class="roster-clear-search" data-clear-search>Clear search</button>':'')+'</div>'+
   (options.controls||'')+
+  concernFilter+
+  (everyday?'<p class="faculty-report-test-label"><strong>2026–27 subject grades · SYNTHETIC TEST DATA · NOT ISSUED.</strong> All current-grade subjects have examples; earlier issued report history is kept separately.</p>':'')+
   (everyday&&(hasNumericReports||hasAcademicBands||hasExperienceBands)?'<div class="faculty-evidence-legend" aria-label="Understanding evidence colours">'+
   '<strong>'+(hasNumericReports?'Report card grades 1–7':'Assessment and experience indicators')+'</strong>'+
   '<span class="faculty-legend-swatches">'+
@@ -338,12 +353,12 @@ function roster(ss,options={}){
   '<span class="faculty-legend-chip band-mid-high">'+(hasNumericReports?'5–6':'Higher')+'</span>'+
   '<span class="faculty-legend-chip band-high">'+(hasNumericReports?'7':'High')+'</span></span>'+
   '<span class="faculty-legend-caption">Reports use fixed grade bands. Other measures are colour-only. Hover or focus for exact data.</span>'+
-  '<details><summary>Interpret colours</summary><p>Issued numeric report grades: 1–3 red, 4 orange, 5–6 light green, 7 dark green. Elementary developmental descriptors are not converted to grades. MAP, IXL and other assessments use same-grade fictional comparisons; experience uses fixed −2 to +2 bands. Grey means missing. A colour is not a learner label.</p></details></div>':'')+
+  '<details><summary>Interpret colours</summary><p>Numeric report TEST grades: 1–3 red, 4 orange, 5–6 light green, 7 dark green. Elementary developmental descriptors are not converted to grades. MAP, IXL and other assessments use same-grade fictional comparisons; experience uses fixed −2 to +2 bands. Grey means missing. A colour is not a learner label.</p></details></div>':'')+
   table+mobile+
-  (rows.length?'':'<p class="empty-message">No matching students in your assigned classes. Try a different name.</p>')+
+  (rows.length?'':'<p class="empty-message">'+(lowOnly?'No learners match the 3 or below filter in this selection.':'No matching students in your assigned classes. Try a different name.')+'</p>')+
   '<details class="faculty-inquiry-prompt"><summary>From evidence to action</summary>'+
    '<p>Notice a pattern, check the source and date, and consider what more you might need to know. Select a learner to review their context and use the existing classroom response or follow-up tools. Do not draw conclusions from colour alone.</p></details>'+
-  '<p class="tiny roster-caption">All available subjects from the latest issued report appear here, not current-year grades. Numeric report results use fixed 1–7 thresholds; developmental descriptors retain their own wording. Non-report colours represent fictional same-grade comparisons or fixed experience bands. Hover for the exact result and reporting context.</p>'+
+  '<p class="tiny roster-caption">All subjects show explicitly fictional 2026–27 current-grade examples, not issued report grades. Numeric test outcomes use fixed 1–7 thresholds; Elementary developmental descriptors retain their own wording. Non-report colours represent fictional same-grade comparisons or fixed experience bands. Hover for the exact result and reporting context.</p>'+
   '</section>';
 }
 
@@ -471,6 +486,7 @@ function leader(){
  const classes=DATA.classes.filter(c=>divisions.includes(c.division)&&
   (state.grade==='All'||c.grade===state.grade));
  const selectedClass=classes.find(c=>c.id===state.classId);
+ const secondaryOnly=group.length>0&&group.every(s=>s.division==='Secondary');
  const scopeLabel=selectedClass?.name||
   (state.grade!=='All'?
    (state.grade==='K'?'Kindergarten':
@@ -626,8 +642,8 @@ function leader(){
   '</label></div>'+experience+
   (splitExperience?'<p class="leader-data-note">Elementary and Secondary students answer different questions; their indices are intentionally shown separately.</p>':'')+
   '</section>'+
-  renderLeaderReportFollowup({students:group,academic:ACADEMIC_RECORDS,scope:state.leaderReportScope,
-    query:state.leaderReportQuery,multiple:state.leaderReportMultiple,expanded:state.leaderReportExpanded})+
+  (secondaryOnly?renderLeaderReportFollowup({students:group,academic:ACADEMIC_RECORDS,
+    query:state.leaderReportQuery,multiple:state.leaderReportMultiple,expanded:state.leaderReportExpanded}):'')+
    renderLeaderSupportSection({students:group,sssRecords:SSS_RECORDS,entries:supportEntries(),open:state.leaderSupportOpen})+
   '<details class="leader-detail" data-leader-panel="academics"'+
   (state.leaderAcademicOpen?' open':'')+'>'+
@@ -926,8 +942,11 @@ root.addEventListener('keydown',e=>{
  if(e.key==='Escape'){hideBoardFloat();if(pinnedChartKey)unpinChartPoint()}
 });
 root.addEventListener('click',e=>{
- const reportScope=e.target.closest('[data-leader-report-scope]');
- if(reportScope&&state.role==='leader'){state.leaderReportScope=reportScope.dataset.leaderReportScope==='all'?'all':'secondary';state.leaderReportExpanded=false;render();return;}
+ const facultyLow=e.target.closest('[data-faculty-low-filter]');
+ if(facultyLow&&state.role==='faculty'){
+  state.facultyLowOnly=facultyLow.dataset.facultyLowFilter==='low';
+  render();root.querySelector('[data-faculty-low-filter="'+(state.facultyLowOnly?'low':'all')+'"]')?.focus({preventScroll:true});return;
+ }
  if(e.target.closest('[data-leader-report-multiple]')&&state.role==='leader'){state.leaderReportMultiple=!state.leaderReportMultiple;state.leaderReportExpanded=false;render();return;}
  if(e.target.closest('[data-leader-report-expand]')&&state.role==='leader'){state.leaderReportExpanded=!state.leaderReportExpanded;render();return;}
  const skip=e.target.closest('[data-skip-main]');
@@ -1293,12 +1312,12 @@ root.addEventListener('change',e=>{
  }
  const el=e.target.closest('[data-select]');if(!el)return;const v=el.value;
  if(el.dataset.select==='teacher'){
-  state.teacher=v;recallFaculty();
+  state.teacher=v;recallFaculty();state.facultyLowOnly=false;
   state.studentId='';state.query='';state.details=false;state.academicReportYear='';
   state.studentReportsOpen=false;state.studentWellbeingOpen=false;
  }
  if(el.dataset.select==='class'){
-  state.classId=v;state.studentId='';state.query='';state.details=false;
+  state.classId=v;state.studentId='';state.query='';state.details=false;state.facultyLowOnly=false;
   state.academicReportYear='';
   if(!academicModesFor(DATA.classIndex.get(v)?.grade).includes(state.academicMode))
    state.academicMode='report';

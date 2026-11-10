@@ -410,7 +410,7 @@ try{
    const headers=await evaluate("Array.from(document.querySelectorAll('.roster-daily thead th')).map(th=>th.textContent.trim())");
    for(const expected of ['Learner','Attendance','MAP Mathematics growth','IXL Mathematics','Engagement','Belonging','Support information'])
     assert(headers.some(h=>h.includes(expected)),'Missing default evidence: '+expected);
-    assert(headers.length>=12&&headers.some(h=>h.includes('Report · Language & Literature')),'Expected all issued report subjects and other evidence');
+    assert(headers.length>=12&&headers.some(h=>h.trim()==='Language & Literature'),'Expected subject names without Report prefixes');
    assert(await evaluate("document.querySelector('.roster-daily').getBoundingClientRect().top<innerHeight-80"),
     'The Faculty data wall should begin within the first viewport');
    assert(await evaluate("(function(){const row=document.querySelector('.faculty-data-wall tbody tr');return !!row&&row.getBoundingClientRect().top<innerHeight-55})()"),
@@ -436,7 +436,7 @@ try{
    assert(await evaluate("document.querySelectorAll('.roster-daily tbody .class-evidence-result').length>=20"),
     'Everyday columns should show per-learner values without extra clicks');
    const geometry=await evaluate("(function(){const row=document.querySelector('.roster-daily[data-roster-layout=everyday] tbody tr');if(!row)return [];return [...row.cells].slice(2,-1).map(td=>{const r=td.querySelector('.evidence-cell-open .class-evidence-result')?.getBoundingClientRect();return r?{width:r.width,height:r.height,top:r.top}:null}).filter(Boolean)})()");
-    assert(geometry.length>=12,'Grade 7 should show all available issued report subjects and non-report measures');
+    assert(geometry.length>=12,'Grade 7 should show all synthetic subjects and other measures');
    for(const key of ['width','height','top'])assert(
     Math.max(...geometry.map(r=>r[key]))-Math.min(...geometry.map(r=>r[key]))<2,
     'Everyday evidence tiles must align in '+key);
@@ -444,7 +444,16 @@ try{
    assert(cards.length===2,'Engagement and Belonging summaries need value-driven colour bands');
     assert(cards.every(value=>value==='●'),'Summary tiles should be colour only, without index numbers');
 
-   await click('[data-roster-view="focused"]');
+   const baselineCount=await evaluate("document.querySelectorAll('.roster-daily tbody .student-link').length");
+    await click('[data-faculty-low-filter="low"]');
+    assert(await evaluate("document.querySelector('[data-faculty-low-filter=low]')?.getAttribute('aria-pressed')==='true'"),
+     'Faculty 3 or below filter should activate');
+    const reducedCount=await evaluate("document.querySelectorAll('.roster-daily tbody .student-link').length");
+    assert(reducedCount>0&&reducedCount<baselineCount,'Faculty filter should isolate matching learners');
+    await click('[data-faculty-low-filter="all"]');
+    assert(await evaluate("document.querySelectorAll('.roster-daily tbody .student-link').length")===baselineCount,
+     'All learners should be restored');
+    await click('[data-roster-view="focused"]');
    assert(await evaluate("document.querySelector('.roster-daily')?.dataset.rosterLayout==='focused'"),
     'Focused evidence mode should remain available');
    await click('[data-roster-view="everyday"]');
@@ -470,7 +479,11 @@ try{
  await run('leader-filter-1440','leader','.leader-learning-grid',1440,900,
   async()=>{const ok=await evaluate("(function(){const s=document.querySelector('[data-select=\"grade\"]');if(!s)return false;s.value='G7';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
    assert(ok,'Grade filter missing');await sleep(150);
-   assert(await evaluate("document.querySelector('.leader-period')?.textContent.includes('Grade 7')"),'Grade filter did not update')});
+   assert(await evaluate("document.querySelector('.leader-period')?.textContent.includes('Grade 7')"),'Grade filter did not update');
+    assert(await evaluate("!!document.querySelector('.leader-report-followup')"),'Secondary review should appear for Grade 7');
+    assert(await evaluate("document.querySelectorAll('.leader-report-legend-chip').length===4"),'Leader legend needs four colours');
+    assert(await evaluate("document.querySelectorAll('.leader-report-fourband').length>0"),'Leaders need subject profile colours');
+   });
  await run('faculty-map-tab-1440','faculty','.faculty-daily-toolbar',1440,900,
   async()=>{
    await click('[data-class-evidence="map"]');

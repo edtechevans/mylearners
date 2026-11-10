@@ -53,8 +53,7 @@ test('every grade class renders a single selector and correctly scoped tab group
   const html=renderClassEvidencePanel(students,{...ctx,mode:'report'});
   assert.match(html,/Learning &amp; Wellbeing Evidence/);
   assert.match(html,/data-class-evidence="report"/);
-  if(g!=='PK3')assert.match(html,/data-academic-subject/);
-  else assert.doesNotMatch(html,/data-academic-subject/);
+  assert.match(html,/data-academic-subject/,'Synthetic test reports include early-years subjects too');
   assert.match(html,/class-evidence-selection/);
   assert.doesNotMatch(html,/Common Core|data-class-evidence="commoncore"/);
   assert.match(html,/class-evidence-breakdown/);

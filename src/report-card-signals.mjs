@@ -1,8 +1,8 @@
-/** Presentation-only interpretation of the most recently issued fictional report.
- * Never infer a current grade from an earlier report or convert developmental
- * descriptors to numbers. Non-report measures have different scales.
+/** Presentation-only interpretation of explicitly fictional current-year test grades.
+ * Historical issued reports remain separate. Developmental descriptors are
+ * never converted to numbers, and non-report measures have their own scales.
  */
-import {academicFor} from './academic-journey-data.mjs';
+import {academicFor,facultyDemoReport} from './academic-journey-data.mjs';
 
 export function numericReportGrade(value,scale){
  if(scale!=='1–7'||value===null||value===undefined||String(value).trim()==='')return null;
@@ -13,20 +13,32 @@ export function reportGradeBand(value,scale){
  const n=numericReportGrade(value,scale);
  return n===null?null:n<=3?'band-low':n===4?'band-mid-low':n<=6?'band-mid-high':'band-high';
 }
+/** A learner enters the Faculty review filter when any current-year numeric
+ * demo subject is at 3 or below. Descriptors and absent results never match. */
+export function hasLowReportGrade(student,academic){
+ if(!student)return false;
+ const report=facultyDemoReport(academicFor(academic,student.id));
+ return !!report?.testing&&report.scale==='1–7'&&
+  (report.subjects||[]).some(item=>{
+   const grade=numericReportGrade(item.value,report.scale);
+   return grade!==null&&grade<=3;
+  });
+}
+
 export function facultyRosterEvidenceColumns(students,academic,baseColumns){
  const subjects=new Set();
  for(const s of students||[]){
-  const issued=academicFor(academic,s.id).reports?.[0];
-  for(const item of issued?.subjects||[])subjects.add(item.subject);
+  const report=facultyDemoReport(academicFor(academic,s.id));
+  for(const item of report?.subjects||[])subjects.add(item.subject);
  }
- // Classes without an issued report retain explanatory, unavailable placeholders.
+ // No result is invented at render time; the separate synthetic fixture provides data.
  if(!subjects.size)return baseColumns;
  const attendance=baseColumns.find(c=>c.kind==='attendance');
  const other=baseColumns.filter(c=>c.kind!=='attendance'&&c.kind!=='report');
  return [
   ...(attendance?[attendance]:[]),
   ...[...subjects].map(subject=>({id:'report:'+subject,kind:'report',
-   subject,label:'Report · '+subject})),
+   subject,label:subject})),
   ...other
  ];
 }
@@ -34,8 +46,8 @@ export function leaderReportSignalSummary(students,academic){
  const scoped=students||[];
  const numeric=[];
  for(const student of scoped){
-  const report=academicFor(academic,student.id).reports?.[0];
-  if(!report?.issued||report.scale!=='1–7')continue;
+  const report=facultyDemoReport(academicFor(academic,student.id));
+  if(!report?.testing||report.scale!=='1–7')continue;
   const outcomes=(report.subjects||[]).map(x=>({
    subject:x.subject,value:numericReportGrade(x.value,report.scale)
   })).filter(x=>x.value!==null);
