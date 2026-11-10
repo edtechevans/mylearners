@@ -95,6 +95,7 @@ test('Leaders use a simple four-metric overview with grade-eligible academic che
  click('[data-role]',{role:'leader'});
  assert.match(node.innerHTML,/Leadership Overview/);
  assert.match(node.innerHTML,/Whole school · Fictional data · Fall 2026/);
+ assert.doesNotMatch(node.innerHTML,/leader-report-followup/,'Review is hidden on whole-school landing');
  assert.equal((node.innerHTML.match(/<article class="leader-stat">/g)||[]).length,4);
  assert.match(node.innerHTML,/Report card coverage/);
  assert.match(node.innerHTML,/leader-evidence-strip/);
@@ -107,6 +108,23 @@ test('Leaders use a simple four-metric overview with grade-eligible academic che
   return query==='[data-select]'?{dataset:{select:'grade'},value:'G12'}:null;
  }}});
  assert.match(node.innerHTML,/Grade 12 · Fictional data · Fall 2026/);
+ assert.match(node.innerHTML,/leader-report-followup/,'A Secondary grade selection reveals review');
+ assert.match(node.innerHTML,/Students with 3 or below/);
+ assert.match(node.innerHTML,/leader-report-fourband/);
  assert.doesNotMatch(node.innerHTML,/leader-evidence-strip/);
  assert.equal((node.innerHTML.match(/<article class="leader-stat">/g)||[]).length,4);
+});
+
+test('Faculty grade filter appears with test subjects and toggles without hiding the class',()=>{
+ click('[data-role]',{role:'faculty'});
+ assert.match(node.innerHTML,/data-faculty-low-filter="all"/);
+ assert.match(node.innerHTML,/data-faculty-low-filter="low"/);
+ assert.match(node.innerHTML,/3 or below/);
+ const before=(node.innerHTML.match(/<button class="student-link"/g)||[]).length;
+ click('[data-faculty-low-filter]',{facultyLowFilter:'low'});
+ const filtered=(node.innerHTML.match(/<button class="student-link"/g)||[]).length;
+ assert.ok(filtered>0&&filtered<=before,'Low result filter keeps a subset of learners');
+ assert.match(node.innerHTML,/data-faculty-low-filter="low" aria-pressed="true"/);
+ click('[data-faculty-low-filter]',{facultyLowFilter:'all'});
+ assert.equal((node.innerHTML.match(/<button class="student-link"/g)||[]).length,before);
 });
