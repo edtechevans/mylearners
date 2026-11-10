@@ -431,7 +431,7 @@ function faculty(){
   const sum=summarizeExperience(RECORDS,ss,id);
   const band=experienceBand(sum.value);
   const label=safe(EXPERIENCE_METRICS[id].label);
-  const detail=sum.value===null?'No check-in':sum.n+'/'+sum.eligible+' responses · Select for details';
+  const detail=sum.value===null?'No check-in':sum.n+'/'+sum.eligible+' responses · How is this calculated?';
   const exact=sum.value===null?'No index available':formatIndex(sum.value)+' on the −2 to +2 index';
   return '<button type="button" class="quick-tile quick-score'+(band?' index-'+band:'')+
    '" data-action="explain:faculty:'+id+'" title="'+safe(label+': '+exact)+
