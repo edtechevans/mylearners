@@ -397,12 +397,30 @@ function learnerProfile(s,studentRole=false){
   '</h2><span class="tiny">Fictional Fall 2026 check-ins</span></div>'+
   metrics([s],s,studentRole?'student':'profile')+history:
   '<p class="academic-early-checkin-note">Student engagement and belonging check-ins begin in Grade 3 in this demonstration.</p>';
+ const studentCheckinPreview=studentRole&&experienceEligible(s)?
+  '<section class="student-checkin-preview" aria-label="My experience of learning">'+
+   '<div class="student-checkin-preview-heading"><h2>How I feel about learning</h2>'+
+   '<span>'+safe(EXPERIENCE_WINDOWS.find(w=>w.key===state.window)?.label||'Fall 2026')+
+   ' · fictional check-in</span></div>'+
+   '<div class="student-checkin-preview-grid">'+METRIC_IDS.map(id=>{
+    const entry=experienceFor(RECORDS,s.id,id,state.window);
+    const value=entry?.value??null;
+    const band=experienceBand(value);
+    const label=EXPERIENCE_METRICS[id].label;
+    return '<article class="student-checkin-preview-tile'+(band?' index-'+band:'')+'">'+
+     '<h3>'+safe(label)+'</h3>'+
+     '<strong class="student-checkin-preview-value">'+(Number.isFinite(value)?value.toFixed(2):'—')+'</strong>'+
+     leaderExperienceScale(value,label)+
+     '<p>'+(entry?'Based on my check-in answers':'No check-in this period')+'</p></article>';
+   }).join('')+'</div>'+
+   '<p class="student-checkin-preview-note">These colours describe my experience, not my ability or a school grade. More details are below.</p>'+
+  '</section>':'';
  const academics=renderAcademicProfile(s,ACADEMIC_RECORDS,studentRole,state.academicReportYear);
  if(studentRole){
   return profileStart+header+
    renderStudentOverview(s,ACADEMIC_RECORDS,{
     attendance:DATA.attendance[s.id],mathGrowth:mg,
-    reflectionDraft:saved('reflection-'+s.id,'')})+
+    reflectionDraft:saved('reflection-'+s.id,'')})+studentCheckinPreview+
    '<details class="student-detail-section" data-student-panel="reports" id="student-reports"'+
     (state.studentReportsOpen?' open':'')+'>'+
    '<summary><span class="student-panel-symbol" aria-hidden="true">▤</span>'+
