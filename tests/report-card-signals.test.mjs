@@ -46,7 +46,7 @@ test('Leaders panel has report-source context and actionable filters',()=>{
  assert.match(html,/data-leader-report-query/);
  assert.match(html,/data-leader-report-multiple/);
  assert.match(html,/2026–27/);
- assert.match(html,/TEST GRADES/);
+ assert.match(html,/TEST DATA/);
  assert.match(html,/Not issued/);
 });
 test('Every learner has a complete current-grade demo test result for every subject',()=>{
