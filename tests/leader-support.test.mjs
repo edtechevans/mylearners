@@ -36,7 +36,7 @@ test('all displayed rates are bounded and come with their denominators',()=>{
 test('leader role exposes aggregates and prompts but no fictional learner names or case notes',()=>{
  const html=renderLeaderSupportSection({students:data.students,sssRecords:sss,entries:seeded,open:true});
  assert.match(html,/Student Support/);
- assert.match(html,/Upcoming Reviews/);
+ assert.match(html,/Reviews in demo window/);
  assert.match(html,/Monitoring at Sample Target/);
  assert.match(html,/Explore support processes & progress/);
  assert.match(html,/data-leader-panel="support" open/);

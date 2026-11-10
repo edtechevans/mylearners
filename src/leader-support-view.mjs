@@ -27,7 +27,7 @@ export function renderLeaderSupportSection({students,sssRecords,entries,open=fal
  const headline='<div class="leader-support-kpis">'+
   metric('Learners Receiving Support',n(cohort),
    cohort+' of '+scopeSize+' selected learners · '+percent(metrics.cohortRate)+' in illustrative SSS cohort')+
-  metric('Upcoming Reviews',n(metrics.reviewsDue),'Within next 30 days · of '+cohort+' supported')+
+  metric('Reviews in demo window',n(metrics.reviewsDue),'Dates through 27 Nov from support snapshot of 28 Oct 2026')+
   metric('Follow-ups Completed',percent(metrics.actionCompletionRate),
    metrics.actionCompleted+' of '+metrics.actionTotal+' recorded actions · '+metrics.actionOpen+' remain open')+
   metric('Monitoring at Sample Target',percent(metrics.atTargetRate),

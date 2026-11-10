@@ -3,6 +3,8 @@ import {applyFacultyDemo,DEFAULT_TEACHER_ID} from './faculty-demo.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs';
 import {renderLeaderSupportSection} from './leader-support-view.mjs';
+import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvidence,leaderAdvisoryClasses} from './leader-daily-workspaces.mjs';
+import {leaderReportSignalSummary} from './report-card-signals.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
 import {createSSSDemoRecords} from './sss-demo-data.mjs';
 import {seedSupportDemo,loadDraftEntries,storeDraftEntries,createDraftEntry} from './support-workspace-data.mjs';
@@ -20,7 +22,7 @@ import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,RE
 import {quartileBand,formatIndex,experienceBand} from './faculty-bands.mjs?v=20261030wall2';
 import {leaderExperienceChange,leaderExperienceScale,leaderExperienceLegend,leaderExperienceBandLabel} from './leader-experience-bands.mjs';
 import {facultyRosterEvidenceColumns,reportGradeBand,hasLowReportGrade} from './report-card-signals.mjs?v=20261110thresholds1';
-import {renderLeaderReportFollowup} from './leader-report-followup.mjs?v=20261110thresholds1';
+import {renderLeaderReportFollowup} from './leader-report-followup.mjs?v=20261110daily1';
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261028titles1';
 import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261030wall1';
 import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261110thresholds1';
@@ -42,6 +44,16 @@ let SUPPORT_DRAFTS=loadDraftEntries();
 const supportEntries=()=>[...SUPPORT_SEEDED.filter(x=>!SUPPORT_DRAFTS.some(d=>d.id===x.id)),...SUPPORT_DRAFTS];
 const root=document.getElementById('app');
 const saved=(k,d)=>{try{return sessionStorage.getItem(k)||d}catch{return d}};
+const LEADER_SAVED_KEY='mylearners-demo-leaders-saved-view-v1';
+const savedLeaderView=()=>{
+ try{
+  const value=JSON.parse(localStorage.getItem(LEADER_SAVED_KEY)||'null');
+  if(!value||!['Elementary','Secondary'].includes(value.division))return null;
+  if(value.grade!=='All'&&(!GRADES.includes(value.grade)||
+    (gradeNumber(value.grade)<=5?'Elementary':'Secondary')!==value.division))return null;
+  return {division:value.division,grade:value.grade};
+ }catch{return null}
+};
 const facultyPref=(teacherId,field,fallback='')=>{
  try{return localStorage.getItem('mylearners-demo-'+teacherId+'-'+field)||fallback}catch{return fallback}
 };
@@ -77,7 +89,8 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  classEvidence:'report',classMapSubject:'Mathematics',classCompare:'none',classExperienceWindow:'F26',rosterView:EVERYDAY_VIEW,
  maiaDimension:'relationships',maiaWindow:'F26',
  studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
-  leaderSupportOpen:false,leaderReportQuery:'',leaderReportMultiple:false,leaderReportExpanded:false,leaderReportThreshold:3,
+  leaderSupportOpen:false,leaderReportQuery:'',leaderReportMultiple:false,leaderReportExpanded:false,leaderReportThreshold:3,leaderReportOpen:false,
+  leaderStudentId:'',leaderReviewFilter:'all',leaderReviewExpanded:false,
  sssGrade:'All',sssQuery:'',sssStudentId:'',sssOpenGrades:['G3'],sssAcademicOpen:false,
   supportForm:null,supportFilter:'all',supportQuery:'',
   sssManager:'All',sssPanel:'summary',supportBarrier:'All',
@@ -498,13 +511,20 @@ function faculty(){
 }
 
 function leader(){
+ if(state.division==='All')return heading('Leadership Overview',
+  'Begin whole school, choose Elementary or Secondary, then drill down by grade.')+
+  renderLeaderWholeSchool({students:DATA.students,data:DATA,academic:ACADEMIC_RECORDS,
+   records:RECORDS,sssRecords:SSS_RECORDS,entries:supportEntries(),savedView:savedLeaderView()})+info();
  const grades=GRADES;
  const divisions=state.division==='All'?['Elementary','Secondary']:[state.division];
  const group=DATA.students.filter(s=>divisions.includes(s.division)&&
   (state.grade==='All'||s.grade===state.grade)&&(!state.classId||s.classId===state.classId));
- const classes=DATA.classes.filter(c=>divisions.includes(c.division)&&
-  (state.grade==='All'||c.grade===state.grade));
+ const classes=leaderAdvisoryClasses(DATA.classes,state.division,state.grade);
  const selectedClass=classes.find(c=>c.id===state.classId);
+ const leaderPerson=group.find(s=>s.id===state.leaderStudentId);
+ if(leaderPerson)return heading('Leadership Overview','Read-only evidence for leadership review.')+
+  renderLeaderLearnerEvidence({student:leaderPerson,data:DATA,academic:ACADEMIC_RECORDS,
+   records:RECORDS})+info();
  const secondaryOnly=group.length>0&&group.every(s=>s.division==='Secondary');
  const scopeLabel=selectedClass?.name||
   (state.grade!=='All'?
@@ -635,62 +655,88 @@ function leader(){
   trendFor(group.filter(s=>s.division==='Elementary'),'Elementary')+
   trendFor(group.filter(s=>s.division==='Secondary'),'Secondary'):
   trendFor(group,'Selected group');
- return heading('Leadership Overview','Growth, learning evidence and student experience. Choose a division, grade or class.')+
-  '<div class="leader-view">'+
-  '<div class="toolbar leader-controls"><label>Division '+
-  selector('division',[['All','Whole school'],['Elementary','Elementary'],['Secondary','Secondary']],state.division)+
-  '</label><label>Grade '+selector('grade',[['All','All grades'],...grades.filter(g=>
-   divisions.includes(gradeNumber(g)<=5?'Elementary':'Secondary')).map(g=>[g,g==='K'?'Kindergarten':g])],state.grade)+
-  '</label><label>Class '+selector('leader-class',[['','All classes'],...classes.map(c=>[c.id,c.name])],state.classId)+
-  '</label></div>'+
-  '<section class="leader-section" aria-labelledby="leader-learning-title">'+
-  '<div class="leader-sectionhead"><div><div class="eyebrow">LEARNING SNAPSHOT</div>'+
-  '<h2 id="leader-learning-title">At a Glance</h2></div>'+
-  '<span class="leader-period">'+safe(scopeLabel)+' · Fictional data · Fall 2026</span></div>'+
+ const mapEligible=group.some(s=>gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10);
+ const dpStudents=group.filter(s=>gradeNumber(s.grade)>=11);
+ const dpSignals=leaderReportSignalSummary(dpStudents,ACADEMIC_RECORDS,2);
+ const core=leaderCheckSnapshot(group,ACADEMIC_RECORDS,'core');
+ const hasCore=group.some(s=>gradeNumber(s.grade)>=0&&gradeNumber(s.grade)<=5);
+ const learning='<section class="leader-section" aria-labelledby="leader-learning-title">'+
+  '<div class="leader-sectionhead"><div><div class="eyebrow">LEARNING EVIDENCE</div>'+
+  '<h2 id="leader-learning-title">Academic patterns</h2></div>'+
+  '<span class="leader-period">'+safe(scopeLabel)+' · Fictional evidence · Fall 2026</span></div>'+
   '<div class="leader-learning-grid">'+
-  stat('Learners',String(group.length),'Students included in this selection','Demo cohort')+
-  growthTile('MAP Mathematics growth',math)+
-  growthTile('MAP Reading growth',reading)+
-  stat('Report card coverage',reports.rate===null?'—':reports.rate+'%',
-   reports.available+' of '+reports.eligible+' learners have a previously issued report.',
-   'Previous school years')+'</div>'+quickEvidence+
-  '<p class="leader-data-note">MAP growth compares learners with valid, comparable tests to '+
-  'illustrative projected growth. It is not an achievement percentile or an official NWEA projection. '+
-  'MAP is shown for Grades 3–10 only.</p></section>'+
-  '<section class="leader-section" aria-labelledby="leader-experience-title">'+
+  stat('Learners',String(group.length),'Students included in this cohort','Demo roster')+
+  (mapEligible?growthTile('MAP Mathematics growth',math)+growthTile('MAP Reading growth',reading):'')+
+  (dpStudents.length?stat('DP subject results ≤2',String(dpSignals.flagged),
+   'Learners with in-progress Diploma subject results of 2 or below.',
+   'Grades 11–12 · simulated, not issued'):'')+
+  (hasCore?stat('Literacy check-ins',core.eligible?core.available+' / '+core.eligible:'—',
+   'Core Phonics decoding evidence for eligible learners.','K–Grade 5 · simulated'):'')+
+  stat('Historical report coverage',reports.rate===null?'—':reports.rate+'%',
+   reports.available+' of '+reports.eligible+' learners with an issued historical record.',
+   'Simulated previous school years')+'</div>'+quickEvidence+
+  '<p class="leader-data-note">'+(mapEligible?
+   'MAP growth uses comparable tests for eligible Grades 3–10. It does not measure achievement percentile. ':
+   'MAP is not used in this selected grade range. ')+
+   'MYP, DP and Elementary report scales are not averaged together. '+
+   'The public GitHub dashboard uses fictional results.</p></section>';
+ const experienceSection='<section class="leader-section" aria-labelledby="leader-experience-title">'+
   '<div class="leader-sectionhead"><div><div class="eyebrow">STUDENT VOICE</div>'+
   '<h2 id="leader-experience-title">Student Experience</h2>'+
   '<p>Engagement and belonging · '+safe(selectedWindow)+' · response counts included.</p></div>'+
   '<label class="leader-window-select">Check-in period '+
   selector('window',EXPERIENCE_WINDOWS.map(w=>[w.key,w.label]),state.window)+
   '</label></div>'+leaderExperienceLegend()+experience+
-  (splitExperience?'<p class="leader-data-note">Elementary and Secondary students answer different questions; their indices are intentionally shown separately.</p>':'')+
-  '</section>'+
-  (secondaryOnly?renderLeaderReportFollowup({students:group,academic:ACADEMIC_RECORDS,
-    query:state.leaderReportQuery,multiple:state.leaderReportMultiple,
-   expanded:state.leaderReportExpanded,threshold:state.leaderReportThreshold}):'')+
-   renderLeaderSupportSection({students:group,sssRecords:SSS_RECORDS,entries:supportEntries(),open:state.leaderSupportOpen})+
-  '<details class="leader-detail" data-leader-panel="academics"'+
+  '<p class="leader-data-note">These indices are on a fixed −2 to +2 scale. '+
+  'Interpret trends within the same age-appropriate question set, not as academic results.</p></section>';
+ const reportSection=secondaryOnly?
+  '<details id="leader-subject-detail" class="leader-detail leader-subject-detail"'+
+  (state.leaderReportOpen?' open':'')+' data-leader-panel="report">'+
+  '<summary><span><strong>Explore Secondary subject results</strong>'+
+  '<small>Review every 2-or-below / 3-or-below result and subject distribution</small></span>'+
+  '<span class="leader-detail-chevron" aria-hidden="true">⌄</span></summary>'+
+  '<div class="leader-detail-body">'+
+  renderLeaderReportFollowup({students:group,academic:ACADEMIC_RECORDS,
+   query:state.leaderReportQuery,multiple:state.leaderReportMultiple,
+   expanded:state.leaderReportExpanded,threshold:state.leaderReportThreshold})+
+  '</div></details>':'';
+ const deepAcademic='<details id="leader-academic-detail" class="leader-detail" data-leader-panel="academics"'+
   (state.leaderAcademicOpen?' open':'')+'>'+
-  '<summary><span><strong>Explore academic evidence</strong>'+
-  '<small>Historical subject reports and assessment details</small></span>'+
+  '<summary><span><strong>Explore assessment coverage and issued reports</strong>'+
+  '<small>Grade-eligible assessments · historical records only</small></span>'+
   '<span class="leader-detail-chevron" aria-hidden="true">⌄</span></summary>'+
   '<div class="leader-detail-body"><h3>Assessment Coverage</h3>'+
-  '<p class="leader-inline-note">Each measure has its own scale and grade range. '+
-  'Only eligible learners are counted.</p>'+
+  '<p class="leader-inline-note">Each tool uses its own scale. Not collected is different from zero.</p>'+
   '<div class="leader-check-list">'+academicChecks+'</div>'+
-  '<h3>Most Recent Issued Report Outcomes</h3>'+reportDetail+'</div></details>'+
-  '<details class="leader-detail" data-leader-panel="patterns"'+
+  '<h3>Most Recent Issued Report Outcomes</h3>'+reportDetail+'</div></details>';
+ const deepPatterns='<details class="leader-detail" data-leader-panel="patterns"'+
   (state.leaderPatternsOpen?' open':'')+'>'+
-  '<summary><span><strong>Explore experience patterns</strong>'+
-  '<small>Grade or class comparisons and three check-in windows</small></span>'+
+  '<summary><span><strong>Explore student voice patterns</strong>'+
+  '<small>Advisory and grade comparisons · three check-in windows</small></span>'+
   '<span class="leader-detail-chevron" aria-hidden="true">⌄</span></summary>'+
   '<div class="leader-detail-body"><h3>Patterns by '+
-  (state.classId?'selected class':state.grade==='All'?'grade':'class')+'</h3>'+
+  (state.classId?'selected advisory':state.grade==='All'?'grade':'homeroom')+'</h3>'+
   detailTable+
-  '<p class="leader-inline-note">Indices are out of 100, based on fictional student check-ins. '+
-  'They do not rank learners or indicate academic achievement.</p>'+
-  '<h3>Over Time</h3>'+trends+'</div></details></div>'+info();
+  '<p class="leader-inline-note">Indices are on the fixed −2 to +2 scale. '+
+  'They do not rank learners or indicate academic achievement. '+
+  'Only homeroom/advisory cohorts are shown; taught courses are not survey response groups.</p>'+
+  '<h3>Over Time</h3>'+trends+'</div></details>';
+ return heading('Leadership Overview',
+  'Daily priorities first. Choose Elementary or Secondary, then drill down to a grade.')+
+  '<div class="leader-view leader-daily">'+
+  '<div class="toolbar leader-controls leader-scope-controls">'+
+  '<label>Division '+selector('division',[['All','Whole school'],['Elementary','Elementary'],['Secondary','Secondary']],state.division)+'</label>'+
+  '<label>Grade '+selector('grade',[['All','All grades'],...grades.filter(g=>
+   divisions.includes(gradeNumber(g)<=5?'Elementary':'Secondary')).map(g=>[g,g==='K'?'Kindergarten':g])],state.grade)+'</label>'+
+  '<label>Homeroom / advisory '+selector('leader-class',[['','All homerooms'],...classes.map(c=>[c.id,c.name])],state.classId)+'</label></div>'+
+  renderLeaderDivisionDaily({division:state.division,grade:state.grade,students:group,
+   allStudents:DATA.students,data:DATA,academic:ACADEMIC_RECORDS,records:RECORDS,
+   sssRecords:SSS_RECORDS,entries:supportEntries(),reviewFilter:state.leaderReviewFilter,
+   expanded:state.leaderReviewExpanded,savedView:savedLeaderView()})+
+  reportSection+
+  renderLeaderSupportSection({students:group,sssRecords:SSS_RECORDS,entries:supportEntries(),
+   open:state.leaderSupportOpen})+
+  experienceSection+learning+deepAcademic+deepPatterns+'</div>'+info();
 }
 function sss(){
  const banner=heading('Student Support Services',
@@ -967,6 +1013,79 @@ root.addEventListener('keydown',e=>{
  if(e.key==='Escape'){hideBoardFloat();if(pinnedChartKey)unpinChartPoint()}
 });
 root.addEventListener('click',e=>{
+ if(state.role==='leader'){
+  const divisionChoice=e.target.closest('[data-leader-division]');
+  if(divisionChoice){
+   const next=divisionChoice.dataset.leaderDivision;
+   if(!['All','Elementary','Secondary'].includes(next))return;
+   state.division=next;state.grade='All';state.classId='';state.leaderStudentId='';
+   state.leaderReviewFilter='all';state.leaderReviewExpanded=false;state.leaderReportOpen=false;
+   render();globalThis.window?.scrollTo?.(0,0);return;
+  }
+  const chosenGrade=e.target.closest('[data-leader-grade]');
+  if(chosenGrade&&state.division!=='All'){
+   const next=chosenGrade.dataset.leaderGrade;
+   if(next!=='All'&&(!GRADES.includes(next)||
+     (gradeNumber(next)<=5?'Elementary':'Secondary')!==state.division))return;
+   state.grade=next;state.classId='';state.leaderStudentId='';
+   state.leaderReviewFilter='all';state.leaderReviewExpanded=false;
+   render();
+   root.querySelector('[data-leader-grade="'+next+'"]')?.focus?.({preventScroll:true});
+   globalThis.window?.scrollTo?.(0,0);return;
+  }
+  if(e.target.closest('[data-leader-save-view]')){
+   if(['Elementary','Secondary'].includes(state.division)){
+    try{localStorage.setItem(LEADER_SAVED_KEY,
+      JSON.stringify({division:state.division,grade:state.grade}));}catch{}
+    render();
+   }
+   return;
+  }
+  if(e.target.closest('[data-leader-open-saved]')){
+   const saved=savedLeaderView();
+   if(!saved)return;
+   state.division=saved.division;state.grade=saved.grade;state.classId='';
+   state.leaderStudentId='';state.leaderReviewFilter='all';state.leaderReviewExpanded=false;
+   render();globalThis.window?.scrollTo?.(0,0);return;
+  }
+  const reviewFilter=e.target.closest('[data-leader-review-filter]');
+  if(reviewFilter){
+   const requested=reviewFilter.dataset.leaderReviewFilter;
+   const allowed=state.division==='Elementary'?['all']:['all','academic2','academic3','attendance'];
+   if(!allowed.includes(requested))return;
+   state.leaderReviewFilter=requested;state.leaderReviewExpanded=false;
+   render();
+   root.querySelector('[data-leader-review-filter="'+requested+'"]')?.focus?.({preventScroll:true});
+   return;
+  }
+  if(e.target.closest('[data-leader-review-expand]')){
+   state.leaderReviewExpanded=!state.leaderReviewExpanded;render();return;
+  }
+  const learner=e.target.closest('[data-leader-student]');
+  if(learner){
+   const chosen=DATA.userIndex.get(learner.dataset.leaderStudent);
+   if(!chosen||state.division==='All'||chosen.division!==state.division||
+      (state.grade!=='All'&&chosen.grade!==state.grade)||
+      (state.classId&&chosen.classId!==state.classId))return;
+   state.leaderStudentId=chosen.id;
+   render();globalThis.window?.scrollTo?.(0,0);return;
+  }
+  if(e.target.closest('[data-leader-back]')){
+   state.leaderStudentId='';render();globalThis.window?.scrollTo?.(0,0);return;
+  }
+  const jump=e.target.closest('[data-leader-jump]');
+  if(jump){
+   const id=jump.dataset.leaderJump;
+   if(!['leader-report-followup-title','leader-review','leader-support-title',
+      'leader-experience-title','leader-learning-title','leader-academic-detail'].includes(id))return;
+   const el=root.querySelector('#'+id);
+   const panel=el?.closest?.('details.leader-detail');
+   if(panel)panel.open=true;
+   if(el?.tagName==='DETAILS')el.open=true;
+   el?.scrollIntoView?.({behavior:'smooth',block:'start'});
+   return;
+  }
+ }
  const facultyLow=e.target.closest('[data-faculty-low-filter]');
  if(facultyLow&&state.role==='faculty'){
   const requested=facultyLow.dataset.facultyLowFilter;
@@ -1117,6 +1236,10 @@ root.addEventListener('click',e=>{
  const role=e.target.closest('[data-role]');if(role){if(!ROLE_IDS.includes(role.dataset.role))return;
  if(role.dataset.role==='board')state.boardView='overview';
  if(role.dataset.role==='student'&&state.studentId)state.studentGrade=DATA.userIndex.get(state.studentId)?.grade||'G7';
+ if(role.dataset.role==='leader'){
+  state.division='All';state.grade='All';state.leaderStudentId='';
+  state.leaderReviewFilter='all';state.leaderReviewExpanded=false;
+ }
  state.role=role.dataset.role;state.details=false;state.studentId='';state.classId='';state.query='';state.academicReportYear='';
  if(state.role==='faculty')recallFaculty();
  if(state.role==='student'){state.studentReportsOpen=false;state.studentWellbeingOpen=false}
@@ -1361,9 +1484,23 @@ root.addEventListener('change',e=>{
   state.classCompare=normalizeComparison(DATA.classIndex.get(v)?.grade,state.classEvidence,state.classCompare);
   rememberFaculty();
  }
- if(el.dataset.select==='division'){state.division=v;state.grade='All';state.classId='';state.details=false}
- if(el.dataset.select==='grade'){state.grade=v;state.classId='';state.details=false}
- if(el.dataset.select==='leader-class'){state.classId=v;state.details=false}
+ if(el.dataset.select==='division'){
+  if(!['All','Elementary','Secondary'].includes(v))return;
+  state.division=v;state.grade='All';state.classId='';state.details=false;
+  state.leaderStudentId='';state.leaderReviewFilter='all';state.leaderReviewExpanded=false;
+ }
+ if(el.dataset.select==='grade'){
+  if(v!=='All'&&!GRADES.includes(v))return;
+  if(state.division==='All'&&v!=='All')state.division=gradeNumber(v)<=5?'Elementary':'Secondary';
+  state.grade=v;state.classId='';state.details=false;state.leaderStudentId='';
+  state.leaderReviewFilter='all';state.leaderReviewExpanded=false;
+ }
+ if(el.dataset.select==='leader-class'){
+  const valid=leaderAdvisoryClasses(DATA.classes,state.division,state.grade);
+  if(v&&!valid.some(c=>c.id===v))return;
+  state.classId=v;state.details=false;state.leaderStudentId='';
+  state.leaderReviewFilter='all';state.leaderReviewExpanded=false;
+ }
  if(el.dataset.select==='sss-grade'&&state.role==='sss'){
   state.sssGrade=v;state.sssStudentId='';
   if(v!=='All'&&!state.sssOpenGrades.includes(v))state.sssOpenGrades.push(v);
@@ -1424,6 +1561,7 @@ root.addEventListener('toggle',e=>{
   if(leaderPanel.dataset.leaderPanel==='academics')state.leaderAcademicOpen=leaderPanel.open;
    if(leaderPanel.dataset.leaderPanel==='support')state.leaderSupportOpen=leaderPanel.open;
   if(leaderPanel.dataset.leaderPanel==='patterns')state.leaderPatternsOpen=leaderPanel.open;
+  if(leaderPanel.dataset.leaderPanel==='report')state.leaderReportOpen=leaderPanel.open;
   return;
  }
  const panel=e.target.closest?.('details[data-student-panel]');
@@ -1463,6 +1601,10 @@ try{globalThis.window?.addEventListener?.('hashchange',()=>{
   // Otherwise a previously opened Student profile can unexpectedly replace the
   // Faculty roster when arriving via a hash link or Back/Forward navigation.
   state.role=id;state.details=false;state.studentId='';state.classId='';
+   if(id==='leader'){
+    state.division='All';state.grade='All';state.leaderStudentId='';
+    state.leaderReviewFilter='all';state.leaderReviewExpanded=false;
+   }
   state.query='';state.academicReportYear='';
   if(id==='faculty')recallFaculty();
   if(id==='student'){state.studentReportsOpen=false;state.studentWellbeingOpen=false}

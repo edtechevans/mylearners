@@ -91,43 +91,67 @@ test('sitewide polish keeps accessible system fallback and scope of data-safe vi
 });
 
 
-test('Leaders use a simple four-metric overview with grade-eligible academic checks',()=>{
+test('Leaders begin with an aggregated whole-school landing and explicit division choices',()=>{
  click('[data-role]',{role:'leader'});
  assert.match(node.innerHTML,/Leadership Overview/);
- assert.match(node.innerHTML,/Whole school · Fictional data · Fall 2026/);
- assert.doesNotMatch(node.innerHTML,/leader-report-followup/,'Review is hidden on whole-school landing');
- assert.match(node.innerHTML,/leader-experience-legend/,'Four-colour index key should be visible');
+ assert.match(node.innerHTML,/WHOLE SCHOOL · START HERE/);
+ assert.match(node.innerHTML,/data-select="division"/);
+ assert.match(node.innerHTML,/data-leader-division="Elementary"/);
+ assert.match(node.innerHTML,/data-leader-division="Secondary"/);
+ assert.match(node.innerHTML,/leader-school-voice-grid/);
  assert.equal((node.innerHTML.match(/class="leader-experience-scale/g)||[]).length,4,
-  'Elementary and Secondary Engagement and Belonging need a four-segment scale');
- assert.equal((node.innerHTML.match(/leader-experience-marker" style="left:/g)||[]).length,4);
- assert.equal((node.innerHTML.match(/class="leader-experience-card index-band-mid-high"/g)||[]).length,4,
-  'Existing Fall 2026 demo indices are all in the 0 to below +1 fixed band');
- assert.doesNotMatch(node.innerHTML,/0\.14999999999999997|0\.09999999999999998|0\.24000000000000002/,
-  'Display comparisons must round binary floating-point noise');
- assert.equal((node.innerHTML.match(/<article class="leader-stat">/g)||[]).length,4);
- assert.match(node.innerHTML,/Report card coverage/);
- assert.match(node.innerHTML,/leader-evidence-strip/);
- for(const name of ['IXL Mathematics','Core Phonics','F&amp;P reading'])
-  assert.ok(node.innerHTML.includes(name));
- assert.match(node.innerHTML,/Records available \/ eligible/);
+  'The two divisions each retain separate Engagement and Belonging indices');
+ assert.doesNotMatch(node.innerHTML,/leader-report-followup/);
+ assert.doesNotMatch(node.innerHTML,/data-leader-student=/,'No individual learner on whole-school screen');
+ assert.match(node.innerHTML,/DEMONSTRATION/);
+});
+test('Secondary shows the daily review, Grade 12 uses DP evidence, and supports learner drilldown',()=>{
+ click('[data-leader-division]',{leaderDivision:'Secondary'});
+ assert.match(node.innerHTML,/Secondary daily lens/);
+ assert.match(node.innerHTML,/leader-daily-priorities/);
+ assert.match(node.innerHTML,/Subject results ≤2/);
+ assert.match(node.innerHTML,/data-leader-review-filter="academic2"/);
+ assert.match(node.innerHTML,/data-leader-grade="G12"/);
+ assert.match(node.innerHTML,/data-leader-panel="support"/);
  assert.match(node.innerHTML,/data-leader-panel="academics"/);
  assert.match(node.innerHTML,/data-leader-panel="patterns"/);
- events.change({target:{closest(query){
-  return query==='[data-select]'?{dataset:{select:'grade'},value:'G12'}:null;
- }}});
- assert.match(node.innerHTML,/Grade 12 · Fictional data · Fall 2026/);
- assert.match(node.innerHTML,/leader-report-followup/,'A Secondary grade selection reveals review');
- assert.match(node.innerHTML,/Students with 3 or below/);
+ click('[data-leader-grade]',{leaderGrade:'G12'});
+ assert.match(node.innerHTML,/Grade 12 · priorities and progress/);
+ assert.match(node.innerHTML,/DP subject results ≤2/);
+ assert.doesNotMatch(node.innerHTML,/MAP Mathematics growth/,
+  'Grade 12 must not show an unavailable MAP growth tile');
+ assert.match(node.innerHTML,/leader-subject-detail/);
  assert.match(node.innerHTML,/data-leader-report-threshold="3" aria-pressed="true"/);
- assert.match(node.innerHTML,/data-leader-report-threshold="2" aria-pressed="false"/);
  click('[data-leader-report-threshold]',{leaderReportThreshold:'2'});
  assert.match(node.innerHTML,/Students with 2 or below/);
- assert.match(node.innerHTML,/data-leader-report-threshold="2" aria-pressed="true"/);
- click('[data-leader-report-threshold]',{leaderReportThreshold:'3'});
- assert.match(node.innerHTML,/Students with 3 or below/);
- assert.match(node.innerHTML,/leader-report-fourband/);
- assert.doesNotMatch(node.innerHTML,/leader-evidence-strip/);
- assert.equal((node.innerHTML.match(/<article class="leader-stat">/g)||[]).length,4);
+ click('[data-leader-review-filter]',{leaderReviewFilter:'academic2'});
+ assert.match(node.innerHTML,/data-leader-review-filter="academic2" aria-pressed="true"/);
+ const studentId=node.innerHTML.match(/data-leader-student="([^"]+)"/)?.[1];
+ assert.ok(studentId,'Grade 12 needs an actionable learner investigation');
+ click('[data-leader-student]',{leaderStudent:studentId});
+ assert.match(node.innerHTML,/leader-learner-profile/);
+ assert.match(node.innerHTML,/data-leader-back/);
+ assert.match(node.innerHTML,/Current subject results/);
+ assert.doesNotMatch(node.innerHTML,/data-sss-student|data-support-new/);
+ click('[data-leader-back]');
+ assert.match(node.innerHTML,/leader-review-table/);
+});
+test('Elementary has a distinct literacy and attendance workflow and a saved grade view',()=>{
+ click('[data-leader-division]',{leaderDivision:'Elementary'});
+ assert.match(node.innerHTML,/Elementary daily lens/);
+ assert.match(node.innerHTML,/Literacy checks/);
+ assert.match(node.innerHTML,/Attendance and early learning review/);
+ assert.doesNotMatch(node.innerHTML,/leader-report-followup/);
+ assert.doesNotMatch(node.innerHTML,/data-leader-review-filter="academic2"/);
+ click('[data-leader-grade]',{leaderGrade:'G4'});
+ assert.match(node.innerHTML,/Grade 4 · priorities and progress/);
+ click('[data-leader-save-view]');
+ assert.match(node.innerHTML,/Saved: Elementary · Grade 4/);
+ click('[data-leader-division]',{leaderDivision:'All'});
+ assert.match(node.innerHTML,/WHOLE SCHOOL · START HERE/);
+ assert.match(node.innerHTML,/data-leader-open-saved/);
+ click('[data-leader-open-saved]');
+ assert.match(node.innerHTML,/Grade 4 · priorities and progress/);
 });
 
 test('Faculty review controls switch All, orange 3-or-below and red 2-or-below',()=>{
