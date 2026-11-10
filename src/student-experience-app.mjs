@@ -89,7 +89,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  classEvidence:'report',classMapSubject:'Mathematics',classCompare:'none',classExperienceWindow:'F26',rosterView:EVERYDAY_VIEW,
  maiaDimension:'relationships',maiaWindow:'F26',
  studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
-  leaderSupportOpen:false,leaderReportQuery:'',leaderReportMultiple:false,leaderReportExpanded:false,leaderReportThreshold:3,
+  leaderSupportOpen:false,leaderReportQuery:'',leaderReportMultiple:false,leaderReportExpanded:false,leaderReportThreshold:3,leaderReportOpen:false,
   leaderStudentId:'',leaderReviewFilter:'all',leaderReviewExpanded:false,
  sssGrade:'All',sssQuery:'',sssStudentId:'',sssOpenGrades:['G3'],sssAcademicOpen:false,
   supportForm:null,supportFilter:'all',supportQuery:'',
@@ -655,62 +655,88 @@ function leader(){
   trendFor(group.filter(s=>s.division==='Elementary'),'Elementary')+
   trendFor(group.filter(s=>s.division==='Secondary'),'Secondary'):
   trendFor(group,'Selected group');
- return heading('Leadership Overview','Growth, learning evidence and student experience. Choose a division, grade or class.')+
-  '<div class="leader-view">'+
-  '<div class="toolbar leader-controls"><label>Division '+
-  selector('division',[['All','Whole school'],['Elementary','Elementary'],['Secondary','Secondary']],state.division)+
-  '</label><label>Grade '+selector('grade',[['All','All grades'],...grades.filter(g=>
-   divisions.includes(gradeNumber(g)<=5?'Elementary':'Secondary')).map(g=>[g,g==='K'?'Kindergarten':g])],state.grade)+
-  '</label><label>Class '+selector('leader-class',[['','All classes'],...classes.map(c=>[c.id,c.name])],state.classId)+
-  '</label></div>'+
-  '<section class="leader-section" aria-labelledby="leader-learning-title">'+
-  '<div class="leader-sectionhead"><div><div class="eyebrow">LEARNING SNAPSHOT</div>'+
-  '<h2 id="leader-learning-title">At a Glance</h2></div>'+
-  '<span class="leader-period">'+safe(scopeLabel)+' · Fictional data · Fall 2026</span></div>'+
+ const mapEligible=group.some(s=>gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10);
+ const dpStudents=group.filter(s=>gradeNumber(s.grade)>=11);
+ const dpSignals=leaderReportSignalSummary(dpStudents,ACADEMIC_RECORDS,2);
+ const core=leaderCheckSnapshot(group,ACADEMIC_RECORDS,'core');
+ const hasCore=group.some(s=>gradeNumber(s.grade)>=0&&gradeNumber(s.grade)<=5);
+ const learning='<section class="leader-section" aria-labelledby="leader-learning-title">'+
+  '<div class="leader-sectionhead"><div><div class="eyebrow">LEARNING EVIDENCE</div>'+
+  '<h2 id="leader-learning-title">Academic patterns</h2></div>'+
+  '<span class="leader-period">'+safe(scopeLabel)+' · Fictional evidence · Fall 2026</span></div>'+
   '<div class="leader-learning-grid">'+
-  stat('Learners',String(group.length),'Students included in this selection','Demo cohort')+
-  growthTile('MAP Mathematics growth',math)+
-  growthTile('MAP Reading growth',reading)+
-  stat('Report card coverage',reports.rate===null?'—':reports.rate+'%',
-   reports.available+' of '+reports.eligible+' learners have a previously issued report.',
-   'Previous school years')+'</div>'+quickEvidence+
-  '<p class="leader-data-note">MAP growth compares learners with valid, comparable tests to '+
-  'illustrative projected growth. It is not an achievement percentile or an official NWEA projection. '+
-  'MAP is shown for Grades 3–10 only.</p></section>'+
-  '<section class="leader-section" aria-labelledby="leader-experience-title">'+
+  stat('Learners',String(group.length),'Students included in this cohort','Demo roster')+
+  (mapEligible?growthTile('MAP Mathematics growth',math)+growthTile('MAP Reading growth',reading):'')+
+  (dpStudents.length?stat('DP subject results ≤2',String(dpSignals.flagged),
+   'Learners with in-progress Diploma subject results of 2 or below.',
+   'Grades 11–12 · simulated, not issued'):'')+
+  (hasCore?stat('Literacy check-ins',core.eligible?core.available+' / '+core.eligible:'—',
+   'Core Phonics decoding evidence for eligible learners.','K–Grade 5 · simulated'):'')+
+  stat('Historical report coverage',reports.rate===null?'—':reports.rate+'%',
+   reports.available+' of '+reports.eligible+' learners with an issued historical record.',
+   'Simulated previous school years')+'</div>'+quickEvidence+
+  '<p class="leader-data-note">'+(mapEligible?
+   'MAP growth uses comparable tests for eligible Grades 3–10. It does not measure achievement percentile. ':
+   'MAP is not used in this selected grade range. ')+
+   'MYP, DP and Elementary report scales are not averaged together. '+
+   'The public GitHub dashboard uses fictional results.</p></section>';
+ const experienceSection='<section class="leader-section" aria-labelledby="leader-experience-title">'+
   '<div class="leader-sectionhead"><div><div class="eyebrow">STUDENT VOICE</div>'+
   '<h2 id="leader-experience-title">Student Experience</h2>'+
   '<p>Engagement and belonging · '+safe(selectedWindow)+' · response counts included.</p></div>'+
   '<label class="leader-window-select">Check-in period '+
   selector('window',EXPERIENCE_WINDOWS.map(w=>[w.key,w.label]),state.window)+
   '</label></div>'+leaderExperienceLegend()+experience+
-  (splitExperience?'<p class="leader-data-note">Elementary and Secondary students answer different questions; their indices are intentionally shown separately.</p>':'')+
-  '</section>'+
-  (secondaryOnly?renderLeaderReportFollowup({students:group,academic:ACADEMIC_RECORDS,
-    query:state.leaderReportQuery,multiple:state.leaderReportMultiple,
-   expanded:state.leaderReportExpanded,threshold:state.leaderReportThreshold}):'')+
-   renderLeaderSupportSection({students:group,sssRecords:SSS_RECORDS,entries:supportEntries(),open:state.leaderSupportOpen})+
-  '<details class="leader-detail" data-leader-panel="academics"'+
+  '<p class="leader-data-note">These indices are on a fixed −2 to +2 scale. '+
+  'Interpret trends within the same age-appropriate question set, not as academic results.</p></section>';
+ const reportSection=secondaryOnly?
+  '<details id="leader-subject-detail" class="leader-detail leader-subject-detail"'+
+  (state.leaderReportOpen?' open':'')+' data-leader-panel="report">'+
+  '<summary><span><strong>Explore Secondary subject results</strong>'+
+  '<small>Review every 2-or-below / 3-or-below result and subject distribution</small></span>'+
+  '<span class="leader-detail-chevron" aria-hidden="true">⌄</span></summary>'+
+  '<div class="leader-detail-body">'+
+  renderLeaderReportFollowup({students:group,academic:ACADEMIC_RECORDS,
+   query:state.leaderReportQuery,multiple:state.leaderReportMultiple,
+   expanded:state.leaderReportExpanded,threshold:state.leaderReportThreshold})+
+  '</div></details>':'';
+ const deepAcademic='<details id="leader-academic-detail" class="leader-detail" data-leader-panel="academics"'+
   (state.leaderAcademicOpen?' open':'')+'>'+
-  '<summary><span><strong>Explore academic evidence</strong>'+
-  '<small>Historical subject reports and assessment details</small></span>'+
+  '<summary><span><strong>Explore assessment coverage and issued reports</strong>'+
+  '<small>Grade-eligible assessments · historical records only</small></span>'+
   '<span class="leader-detail-chevron" aria-hidden="true">⌄</span></summary>'+
   '<div class="leader-detail-body"><h3>Assessment Coverage</h3>'+
-  '<p class="leader-inline-note">Each measure has its own scale and grade range. '+
-  'Only eligible learners are counted.</p>'+
+  '<p class="leader-inline-note">Each tool uses its own scale. Not collected is different from zero.</p>'+
   '<div class="leader-check-list">'+academicChecks+'</div>'+
-  '<h3>Most Recent Issued Report Outcomes</h3>'+reportDetail+'</div></details>'+
-  '<details class="leader-detail" data-leader-panel="patterns"'+
+  '<h3>Most Recent Issued Report Outcomes</h3>'+reportDetail+'</div></details>';
+ const deepPatterns='<details class="leader-detail" data-leader-panel="patterns"'+
   (state.leaderPatternsOpen?' open':'')+'>'+
-  '<summary><span><strong>Explore experience patterns</strong>'+
-  '<small>Grade or class comparisons and three check-in windows</small></span>'+
+  '<summary><span><strong>Explore student voice patterns</strong>'+
+  '<small>Advisory and grade comparisons · three check-in windows</small></span>'+
   '<span class="leader-detail-chevron" aria-hidden="true">⌄</span></summary>'+
   '<div class="leader-detail-body"><h3>Patterns by '+
-  (state.classId?'selected class':state.grade==='All'?'grade':'class')+'</h3>'+
+  (state.classId?'selected advisory':state.grade==='All'?'grade':'homeroom')+'</h3>'+
   detailTable+
-  '<p class="leader-inline-note">Indices are out of 100, based on fictional student check-ins. '+
-  'They do not rank learners or indicate academic achievement.</p>'+
-  '<h3>Over Time</h3>'+trends+'</div></details></div>'+info();
+  '<p class="leader-inline-note">Indices are on the fixed −2 to +2 scale. '+
+  'They do not rank learners or indicate academic achievement. '+
+  'Only homeroom/advisory cohorts are shown; taught courses are not survey response groups.</p>'+
+  '<h3>Over Time</h3>'+trends+'</div></details>';
+ return heading('Leadership Overview',
+  'Daily priorities first. Choose Elementary or Secondary, then drill down to a grade.')+
+  '<div class="leader-view leader-daily">'+
+  '<div class="toolbar leader-controls leader-scope-controls">'+
+  '<label>Division '+selector('division',[['All','Whole school'],['Elementary','Elementary'],['Secondary','Secondary']],state.division)+'</label>'+
+  '<label>Grade '+selector('grade',[['All','All grades'],...grades.filter(g=>
+   divisions.includes(gradeNumber(g)<=5?'Elementary':'Secondary')).map(g=>[g,g==='K'?'Kindergarten':g])],state.grade)+'</label>'+
+  '<label>Homeroom / advisory '+selector('leader-class',[['','All homerooms'],...classes.map(c=>[c.id,c.name])],state.classId)+'</label></div>'+
+  renderLeaderDivisionDaily({division:state.division,grade:state.grade,students:group,
+   allStudents:DATA.students,data:DATA,academic:ACADEMIC_RECORDS,records:RECORDS,
+   sssRecords:SSS_RECORDS,entries:supportEntries(),reviewFilter:state.leaderReviewFilter,
+   expanded:state.leaderReviewExpanded,savedView:savedLeaderView()})+
+  reportSection+
+  renderLeaderSupportSection({students:group,sssRecords:SSS_RECORDS,entries:supportEntries(),
+   open:state.leaderSupportOpen})+
+  experienceSection+learning+deepAcademic+deepPatterns+'</div>'+info();
 }
 function sss(){
  const banner=heading('Student Support Services',
