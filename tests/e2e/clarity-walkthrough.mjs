@@ -185,7 +185,7 @@ try{
  await run('design-faculty-rows-1440','faculty','.faculty-data-wall',1440,900,async()=>{
   const a=await evaluate("(function(){const rows=[...document.querySelectorAll('.faculty-data-wall tbody tr')];const time=document.querySelector('.heading-meta .asof');return {visible:rows.filter(r=>r.getBoundingClientRect().top<innerHeight).length,color:getComputedStyle(time).color,font:parseFloat(getComputedStyle(time).fontSize),cols:getComputedStyle(document.querySelector('.faculty-daily-toolbar')).gridTemplateColumns}})()");
   assert(a.visible>=3,'The initial Faculty viewport should show at least three learners');
-  assert(a.color==='rgb(86, 109, 117)','Metadata text must meet the improved contrast standard');
+  assert(a.color==='rgb(255, 226, 230)','Branded Faculty metadata must remain legible on the deep red panel');
   assert(a.font>=12,'Timestamp text must be at least 12px');
   assert(a.cols.split(' ').length>=3,'Faculty controls should align on one desktop toolbar row');
  });
