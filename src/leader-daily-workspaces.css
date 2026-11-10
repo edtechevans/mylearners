@@ -431,3 +431,21 @@
  -webkit-print-color-adjust:exact;print-color-adjust:exact;
  }
 }
+
+#app[data-workspace="leader"] .leader-school-division-select{
+ display:inline-flex;align-items:center;gap:11px;max-width:350px;
+ font-size:12px;font-weight:850;color:#315a70;
+}
+#app[data-workspace="leader"] .leader-school-division-select select{
+ min-width:185px;width:auto;padding:9px 28px 9px 10px;
+ background:#fff;border:1px solid #b9cfdc;border-radius:8px;
+ font:inherit;color:#174561;cursor:pointer;
+}
+@media(max-width:520px){
+ #app[data-workspace="leader"] .leader-school-division-select{
+  display:flex;flex-wrap:wrap;gap:5px;
+ }
+ #app[data-workspace="leader"] .leader-school-division-select select{
+  flex:1 1 100%;max-width:100%;
+ }
+}
