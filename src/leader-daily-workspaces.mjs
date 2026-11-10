@@ -284,3 +284,60 @@ export function renderLeaderDivisionDaily({division,grade,students,allStudents,d
    '<button type="button" data-leader-jump="leader-academic-detail">Historical reports</button></nav>'+
   '</div>';
 }
+
+function miniSeries(points){
+ if(!points?.length)return '<span class="leader-no-history">No earlier comparable window</span>';
+ return '<div class="leader-mini-series">'+points.map((x,i)=>
+  '<span class="'+(i===points.length-1?'current':'')+'"><small>'+safe(x.label)+'</small>'+
+   '<b>'+safe(x.value)+'</b></span>').join('')+'</div>';
+}
+export function renderLeaderLearnerEvidence({student,data,academic,records}){
+ const a=academicFor(academic,student.id),report=facultyDemoReport(a);
+ const events=data.attendance[student.id]||[],att=attendanceSummary(events);
+ const numeric=report?.scale==='1–7';
+ const grades=(report?.subjects||[]).map(row=>{
+  const score=Number(row.value);
+  const band=numeric&&Number.isInteger(score)&&score<=2?'red':
+   numeric&&Number.isInteger(score)&&score===3?'orange':'';
+  return '<article class="leader-profile-subject"><div><strong>'+safe(row.subject)+'</strong>'+
+   '<span class="leader-profile-grade '+band+'">'+safe(row.value)+'</span></div>'+
+   miniSeries(reportProgress(a,row.subject).points)+'</article>';
+ }).join('');
+ const other=academicModesFor(student.grade).filter(mode=>['core','fp','ixl'].includes(mode))
+  .map(mode=>'<div class="leader-profile-assessment"><strong>'+safe(
+   mode==='core'?'Core Phonics':mode==='fp'?'F&P reading':'IXL Mathematics')+'</strong>'+
+   miniSeries(academicCheckinProgress(a,mode).points)+'</div>').join('');
+ const map=gradeNumber(student.grade)>=3&&gradeNumber(student.grade)<=10?
+  ['Mathematics','Reading'].map(subject=>
+   '<div class="leader-profile-assessment"><strong>MAP '+safe(subject)+'</strong>'+
+    miniSeries(mapProgress(data.map[student.id]||[],subject).points)+'</div>').join(''):'';
+ const voice=experienceEligible(student)?['engagement','belonging'].map(metric=>{
+  const score=summarizeExperience(records,[student],metric,'F26').value;
+  return '<article class="leader-profile-voice"><strong>'+safe(metric==='engagement'?'Engagement':'Belonging')+
+   '</strong><b>'+(Number.isFinite(score)?score.toFixed(2):'—')+'</b>'+
+   leaderExperienceScale(score,metric)+'</article>';
+ }).join(''):'';
+ return '<div class="leader-daily leader-learner-profile">'+
+  '<div class="leader-profile-header"><button type="button" data-leader-back>← Back to division review</button>'+
+   '<span>READ-ONLY · FICTIONAL EVIDENCE</span></div>'+
+   '<div class="leader-daily-eyebrow">'+safe(student.division)+' / '+safe(display(student.grade))+'</div>'+
+   '<h2>'+safe(student.name)+'</h2><p>See the evidence in context before choosing a response. '+
+    'A result or absence pattern is not a judgement about a learner.</p>'+
+   '<div class="leader-profile-facts"><div><span>Homeroom</span><strong>'+safe(student.classId)+'</strong></div>'+
+    '<div><span>Attendance</span><strong>'+n(att.rate)+'%</strong>'+
+     '<small>Demo through '+safe(events.at(-1)?.date||'8 Oct 2026')+'</small></div>'+
+    '<div><span>Current subject results</span><strong>'+safe(report?.year||'Unavailable')+'</strong>'+
+     '<small>'+safe(numeric?'1–7 in progress · not issued':'Developmental descriptors · simulated')+'</small></div></div>'+
+   '<section><div class="leader-daily-sectionhead"><div><span>SUBJECT RESULTS</span>'+
+    '<h3>Current evidence and comparable previous windows</h3></div></div>'+
+    '<div class="leader-profile-subjects">'+grades+'</div></section>'+
+   (map||other?'<section><div class="leader-daily-sectionhead"><div><span>ASSESSMENT WINDOWS</span>'+
+    '<h3>Progress by measure</h3></div></div>'+
+    '<div class="leader-profile-assessments">'+map+other+'</div></section>':'')+
+   (voice?'<section><div class="leader-daily-sectionhead"><div><span>STUDENT VOICE</span>'+
+    '<h3>Personal check-in indices</h3></div></div>'+
+    '<div class="leader-profile-voices">'+voice+'</div></section>':'')+
+   '<div class="leader-daily-disclaimer">These records are synthetic. Reports and assessment tools use different '+
+    'scales and dates. Support casework, confidential notes and safeguarding data are not displayed. '+
+    'Follow-up actions must be recorded in an authorised school system.</div></div>';
+}
