@@ -267,3 +267,18 @@
  }
  #app .leader-report-thresholds{width:100%;box-sizing:border-box;}
 }
+
+
+/* Outrank the legacy Faculty toolbar's !important base button background. */
+#app[data-workspace="faculty"] .roster-daily .class-evidence-panel>.faculty-concern-filter button[data-faculty-low-filter="3"]{
+ background:#fff1e2!important;border-color:#de9a56!important;color:#804312!important;
+}
+#app[data-workspace="faculty"] .roster-daily .class-evidence-panel>.faculty-concern-filter button[data-faculty-low-filter="3"][aria-pressed="true"]{
+ background:#e4a15f!important;border-color:#b97836!important;color:#25394a!important;
+}
+#app[data-workspace="faculty"] .roster-daily .class-evidence-panel>.faculty-concern-filter button[data-faculty-low-filter="2"]{
+ background:#fff0f1!important;border-color:#c5737c!important;color:#912a37!important;
+}
+#app[data-workspace="faculty"] .roster-daily .class-evidence-panel>.faculty-concern-filter button[data-faculty-low-filter="2"][aria-pressed="true"]{
+ background:#a6373f!important;border-color:#932d36!important;color:#fff!important;
+}
