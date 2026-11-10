@@ -128,6 +128,7 @@ function decorate(table,index){
  if(!headers.length||headers.length>20)return;
  const isFacultyColumns=table.matches('table.faculty-data-wall');
  const key=tableKey(table,index),s=stateFor(key,headers.length,isFacultyColumns);
+ const originalWidths=[...table.querySelectorAll('colgroup col')].map(col=>col.style.width);
  if(isFacultyColumns){
   [...table.querySelectorAll('thead th')].forEach((cell,i)=>{cell.dataset.uxOrigin=String(i)});
   for(const tr of table.querySelectorAll('tbody tr'))
@@ -232,6 +233,13 @@ function decorate(table,index){
  }
  function updateArrangement(){
   if(!isFacultyColumns)return;
+  for(const col of table.querySelectorAll('colgroup col')){
+   const index=sourceIndex(col,0);
+   col.style.width=originalWidths[index]||'';
+  }
+  for(const th of table.querySelectorAll('thead th')){
+   th.style.width='';th.style.minWidth='';th.style.maxWidth='';
+  }
   arrangeFacultyColumns(table,s);
   syncColumnList();render();recordLayout();
  }
@@ -246,7 +254,12 @@ function decorate(table,index){
   if(e.target.matches('[data-ux-column]')){
    const i=Number(e.target.dataset.uxColumn);
    s.hidden=e.target.checked?s.hidden.filter(x=>x!==i):[...s.hidden.filter(x=>x!==i),i];
-   render();
+   render();recordLayout();
+  }else if(e.target.matches('[data-ux-column-width]')&&isFacultyColumns){
+   const i=Number(e.target.dataset.uxColumnWidth);
+   const preset=e.target.value;
+   if(!Object.hasOwn(COLUMN_WIDTHS,preset))return;
+   s.widths[i]=COLUMN_WIDTHS[preset];updateArrangement();
   }else if(e.target.matches('[data-ux-view]')){
    const name=e.target.value;
    if(!name||!saved[key]?.[name])return;
@@ -254,11 +267,15 @@ function decorate(table,index){
    s.hidden=(Array.isArray(s.hidden)?s.hidden:[]).filter(i=>Number.isInteger(i)&&i>0&&i<headers.length);
    s.fields=(s.fields&&typeof s.fields==='object')?s.fields:{};
    s.order=Number.isInteger(s.order)&&s.order<headers.length?s.order:null;
+   if(isFacultyColumns){
+    s.columnOrder=normaliseColumnOrder(s.columnOrder,headers.length);
+    s.widths=normaliseColumnWidths(s.widths,headers.length);
+   }
    panel.querySelector('[data-ux-search]').value=s.search||'';
    for(const el of panel.querySelectorAll('[data-ux-field]'))el.value=s.fields[el.dataset.uxField]||'';
    for(const el of panel.querySelectorAll('[data-ux-column]'))el.checked=!s.hidden.includes(Number(el.dataset.uxColumn));
    panel.querySelector('[data-ux-name]').value=name;
-   render();
+   if(isFacultyColumns)updateArrangement();else render();
   }
  });
  table.querySelector('thead').addEventListener('click',e=>{
@@ -270,12 +287,25 @@ function decorate(table,index){
  panel.addEventListener('click',e=>{
   const btn=e.target.closest('button');
   if(!btn)return;
-  if(btn.hasAttribute('data-ux-clear')){
-   Object.assign(s,{search:'',fields:{},hidden:[],order:null,desc:false});
+  if(isFacultyColumns&&(btn.hasAttribute('data-ux-move-left')||btn.hasAttribute('data-ux-move-right'))){
+   const left=btn.hasAttribute('data-ux-move-left');
+   const id=Number(left?btn.dataset.uxMoveLeft:btn.dataset.uxMoveRight);
+   const position=s.columnOrder.indexOf(id);
+   const target=s.columnOrder[position+(left?-1:1)];
+   s.columnOrder=moveColumn(s.columnOrder,id,target,!left);
+   updateArrangement();
+   panel.querySelector('[data-ux-column-row="'+id+'"] button[data-ux-move-'+(left?'left':'right')+']')?.focus();
+  }else if(isFacultyColumns&&btn.hasAttribute('data-ux-restore-columns')){
+   s.columnOrder=normaliseColumnOrder(null,headers.length);s.widths={};s.hidden=[];
+   updateArrangement();
+   panel.querySelector('[data-ux-restore-columns]')?.focus();
+  }else if(btn.hasAttribute('data-ux-clear')){
+   Object.assign(s,{search:'',fields:{},hidden:[],order:null,desc:false,
+    ...(isFacultyColumns?{columnOrder:normaliseColumnOrder(null,headers.length),widths:{}}:{})});
    panel.querySelector('[data-ux-search]').value='';
    for(const input of panel.querySelectorAll('[data-ux-field]'))input.value='';
    for(const input of panel.querySelectorAll('[data-ux-column]'))input.checked=true;
-   render();
+   if(isFacultyColumns)updateArrangement();else render();
   }else if(btn.hasAttribute('data-ux-save')){
    const name=clean(panel.querySelector('[data-ux-name]').value).slice(0,48);
    if(!name){panel.querySelector('[data-ux-name]').focus();return}
@@ -294,9 +324,9 @@ function decorate(table,index){
    }
   }else if(btn.hasAttribute('data-ux-export')){
    if(!['faculty','board'].includes(role()))return;
-   const cols=headers.map((_,i)=>i).filter(i=>!s.hidden.includes(i));
+   const cols=(isFacultyColumns?s.columnOrder:headers.map((_,i)=>i)).filter(i=>!s.hidden.includes(i));
    const body=[...table.querySelectorAll('tbody tr')].filter(tr=>!tr.hidden);
-   const csv=exportCsv(cols.map(i=>headers[i]),body.map(tr=>cols.map(i=>label(tr.cells[i]))));
+   const csv=exportCsv(cols.map(i=>headers[i]),body.map(tr=>cols.map(i=>label(sourceCell(tr,i)))));
    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
    const url=URL.createObjectURL(blob);
    const a=document.createElement('a');a.href=url;a.download='my-learners-'+role()+'-visible-demo.csv';
