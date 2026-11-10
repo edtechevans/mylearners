@@ -67,3 +67,35 @@
 /* Clearly separate unissued test grades from the historical report archive. */
 #app .faculty-report-test-label{margin:11px 0 6px;padding:10px 13px;border-left:3px solid #7c8d99;border-radius:5px;background:#f4f7f9;color:#324d5e;font-size:12px;line-height:1.5}
 #app .faculty-report-test-label strong{font-weight:800;color:#344d60}
+
+/* One-click Faculty review: a filter, not a diagnostic or risk status. */
+#app .faculty-concern-filter{display:flex;align-items:center;flex-wrap:wrap;gap:7px;
+ margin:10px 0 5px;color:#36566a;font-size:12px}
+#app .faculty-concern-filter>span{font-weight:750;margin-right:4px}
+#app .faculty-concern-filter button{display:inline-flex;align-items:center;gap:7px;
+ border:1px solid #d0dee7;background:#fff;color:#295570;border-radius:8px;
+ padding:8px 11px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+#app .faculty-concern-filter button[aria-pressed="true"]{background:#234966;color:#fff;border-color:#234966}
+#app .faculty-concern-filter button b{font-size:11px;min-width:18px;padding:2px 5px;
+ border-radius:5px;color:#fff;background:#a6373f;font-variant-numeric:tabular-nums}
+#app .faculty-concern-filter button:focus-visible{outline:3px solid #629ac4;outline-offset:2px}
+#app .faculty-concern-filter small{font-size:11px;color:#607686;margin-left:5px}
+#app .leader-report-legend{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:11px 0 17px}
+#app .leader-report-legend>strong{font-size:12px;margin-right:8px;color:#29485e}
+#app .leader-report-legend>small{font-size:11px;margin-left:5px;color:#5b7281}
+#app .leader-report-legend-chip,#app .leader-report-band-count{font-weight:800;text-align:center;
+ border-radius:6px;font-variant-numeric:tabular-nums}
+#app .leader-report-legend-chip{padding:5px 9px;font-size:11px;line-height:1.2}
+#app .leader-report-fourband{display:flex;align-items:center;gap:5px;min-width:176px}
+#app .leader-report-band-count{display:inline-flex;align-items:center;justify-content:center;
+ min-width:27px;height:30px;font-size:12px}
+#app .leader-report-legend-chip.band-low,#app .leader-report-band-count.band-low{background:#a6373f;color:#fff}
+#app .leader-report-legend-chip.band-mid-low,#app .leader-report-band-count.band-mid-low{background:#e4a15f;color:#172f38}
+#app .leader-report-legend-chip.band-mid-high,#app .leader-report-band-count.band-mid-high{background:#a6bd88;color:#172f38}
+#app .leader-report-legend-chip.band-high,#app .leader-report-band-count.band-high{background:#246b4f;color:#fff}
+#app .leader-report-band-count.is-empty{opacity:.38}
+#app .leader-report-count{border-left:4px solid #a6373f!important}
+#app .leader-report-coverage{border-left:4px solid #a6bd88!important}
+@media(max-width:760px){#app .faculty-concern-filter small{flex-basis:100%;margin-left:0}
+ #app .leader-report-fourband{min-width:142px;gap:4px}}
+@media print{#app .leader-report-legend-chip,#app .leader-report-band-count{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
