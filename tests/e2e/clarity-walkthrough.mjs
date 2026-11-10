@@ -460,9 +460,10 @@ try{
    for(const key of ['width','height','top'])assert(
     Math.max(...geometry.map(r=>r[key]))-Math.min(...geometry.map(r=>r[key]))<2,
     'Everyday evidence tiles must align in '+key);
-   const cards=await evaluate("Array.from(document.querySelectorAll('.faculty-daily-summary>.quick-tile[class*=index-band-]')).map(e=>e.querySelector('strong')?.textContent||'')");
+   const cards=await evaluate("Array.from(document.querySelectorAll('.faculty-daily-summary>.quick-tile[class*=index-band-]')).map(e=>({noVisibleNumber:!e.querySelector('strong'),segments:e.querySelectorAll('.leader-experience-segments>span:not(.leader-experience-marker)').length,marker:!!e.querySelector('.leader-experience-marker')}))");
    assert(cards.length===2,'Engagement and Belonging summaries need value-driven colour bands');
-    assert(cards.every(value=>value==='●'),'Summary tiles should be colour only, without index numbers');
+   assert(cards.every(x=>x.noVisibleNumber&&x.segments===4&&x.marker),
+    'Faculty summary should display four-colour scales without visible index numbers');
 
    const filterPlacement=await evaluate("(function(){const panel=document.querySelector('.class-evidence-panel');const f=panel?.querySelector(':scope > .faculty-concern-filter');const r=f?.getBoundingClientRect();return {inPanel:!!f,visible:!!r&&r.width>200&&r.height>25&&getComputedStyle(f).display!=='none',nearSwitch:!!f?.previousElementSibling?.classList.contains('class-roster-view-switch'),top:r?.top,firstRow:document.querySelector('.faculty-data-wall tbody tr')?.getBoundingClientRect().top}})()");
    assert(filterPlacement.inPanel&&filterPlacement.visible&&filterPlacement.nearSwitch,
