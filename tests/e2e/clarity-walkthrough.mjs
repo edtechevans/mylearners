@@ -493,14 +493,25 @@ try{
     'Restore default columns must undo drag, sizing and hiding');
    await evaluate("(function(){const e=document.querySelector('.ux-faculty-table-controls');if(e)e.open=false;window.scrollTo({top:0,behavior:'instant'})})()");
    const baselineCount=await evaluate("document.querySelectorAll('.roster-daily tbody .student-link').length");
-    await click('[data-faculty-low-filter="low"]');
-    assert(await evaluate("document.querySelector('[data-faculty-low-filter=low]')?.getAttribute('aria-pressed')==='true'"),
-     'Faculty 3 or below filter should activate');
-    const reducedCount=await evaluate("document.querySelectorAll('.roster-daily tbody .student-link').length");
-    assert(reducedCount>0&&reducedCount<baselineCount,'Faculty filter should isolate matching learners');
-    await click('[data-faculty-low-filter="all"]');
-    assert(await evaluate("document.querySelectorAll('.roster-daily tbody .student-link').length")===baselineCount,
-     'All learners should be restored');
+   assert(await evaluate("!!document.querySelector('.class-evidence-panel [data-faculty-low-filter=3]')&&!!document.querySelector('.class-evidence-panel [data-faculty-low-filter=2]')"),
+    'Both 3 or below and 2 or below must be visible in Faculty');
+   await click('[data-faculty-low-filter="3"]');
+   assert(await evaluate("document.querySelector('[data-faculty-low-filter=3]')?.getAttribute('aria-pressed')==='true'"),
+    'Faculty 3 or below should activate');
+   assert(await evaluate("getComputedStyle(document.querySelector('.class-evidence-panel [data-faculty-low-filter=3]')).backgroundColor==='rgb(228, 161, 95)'"),
+    'Selected 3 or below control should be orange');
+   const count3=await evaluate("document.querySelectorAll('.roster-daily tbody .student-link').length");
+   assert(count3>0&&count3<=baselineCount,'3 or below should select a subset');
+   await click('[data-faculty-low-filter="2"]');
+   assert(await evaluate("document.querySelector('[data-faculty-low-filter=2]')?.getAttribute('aria-pressed')==='true'"),
+    'Faculty 2 or below should activate');
+   assert(await evaluate("getComputedStyle(document.querySelector('.class-evidence-panel [data-faculty-low-filter=2]')).backgroundColor==='rgb(166, 55, 63)'"),
+    'Selected 2 or below control should be red');
+   const count2=await evaluate("document.querySelectorAll('.roster-daily tbody .student-link').length");
+   assert(count2>0&&count2<=count3,'2 or below must be a subset of 3 or below');
+   await click('[data-faculty-low-filter="all"]');
+   assert(await evaluate("document.querySelectorAll('.roster-daily tbody .student-link').length")===baselineCount,
+    'All learners should be restored');
     await click('[data-roster-view="focused"]');
    assert(await evaluate("document.querySelector('.roster-daily')?.dataset.rosterLayout==='focused'"),
     'Focused evidence mode should remain available');
@@ -544,6 +555,16 @@ try{
     assert(await evaluate("!!document.querySelector('.leader-report-followup')"),'Secondary review should appear for Grade 7');
     assert(await evaluate("document.querySelectorAll('.leader-report-legend-chip').length===4"),'Leader legend needs four colours');
     assert(await evaluate("document.querySelectorAll('.leader-report-fourband').length>0"),'Leaders need subject profile colours');
+    assert(await evaluate("!!document.querySelector('[data-leader-report-threshold=2]')"),
+     'Leaders need the 2 or below threshold control');
+    await click('[data-leader-report-threshold="2"]');
+    assert(await evaluate("document.querySelector('.leader-report-followup h2')?.textContent.includes('2 or below')"),
+     'Leaders must switch to 2 or below');
+    assert(await evaluate("getComputedStyle(document.querySelector('[data-leader-report-threshold=2]')).backgroundColor==='rgb(166, 55, 63)'"),
+     'Leaders 2 or below selected control should be red');
+    await click('[data-leader-report-threshold="3"]');
+    assert(await evaluate("document.querySelector('.leader-report-followup h2')?.textContent.includes('3 or below')"),
+     'Leaders must restore 3 or below');
    });
  await run('faculty-map-tab-1440','faculty','.faculty-daily-toolbar',1440,900,
   async()=>{
