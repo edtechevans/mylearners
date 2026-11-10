@@ -90,7 +90,8 @@ export function decorateEvidencePreviews(root,role){
     const kind=guideKey(heading);
     const isExperience=kind==='engagement'||kind==='belonging';
     const isAttendance=kind==='attendance';
-    const isAcademic=/map|ixl|report|phonics|f&p|mathematics|literacy|inquiry|reading|flourishing/i.test(heading);
+    const isAcademic=/map|ixl|report|phonics|f&p|mathematics|literacy|inquiry|reading|flourishing/i.test(heading)||
+      !!cell.querySelector('.evidence-cell-open[data-evidence-subject]:not([data-evidence-subject=""])');
     if(!isExperience&&!isAttendance&&!isAcademic)return;
     const target=cell.querySelector('.evidence-cell-open')||
      cell.querySelector('.class-evidence-result')||cell.querySelector('.roster-mixed-academic')||cell;
