@@ -128,7 +128,7 @@ const modeHelp={
  flourishing:'Synthetic MaiaLearning-style PERMA dimensions. The 0–10 display scale is illustrative, NOT confirmed Maia scoring. This is not a real Maia export, benchmark, diagnosis or combined wellbeing score.'
 };
 export function renderClassEvidencePanel(students,{
- academic,map,experience,maia,rosterView='focused',mode='report',compare='none',subject='Mathematics',mapSubject='Mathematics',window='F26',maiaDimension:dim=MAIA_DEFAULT_DIMENSION,maiaWindow='F26'
+ academic,map,experience,maia,rosterView='focused',lowGradeFilter=null,mode='report',compare='none',subject='Mathematics',mapSubject='Mathematics',window='F26',maiaDimension:dim=MAIA_DEFAULT_DIMENSION,maiaWindow='F26'
 }={}){
  const grade=students[0]?.grade||'';
  const modes=evidenceModesForGrade(grade);
@@ -212,6 +212,22 @@ export function renderClassEvidencePanel(students,{
   '<p class="class-evidence-secondary"><strong>Fictional Maia example · Secondary only.</strong> Five PERMA dimensions on an illustrative 0–10 display scale. No official Maia score fields or scoring scale verified; no personal records are used.</p>':
   (selected==='engagement'||selected==='belonging')?
   '<p class="class-evidence-secondary">Maia-style PERMA examples are available separately in Secondary classes; the two measures use different instruments and scales.</p>':'';
+ // This control belongs in the *visible* evidence toolbar: the everyday
+ // Faculty layout deliberately hides the separate roster heading.
+ const filterControls=lowGradeFilter?(()=>{
+  const total=Math.max(0,Number(lowGradeFilter.total)||0);
+  const count=Math.max(0,Number(lowGradeFilter.count)||0);
+  const low=!!lowGradeFilter.active;
+  return '<div class="faculty-concern-filter" role="group" aria-label="Filter students by subject results">'+
+   '<span class="faculty-filter-label">Filter students</span>'+
+   '<button type="button" data-faculty-low-filter="all" aria-pressed="'+(!low)+
+   '" aria-label="Show all '+total+' students">All students <b>'+total+'</b></button>'+
+   '<button type="button" data-faculty-low-filter="low" aria-pressed="'+low+
+   '" title="At least one subject at 3 or below (2026–27 synthetic test data)"'+
+   ' aria-label="Show '+count+' students with at least one subject result of 3 or below">'+
+   '<span class="faculty-filter-dot" aria-hidden="true"></span>3 or below <b>'+count+'</b></button>'+
+   '</div>';
+ })():'';
  return '<section class="class-evidence-panel" aria-label="Select learning and wellbeing evidence for the class roster">'+
   '<div class="class-evidence-heading"><div><h3>Learning &amp; Wellbeing Evidence</h3>'+
   '<p>'+(rosterView==='everyday'?
@@ -223,6 +239,7 @@ export function renderClassEvidencePanel(students,{
   '" class="'+(rosterView==='everyday'?'active':'')+'">Everyday columns</button>'+
   '<button type="button" data-roster-view="focused" aria-pressed="'+(rosterView==='focused')+
   '" class="'+(rosterView==='focused'?'active':'')+'">Focused evidence</button></div>'+
+  filterControls+
   (rosterView==='everyday'?'<details class="class-evidence-advanced"><summary>Explore and customise evidence</summary><div class="class-evidence-advanced-body">':'')+
   '<div class="class-evidence-navigation">'+tabs+'</div>'+
   '<div class="class-evidence-controls">'+compareSelect+(filters.length?
