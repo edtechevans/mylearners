@@ -27,6 +27,7 @@
  line-height:1;font-size:15px;font-weight:700;
  cursor:grab;touch-action:none;opacity:.9;
 }
+#app[data-workspace="faculty"] .faculty-data-wall .ux-column-grip::before{content:'⠿';display:inline-block}
 #app[data-workspace="faculty"] .faculty-data-wall .ux-column-grip:hover,
 #app[data-workspace="faculty"] .faculty-data-wall .ux-column-grip:focus-visible{
  color:#174b6b;background:#dceaf2;opacity:1;
