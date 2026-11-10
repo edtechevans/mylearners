@@ -291,9 +291,9 @@ function roster(ss,options={}){
  const heading=across?'Students matching “'+safe(state.query.trim())+'”':'My Students';
  const context=across?rows.length+' of '+ss.length+' assigned students across all classes':
   rows.length+' of '+ss.length+' learners in '+safe(activeClass()?.name||'this class');
- const evidenceColWidth=(53/Math.max(1,everydayColumns.length-1)).toFixed(4);
+ const evidenceColWidth='124px';
  const colgroup=everyday?'<colgroup><col class="roster-col-learner"><col class="roster-col-attendance">'+
-  everydayColumns.slice(1).map(()=>'<col class="roster-col-evidence" style="width:'+evidenceColWidth+'%">').join('')+
+  everydayColumns.slice(1).map(()=>'<col class="roster-col-evidence" style="width:'+evidenceColWidth+'">').join('')+
   '<col class="roster-col-support"></colgroup>':'';
  const table='<div class="tablewrap roster-desktop"><table'+(everyday?' class="faculty-data-wall"':'')+'>'+colgroup+'<thead><tr><th>Learner</th>'+
   (across?'<th>Class</th>':'')+
@@ -330,22 +330,20 @@ function roster(ss,options={}){
   '<div class="sectionhead"><div><h2>'+heading+'</h2><span class="tiny">'+context+'</span></div>'+
   (across?'<button type="button" class="roster-clear-search" data-clear-search>Clear search</button>':'')+'</div>'+
   (options.controls||'')+
-  (everyday&&(hasAcademicBands||hasExperienceBands)?'<div class="faculty-evidence-legend" aria-label="Understanding the evidence colours">'+
-   '<strong>'+(hasAcademicBands?'Four academic evidence bands':'Four fixed experience bands')+'</strong>'+
-   '<span class="faculty-legend-swatches">'+
-   '<span class="faculty-legend-chip band-low">'+(hasAcademicBands?'Q1':'−2')+'</span>'+
-   '<span class="faculty-legend-chip band-mid-low">'+(hasAcademicBands?'Q2':'−1')+'</span>'+
-   '<span class="faculty-legend-chip band-mid-high">'+(hasAcademicBands?'Q3':'0')+'</span>'+
-   '<span class="faculty-legend-chip band-high">'+(hasAcademicBands?'Q4':'+1')+'</span></span>'+
-   '<span class="faculty-legend-caption">'+(hasAcademicBands?
-     'Academic: relative same-grade demo quartiles'+(hasExperienceBands?' · Experience: fixed −2 to +2 bands':''):
-     'Student experience: fixed −2 to +2 index ranges, not quartiles')+'</span>'+
-   '<details><summary>Interpret colours</summary><p>MAP and IXL bands compare learners within the same fictional grade cohort, not official NWEA or IXL benchmarks. Engagement and Belonging use four fixed ranges from −2 to +2. Missing evidence is grey. A colour describes evidence, never a child.</p></details></div>':'')+
+  (everyday&&(hasNumericReports||hasAcademicBands||hasExperienceBands)?'<div class="faculty-evidence-legend" aria-label="Understanding evidence colours">'+
+  '<strong>'+(hasNumericReports?'Report card grades 1–7':'Assessment and experience indicators')+'</strong>'+
+  '<span class="faculty-legend-swatches">'+
+  '<span class="faculty-legend-chip band-low">'+(hasNumericReports?'1–3':'Low')+'</span>'+
+  '<span class="faculty-legend-chip band-mid-low">'+(hasNumericReports?'4':'Lower')+'</span>'+
+  '<span class="faculty-legend-chip band-mid-high">'+(hasNumericReports?'5–6':'Higher')+'</span>'+
+  '<span class="faculty-legend-chip band-high">'+(hasNumericReports?'7':'High')+'</span></span>'+
+  '<span class="faculty-legend-caption">Reports use fixed grade bands. Other measures are colour-only. Hover or focus for exact data.</span>'+
+  '<details><summary>Interpret colours</summary><p>Issued numeric report grades: 1–3 red, 4 orange, 5–6 light green, 7 dark green. Elementary developmental descriptors are not converted to grades. MAP, IXL and other assessments use same-grade fictional comparisons; experience uses fixed −2 to +2 bands. Grey means missing. A colour is not a learner label.</p></details></div>':'')+
   table+mobile+
   (rows.length?'':'<p class="empty-message">No matching students in your assigned classes. Try a different name.</p>')+
   '<details class="faculty-inquiry-prompt"><summary>From evidence to action</summary>'+
    '<p>Notice a pattern, check the source and date, and consider what more you might need to know. Select a learner to review their context and use the existing classroom response or follow-up tools. Do not draw conclusions from colour alone.</p></details>'+
-  '<p class="tiny roster-caption">Sources and windows vary. Academic quartiles compare fictional same-grade cohorts with at least 20 results, not official norms. Student voice uses fixed index ranges. Select a learner to review the source, date, programme and history.</p>'+
+  '<p class="tiny roster-caption">All available subjects from the latest issued report appear here, not current-year grades. Numeric report results use fixed 1–7 thresholds; developmental descriptors retain their own wording. Non-report colours represent fictional same-grade comparisons or fixed experience bands. Hover for the exact result and reporting context.</p>'+
   '</section>';
 }
 
@@ -623,7 +621,9 @@ function leader(){
   '</label></div>'+experience+
   (splitExperience?'<p class="leader-data-note">Elementary and Secondary students answer different questions; their indices are intentionally shown separately.</p>':'')+
   '</section>'+
-  renderLeaderSupportSection({students:group,sssRecords:SSS_RECORDS,entries:supportEntries(),open:state.leaderSupportOpen})+
+  renderLeaderReportFollowup({students:group,academic:ACADEMIC_RECORDS,scope:state.leaderReportScope,
+    query:state.leaderReportQuery,multiple:state.leaderReportMultiple,expanded:state.leaderReportExpanded})+
+   renderLeaderSupportSection({students:group,sssRecords:SSS_RECORDS,entries:supportEntries(),open:state.leaderSupportOpen})+
   '<details class="leader-detail" data-leader-panel="academics"'+
   (state.leaderAcademicOpen?' open':'')+'>'+
   '<summary><span><strong>Explore academic evidence</strong>'+
@@ -921,6 +921,10 @@ root.addEventListener('keydown',e=>{
  if(e.key==='Escape'){hideBoardFloat();if(pinnedChartKey)unpinChartPoint()}
 });
 root.addEventListener('click',e=>{
+ const reportScope=e.target.closest('[data-leader-report-scope]');
+ if(reportScope&&state.role==='leader'){state.leaderReportScope=reportScope.dataset.leaderReportScope==='all'?'all':'secondary';state.leaderReportExpanded=false;render();return;}
+ if(e.target.closest('[data-leader-report-multiple]')&&state.role==='leader'){state.leaderReportMultiple=!state.leaderReportMultiple;state.leaderReportExpanded=false;render();return;}
+ if(e.target.closest('[data-leader-report-expand]')&&state.role==='leader'){state.leaderReportExpanded=!state.leaderReportExpanded;render();return;}
  const skip=e.target.closest('[data-skip-main]');
  if(skip){
   const main=root.querySelector('#main');
@@ -1368,6 +1372,10 @@ root.addEventListener('toggle',e=>{
  if(panel.dataset.studentPanel==='wellbeing')state.studentWellbeingOpen=panel.open;
 },true);
 root.addEventListener('input',e=>{
+ if(e.target.matches?.('[data-leader-report-query]')&&state.role==='leader'){
+  const p=e.target.selectionStart;state.leaderReportQuery=e.target.value;state.leaderReportExpanded=false;render();
+  const field=root.querySelector('[data-leader-report-query]');field?.focus({preventScroll:true});if(Number.isInteger(p))field?.setSelectionRange(p,p);return;
+ }
  if(e.target.matches('[data-support-query]')&&state.role==='sss'){
   const p=e.target.selectionStart;state.supportQuery=e.target.value;render();
   const field=root.querySelector('[data-support-query]');field?.focus({preventScroll:true});
