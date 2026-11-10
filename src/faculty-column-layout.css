@@ -1,0 +1,115 @@
+/* Faculty | Personal column arrangements (presentation preferences, no student data). */
+#app[data-workspace="faculty"] .class-evidence-panel>.faculty-arrange-columns{
+ display:inline-flex;align-items:center;justify-content:center;gap:5px;
+ padding:7px 11px;min-height:35px;white-space:nowrap;
+ border:1px solid #cadbe4;border-radius:8px;background:#fff;
+ font:inherit;font-size:11.5px;font-weight:750;color:#1d526e;cursor:pointer;
+}
+#app[data-workspace="faculty"] .class-evidence-panel>.faculty-arrange-columns:hover{
+ background:#edf5f9;border-color:#77a5be;
+}
+#app[data-workspace="faculty"] .class-evidence-panel>.faculty-arrange-columns:focus-visible{
+ outline:3px solid #3482a2;outline-offset:2px;
+}
+#app[data-workspace="faculty"] .faculty-data-wall thead th[data-ux-origin]{
+ position:sticky;vertical-align:middle;
+}
+#app[data-workspace="faculty"] .faculty-data-wall thead th[data-ux-origin]:not([data-ux-origin="0"]){
+ padding-right:19px!important;overflow-wrap:anywhere;
+}
+#app[data-workspace="faculty"] .faculty-data-wall thead .ux-sort-button{
+ max-width:100%;overflow-wrap:anywhere;
+}
+#app[data-workspace="faculty"] .faculty-data-wall .ux-column-grip{
+ position:absolute;right:10px;top:4px;z-index:3;
+ border:0;border-radius:4px;padding:2px 2px;
+ color:#567b90;background:rgba(249,251,252,.88);
+ line-height:1;font-size:15px;font-weight:700;
+ cursor:grab;touch-action:none;opacity:.9;
+}
+#app[data-workspace="faculty"] .faculty-data-wall .ux-column-grip:hover,
+#app[data-workspace="faculty"] .faculty-data-wall .ux-column-grip:focus-visible{
+ color:#174b6b;background:#dceaf2;opacity:1;
+ outline:2px solid #4485aa;outline-offset:1px;
+}
+#app[data-workspace="faculty"] .faculty-data-wall .ux-column-grip:active{cursor:grabbing}
+#app[data-workspace="faculty"] .faculty-data-wall .ux-column-resize{
+ position:absolute;right:0;top:0;bottom:0;width:8px;
+ z-index:4;cursor:col-resize;touch-action:none;
+ background:transparent;border-right:2px solid transparent;
+}
+#app[data-workspace="faculty"] .faculty-data-wall .ux-column-resize:hover,
+#app[data-workspace="faculty"] .faculty-data-wall .ux-column-resize:focus-visible{
+ border-right-color:#34799d;background:#cee5f044;
+ outline:2px solid #327da6;outline-offset:-2px;
+}
+#app[data-workspace="faculty"] .faculty-data-wall .ux-column-drag-source{opacity:.55}
+#app[data-workspace="faculty"] .faculty-data-wall .ux-column-drag-over{
+ box-shadow:inset 3px 0 0 #a6373f!important;background:#edf5f8!important;
+}
+html.ux-resizing-columns,html.ux-resizing-columns *{cursor:col-resize!important;user-select:none!important}
+/* Expand inside the tools panel. The containing table is horizontally scrollable:
+   an absolute popover would be clipped, so the arranging panel is inline. */
+#app[data-workspace="faculty"] .ux-faculty-table-controls .ux-columns-menu[open]{
+ flex:1 1 100%;order:8;min-width:0;
+}
+#app[data-workspace="faculty"] .ux-faculty-table-controls .ux-column-layout-popover{
+ position:static;top:auto;left:auto;right:auto;z-index:auto;
+ box-shadow:none;width:min(100%,760px);max-width:100%;max-height:420px;
+ overflow:auto;border:1px solid #d4e2e9;background:#fbfcfd;
+ margin-top:7px;
+}
+#app[data-workspace="faculty"] .ux-column-guide{font-size:12px;line-height:1.5;
+ color:#546e7d;margin:0 0 10px;max-width:66ch}
+#app[data-workspace="faculty"] .ux-column-manage{display:grid;gap:4px}
+#app[data-workspace="faculty"] .ux-column-config{
+ display:grid;grid-template-columns:minmax(180px,1fr) auto;gap:8px;
+ align-items:center;padding:6px 8px;background:white;border:1px solid #e2eaf0;
+ border-radius:8px;min-height:42px;
+}
+#app[data-workspace="faculty"] .ux-column-config .ux-column-row{
+ min-width:0;display:flex;align-items:center;font-weight:650;
+}
+#app[data-workspace="faculty"] .ux-column-config .ux-column-row span{
+ overflow-wrap:anywhere;
+}
+#app[data-workspace="faculty"] .ux-column-move{
+ display:flex;align-items:center;gap:4px;
+}
+#app[data-workspace="faculty"] .ux-column-move button{
+ display:inline-flex;justify-content:center;align-items:center;
+ min-width:28px;min-height:29px;background:#f3f8fa;color:#234b63;
+ border:1px solid #d2e1e8;border-radius:6px;font:inherit;
+ font-weight:800;cursor:pointer;
+}
+#app[data-workspace="faculty"] .ux-column-move button:disabled{
+ opacity:.3;cursor:default;
+}
+#app[data-workspace="faculty"] .ux-column-move select{
+ max-width:165px;padding:6px 7px;min-height:29px;
+ border:1px solid #cbdce6;border-radius:7px;background:white;
+ color:#21475f;font:inherit;font-size:11.5px;
+}
+#app[data-workspace="faculty"] .ux-column-fixed{
+ font-size:11px;color:#6c7c85;font-weight:650;
+}
+#app[data-workspace="faculty"] .ux-column-restore{margin-top:10px;font-size:11.5px}
+#app[data-workspace="faculty"] .ux-column-layout-popover button:focus-visible,
+#app[data-workspace="faculty"] .ux-column-layout-popover select:focus-visible{
+ outline:3px solid #3984aa;outline-offset:2px;
+}
+/* Collapsed columns must not leave empty colgroup tracks. */
+#app[data-workspace="faculty"] .faculty-data-wall col[data-ux-column-hidden]{
+ visibility:collapse;display:none!important;
+}
+@media(max-width:850px){
+ #app[data-workspace="faculty"] .class-evidence-panel>.faculty-arrange-columns{flex:1 1 auto}
+ #app[data-workspace="faculty"] .ux-column-config{grid-template-columns:minmax(110px,1fr) auto}
+}
+@media(max-width:550px){
+ #app[data-workspace="faculty"] .ux-column-config{grid-template-columns:1fr}
+ #app[data-workspace="faculty"] .ux-column-move{justify-content:flex-start;padding-left:21px}
+}
+@media print{
+ #app .faculty-arrange-columns,#app .ux-column-grip,#app .ux-column-resize{display:none!important}
+}
