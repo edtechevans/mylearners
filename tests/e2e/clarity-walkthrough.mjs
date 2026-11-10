@@ -88,7 +88,7 @@ const inspect='('+function(){
  const visionLoaded=[...document.querySelectorAll('link[rel=stylesheet]')].some(x=>x.href.includes('vision-ui.css')&&x.sheet);
  const headerFill=nav?getComputedStyle(nav).backgroundImage:'none';
  const tiles=[...document.querySelectorAll(
-  '.faculty-daily-summary>.quick-tile,.leader-learning-grid>.leader-stat,'+
+  '.faculty-daily-summary>.quick-tile,.leader-learning-grid>.leader-stat,.leader-daily-grid>.leader-daily-priority,'+
   '.sss-count-grid>.sss-number,.student-landing-grid>.student-today-tile,'+
   '.board-strength-grid>.board-strength-card'
  )].map(e=>({r:rect(e),fill:getComputedStyle(e).backgroundImage,ring:getComputedStyle(e,'::before').content}));
@@ -153,7 +153,7 @@ try{
   const screen=width+'x'+height;
   for(const [role,selector] of [
    ['faculty','.faculty-daily-toolbar'],['student','.student-landing'],
-   ['sss','.sss-overview'],['leader','.leader-learning-grid'],['board','.board-view']
+   ['sss','.sss-overview'],['leader','.leader-division-grid'],['board','.board-view']
   ])await run(role+'-'+screen,role,selector,width,height);
  }
  // Design-system acceptance: chart-first storytelling and learner rows above fold.
@@ -176,7 +176,7 @@ try{
   const height=width===390?844:1024;
   for(const [role,selector] of [['faculty','.faculty-daily-toolbar'],
    ['student','.student-landing'],['sss','.support-leadership'],
-   ['leader','.leader-learning-grid'],['board','.board-view']]){
+   ['leader','.leader-division-grid'],['board','.board-view']]){
    await viewport(width,height);
    await navigate(role,selector);
    const a=await evaluate("(function(){const role=document.querySelector('#app')?.dataset.workspace;const nav=document.querySelector('.top nav.roles');const m=document.querySelector('#main');return {role,overflow:document.documentElement.scrollWidth-innerWidth,mainWidth:m?.getBoundingClientRect().width,navScroll:nav?.scrollWidth,navWidth:nav?.clientWidth,loaded:[...document.querySelectorAll('link[rel=stylesheet]')].some(l=>l.href.includes('design-system-refinement.css')&&l.sheet)}})()");
@@ -213,10 +213,12 @@ try{
   'SSS needs role-scoped roster preview targets');
  const privateContent=await evaluate("(async()=>{const a=document.querySelector('.sss-roster-row[data-evidence-preview=sss-person]');a.dispatchEvent(new FocusEvent('focusin',{bubbles:true}));await new Promise(r=>setTimeout(r,50));return document.querySelector('.evidence-preview-popup')?.textContent||''})()");
  assert(privateContent.includes('Fictional')&&!privateContent.includes('case notes:'),'SSS preview must not include case-note narrative');
- await navigate('leader','.leader-learning-grid');
- assert(await evaluate('document.querySelectorAll(".leader-stat[data-evidence-preview=leader-stat]").length===4'),
-  'All four Leader overview measures need previews');
- await navigate('board','.board-view');
+ await navigate('leader','.leader-division-grid');
+  assert(await evaluate('document.querySelectorAll(".leader-division-choice").length===2'),
+   'Whole-school Leaders need Elementary and Secondary navigation');
+  assert(await evaluate('document.querySelectorAll(".leader-daily-grid .leader-daily-priority").length===4'),
+   'Whole-school landing needs the operational pulse');
+  await navigate('board','.board-view');
  assert(await evaluate('document.querySelectorAll("[data-evidence-preview=board-card]").length>=3'),
   'Board result cards need concise previews');
  console.log('PASS evidence previews: Faculty pointer, Escape, click, SSS, Leaders and Board');
