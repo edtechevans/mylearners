@@ -67,3 +67,11 @@ test('mobile and touch avoid hover dependency and respect motion preferences',()
  assert.match(css,/outline:3px solid var\(--ml-interaction-ring\)!important/);
  assert.match(css,/@media print/);
 });
+
+test('scripted navigation honours reduced-motion settings, not just stylesheet animation',()=>{
+ const app=readFileSync(new URL('../src/student-experience-app.mjs',import.meta.url),'utf8');
+ assert.match(app,/const scrollMotion=\(\)=>globalThis\.window\?\.matchMedia/);
+ assert.match(app,/behavior:scrollMotion\(\)/);
+ assert.doesNotMatch(app,/behavior:'smooth'/);
+ assert.match(html,/student-experience-app\.mjs\?v=20261111feel1/);
+});
