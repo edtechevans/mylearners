@@ -193,7 +193,7 @@ function decorate(table,index){
   if(isFacultyColumns&&i>0&&i<headers.length-1){
    th.insertAdjacentHTML('beforeend',
     '<button type="button" class="ux-column-grip" draggable="true" data-ux-drag="'+i+
-    '" title="Drag to reorder '+safe(headers[i])+'" aria-label="Drag to reorder '+safe(headers[i])+'">⠿</button>'+
+    '" title="Drag to reorder '+safe(headers[i])+'" aria-label="Drag to reorder '+safe(headers[i])+'"></button>'+
     '<span class="ux-column-resize" role="separator" tabindex="0" aria-orientation="vertical"'+
     ' data-ux-resize="'+i+'" aria-label="Resize '+safe(headers[i])+': drag or use arrow keys"></span>');
   }
