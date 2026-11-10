@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {generateDemoData} from '../src/data.mjs';
 import {applyFacultyDemo} from '../src/faculty-demo.mjs';
-import {createAcademicDemoRecords,academicFor,reportSubjectsFor} from '../src/academic-journey-data.mjs';
+import {createAcademicDemoRecords,academicFor,reportSubjectsFor,facultyDemoReport,DEMO_REPORT_YEAR,PRIMARY_DESCRIPTORS} from '../src/academic-journey-data.mjs';
 import {numericReportGrade,reportGradeBand,facultyRosterEvidenceColumns,leaderReportSignalSummary} from '../src/report-card-signals.mjs';
 import {everydayEvidenceForGrade} from '../src/faculty-everyday-columns.mjs';
 import {renderLeaderReportFollowup} from '../src/leader-report-followup.mjs';
@@ -20,7 +20,7 @@ test('Faculty landing includes all subjects from latest issued report',()=>{
  for(const grade of ['G3','G7','G12']){
   const people=group(grade);
   const cols=facultyRosterEvidenceColumns(people,academic,everydayEvidenceForGrade(grade));
-  const report=academicFor(academic,people.find(s=>academicFor(academic,s.id).reports.length)?.id).reports[0];
+  const report=facultyDemoReport(academicFor(academic,people[0].id));
   for(const item of report.subjects)assert.ok(cols.some(c=>c.kind==='report'&&c.subject===item.subject));
   assert.equal(cols.filter(c=>c.kind==='report').length,reportSubjectsFor(report.grade).length);
  }
@@ -29,11 +29,13 @@ test('Leaders count each learner once and only numeric report grades 1 to 3',()=
  const secondary=group('G7');
  const results=leaderReportSignalSummary(secondary,academic);
  assert.equal(results.selected,80);
- assert.equal(results.numericReports,secondary.filter(s=>academicFor(academic,s.id).reports[0]?.scale==='1–7').length);
+ assert.equal(results.numericReports,secondary.length);
  assert.ok(results.rows.every(x=>x.low.length&&x.low.every(v=>v.value<=3)));
  assert.equal(results.flagged,results.rows.length);
  assert.equal(results.lowSubjectResults,results.rows.reduce((n,x)=>n+x.low.length,0));
- assert.equal(leaderReportSignalSummary(group('G6'),academic).flagged,0);
+ const six=leaderReportSignalSummary(group('G6'),academic);
+ assert.equal(six.numericReports,80,'Grade 6 tests must use current-year MYP grades rather than prior Elementary descriptors');
+ assert.ok(six.flagged>0,'Grade 6 low-grade queue must be testable');
 });
 test('Leaders panel has report-source context and actionable filters',()=>{
  const html=renderLeaderReportFollowup({students:group('G7'),academic});
@@ -41,6 +43,47 @@ test('Leaders panel has report-source context and actionable filters',()=>{
  assert.match(html,/data-leader-report-scope/);
  assert.match(html,/data-leader-report-query/);
  assert.match(html,/data-leader-report-multiple/);
- assert.match(html,/2025–26/);
- assert.match(html,/previously issued|previously issued|previously issued/i);
+ assert.match(html,/2026–27/);
+ assert.match(html,/TEST GRADES/);
+ assert.match(html,/Not issued/);
+});
+test('Every learner has a complete current-grade demo test result for every subject',()=>{
+ const seen=new Set();
+ for(const student of data.students){
+  const rec=academicFor(academic,student.id);
+  const testReport=facultyDemoReport(rec);
+  assert.equal(testReport.year,DEMO_REPORT_YEAR,student.id);
+  assert.equal(testReport.grade,student.grade,student.id);
+  assert.equal(testReport.issued,false,student.id);
+  assert.equal(testReport.testing,true,student.id);
+  const subjects=reportSubjectsFor(student.grade);
+  assert.deepEqual(testReport.subjects.map(x=>x.subject),subjects,student.id);
+  assert.equal(new Set(testReport.subjects.map(x=>x.subject)).size,subjects.length);
+  for(const item of testReport.subjects){
+   assert.ok(item.value!==null&&item.value!==undefined&&String(item.value).length>0);
+   assert.equal(item.scale,testReport.scale);
+   if(student.division==='Secondary'){
+    assert.match(item.value,/^[1-7]$/,student.id+' '+item.subject);
+    seen.add(item.value);
+   }else assert.ok(PRIMARY_DESCRIPTORS.includes(item.value),student.id+' '+item.subject);
+  }
+ }
+ assert.equal(academic.size,1200);
+ assert.deepEqual([...seen].sort(),['1','2','3','4','5','6','7']);
+});
+test('Historic issued reports remain unmodified and separate from test data',()=>{
+ for(const student of data.students){
+  const rec=academicFor(academic,student.id);
+  assert.equal(rec.workingReport.issued,false);
+  assert.ok(rec.reports.every(r=>r.issued&&r.end<=2026));
+  assert.ok(rec.reports.every(r=>r.year!=='2026–27'));
+ }
+});
+test('All four colours are exercised by numeric Secondary test grades',()=>{
+ const bandSet=new Set();
+ for(const student of data.students.filter(s=>s.division==='Secondary')){
+  const r=facultyDemoReport(academicFor(academic,student.id));
+  for(const item of r.subjects)bandSet.add(reportGradeBand(item.value,r.scale));
+ }
+ assert.deepEqual([...bandSet].sort(),['band-high','band-low','band-mid-high','band-mid-low']);
 });
