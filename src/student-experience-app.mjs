@@ -22,7 +22,7 @@ import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,RE
 import {quartileBand,formatIndex,experienceBand} from './faculty-bands.mjs?v=20261030wall2';
 import {leaderExperienceChange,leaderExperienceScale,leaderExperienceLegend,leaderExperienceBandLabel} from './leader-experience-bands.mjs';
 import {facultyRosterEvidenceColumns,reportGradeBand,hasLowReportGrade} from './report-card-signals.mjs?v=20261110thresholds1';
-import {renderLeaderReportFollowup} from './leader-report-followup.mjs?v=20261110thresholds1';
+import {renderLeaderReportFollowup} from './leader-report-followup.mjs?v=20261110daily1';
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261028titles1';
 import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261030wall1';
 import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261110thresholds1';
