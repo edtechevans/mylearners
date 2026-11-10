@@ -240,6 +240,7 @@ export function renderClassEvidencePanel(students,{
   '<button type="button" data-roster-view="focused" aria-pressed="'+(rosterView==='focused')+
   '" class="'+(rosterView==='focused'?'active':'')+'">Focused evidence</button></div>'+
   filterControls+
+  (rosterView==='everyday'?'<button type="button" class="faculty-arrange-columns" data-ux-customize-columns title="Move, resize or hide subject columns">↔ Arrange columns</button>':'')+
   (rosterView==='everyday'?'<details class="class-evidence-advanced"><summary>Explore and customise evidence</summary><div class="class-evidence-advanced-body">':'')+
   '<div class="class-evidence-navigation">'+tabs+'</div>'+
   '<div class="class-evidence-controls">'+compareSelect+(filters.length?
