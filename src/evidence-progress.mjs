@@ -36,6 +36,21 @@ export function reportProgress(record,subject){
   numeric:current.scale==='1–7'&&/^[1-7]$/.test(String(chosen.value))?Number(chosen.value):null});
  return result(points,'grade points',0,current.scale==='1–7');
 }
+/** Historical issued records only, stopping at the report selected in the profile. */
+export function issuedReportProgress(record,subject,year){
+ const reports=(record?.reports||[]).filter(r=>r.issued!==false);
+ const selected=reports.find(r=>r.year===year)||reports[0];
+ const chosen=selected?.subjects.find(x=>x.subject===subject);
+ if(!chosen)return result([]);
+ const points=reports.filter(r=>r.end<=selected.end&&r.framework===selected.framework&&
+  r.scale===selected.scale&&r.subjects.some(x=>x.subject===subject))
+  .sort((a,b)=>a.end-b.end).map(r=>{
+   const entry=r.subjects.find(x=>x.subject===subject);
+   return {label:r.year,value:entry.value,
+    numeric:r.scale==='1–7'&&/^[1-7]$/.test(String(entry.value))?Number(entry.value):null};
+  });
+ return result(points,'grade points',0,selected.scale==='1–7');
+}
 export function academicCheckinProgress(record,mode){
  const items=record?.[mode]||[];
  if(!['ixl','core','fp'].includes(mode))return result([]);
