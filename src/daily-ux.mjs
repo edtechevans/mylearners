@@ -210,6 +210,7 @@ function decorate(table,index){
    const at=mid.indexOf(i);
    const size=widthPreset(s.widths[i]);
    const choice=movable?'<select data-ux-column-width="'+i+'" aria-label="Width of '+safe(headers[i])+'">'+
+    '<option value="default"'+(size==='default'?' selected':'')+'>Default</option>'+
     Object.entries(COLUMN_WIDTHS).map(([name,n])=>
      '<option value="'+name+'"'+(size===name?' selected':'')+'>'+name[0].toUpperCase()+name.slice(1)+' ('+n+'px)</option>').join('')+
     (size==='custom'?'<option value="custom" selected>Custom</option>':'')+'</select>':'';
@@ -258,8 +259,10 @@ function decorate(table,index){
   }else if(e.target.matches('[data-ux-column-width]')&&isFacultyColumns){
    const i=Number(e.target.dataset.uxColumnWidth);
    const preset=e.target.value;
-   if(!Object.hasOwn(COLUMN_WIDTHS,preset))return;
-   s.widths[i]=COLUMN_WIDTHS[preset];updateArrangement();
+   if(preset==='default')delete s.widths[i];
+   else if(Object.hasOwn(COLUMN_WIDTHS,preset))s.widths[i]=COLUMN_WIDTHS[preset];
+   else return;
+   updateArrangement();
   }else if(e.target.matches('[data-ux-view]')){
    const name=e.target.value;
    if(!name||!saved[key]?.[name])return;
