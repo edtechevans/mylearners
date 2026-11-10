@@ -216,16 +216,20 @@ export function renderClassEvidencePanel(students,{
  // Faculty layout deliberately hides the separate roster heading.
  const filterControls=lowGradeFilter?(()=>{
   const total=Math.max(0,Number(lowGradeFilter.total)||0);
-  const count=Math.max(0,Number(lowGradeFilter.count)||0);
-  const low=!!lowGradeFilter.active;
+  const count3=Math.max(0,Number(lowGradeFilter.count3??lowGradeFilter.count)||0);
+  const count2=Math.max(0,Math.min(count3,Number(lowGradeFilter.count2)||0));
+  const active=lowGradeFilter.active===2||lowGradeFilter.active==='2'?'2':
+   lowGradeFilter.active===3||lowGradeFilter.active==='3'||lowGradeFilter.active===true?'3':'all';
   return '<div class="faculty-concern-filter" role="group" aria-label="Filter students by subject results">'+
    '<span class="faculty-filter-label">Filter students</span>'+
-   '<button type="button" data-faculty-low-filter="all" aria-pressed="'+(!low)+
+   '<button type="button" data-faculty-low-filter="all" aria-pressed="'+(active==='all')+
    '" aria-label="Show all '+total+' students">All students <b>'+total+'</b></button>'+
-   '<button type="button" data-faculty-low-filter="low" aria-pressed="'+low+
-   '" title="At least one subject at 3 or below (2026–27 synthetic test data)"'+
-   ' aria-label="Show '+count+' students with at least one subject result of 3 or below">'+
-   '<span class="faculty-filter-dot" aria-hidden="true"></span>3 or below <b>'+count+'</b></button>'+
+   '<button type="button" data-faculty-low-filter="3" aria-pressed="'+(active==='3')+
+   '" aria-label="Show '+count3+' students with at least one subject result of 3 or below">'+
+   '<span class="faculty-filter-dot" aria-hidden="true"></span>3 or below <b>'+count3+'</b></button>'+
+   '<button type="button" data-faculty-low-filter="2" aria-pressed="'+(active==='2')+
+   '" aria-label="Show '+count2+' students with at least one subject result of 2 or below">'+
+   '<span class="faculty-filter-dot" aria-hidden="true"></span>2 or below <b>'+count2+'</b></button>'+
    '</div>';
  })():'';
  return '<section class="class-evidence-panel" aria-label="Select learning and wellbeing evidence for the class roster">'+
