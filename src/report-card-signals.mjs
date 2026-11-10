@@ -13,6 +13,18 @@ export function reportGradeBand(value,scale){
  const n=numericReportGrade(value,scale);
  return n===null?null:n<=3?'band-low':n===4?'band-mid-low':n<=6?'band-mid-high':'band-high';
 }
+/** A learner enters the Faculty review filter when any current-year numeric
+ * demo subject is at 3 or below. Descriptors and absent results never match. */
+export function hasLowReportGrade(student,academic){
+ if(!student)return false;
+ const report=facultyDemoReport(academicFor(academic,student.id));
+ return !!report?.testing&&report.scale==='1–7'&&
+  (report.subjects||[]).some(item=>{
+   const grade=numericReportGrade(item.value,report.scale);
+   return grade!==null&&grade<=3;
+  });
+}
+
 export function facultyRosterEvidenceColumns(students,academic,baseColumns){
  const subjects=new Set();
  for(const s of students||[]){
@@ -26,7 +38,7 @@ export function facultyRosterEvidenceColumns(students,academic,baseColumns){
  return [
   ...(attendance?[attendance]:[]),
   ...[...subjects].map(subject=>({id:'report:'+subject,kind:'report',
-   subject,label:'Report · '+subject})),
+   subject,label:subject})),
   ...other
  ];
 }
