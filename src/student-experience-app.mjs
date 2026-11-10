@@ -19,7 +19,7 @@ import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,READING_LEVELS,facultyDemoReport} from './academic-journey-data.mjs';
 import {quartileBand,formatIndex,experienceBand} from './faculty-bands.mjs?v=20261030wall2';
 import {facultyRosterEvidenceColumns,reportGradeBand,hasLowReportGrade} from './report-card-signals.mjs?v=20261110grades3';
-import {renderLeaderReportFollowup} from './leader-report-followup.mjs?v=20261110grades2';
+import {renderLeaderReportFollowup} from './leader-report-followup.mjs?v=20261110grades3';
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261028titles1';
 import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261030wall1';
 import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261110grades2';
