@@ -22,8 +22,12 @@ const distribution=(outcomes,scale)=>{
    '" aria-label="'+esc(b.name+': '+counts[i]+' subjects')+'">'+counts[i]+'</span>').join('')+
   '</div>';
 };
-export function renderLeaderReportFollowup({students,academic,query='',multiple=false,expanded=false}={}){
- const summary=leaderReportSignalSummary(students||[],academic);
+export function renderLeaderReportFollowup({students,academic,query='',multiple=false,expanded=false,threshold=3}={}){
+ const activeThreshold=threshold===2?2:3;
+ const summary3=leaderReportSignalSummary(students||[],academic,3);
+ const summary2=leaderReportSignalSummary(students||[],academic,2);
+ const summary=activeThreshold===2?summary2:summary3;
+ const thresholdLabel=activeThreshold+' or below';
  const q=String(query||'').trim().toLocaleLowerCase();
  const matching=summary.rows.filter(x=>
   (!multiple||x.low.length>=2)&&(!q||
@@ -37,7 +41,7 @@ export function renderLeaderReportFollowup({students,academic,query='',multiple=
  const table=shown.length?
   '<div class="leader-report-tablewrap"><table class="leader-report-roster"><thead><tr>'+
   '<th scope="col">Learner</th><th scope="col">Current class</th>'+
-  '<th scope="col">Subjects at 3 or below</th><th scope="col">Total</th>'+
+  '<th scope="col">Subjects at '+thresholdLabel+'</th><th scope="col">Total</th>'+
   '<th scope="col">All subject results</th><th scope="col">Test period</th>'+
   '</tr></thead><tbody>'+
   shown.map(x=>'<tr data-preview-student="'+esc(x.student.id)+'"><th scope="row"><strong>'+esc(x.student.name)+'</strong></th>'+
@@ -56,21 +60,26 @@ export function renderLeaderReportFollowup({students,academic,query='',multiple=
    'No numeric 1–7 test grades are available for this selection.')+'</p>';
  return '<section class="leader-section leader-report-followup" aria-labelledby="leader-report-followup-title">'+
   '<div class="leader-sectionhead"><div><div class="eyebrow">SECONDARY · SUBJECT RESULTS</div>'+
-  '<h2 id="leader-report-followup-title">Students with 3 or below</h2>'+
-  '<p>Find learners with at least one subject result of 3 or below in the 2026–27 test dataset.</p></div>'+
+  '<h2 id="leader-report-followup-title">Students with '+thresholdLabel+'</h2>'+
+  '<p>Find learners with at least one subject result of '+thresholdLabel+' in the 2026–27 test dataset.</p></div>'+
   '<span class="leader-period">2026–27 TEST DATA · Not issued</span></div>'+
   '<div class="leader-report-topline"><div class="leader-report-count">'+
   '<strong>'+summary.flagged+'</strong><span>learners to review</span></div>'+
   '<div class="leader-report-count"><strong>'+summary.lowSubjectResults+
-  '</strong><span>subject results at 3 or below</span></div>'+
+  '</strong><span>subject results at '+thresholdLabel+'</span></div>'+
   '<div class="leader-report-coverage"><strong>'+summary.numericReports+' / '+summary.selected+
   '</strong><span>learners with complete numeric test data</span></div></div>'+
   legend+
   '<div class="leader-report-toolbar">'+
+  '<div class="leader-report-thresholds" role="group" aria-label="Filter subject result threshold">'+
+  '<button type="button" data-leader-report-threshold="3" aria-pressed="'+(activeThreshold===3)+
+  '">3 or below <b>'+summary3.flagged+'</b></button>'+
+  '<button type="button" data-leader-report-threshold="2" aria-pressed="'+(activeThreshold===2)+
+  '">2 or below <b>'+summary2.flagged+'</b></button></div>'+
   '<label class="leader-report-search">Find a learner or subject<input type="search" data-leader-report-query '+
   'value="'+esc(query)+'" placeholder="Name, class or subject" aria-label="Search learners by name, class or subject"></label>'+
   '<button class="leader-report-multiple" type="button" data-leader-report-multiple aria-pressed="'+multiple+'">'+
-  'Two or more subjects at 3 or below</button></div>'+
+  'Two or more subjects at '+thresholdLabel+'</button></div>'+
   '<p class="leader-report-list-count">'+matching.length+' matching learners'+
   (matching.length>shown.length?' · first '+shown.length+' shown':'')+'</p>'+
   table+
