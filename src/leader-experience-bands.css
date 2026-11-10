@@ -1,0 +1,173 @@
+/* Leaders: same four fixed -2 to +2 experience bands as Faculty.
+   These are check-in index ranges, not academic/report-card grades.
+   Keep both a clear tinted card and the complete four-colour reference scale.
+*/
+#app[data-workspace="leader"] .leader-experience-card{
+ --leader-band:#91a3ad;
+ background:#f8fafb!important;
+ border:1px solid #d8e1e6!important;
+ border-top:5px solid var(--leader-band)!important;
+ gap:7px!important;
+ padding:16px 18px!important;
+ min-width:0;
+}
+#app[data-workspace="leader"] .leader-experience-card.index-band-low{
+ --leader-band:#a6373f;
+ background:#fff2f1!important;
+ border-color:#e8c2c6!important;
+ border-top-color:#a6373f!important;
+}
+#app[data-workspace="leader"] .leader-experience-card.index-band-mid-low{
+ --leader-band:#e4a15f;
+ background:#fff5eb!important;
+ border-color:#f0d2b1!important;
+ border-top-color:#e4a15f!important;
+}
+#app[data-workspace="leader"] .leader-experience-card.index-band-mid-high{
+ --leader-band:#a6bd88;
+ background:#f3f7e9!important;
+ border-color:#c8d8b5!important;
+ border-top-color:#a6bd88!important;
+}
+#app[data-workspace="leader"] .leader-experience-card.index-band-high{
+ --leader-band:#246b4f;
+ background:#edf7f0!important;
+ border-color:#b3d3c2!important;
+ border-top-color:#246b4f!important;
+}
+#app[data-workspace="leader"] .leader-experience-card .leader-measure-label{
+ color:#294a60!important;
+ font-size:13px!important;
+}
+#app[data-workspace="leader"] .leader-experience-value{
+ color:#12354d!important;
+ letter-spacing:-.035em!important;
+}
+#app[data-workspace="leader"] .leader-experience-interval{
+ display:inline-block;
+ color:#365a65;
+ font-size:11px;
+ font-weight:750;
+ line-height:1.45;
+ margin:-2px 0 2px;
+}
+#app[data-workspace="leader"] .leader-experience-scale{
+ width:100%;
+ min-width:0;
+ padding:7px 2px 5px;
+ margin:1px 0 5px;
+}
+#app[data-workspace="leader"] .leader-experience-segments{
+ position:relative;
+ display:grid;
+ grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:3px;
+ width:100%;
+ height:13px;
+}
+#app[data-workspace="leader"] .leader-experience-segments>span:not(.leader-experience-marker){
+ display:block;
+ height:100%;
+ min-width:0;
+ border-radius:4px;
+}
+#app[data-workspace="leader"] .leader-experience-segments>.band-low,
+#app[data-workspace="leader"] .leader-experience-legend-swatch.band-low{
+ background:#a6373f;
+}
+#app[data-workspace="leader"] .leader-experience-segments>.band-mid-low,
+#app[data-workspace="leader"] .leader-experience-legend-swatch.band-mid-low{
+ background:#e4a15f;
+}
+#app[data-workspace="leader"] .leader-experience-segments>.band-mid-high,
+#app[data-workspace="leader"] .leader-experience-legend-swatch.band-mid-high{
+ background:#a6bd88;
+}
+#app[data-workspace="leader"] .leader-experience-segments>.band-high,
+#app[data-workspace="leader"] .leader-experience-legend-swatch.band-high{
+ background:#246b4f;
+}
+#app[data-workspace="leader"] .leader-experience-marker{
+ position:absolute;
+ z-index:1;
+ top:50%;
+ width:16px;
+ height:16px;
+ border-radius:50%;
+ background:#173e55;
+ border:3px solid #fff;
+ transform:translate(-50%,-50%);
+ box-shadow:0 0 0 1px #23475d,0 2px 4px #12354628;
+ box-sizing:border-box;
+ pointer-events:none;
+}
+#app[data-workspace="leader"] .leader-experience-scale.is-missing .leader-experience-segments{
+ opacity:.24;filter:grayscale(1);
+}
+#app[data-workspace="leader"] .leader-experience-change{
+ font-variant-numeric:tabular-nums;
+ font-size:12px;
+ line-height:1.5!important;
+ color:#486471!important;
+}
+#app[data-workspace="leader"] .leader-experience-count{
+ font-size:11.5px!important;
+ line-height:1.5!important;
+ color:#506b75!important;
+}
+#app[data-workspace="leader"] .leader-experience-legend{
+ display:flex;
+ align-items:center;
+ flex-wrap:wrap;
+ column-gap:14px;
+ row-gap:7px;
+ padding:10px 13px;
+ margin:12px 0 17px;
+ border:1px solid #dce6e7;
+ background:#fbfcfc;
+ border-radius:10px;
+ color:#3c5968;
+}
+#app[data-workspace="leader"] .leader-experience-legend-title{
+ font-size:11.5px;
+ font-weight:800;
+ color:#274d66;
+ margin-right:2px;
+}
+#app[data-workspace="leader"] .leader-experience-legend-item{
+ display:inline-flex;align-items:center;gap:6px;
+ font-size:11px;
+ white-space:nowrap;
+ font-variant-numeric:tabular-nums;
+ font-weight:700;
+}
+#app[data-workspace="leader"] .leader-experience-legend-swatch{
+ display:inline-block;
+ flex:0 0 17px;
+ width:17px;height:13px;
+ border-radius:4px;
+}
+#app[data-workspace="leader"] .leader-experience-legend-note{
+ margin-left:auto;
+ font-size:10.5px;
+ color:#607783;
+ line-height:1.45;
+}
+@media(max-width:1050px){
+ #app[data-workspace="leader"] .leader-experience-legend-note{flex-basis:100%;margin-left:0}
+}
+@media(max-width:600px){
+ #app[data-workspace="leader"] .leader-experience-legend{
+  gap:8px 12px;
+  padding:10px;
+ }
+ #app[data-workspace="leader"] .leader-experience-legend-title{flex-basis:100%}
+ #app[data-workspace="leader"] .leader-experience-card{padding:14px 16px!important}
+}
+@media print{
+ #app[data-workspace="leader"] .leader-experience-card,
+ #app[data-workspace="leader"] .leader-experience-segments,
+ #app[data-workspace="leader"] .leader-experience-legend-swatch{
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+ }
+}
