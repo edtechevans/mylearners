@@ -14,7 +14,7 @@ test('sitewide scheme matches the established Board palette and dot motif',()=>{
  assert.match(css,/background-image:radial-gradient\(circle,#ffe3e6/);
 });
 test('new brand CSS loads after existing design layers',()=>{
- const brandAt=html.indexOf('aisg-board-inspired-sitewide.css?v=20261111brand1');
+ const brandAt=html.indexOf('aisg-board-inspired-sitewide.css?v=20261111brand2');
  const oldAt=html.indexOf('leader-daily-workspaces.css');
  const headEnd=html.indexOf('</head>');
  assert.ok(oldAt>=0&&brandAt>oldAt&&headEnd>brandAt);
