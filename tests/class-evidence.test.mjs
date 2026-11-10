@@ -67,6 +67,7 @@ test('Faculty everyday view hides advanced evidence without removing the control
  const everyday=renderClassEvidencePanel(students,{...ctx,rosterView:'everyday'});
  assert.match(everyday,/<details class="class-evidence-advanced">/);
  assert.match(everyday,/Explore and customise evidence/);
+ assert.match(everyday,/data-ux-customize-columns/,'Column arranger must be visible in everyday mode');
  assert.match(everyday,/data-class-evidence="map"/);
  assert.match(everyday,/data-class-compare/);
  const focused=renderClassEvidencePanel(students,{...ctx,rosterView:'focused'});
