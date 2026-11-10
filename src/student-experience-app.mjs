@@ -3,6 +3,8 @@ import {applyFacultyDemo,DEFAULT_TEACHER_ID} from './faculty-demo.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs';
 import {renderLeaderSupportSection} from './leader-support-view.mjs';
+import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvidence,leaderAdvisoryClasses} from './leader-daily-workspaces.mjs';
+import {leaderReportSignalSummary} from './report-card-signals.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
 import {createSSSDemoRecords} from './sss-demo-data.mjs';
 import {seedSupportDemo,loadDraftEntries,storeDraftEntries,createDraftEntry} from './support-workspace-data.mjs';
@@ -42,6 +44,16 @@ let SUPPORT_DRAFTS=loadDraftEntries();
 const supportEntries=()=>[...SUPPORT_SEEDED.filter(x=>!SUPPORT_DRAFTS.some(d=>d.id===x.id)),...SUPPORT_DRAFTS];
 const root=document.getElementById('app');
 const saved=(k,d)=>{try{return sessionStorage.getItem(k)||d}catch{return d}};
+const LEADER_SAVED_KEY='mylearners-demo-leaders-saved-view-v1';
+const savedLeaderView=()=>{
+ try{
+  const value=JSON.parse(localStorage.getItem(LEADER_SAVED_KEY)||'null');
+  if(!value||!['Elementary','Secondary'].includes(value.division))return null;
+  if(value.grade!=='All'&&(!GRADES.includes(value.grade)||
+    (gradeNumber(value.grade)<=5?'Elementary':'Secondary')!==value.division))return null;
+  return {division:value.division,grade:value.grade};
+ }catch{return null}
+};
 const facultyPref=(teacherId,field,fallback='')=>{
  try{return localStorage.getItem('mylearners-demo-'+teacherId+'-'+field)||fallback}catch{return fallback}
 };
@@ -78,6 +90,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  maiaDimension:'relationships',maiaWindow:'F26',
  studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
   leaderSupportOpen:false,leaderReportQuery:'',leaderReportMultiple:false,leaderReportExpanded:false,leaderReportThreshold:3,
+  leaderStudentId:'',leaderReviewFilter:'all',leaderReviewExpanded:false,
  sssGrade:'All',sssQuery:'',sssStudentId:'',sssOpenGrades:['G3'],sssAcademicOpen:false,
   supportForm:null,supportFilter:'all',supportQuery:'',
   sssManager:'All',sssPanel:'summary',supportBarrier:'All',
@@ -498,13 +511,20 @@ function faculty(){
 }
 
 function leader(){
+ if(state.division==='All')return heading('Leadership Overview',
+  'Begin whole school, choose Elementary or Secondary, then drill down by grade.')+
+  renderLeaderWholeSchool({students:DATA.students,data:DATA,academic:ACADEMIC_RECORDS,
+   records:RECORDS,sssRecords:SSS_RECORDS,entries:supportEntries(),savedView:savedLeaderView()})+info();
  const grades=GRADES;
  const divisions=state.division==='All'?['Elementary','Secondary']:[state.division];
  const group=DATA.students.filter(s=>divisions.includes(s.division)&&
   (state.grade==='All'||s.grade===state.grade)&&(!state.classId||s.classId===state.classId));
- const classes=DATA.classes.filter(c=>divisions.includes(c.division)&&
-  (state.grade==='All'||c.grade===state.grade));
+ const classes=leaderAdvisoryClasses(DATA.classes,state.division,state.grade);
  const selectedClass=classes.find(c=>c.id===state.classId);
+ const leaderPerson=group.find(s=>s.id===state.leaderStudentId);
+ if(leaderPerson)return heading('Leadership Overview','Read-only evidence for leadership review.')+
+  renderLeaderLearnerEvidence({student:leaderPerson,data:DATA,academic:ACADEMIC_RECORDS,
+   records:RECORDS})+info();
  const secondaryOnly=group.length>0&&group.every(s=>s.division==='Secondary');
  const scopeLabel=selectedClass?.name||
   (state.grade!=='All'?
