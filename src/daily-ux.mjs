@@ -155,7 +155,7 @@ function decorate(table,index){
  panel.innerHTML='<div class="ux-tool-main"><label class="ux-filter-label"><span class="sr-only">Search visible table</span>'+
   '<input class="ux-search-input" data-ux-search type="search" value="'+safe(s.search)+'" placeholder="Search these records" aria-label="Search records in this table"></label>'+
   '<details class="ux-menu"><summary>Column filters</summary><div class="ux-popover"><strong>Filter by values</strong><div class="ux-field-grid">'+fields+'</div></div></details>'+
-  '<details class="ux-menu"><summary data-ux-columns>'+(isFacultyColumns?'Arrange / hide columns':'Columns')+'</summary><div class="ux-popover'+(isFacultyColumns?' ux-column-layout-popover':'')+'"><strong>'+(isFacultyColumns?'Arrange, size and hide':'Show columns')+'</strong>'+columns+'</div></details>'+
+  '<details class="ux-menu'+(isFacultyColumns?' ux-columns-menu':'')+'"><summary data-ux-columns>'+(isFacultyColumns?'Arrange / hide columns':'Columns')+'</summary><div class="ux-popover'+(isFacultyColumns?' ux-column-layout-popover':'')+'"><strong>'+(isFacultyColumns?'Arrange, size and hide':'Show columns')+'</strong>'+columns+'</div></details>'+
   toolButton('clear','Reset')+
   ((role()==='faculty'||role()==='board')?toolButton('export','Export visible CSV'):'')+
   '</div><div class="ux-view-row"><label>Saved layout</label><select class="ux-view-picker" data-ux-view aria-label="Select saved table layout">'+
