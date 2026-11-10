@@ -51,22 +51,39 @@ test('missing academic result shows an explanation rather than a synthetic zero'
  assert.match(result.note,/not a score of zero/i);
 });
 
-test('Faculty Engagement hover gives the actual four-point index and underlying responses',()=>{
+test('Faculty Engagement hover shows observed index values across check-in windows, not explanatory text',()=>{
  const item=experienceFor(experience,student.id,'engagement','F26');
  assert.ok(item);
  const result=resolveEvidencePreview(trigger('experience-cell',
   {previewStudent:student.id,previewMeasure:'engagement',previewWindow:'F26'}),ctx());
- assert.equal(result.title,'Engagement · '+student.name);
- assert.ok(result.rows.some(([k,v])=>k==='Index'&&v.includes(item.value.toFixed(2))));
- assert.equal(result.rows.length,4);
- assert.ok(result.note.includes('−2'));
+ assert.equal(result.title,'Engagement');
+ assert.equal(result.subtitle,student.name);
+ assert.equal(result.trend.points.at(-1).label,'Fall 2026');
+ assert.ok(result.trend.points.at(-1).value.includes(item.value.toFixed(2)));
+ assert.equal(result.rows.length,0);
+ assert.equal(result.note,'');
+ assert.doesNotMatch(JSON.stringify(result),/synthetic|TEST DATA|assessment context/i);
 });
-test('academic hover keeps source RIT growth distinct from grade-level quartile',()=>{
+test('MAP hover presents actual RIT results from comparable windows without Q bands',()=>{
  const result=resolveEvidencePreview(trigger('map',
   {previewStudent:student.id,previewSubject:'Mathematics',previewBand:'Q3'}),ctx());
- assert.ok(result.title.startsWith('MAP Mathematics'));
- assert.ok(result.rows.some(([k,v])=>k==='Same-grade demo band'&&v==='Q3'));
- assert.match(result.note,/not an official norm/);
+ assert.equal(result.title,'MAP Mathematics');
+ assert.equal(result.subtitle,student.name);
+ assert.ok(result.trend.points.length>1);
+ assert.equal(result.trend.points.at(-1).label,'Fall 2026');
+ assert.match(result.trend.change?.value||'',/RIT/);
+ assert.equal(result.note,'');
+ assert.doesNotMatch(JSON.stringify(result),/Q3|fictional|synthetic/i);
+});
+test('Report-card hover highlights current subject and earlier same-scale results',()=>{
+ const report=academic.get(student.id).workingReport;
+ const result=resolveEvidencePreview(trigger('academic',
+  {previewStudent:student.id,previewMeasure:'report',evidenceSubject:'Mathematics'}),ctx());
+ assert.equal(result.title,'Mathematics');
+ assert.equal(result.trend.points.at(-1).label,report.year);
+ assert.equal(result.trend.points.at(-1).value,report.subjects.find(x=>x.subject==='Mathematics').value);
+ assert.equal(result.note,'');
+ assert.ok(result.trend.points.every(x=>x.label!=='2023–24'||x.value!=='TEST DATA'));
 });
 test('Faculty cannot hover another class learner experience without authorisation',()=>{
  const other=data.students.find(s=>!teacher.classIds.includes(s.classId));
@@ -74,9 +91,12 @@ test('Faculty cannot hover another class learner experience without authorisatio
  assert.equal(resolveEvidencePreview(trigger('experience-cell',
   {previewStudent:other.id,previewMeasure:'belonging',previewWindow:'F26'}),ctx()),null);
 });
-test('Leader table indicators retain hover explanations without separate icon buttons',()=>{
+test('Leader table indices show scoped previous check-ins rather than methodology',()=>{
  const result=resolveEvidencePreview(trigger('leader-index',
   {previewMeasure:'belonging',previewGroup:'Grade 7'}),ctx('leader'));
- assert.equal(result.title,'Belonging · Grade 7');
- assert.ok(result.note.includes('−2'));
+ assert.equal(result.title,'Belonging');
+ assert.equal(result.subtitle,'Grade 7');
+ assert.ok(result.trend.points.length>=2);
+ assert.equal(result.trend.points.at(-1).label,'Fall 2026');
+ assert.equal(result.note,'');
 });

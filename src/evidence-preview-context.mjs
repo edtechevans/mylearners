@@ -5,12 +5,40 @@ import {attendanceSummary,gradeNumber} from './data.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
 import {academicFor,latestAcademic,facultyDemoReport} from './academic-journey-data.mjs';
 import {experienceFor,EXPERIENCE_WINDOWS} from './experience-data.mjs';
+import {reportProgress,issuedReportProgress,academicCheckinProgress,mapProgress,experienceProgress,groupExperienceProgress,maiaProgress} from './evidence-progress.mjs';
+import {MAIA_DEFAULT_DIMENSION} from './maia-demo.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
-import {PREVIEW_GUIDE,makePreview} from './evidence-previews.mjs?v=20261030wall3';
+import {PREVIEW_GUIDE,makePreview} from './evidence-previews.mjs?v=20261110timeline1';
 const tidy=v=>String(v??'').replace(/\s+/g,' ').trim();
 const value=v=>v===undefined||v===null||v===''?'Not available':String(v);
 const fmtDate=(v)=>/^\d{4}-\d{2}-\d{2}$/.test(String(v||''))?String(v):'See assessment record';
 const t=(node,selector)=>tidy(node?.querySelector?.(selector)?.textContent);
+const compact=(title,subtitle,trend,kind='academic',fallback='')=>makePreview({
+ title,subtitle,kind,trend,
+ rows:trend?.points?.length?[]:(fallback?[['Current',fallback]]:[])
+});
+const facultyGroup=ctx=>{
+ const classes=ctx.data.classes.filter(c=>ctx.allowedClassIds?.includes(c.id));
+ const current=classes.find(c=>c.id===ctx.state.classId)||classes[0];
+ return (current?.studentIds||[]).map(id=>ctx.data.userIndex.get(id)).filter(Boolean);
+};
+const leaderGroup=(ctx,groupLabel='')=>{
+ const state=ctx.state;
+ const division=state.division||'All',gradeSelection=state.grade||'All';
+ const divisions=division==='All'?['Elementary','Secondary']:[division];
+ const selected=ctx.data.students.filter(s=>divisions.includes(s.division)&&
+  (gradeSelection==='All'||s.grade===gradeSelection)&&
+  (!state.classId||s.classId===state.classId));
+ if(!groupLabel)return selected;
+ const label=groupLabel.trim();
+ const matchedGrade=label.match(/^Grade\s+(\d+)$/i);
+ const grade=matchedGrade?'G'+matchedGrade[1]:label;
+ const byGrade=selected.filter(s=>s.grade===grade);
+ if(byGrade.length)return byGrade;
+ const matchingClass=ctx.data.classes.find(c=>c.name===label||c.id===label);
+ const byClass=matchingClass?selected.filter(s=>s.classId===matchingClass.id):[];
+ return byClass.length?byClass:selected;
+};
 function simpleGuide(key,contextLabel='',displayed=''){
  const guide=PREVIEW_GUIDE[key]||PREVIEW_GUIDE.report;
  return makePreview({title:guide.label,subtitle:contextLabel||guide.source,
@@ -59,6 +87,27 @@ function facultyMetric(trigger,ctx){
   kind:key==='engagement'||key==='belonging'?'experience':'academic'});
 }
 function cardDetails(target,ctx,kind){
+ if(kind==='student-tile'||kind==='academic-card'){
+  const person=learner(ctx.state.studentId,ctx);
+  const academic=person?academicFor(ctx.academic,person.id):null;
+  if(academic){
+   if(kind==='student-tile'&&target.matches?.('.student-today-celebrate')){
+    const subject=t(target,'.student-today-title');
+    return compact(subject,person.name,
+     issuedReportProgress(academic,subject,academic.reports?.[0]?.year),'academic',
+     t(target,'.student-today-score')||'—');
+   }
+   const label=(t(target,'h3')||t(target,'.student-today-title')||'').toLowerCase();
+   const mode=label.includes('ixl')||label.includes('mathematics check-in')?'ixl':
+    label.includes('phonics')||label.includes('reading skills check-in')?'core':
+    label.includes('f&p')||label.includes('reading text level')?'fp':null;
+   if(mode)return compact(PREVIEW_GUIDE[mode].label,person.name,
+    academicCheckinProgress(academic,mode),'academic','—');
+   if(label.includes('map')&&person)return compact('MAP Mathematics',person.name,
+    mapProgress(ctx.data.map[person.id]||[],'Mathematics'),'academic','—');
+  }
+ }
+
  const title=t(target,'h3')||t(target,'h4')||t(target,'.student-today-title')||
   t(target,'.leader-stat-heading span')||t(target,'.leader-measure-label')||
   t(target,'.leader-support-metric span')||t(target,'.board-strength-eyebrow')||
@@ -92,21 +141,19 @@ function cardDetails(target,ctx,kind){
    note:'Preview only the visible record heading. Open the authorised support record for any notes or plans.',
    kind:'support'});
  }
- const subtitle=ctx.role==='board'?'Aggregated school results · reporting period shown in card':
-  ctx.role==='leader'?'Current leader selection · fictional data':
-  ctx.role==='student'?'My fictional learning example':
-  ctx.role==='sss'?'Fictional, authorised learner evidence':'Fictional classroom evidence';
+ const subtitle=ctx.role==='board'?'Schoolwide':ctx.role==='student'?'My learning':
+  ctx.role==='leader'?'Selected learners':ctx.role==='sss'?'Support':'Class view';
  const dataContext=t(target,'.leader-stat > p')||
   t(target,'.leader-support-metric small')||t(target,'.board-dp-graphic-note')||
   t(target,'.student-today-tile > small')||t(target,'.sss-evidence-tile > small')||
   t(target,'.board-strength-caption')||'';
  const chartMeaning=kind==='leader-monitor'?(target.getAttribute?.('aria-label')||''):'';
  const status='';
- const note=guide.description+
-  (ctx.role==='board'?' Compare only like-for-like cohorts and testing windows.':
-   ctx.role==='leader'?' Counts and eligibility depend on the selected division, grade and class.':'');
- return makePreview({title:chartMeaning||title,subtitle,rows:[...(headline?[['Displayed',headline]]:[]),...(dataContext?[['Evidence context',dataContext]]:[])],
-   status,note,kind:ctx.role==='board'?'board':ctx.role==='sss'?'support':
+ // A data-point hover is a glanceable value, not an assessment explainer.
+ // Methodology remains accessible through the existing explicit help controls.
+ return makePreview({title:chartMeaning||title,subtitle,
+  rows:headline?[['Current',headline]]:[],
+  status,kind:ctx.role==='board'?'board':ctx.role==='sss'?'support':
    guideKey==='engagement'||guideKey==='belonging'?'experience':'academic'});
 }
 export function resolveEvidencePreview(trigger,ctx){
@@ -119,67 +166,88 @@ export function resolveEvidencePreview(trigger,ctx){
   const student=person||learner(trigger.dataset.sssStudent,ctx);
   return student?studentPreview(student,ctx,kind==='sss-person'):null;
  }
+ if(kind==='experience-summary'){
+  if(ctx.role!=='faculty')return null;
+  const label=tidy(trigger.textContent).toLowerCase();
+  const metric=label.includes('belonging')?'belonging':label.includes('engagement')?'engagement':null;
+  if(!metric)return null;
+  const students=facultyGroup(ctx);
+  return compact(PREVIEW_GUIDE[metric].label,'My class',
+   groupExperienceProgress(ctx.experience,students,metric,'F26'),'experience');
+ }
+ if(kind==='personal-experience'){
+  if(!['student','faculty'].includes(ctx.role))return null;
+  const person=learner(ctx.state.studentId,ctx);
+  const metric=trigger.dataset.previewMeasure;
+  if(!person||!['engagement','belonging'].includes(metric))return null;
+  return compact(PREVIEW_GUIDE[metric].label,person.name,
+   experienceProgress(ctx.experience,person.id,metric,ctx.state.window||'F26'),'experience');
+ }
  if(kind==='leader-index'){
   const metric=trigger.dataset.previewMeasure;
   if(ctx.role!=='leader'||!['engagement','belonging'].includes(metric))return null;
   const scope=trigger.dataset.previewGroup||'Selected group';
-  const label=PREVIEW_GUIDE[metric].label;
-  const shown=tidy(trigger.dataset.evidenceValue||trigger.textContent)||'Not available';
-  return makePreview({title:label+' · '+scope,subtitle:'Current leader selection · fictional data',
-   rows:[['Displayed index',shown]],
-   note:PREVIEW_GUIDE[metric].description+' Select a class or use the detailed explanation for underlying question-level evidence.',
-   kind:'experience'});
+  return compact(PREVIEW_GUIDE[metric].label,scope,
+   groupExperienceProgress(ctx.experience,leaderGroup(ctx,scope),metric,ctx.state.window||'F26'),
+   'experience');
+ }
+ if(kind==='leader-experience'){
+  if(ctx.role!=='leader')return null;
+  const title=t(trigger,'.leader-measure-label').toLowerCase();
+  const metric=title.includes('belonging')?'belonging':'engagement';
+  const action=trigger.querySelector?.('[data-action^="explain:"]')?.dataset.action||'';
+  const scope=action.split(':')[1]||'leader';
+  let students=leaderGroup(ctx);
+  if(scope==='elementary'||scope==='secondary')
+   students=students.filter(s=>s.division===(scope==='elementary'?'Elementary':'Secondary'));
+  return compact(PREVIEW_GUIDE[metric].label,
+   scope==='leader'?'Selected students':scope==='elementary'?'Elementary':'Secondary',
+   groupExperienceProgress(ctx.experience,students,metric,ctx.state.window||'F26'),'experience');
  }
  if(kind==='experience-cell'){
   const metric=trigger.dataset.previewMeasure;
   if(!person||!ctx.experience||!['engagement','belonging'].includes(metric))return null;
   const window=trigger.dataset.previewWindow||ctx.state.classExperienceWindow||'F26';
-  const entry=experienceFor(ctx.experience,person.id,metric,window);
-  const source=EXPERIENCE_WINDOWS.find(w=>w.key===window)?.label||window;
-  const fmt=v=>Number.isFinite(v)?(v>0?'+':'')+v.toFixed(2):'Not available';
-  return makePreview({
-   title:PREVIEW_GUIDE[metric].label+' · '+person.name,
-   subtitle:source+' · fictional student check-in',
-   rows:entry?[['Index',fmt(entry.value)],...entry.items.map(item=>[item.question,item.label])]:
-    [['Index','No response available']],
-   note:PREVIEW_GUIDE[metric].description+' Select the value to open the learner profile for more context.',
-   kind:'experience'
-  });
+  return compact(PREVIEW_GUIDE[metric].label,person.name,
+   experienceProgress(ctx.experience,person.id,metric,window),'experience','—');
  }
  if(kind==='academic'||kind==='attendance'||kind==='map'){
-  const name=person?.name||'Learner';
+  if(!person)return null;
   const academic=academicFor(ctx.academic,person.id);
   if(kind==='attendance'){
    const att=attendanceSummary(ctx.data.attendance[person.id]||[]);
-   return makePreview({title:'Attendance · '+name,subtitle:'Fictional school attendance register',
-    rows:[['Recorded rate',att.rate===null?'Not available':att.rate+'%'],
-      ['Recording period','Through 8 Oct 2026']],
-    note:PREVIEW_GUIDE.attendance.description,kind:'academic'});
+   return compact('Attendance',person.name,null,'academic',
+    att.rate===null?'—':att.rate+'%');
   }
   if(kind==='map'){
    const subject=trigger.dataset.previewSubject||'Mathematics';
-   const m=latestMapGrowth(ctx.data.map[person.id]||[],subject);
-   const band=trigger.dataset.previewBand;
-   return makePreview({title:'MAP '+subject+' · '+name,subtitle:'Fictional comparable testing windows',
-    rows:[['Observed change',m.status==='comparable'?(m.actual>=0?'+':'')+m.actual+' RIT':'Not comparable'],
-     ...(band?[['Same-grade demo band',band]]:[])],
-    note:PREVIEW_GUIDE.map.description+(band?' The colour is a same-grade demonstration comparison, not an official norm.':''),kind:'academic'});
+   return compact('MAP '+subject,person.name,
+    mapProgress(ctx.data.map[person.id]||[],subject),'academic','—');
   }
   const mode=trigger.dataset.previewMeasure||'report';
   const subject=trigger.dataset.evidenceSubject||ctx.state.academicSubject||'Mathematics';
-  const report=mode==='report'&&ctx.role==='faculty'?facultyDemoReport(academic):null;
-  const sample=report?.subjects.find(x=>x.subject===subject);
-  const latest=sample?{...sample,label:report.year}:latestAcademic(academic,mode,subject);
-  const band=trigger.dataset.previewBand;
-  return makePreview({title:mode==='report'&&ctx.role==='faculty'?'2026–27 test report grade':PREVIEW_GUIDE[mode]?.label||'Academic result',subtitle:name,
-   rows:[['Displayed result',value(trigger.dataset.evidenceValue||latest?.value)],
-     ...(band?[['Same-grade demo group',band]]:[]),
-     ['Subject',mode==='report'?subject:PREVIEW_GUIDE[mode]?.label||'Assessment'],
-     ['Assessment context',trigger.dataset.evidenceContext||(report?'2026–27 synthetic TEST DATA · NOT ISSUED':latest?.label)||'No eligible result']],
-   note:(mode==='report'&&ctx.role==='faculty'?
-     'Synthetic 2026–27 test grade, not an issued report card. The 1–7 display bands apply to MYP/DP example grades only. Historical issued records are kept separately.':
-     (PREVIEW_GUIDE[mode]||PREVIEW_GUIDE.report).description)+
-    (band?' This colour compares a fictional same-grade cohort, not an external norm.':''),kind:'academic'});
+  if(mode==='report')
+   return compact(subject,person.name,reportProgress(academic,subject),'academic','—');
+  if(['ixl','core','fp'].includes(mode))
+   return compact(PREVIEW_GUIDE[mode].label,person.name,
+    academicCheckinProgress(academic,mode),'academic','—');
+  if(mode==='flourishing'){
+   const dimension=ctx.state.maiaDimension||MAIA_DEFAULT_DIMENSION;
+   return compact('Maia · '+dimension,person.name,
+    maiaProgress(ctx.maia,person.id,dimension,ctx.state.maiaWindow||'F26'),'experience','—');
+  }
+  return compact(PREVIEW_GUIDE[mode]?.label||'Assessment',person.name,null,'academic',
+   value(trigger.dataset.evidenceValue));
+ }
+ if(kind==='leader-assessment'&&ctx.role==='leader'){
+  const row=trigger.closest?.('tr[data-preview-student]');
+  const id=row?.dataset.previewStudent;
+  const student=id?ctx.data.userIndex.get(id):null;
+  if(student){
+   const subject=t(trigger,'span')||t(trigger,'strong');
+   return compact(subject,student.name,
+    reportProgress(academicFor(ctx.academic,student.id),subject),'academic','—');
+  }
  }
  if(kind==='tag'){
   const tag=tidy(trigger.dataset.previewTag||trigger.textContent);
@@ -189,12 +257,13 @@ export function resolveEvidencePreview(trigger,ctx){
     kind:'support'});
  }
  if(kind==='issued'){
-  const parent=trigger.closest('.academic-profile');
-  const year=t(parent,'.academic-report-meta strong');
-  const scale=t(parent,'.academic-report-meta span');
-  return makePreview({title:t(trigger,'span')||'Issued result',subtitle:year+' · '+scale,
-   rows:[['Issued value',t(trigger,'strong')||'Not available']],
-   note:PREVIEW_GUIDE.report.description,kind:'academic'});
+  const student=learner(ctx.state.studentId,ctx);
+  if(!student)return null;
+  const subject=t(trigger,'span')||'Subject';
+  const year=t(trigger.closest?.('.academic-profile'),'.academic-report-meta strong');
+  return compact(subject,student.name,
+   issuedReportProgress(academicFor(ctx.academic,student.id),subject,year),
+   'academic',t(trigger,'strong')||'—');
  }
  if(kind==='method'){
   const id=trigger.dataset.experienceExplain||'';
@@ -212,16 +281,18 @@ export function resolveEvidencePreview(trigger,ctx){
    note:help.slice(0,220),kind:'academic'});
  }
  if(kind==='monitor-point'){
-  const week=trigger.dataset.previewWeek;
-  const observed=trigger.dataset.previewObserved;
-  const target=trigger.dataset.previewTarget;
-  return makePreview({title:'Intervention monitoring · Week '+value(week),
-   subtitle:'Fictional weekly observation',rows:[
-    ['Observed',value(observed)+' / 5 opportunities'],
-    ['Example target',value(target)+' / 5 opportunities'],
-    ['Week',value(week)]],
-   note:'Observed values are examples, not diagnostic evidence or an estimate of intervention effectiveness.',
-   kind:'support'});
+  const week=Number(trigger.dataset.previewWeek);
+  const circles=[...(trigger.closest?.('svg')?.querySelectorAll?.('circle[data-preview-week]')||[])];
+  const points=circles.map(x=>({
+   week:Number(x.dataset.previewWeek),observed:Number(x.dataset.previewObserved)
+  })).filter(x=>Number.isFinite(x.week)&&Number.isFinite(x.observed)&&x.week<=week)
+   .sort((a,b)=>a.week-b.week).slice(-3);
+  const last=points.at(-1),before=points.at(-2);
+  return compact('Weekly observations','',{
+   points:points.map(x=>({label:'Week '+x.week,value:x.observed+' / 5'})),
+   change:last&&before?{value:(last.observed-before.observed>0?'+':'')+
+    (last.observed-before.observed)+' observed',from:'Week '+before.week}:null
+  },'support',value(trigger.dataset.previewObserved)+' / 5');
  }
  if(kind==='wida'){
   return simpleGuide('wida','SSS screening example',t(trigger,'strong'));

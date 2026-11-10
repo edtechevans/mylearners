@@ -21,15 +21,30 @@ export const PREVIEW_GUIDE=Object.freeze({
  review:{label:'Support review',description:'A scheduled review date or recorded follow-up status; not evidence of an intervention effect.',source:'Fictional support record'},
  ibdp:{label:'IB Diploma result',description:'A graduating-cohort outcome. A Diploma average uses the 0–45 point scale; a pass rate uses the eligible full-Diploma candidate denominator.',source:'Aggregated school examination statistics'}
 });
-export function makePreview({title='',subtitle='',rows=[],note='',status='',kind='neutral'}={}){
- return {title:clean(title),subtitle:clean(subtitle),rows:(rows||[]).filter(x=>x&&x[0]).slice(0,5).map(([key,val])=>[clean(key),clean(val)]),
-  note:clean(note),status:clean(status),kind:['neutral','academic','experience','support','board'].includes(kind)?kind:'neutral'};
+export function makePreview({title='',subtitle='',rows=[],note='',status='',kind='neutral',trend=null}={}){
+ const points=Array.isArray(trend?.points)?trend.points.filter(x=>x&&x.label&&x.value!==undefined&&x.value!==null)
+  .slice(-3).map(x=>({label:clean(x.label),value:clean(x.value)})):[];
+ const change=trend?.change&&points.length>=2?{
+  value:clean(trend.change.value),from:clean(trend.change.from)}:null;
+ return {title:clean(title),subtitle:clean(subtitle),
+  rows:(rows||[]).filter(x=>x&&x[0]).slice(0,5).map(([key,val])=>[clean(key),clean(val)]),
+  trend:points.length?{points,change}:null,
+  note:clean(note),status:clean(status),
+  kind:['neutral','academic','experience','support','board'].includes(kind)?kind:'neutral'};
 }
 export function previewMarkup(p){
  if(!p)return '';
  return '<div class="evidence-preview-inner evidence-preview-'+esc(p.kind||'neutral')+'">'+
  '<div class="evidence-preview-head"><strong>'+esc(p.title)+'</strong>'+
  (p.subtitle?'<span>'+esc(p.subtitle)+'</span>':'')+'</div>'+
+ (p.trend?.points?.length?
+  '<div class="evidence-preview-progress" aria-label="Results over time">'+
+  '<div class="evidence-preview-periods" role="list">'+p.trend.points.map((point,i)=>
+   '<div class="evidence-preview-period'+(i===p.trend.points.length-1?' is-current':'')+
+   '" role="listitem"><small>'+esc(point.label)+'</small><strong>'+esc(point.value)+'</strong></div>'
+  ).join('')+'</div>'+
+  (p.trend.change?'<div class="evidence-preview-change"><strong>'+esc(p.trend.change.value)+
+   '</strong><span>vs '+esc(p.trend.change.from)+'</span></div>':'')+'</div>':'')+
  (p.rows?.length?'<dl>'+p.rows.map(([label,value])=>'<div><dt>'+esc(label)+'</dt><dd>'+esc(value)+'</dd></div>').join('')+'</dl>':'')+
  (p.status?'<div class="evidence-preview-status">'+esc(p.status)+'</div>':'')+
  (p.note?'<p>'+esc(p.note)+'</p>':'')+
@@ -37,7 +52,13 @@ export function previewMarkup(p){
 }
 export function hasPreviewMarker(node){return !!node?.closest?.('[data-evidence-preview]')}
 function mark(node,kind){
- if(!node||node.dataset?.evidencePreview)return;
+ if(!node)return;
+ // The native browser title competes with the richer preview (two overlapping
+ // tooltips). Keep button accessible names; the shared card is the sole tooltip.
+ node.removeAttribute?.('title');
+ if(node.querySelector?.('title')&&node.matches?.('circle[data-preview-week]'))
+  node.querySelector('title').remove();
+ if(node.dataset?.evidencePreview)return;
  node.dataset.evidencePreview=kind;
  if(node.tagName!=='BUTTON'&&node.tagName!=='A'&&node.tagName!=='CIRCLE'&&node.tagName!=='G'){
   node.setAttribute?.('tabindex','0');
@@ -109,12 +130,23 @@ export function decorateEvidencePreviews(root,role){
     if(/^Q[1-4]$/.test(band))target.dataset.previewBand=band;
    });
   }
-  for(const button of q('.quick-summary .quick-score'))mark(button,'method');
+  for(const button of q('.quick-summary .quick-score'))mark(button,'experience-summary');
   for(const result of q('.academic-profile .academic-subject-result'))mark(result,'issued');
   for(const result of q('.academic-profile .academic-evidence-card'))mark(result,'academic-card');
+  for(const result of q('.profile-head + .kpis .kpi'))mark(result,'academic-card');
+  for(const result of q('.student-wellbeing-content .experience-metric-card,.metrics .experience-metric-card')){
+   mark(result,'personal-experience');
+   const h=clean(result.querySelector('.metric-top .eyebrow')?.textContent).toLowerCase();
+   result.dataset.previewMeasure=h.includes('belonging')?'belonging':'engagement';
+  }
  }
  if(role==='student'){
   for(const result of q('.student-today-celebrate,.student-today-progress'))mark(result,'student-tile');
+  for(const result of q('.student-checkin-preview-tile,.student-wellbeing-content .experience-metric-card')){
+   mark(result,'personal-experience');
+   result.dataset.previewMeasure=clean(result.querySelector('h3,.metric-top .eyebrow')?.textContent)
+    .toLowerCase().includes('belonging')?'belonging':'engagement';
+  }
   for(const result of q('.academic-profile .academic-subject-result'))mark(result,'issued');
   for(const result of q('.academic-profile .academic-evidence-card'))mark(result,'academic-card');
   for(const result of q('.student-landing-foot strong'))mark(result,'attendance-scope');
