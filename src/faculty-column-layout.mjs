@@ -45,6 +45,7 @@ export function normaliseColumnWidths(value,count){
  return result;
 }
 export function widthPreset(value){
+ if(value===undefined||value===null||value==='')return 'default';
  const n=Number(value);
  for(const [name,width] of Object.entries(COLUMN_WIDTHS)){
   if(n===width)return name;
