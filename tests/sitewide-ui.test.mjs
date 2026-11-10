@@ -118,27 +118,43 @@ test('Leaders use a simple four-metric overview with grade-eligible academic che
  assert.match(node.innerHTML,/Grade 12 · Fictional data · Fall 2026/);
  assert.match(node.innerHTML,/leader-report-followup/,'A Secondary grade selection reveals review');
  assert.match(node.innerHTML,/Students with 3 or below/);
+ assert.match(node.innerHTML,/data-leader-report-threshold="3" aria-pressed="true"/);
+ assert.match(node.innerHTML,/data-leader-report-threshold="2" aria-pressed="false"/);
+ click('[data-leader-report-threshold]',{leaderReportThreshold:'2'});
+ assert.match(node.innerHTML,/Students with 2 or below/);
+ assert.match(node.innerHTML,/data-leader-report-threshold="2" aria-pressed="true"/);
+ click('[data-leader-report-threshold]',{leaderReportThreshold:'3'});
+ assert.match(node.innerHTML,/Students with 3 or below/);
  assert.match(node.innerHTML,/leader-report-fourband/);
  assert.doesNotMatch(node.innerHTML,/leader-evidence-strip/);
  assert.equal((node.innerHTML.match(/<article class="leader-stat">/g)||[]).length,4);
 });
 
-test('Faculty grade filter appears with test subjects and toggles without hiding the class',()=>{
+test('Faculty review controls switch All, orange 3-or-below and red 2-or-below',()=>{
  click('[data-role]',{role:'faculty'});
  assert.match(node.innerHTML,/data-faculty-low-filter="all"/);
  assert.match(node.innerHTML,/<div class="faculty-concern-filter"/);
  assert.match(node.innerHTML,/Filter students/);
  assert.match(node.innerHTML,/class-roster-view-switch[\s\S]*?<div class="faculty-concern-filter"/);
  assert.match(node.innerHTML,/All students <b>20<\/b>/);
- assert.match(node.innerHTML,/data-faculty-low-filter="low"/);
- assert.match(node.innerHTML,/3 or below/);
+ assert.match(node.innerHTML,/data-faculty-low-filter="3" aria-pressed="false"/);
+ assert.match(node.innerHTML,/data-faculty-low-filter="2" aria-pressed="false"/);
+ const count3=Number(node.innerHTML.match(/3 or below <b>(\d+)<\/b>/)?.[1]);
+ const count2=Number(node.innerHTML.match(/2 or below <b>(\d+)<\/b>/)?.[1]);
+ assert.ok(count2>0&&count2<=count3&&count3<=20);
  const before=(node.innerHTML.match(/<button class="student-link"/g)||[]).length;
- click('[data-faculty-low-filter]',{facultyLowFilter:'low'});
- const filtered=(node.innerHTML.match(/<button class="student-link"/g)||[]).length;
- assert.ok(filtered>0&&filtered<=before,'Low result filter keeps a subset of learners');
- assert.match(node.innerHTML,/data-faculty-low-filter="low" aria-pressed="true"/);
+ click('[data-faculty-low-filter]',{facultyLowFilter:'3'});
+ const three=(node.innerHTML.match(/<button class="student-link"/g)||[]).length;
+ assert.ok(three>0&&three<=before,'3-or-below selects the appropriate subset');
+ assert.match(node.innerHTML,/data-faculty-low-filter="3" aria-pressed="true"/);
+ click('[data-faculty-low-filter]',{facultyLowFilter:'2'});
+ const two=(node.innerHTML.match(/<button class="student-link"/g)||[]).length;
+ assert.ok(two>0&&two<=three,'2-or-below is a subset of 3-or-below');
+ assert.match(node.innerHTML,/data-faculty-low-filter="2" aria-pressed="true"/);
+ assert.match(node.innerHTML,/data-faculty-low-filter="3" aria-pressed="false"/);
  click('[data-faculty-low-filter]',{facultyLowFilter:'all'});
  assert.equal((node.innerHTML.match(/<button class="student-link"/g)||[]).length,before);
+
 });
 
 test('Faculty summary shows two colour-only scales and Faculty learner profiles retain detailed gauges',()=>{
