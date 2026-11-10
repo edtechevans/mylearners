@@ -173,3 +173,97 @@
   padding:7px 6px!important;font-size:11px!important;
  }
 }
+
+
+/* Two independent review thresholds. These colours identify filters only;
+   individual report-grade colour bands are unchanged. */
+#app .faculty-concern-filter [data-faculty-low-filter="3"]{
+ background:#fff1e2!important;border-color:#de9a56!important;color:#804312!important;
+}
+#app .faculty-concern-filter [data-faculty-low-filter="3"][aria-pressed="true"]{
+ background:#e4a15f!important;border-color:#b97836!important;color:#25394a!important;
+}
+#app .faculty-concern-filter [data-faculty-low-filter="2"]{
+ background:#fff0f1!important;border-color:#c5737c!important;color:#912a37!important;
+}
+#app .faculty-concern-filter [data-faculty-low-filter="2"][aria-pressed="true"]{
+ background:#a6373f!important;border-color:#932d36!important;color:#fff!important;
+}
+#app .faculty-concern-filter [data-faculty-low-filter="3"] b{
+ background:#d18a40!important;color:#192d40!important;
+}
+#app .faculty-concern-filter [data-faculty-low-filter="2"] b{
+ background:#a6373f!important;color:#fff!important;
+}
+#app .faculty-concern-filter [data-faculty-low-filter="3"][aria-pressed="true"] b{
+ background:#fff!important;color:#804312!important;
+}
+#app .faculty-concern-filter [data-faculty-low-filter="2"][aria-pressed="true"] b{
+ background:#fff!important;color:#912a37!important;
+}
+#app .faculty-concern-filter [data-faculty-low-filter="3"] .faculty-filter-dot{
+ background:#d18a40!important;
+}
+#app .faculty-concern-filter [data-faculty-low-filter="2"] .faculty-filter-dot{
+ background:#a6373f!important;
+}
+#app .faculty-concern-filter [data-faculty-low-filter="3"][aria-pressed="true"] .faculty-filter-dot{
+ background:#714019!important;
+}
+#app .faculty-concern-filter [data-faculty-low-filter="2"][aria-pressed="true"] .faculty-filter-dot{
+ background:#fff!important;
+}
+#app .leader-report-thresholds{
+ display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px;
+ padding:4px;background:#f7f9fa;border:1px solid #dce5e9;border-radius:10px;
+}
+#app .leader-report-thresholds button{
+ display:inline-flex;align-items:center;gap:7px;
+ min-height:36px;padding:7px 10px;border-radius:7px;
+ border:1px solid #d4dde4;background:#fff;cursor:pointer;
+ font:inherit;font-size:12px;font-weight:800;white-space:nowrap;
+}
+#app .leader-report-thresholds button b{
+ border-radius:5px;padding:2px 6px;
+ font-variant-numeric:tabular-nums;font-size:11px;
+}
+#app .leader-report-thresholds [data-leader-report-threshold="3"]{
+ background:#fff1e2;border-color:#de9a56;color:#804312;
+}
+#app .leader-report-thresholds [data-leader-report-threshold="3"] b{
+ background:#d18a40;color:#192d40;
+}
+#app .leader-report-thresholds [data-leader-report-threshold="3"][aria-pressed="true"]{
+ background:#e4a15f;border-color:#b97836;color:#25394a;
+}
+#app .leader-report-thresholds [data-leader-report-threshold="3"][aria-pressed="true"] b{
+ background:#fff;color:#804312;
+}
+#app .leader-report-thresholds [data-leader-report-threshold="2"]{
+ background:#fff0f1;border-color:#c5737c;color:#912a37;
+}
+#app .leader-report-thresholds [data-leader-report-threshold="2"] b{
+ background:#a6373f;color:#fff;
+}
+#app .leader-report-thresholds [data-leader-report-threshold="2"][aria-pressed="true"]{
+ background:#a6373f;border-color:#932d36;color:#fff;
+}
+#app .leader-report-thresholds [data-leader-report-threshold="2"][aria-pressed="true"] b{
+ background:#fff;color:#912a37;
+}
+#app .leader-report-thresholds button:focus-visible{
+ outline:3px solid #3482a2;outline-offset:2px;
+}
+@media(max-width:700px){
+ #app[data-workspace="faculty"] .roster-daily .class-evidence-panel>.faculty-concern-filter{
+  display:flex!important;flex-wrap:wrap!important;min-width:0!important;
+  max-width:100%!important;width:100%!important;box-sizing:border-box!important;
+ }
+ #app[data-workspace="faculty"] .class-evidence-panel>.faculty-concern-filter .faculty-filter-label{
+  flex:1 0 100%!important;
+ }
+ #app[data-workspace="faculty"] .class-evidence-panel>.faculty-concern-filter button{
+  flex:0 1 auto!important;
+ }
+ #app .leader-report-thresholds{width:100%;box-sizing:border-box;}
+}
