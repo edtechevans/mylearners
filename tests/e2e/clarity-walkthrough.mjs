@@ -501,6 +501,19 @@ try{
  await run('student-reports-1440','student','.student-landing',1440,900,
   async()=>{await click('[data-student-panel="reports"] summary');
    assert(await evaluate("document.querySelector('[data-student-panel=\"reports\"]')?.open===true"),'Report card detail did not expand')});
+ await run('leader-experience-colours-1440','leader','.leader-experience-legend',1440,900,
+  async()=>{
+   const evidence=await evaluate("(function(){const cards=[...document.querySelectorAll('.leader-experience-card')];const key=document.querySelector('.leader-experience-legend');return {cards:cards.length,swatches:key?.querySelectorAll('.leader-experience-legend-swatch').length||0,gauges:cards.map(c=>c.querySelectorAll('.leader-experience-segments > span:not(.leader-experience-marker)').length),markers:cards.map(c=>!!c.querySelector('.leader-experience-marker')),classes:cards.map(c=>c.className),colours:cards.map(c=>getComputedStyle(c).backgroundColor),changes:cards.map(c=>c.querySelector('.leader-experience-change')?.textContent||'')}})()");
+   assert(evidence.cards===4&&evidence.swatches===4,'Leaders must show four experience cards and all four colours');
+   assert(evidence.gauges.every(n=>n===4)&&evidence.markers.every(Boolean),
+    'Every index needs the red-to-dark-green scale and its value marker');
+   assert(evidence.colours.every(v=>v!=='rgb(255, 255, 255)'),
+    'Experience cards must have band-specific background tints');
+   assert(evidence.classes.every(v=>v.includes('index-band-mid-high')),
+    'Fall 2026 demo indices between 0 and +1 must be in the light-green band');
+   assert(evidence.changes.every(v=>!/0\.\d{6,}/.test(v)),
+    'Previous-period changes must use at most two decimal places');
+  });
  await run('leader-filter-1440','leader','.leader-learning-grid',1440,900,
   async()=>{const ok=await evaluate("(function(){const s=document.querySelector('[data-select=\"grade\"]');if(!s)return false;s.value='G7';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
    assert(ok,'Grade filter missing');await sleep(150);
