@@ -111,16 +111,23 @@ const kpi=(label,value,detail,action='')=>'<article class="kpi"><div class="eyeb
 function metricCard(ss,id,window='F26',scope='main'){
  const sum=summarizeExperience(RECORDS,ss,id,window);
  const change=experienceChange(RECORDS,ss,id,window);
- const comparison=change.delta===null?(change.previousLabel?'No comparable previous check-in':'First available check-in'):
-   (change.delta>0?'+':'')+change.delta+' vs '+change.previousLabel;
+ const comparison=change.delta===null?
+  (change.previousLabel?'No comparable previous check-in':'First available check-in'):
+  leaderExperienceChange(change.delta,change.previousLabel);
  const source=EXPERIENCE_WINDOWS.find(x=>x.key===window)?.label||window;
  const band=experienceBand(sum.value);
- return '<article class="metric"><div class="metric-top"><span class="eyebrow">'+safe(EXPERIENCE_METRICS[id].label)+' index</span><span class="tiny">Fictional '+safe(source)+' check-in</span></div>'+
- '<div class="metric-value'+(band?' index-'+band:'')+'">'+(Number.isFinite(sum.value)?sum.value.toFixed(2):'—')+'</div>'+
- (sum.value===null?'<div class="meter experience-index-meter is-missing" aria-label="No check-in responses"></div>':
- '<div class="meter experience-index-meter" role="img" aria-label="Four-band index from minus two to plus two"><i style="left:'+((sum.value+2)/4*100).toFixed(1)+'%"></i></div>')+
- '<p>'+safe(EXPERIENCE_METRICS[id].description)+'</p><div class="metric-foot"><span>'+sum.n+' of '+sum.eligible+' responses</span><span>'+safe(comparison)+'</span></div>'+
- (sum.value===null?'':btn('explain:'+scope+':'+id,'How is this calculated?','quiet'))+'</article>';
+ const label=EXPERIENCE_METRICS[id].label;
+ const interval=leaderExperienceBandLabel(sum.value);
+ return '<article class="metric experience-metric-card'+(band?' index-'+band:'')+'">'+
+  '<div class="metric-top"><span class="eyebrow">'+safe(label)+' index</span>'+
+  '<span class="tiny">Fictional '+safe(source)+' check-in</span></div>'+
+  '<div class="metric-value">'+(Number.isFinite(sum.value)?sum.value.toFixed(2):'—')+'</div>'+
+  (interval?'<span class="experience-metric-interval">'+safe(interval.label)+' index band</span>':'')+
+  leaderExperienceScale(sum.value,label)+
+  '<p>'+safe(EXPERIENCE_METRICS[id].description)+'</p>'+
+  '<div class="metric-foot"><span>'+sum.n+' of '+sum.eligible+' responses</span>'+
+  '<span>'+safe(comparison)+'</span></div>'+
+  (sum.value===null?'':btn('explain:'+scope+':'+id,'How is this calculated?','quiet'))+'</article>';
 }
 function info(){return '<div class="notice"><strong>Demonstration only.</strong> Learners, report cards, IXL Mathematics levels, Core Phonics checks, F&P text levels, assessment history, survey-style check-ins and class assignments are all fictional. No actual AISG learner results or confidential climate-survey responses are used. Experience indices are exploratory descriptions, not validated scores or labels.</div>'}
 const ROLE_DISPLAY=Object.freeze({faculty:'Faculty',student:'Student',sss:'SSS',leader:'Leaders',board:'Board'});
@@ -448,11 +455,13 @@ function faculty(){
   const label=safe(EXPERIENCE_METRICS[id].label);
   const detail=sum.value===null?'No check-in':sum.n+'/'+sum.eligible+' responses · How is this calculated?';
   const exact=sum.value===null?'No index available':formatIndex(sum.value)+' on the −2 to +2 index';
-  return '<button type="button" class="quick-tile quick-score'+(band?' index-'+band:'')+
+  return '<button type="button" class="quick-tile quick-score faculty-index-gauge'+
+   (band?' index-'+band:'')+
    '" data-action="explain:faculty:'+id+'" title="'+safe(label+': '+exact)+
    '" aria-label="'+safe(label+': '+exact+'. Select for detail')+'">'+
-   '<span>'+label+'</span><strong aria-hidden="true" class="faculty-summary-colour-mark">'+
-   (sum.value===null?'—':'●')+'</strong><small>'+detail+'</small></button>';
+   '<span>'+label+'</span>'+
+   leaderExperienceScale(sum.value,label)+
+   '<small>'+detail+'</small></button>';
  };
  const toolbar='<div class="toolbar faculty-toolbar faculty-daily-toolbar">'+
   '<label>My class '+selector('class',cs.map(c=>[c.id,c.name]),state.classId)+'</label>'+
