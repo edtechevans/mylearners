@@ -56,6 +56,8 @@ function mark(node,kind){
  // The native browser title competes with the richer preview (two overlapping
  // tooltips). Keep button accessible names; the shared card is the sole tooltip.
  node.removeAttribute?.('title');
+ if(node.querySelector?.('title')&&node.matches?.('circle[data-preview-week]'))
+  node.querySelector('title').remove();
  if(node.dataset?.evidencePreview)return;
  node.dataset.evidencePreview=kind;
  if(node.tagName!=='BUTTON'&&node.tagName!=='A'&&node.tagName!=='CIRCLE'&&node.tagName!=='G'){
