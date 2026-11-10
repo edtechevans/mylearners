@@ -25,13 +25,13 @@ export function renderLeaderReportFollowup({students,academic,scope='secondary',
  const table=shown.length?
   '<div class="leader-report-tablewrap"><table class="leader-report-roster"><thead><tr>'+
   '<th scope="col">Learner</th><th scope="col">Current class</th>'+
-  '<th scope="col">Issued subjects graded 1–3</th><th scope="col">Count</th>'+
-  '<th scope="col">Report source</th></tr></thead><tbody>'+
+  '<th scope="col">Test subjects graded 1–3</th><th scope="col">Count</th>'+
+  '<th scope="col">Test report</th></tr></thead><tbody>'+
   shown.map(x=>'<tr><th scope="row"><strong>'+esc(x.student.name)+'</strong></th>'+
    '<td>'+esc(x.student.grade)+' · '+esc(x.student.classId)+'</td>'+
    '<td><div class="leader-report-subjects">'+x.low.map(item=>pill(item,x.report.scale)).join('')+'</div>'+
    '<details class="leader-report-all"><summary>All '+x.outcomes.length+
-   ' issued subjects</summary><div class="leader-report-subjects">'+
+   ' test subjects</summary><div class="leader-report-subjects">'+
    x.outcomes.map(item=>pill(item,x.report.scale)).join('')+'</div></details></td>'+
    '<td data-ux-sort-value="'+x.low.length+'"><strong>'+x.low.length+'</strong></td>'+
    '<td><strong>'+esc(x.report.year)+'</strong><small>'+esc(x.report.grade)+
@@ -39,19 +39,19 @@ export function renderLeaderReportFollowup({students,academic,scope='secondary',
   '</tbody></table></div>':
   '<p class="leader-report-empty">'+(summary.numericReports?
     'No learners match the current review filters.':
-    'No previously issued numeric 1–7 report grades are available in this selection. '+
-    'Earlier Elementary reports use developmental descriptors and are not converted into numbers.')+'</p>';
+    'No numeric 1–7 test report grades apply to this selection. '+
+    'Elementary test reports use developmental descriptors and are not converted into numbers.')+'</p>';
  return '<section class="leader-section leader-report-followup" aria-labelledby="leader-report-followup-title">'+
   '<div class="leader-sectionhead"><div><div class="eyebrow">REPORT CARD INQUIRY</div>'+
   '<h2 id="leader-report-followup-title">Grades 3 and below</h2>'+
-  '<p>Find learners with one or more 1–3 subject grades in their latest issued report.</p></div>'+
-  '<span class="leader-period">Previously issued reports · fictional 1–7 scale</span></div>'+
+  '<p>Find learners with one or more grades of 1–3 across their current-year synthetic report subjects.</p></div>'+
+  '<span class="leader-period">2026–27 TEST GRADES · Not issued</span></div>'+
   '<div class="leader-report-topline"><div class="leader-report-count">'+
   '<strong>'+summary.flagged+'</strong><span>learners to review</span></div>'+
   '<div class="leader-report-count"><strong>'+summary.lowSubjectResults+
   '</strong><span>subject results at 3 or below</span></div>'+
   '<div class="leader-report-coverage"><strong>'+summary.numericReports+' / '+summary.selected+
-  '</strong><span>learners with an issued numeric report in this selection</span></div></div>'+
+  '</strong><span>learners with complete 1–7 test grades in this selection</span></div></div>'+
   '<div class="leader-report-toolbar"><div class="leader-report-scope" role="group" aria-label="Report review scope">'+
   scopeButton('secondary','Secondary focus')+scopeButton('all','All selected')+'</div>'+
   '<label class="leader-report-search">Find a learner or subject<input type="search" data-leader-report-query '+
@@ -64,8 +64,8 @@ export function renderLeaderReportFollowup({students,academic,scope='secondary',
   (matching.length>12?'<button class="leader-report-expand" type="button" data-leader-report-expand>'+
    (expanded?'Show first 12':'Show all '+matching.length+' learners')+'</button>':'')+
   '<p class="leader-data-note">This is a prompt to examine learning evidence, not an automatic risk label. '+
-  'Only the latest previously issued numeric 1–7 report is used for each learner; '+
-  'unissued and developmental-descriptor reports are excluded. '+
-  'Subjects and report periods are retained, and results are never averaged across programmes. '+
+  'Only synthetic 2026–27 current-grade test results are used for each learner; '+
+  'Elementary developmental descriptors are not treated as 1–7 grades. '+
+  'Test subjects and the reporting period are shown; these are not issued results and programme scales are never averaged. '+
   'Student names and results in this public demo are fictional.</p></section>';
 }
