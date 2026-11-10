@@ -43,6 +43,8 @@ const SUPPORT_SEEDED=seedSupportDemo(DATA.students,SSS_RECORDS);
 let SUPPORT_DRAFTS=loadDraftEntries();
 const supportEntries=()=>[...SUPPORT_SEEDED.filter(x=>!SUPPORT_DRAFTS.some(d=>d.id===x.id)),...SUPPORT_DRAFTS];
 const root=document.getElementById('app');
+// Scripted jumps respect the same reduced-motion preference as CSS transitions.
+const scrollMotion=()=>globalThis.window?.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth';
 const saved=(k,d)=>{try{return sessionStorage.getItem(k)||d}catch{return d}};
 const LEADER_SAVED_KEY='mylearners-demo-leaders-saved-view-v1';
 const savedLeaderView=()=>{
@@ -1082,7 +1084,7 @@ root.addEventListener('click',e=>{
    const panel=el?.closest?.('details.leader-detail');
    if(panel)panel.open=true;
    if(el?.tagName==='DETAILS')el.open=true;
-   el?.scrollIntoView?.({behavior:'smooth',block:'start'});
+   el?.scrollIntoView?.({behavior:scrollMotion(),block:'start'});
    return;
   }
  }
@@ -1252,7 +1254,7 @@ root.addEventListener('click',e=>{
  const point=e.target.closest('[data-board-point]');
  if(point){pinChartPoint(point);
   if(e.detail>0&&window.matchMedia?.('(pointer: coarse)').matches)
-   root.querySelector('.board-trend-inspector')?.scrollIntoView?.({block:'nearest',behavior:'smooth'});
+   root.querySelector('.board-trend-inspector')?.scrollIntoView?.({block:'nearest',behavior:scrollMotion()});
   return;
  }
  const standalonePoint=e.target.closest('[data-board-dp-subject-point],[data-board-dp-world-point]');
@@ -1272,7 +1274,7 @@ root.addEventListener('click',e=>{
    if(selected)pinChartPoint(selected);
   }else pinChartPoint(dpPoint);
   if(e.detail>0&&window.matchMedia?.('(pointer: coarse)').matches)
-   root.querySelector('.board-dp-inspector')?.scrollIntoView?.({block:'nearest',behavior:'smooth'});
+   root.querySelector('.board-dp-inspector')?.scrollIntoView?.({block:'nearest',behavior:scrollMotion()});
   return;
  }
  const comparisonTile=e.target.closest('[data-board-tile-window][data-board-tile-subject]');
@@ -1312,7 +1314,7 @@ root.addEventListener('click',e=>{
    state.boardDpMetric='passRate';
   }else state.boardDpMetric=target==='passRate'?'passRate':'average';
   render();
-  if(target.startsWith('subject:'))root.querySelector('#board-dp-subjects')?.scrollIntoView?.({block:'start',behavior:'smooth'});
+  if(target.startsWith('subject:'))root.querySelector('#board-dp-subjects')?.scrollIntoView?.({block:'start',behavior:scrollMotion()});
   else globalThis.window?.scrollTo?.(0,0);
   return;
  }
@@ -1354,7 +1356,7 @@ root.addEventListener('click',e=>{
  if(boardJump&&state.role==='board'){
   const allowed=new Set(['board-dp-outcomes','board-dp-subjects','board-dp-history']);
   const id=boardJump.dataset.boardDpJump;
-  if(allowed.has(id))root.querySelector('#'+id)?.scrollIntoView?.({behavior:'smooth',block:'start'});
+  if(allowed.has(id))root.querySelector('#'+id)?.scrollIntoView?.({behavior:scrollMotion(),block:'start'});
   return;
  }
  const dpCourse=e.target.closest('[data-board-dp-subject]');
