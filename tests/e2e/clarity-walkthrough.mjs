@@ -444,6 +444,11 @@ try{
    assert(cards.length===2,'Engagement and Belonging summaries need value-driven colour bands');
     assert(cards.every(value=>value==='●'),'Summary tiles should be colour only, without index numbers');
 
+   const filterPlacement=await evaluate("(function(){const panel=document.querySelector('.class-evidence-panel');const f=panel?.querySelector(':scope > .faculty-concern-filter');const r=f?.getBoundingClientRect();return {inPanel:!!f,visible:!!r&&r.width>200&&r.height>25&&getComputedStyle(f).display!=='none',nearSwitch:!!f?.previousElementSibling?.classList.contains('class-roster-view-switch'),top:r?.top,firstRow:document.querySelector('.faculty-data-wall tbody tr')?.getBoundingClientRect().top}})()");
+   assert(filterPlacement.inPanel&&filterPlacement.visible&&filterPlacement.nearSwitch,
+    '3 or below filter must be visible beside everyday/focused controls, not in a hidden heading');
+   assert(filterPlacement.top<filterPlacement.firstRow,
+    'Faculty filter should be encountered before the learner rows');
    const baselineCount=await evaluate("document.querySelectorAll('.roster-daily tbody .student-link').length");
     await click('[data-faculty-low-filter="low"]');
     assert(await evaluate("document.querySelector('[data-faculty-low-filter=low]')?.getAttribute('aria-pressed')==='true'"),

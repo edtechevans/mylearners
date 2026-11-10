@@ -207,3 +207,23 @@ test('teachers can choose real check-in windows without treating an index as a p
  if(a.available)assert.match(a.detail,/Fall 2025/);
  if(b.available)assert.match(b.detail,/Fall 2026/);
 });
+
+test('Subject-result filter renders in the visible class evidence toolbar rather than the hidden roster heading',()=>{
+ const students=group('G7');
+ const html=renderClassEvidencePanel(students,{
+  ...ctx,rosterView:'everyday',lowGradeFilter:{total:20,count:9,active:false}
+ });
+ assert.match(html,/class-roster-view-switch/);
+ assert.match(html,/<\/div><div class="faculty-concern-filter"/);
+ assert.match(html,/Filter students/);
+ assert.match(html,/All students <b>20<\/b>/);
+ assert.match(html,/3 or below <b>9<\/b>/);
+ assert.match(html,/data-faculty-low-filter="low" aria-pressed="false"/);
+ const selected=renderClassEvidencePanel(students,{
+  ...ctx,rosterView:'focused',lowGradeFilter:{total:20,count:9,active:true}
+ });
+ assert.match(selected,/data-faculty-low-filter="low" aria-pressed="true"/);
+ assert.match(selected,/aria-label="Show 9 students with at least one subject result of 3 or below"/);
+ const elementary=renderClassEvidencePanel(group('G3'),{...ctx,rosterView:'everyday'});
+ assert.doesNotMatch(elementary,/data-faculty-low-filter/);
+});

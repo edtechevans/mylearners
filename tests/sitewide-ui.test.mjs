@@ -118,6 +118,10 @@ test('Leaders use a simple four-metric overview with grade-eligible academic che
 test('Faculty grade filter appears with test subjects and toggles without hiding the class',()=>{
  click('[data-role]',{role:'faculty'});
  assert.match(node.innerHTML,/data-faculty-low-filter="all"/);
+ assert.match(node.innerHTML,/<div class="faculty-concern-filter"/);
+ assert.match(node.innerHTML,/Filter students/);
+ assert.match(node.innerHTML,/class-roster-view-switch[\s\S]*?<div class="faculty-concern-filter"/);
+ assert.match(node.innerHTML,/All students <b>20<\/b>/);
  assert.match(node.innerHTML,/data-faculty-low-filter="low"/);
  assert.match(node.innerHTML,/3 or below/);
  const before=(node.innerHTML.match(/<button class="student-link"/g)||[]).length;
