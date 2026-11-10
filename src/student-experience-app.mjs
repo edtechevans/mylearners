@@ -1013,6 +1013,79 @@ root.addEventListener('keydown',e=>{
  if(e.key==='Escape'){hideBoardFloat();if(pinnedChartKey)unpinChartPoint()}
 });
 root.addEventListener('click',e=>{
+ if(state.role==='leader'){
+  const divisionChoice=e.target.closest('[data-leader-division]');
+  if(divisionChoice){
+   const next=divisionChoice.dataset.leaderDivision;
+   if(!['All','Elementary','Secondary'].includes(next))return;
+   state.division=next;state.grade='All';state.classId='';state.leaderStudentId='';
+   state.leaderReviewFilter='all';state.leaderReviewExpanded=false;state.leaderReportOpen=false;
+   render();globalThis.window?.scrollTo?.(0,0);return;
+  }
+  const chosenGrade=e.target.closest('[data-leader-grade]');
+  if(chosenGrade&&state.division!=='All'){
+   const next=chosenGrade.dataset.leaderGrade;
+   if(next!=='All'&&(!GRADES.includes(next)||
+     (gradeNumber(next)<=5?'Elementary':'Secondary')!==state.division))return;
+   state.grade=next;state.classId='';state.leaderStudentId='';
+   state.leaderReviewFilter='all';state.leaderReviewExpanded=false;
+   render();
+   root.querySelector('[data-leader-grade="'+next+'"]')?.focus?.({preventScroll:true});
+   globalThis.window?.scrollTo?.(0,0);return;
+  }
+  if(e.target.closest('[data-leader-save-view]')){
+   if(['Elementary','Secondary'].includes(state.division)){
+    try{localStorage.setItem(LEADER_SAVED_KEY,
+      JSON.stringify({division:state.division,grade:state.grade}));}catch{}
+    render();
+   }
+   return;
+  }
+  if(e.target.closest('[data-leader-open-saved]')){
+   const saved=savedLeaderView();
+   if(!saved)return;
+   state.division=saved.division;state.grade=saved.grade;state.classId='';
+   state.leaderStudentId='';state.leaderReviewFilter='all';state.leaderReviewExpanded=false;
+   render();globalThis.window?.scrollTo?.(0,0);return;
+  }
+  const reviewFilter=e.target.closest('[data-leader-review-filter]');
+  if(reviewFilter){
+   const requested=reviewFilter.dataset.leaderReviewFilter;
+   const allowed=state.division==='Elementary'?['all']:['all','academic2','academic3','attendance'];
+   if(!allowed.includes(requested))return;
+   state.leaderReviewFilter=requested;state.leaderReviewExpanded=false;
+   render();
+   root.querySelector('[data-leader-review-filter="'+requested+'"]')?.focus?.({preventScroll:true});
+   return;
+  }
+  if(e.target.closest('[data-leader-review-expand]')){
+   state.leaderReviewExpanded=!state.leaderReviewExpanded;render();return;
+  }
+  const learner=e.target.closest('[data-leader-student]');
+  if(learner){
+   const chosen=DATA.userIndex.get(learner.dataset.leaderStudent);
+   if(!chosen||state.division==='All'||chosen.division!==state.division||
+      (state.grade!=='All'&&chosen.grade!==state.grade)||
+      (state.classId&&chosen.classId!==state.classId))return;
+   state.leaderStudentId=chosen.id;
+   render();globalThis.window?.scrollTo?.(0,0);return;
+  }
+  if(e.target.closest('[data-leader-back]')){
+   state.leaderStudentId='';render();globalThis.window?.scrollTo?.(0,0);return;
+  }
+  const jump=e.target.closest('[data-leader-jump]');
+  if(jump){
+   const id=jump.dataset.leaderJump;
+   if(!['leader-report-followup-title','leader-review','leader-support-title',
+      'leader-experience-title','leader-learning-title','leader-academic-detail'].includes(id))return;
+   const el=root.querySelector('#'+id);
+   const panel=el?.closest?.('details.leader-detail');
+   if(panel)panel.open=true;
+   if(el?.tagName==='DETAILS')el.open=true;
+   el?.scrollIntoView?.({behavior:'smooth',block:'start'});
+   return;
+  }
+ }
  const facultyLow=e.target.closest('[data-faculty-low-filter]');
  if(facultyLow&&state.role==='faculty'){
   const requested=facultyLow.dataset.facultyLowFilter;
