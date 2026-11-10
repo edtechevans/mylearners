@@ -430,9 +430,14 @@ function faculty(){
  const score=id=>{
   const sum=summarizeExperience(RECORDS,ss,id);
   const band=experienceBand(sum.value);
-  return quickStat(EXPERIENCE_METRICS[id].label,Number.isFinite(sum.value)?sum.value.toFixed(2):'—',
-   sum.value===null?'No check-in':sum.n+'/'+sum.eligible+' responses · How is this calculated?',
-   sum.value===null?'':'explain:faculty:'+id,band?'index-'+band:'');
+  const label=safe(EXPERIENCE_METRICS[id].label);
+  const detail=sum.value===null?'No check-in':sum.n+'/'+sum.eligible+' responses · Select for details';
+  const exact=sum.value===null?'No index available':formatIndex(sum.value)+' on the −2 to +2 index';
+  return '<button type="button" class="quick-tile quick-score'+(band?' index-'+band:'')+
+   '" data-action="explain:faculty:'+id+'" title="'+safe(label+': '+exact)+
+   '" aria-label="'+safe(label+': '+exact+'. Select for detail')+'">'+
+   '<span>'+label+'</span><strong aria-hidden="true" class="faculty-summary-colour-mark">'+
+   (sum.value===null?'—':'●')+'</strong><small>'+detail+'</small></button>';
  };
  const toolbar='<div class="toolbar faculty-toolbar faculty-daily-toolbar">'+
   '<label>My class '+selector('class',cs.map(c=>[c.id,c.name]),state.classId)+'</label>'+
