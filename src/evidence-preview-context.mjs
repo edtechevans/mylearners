@@ -86,6 +86,27 @@ function facultyMetric(trigger,ctx){
   kind:key==='engagement'||key==='belonging'?'experience':'academic'});
 }
 function cardDetails(target,ctx,kind){
+ if(kind==='student-tile'||kind==='academic-card'){
+  const person=learner(ctx.state.studentId,ctx);
+  const academic=person?academicFor(ctx.academic,person.id):null;
+  if(academic){
+   if(kind==='student-tile'&&target.matches?.('.student-today-celebrate')){
+    const subject=t(target,'.student-today-title');
+    return compact(subject,person.name,
+     issuedReportProgress(academic,subject,academic.reports?.[0]?.year),'academic',
+     t(target,'.student-today-score')||'—');
+   }
+   const label=(t(target,'h3')||t(target,'.student-today-title')||'').toLowerCase();
+   const mode=label.includes('ixl')||label.includes('mathematics check-in')?'ixl':
+    label.includes('phonics')||label.includes('reading skills check-in')?'core':
+    label.includes('f&p')||label.includes('reading text level')?'fp':null;
+   if(mode)return compact(PREVIEW_GUIDE[mode].label,person.name,
+    academicCheckinProgress(academic,mode),'academic','—');
+   if(label.includes('map')&&person)return compact('MAP Mathematics',person.name,
+    mapProgress(ctx.data.map[person.id]||[],'Mathematics'),'academic','—');
+  }
+ }
+
  const title=t(target,'h3')||t(target,'h4')||t(target,'.student-today-title')||
   t(target,'.leader-stat-heading span')||t(target,'.leader-measure-label')||
   t(target,'.leader-support-metric span')||t(target,'.board-strength-eyebrow')||
@@ -119,21 +140,19 @@ function cardDetails(target,ctx,kind){
    note:'Preview only the visible record heading. Open the authorised support record for any notes or plans.',
    kind:'support'});
  }
- const subtitle=ctx.role==='board'?'Aggregated school results · reporting period shown in card':
-  ctx.role==='leader'?'Current leader selection · fictional data':
-  ctx.role==='student'?'My fictional learning example':
-  ctx.role==='sss'?'Fictional, authorised learner evidence':'Fictional classroom evidence';
+ const subtitle=ctx.role==='board'?'Schoolwide':ctx.role==='student'?'My learning':
+  ctx.role==='leader'?'Selected learners':ctx.role==='sss'?'Support':'Class view';
  const dataContext=t(target,'.leader-stat > p')||
   t(target,'.leader-support-metric small')||t(target,'.board-dp-graphic-note')||
   t(target,'.student-today-tile > small')||t(target,'.sss-evidence-tile > small')||
   t(target,'.board-strength-caption')||'';
  const chartMeaning=kind==='leader-monitor'?(target.getAttribute?.('aria-label')||''):'';
  const status='';
- const note=guide.description+
-  (ctx.role==='board'?' Compare only like-for-like cohorts and testing windows.':
-   ctx.role==='leader'?' Counts and eligibility depend on the selected division, grade and class.':'');
- return makePreview({title:chartMeaning||title,subtitle,rows:[...(headline?[['Displayed',headline]]:[]),...(dataContext?[['Evidence context',dataContext]]:[])],
-   status,note,kind:ctx.role==='board'?'board':ctx.role==='sss'?'support':
+ // A data-point hover is a glanceable value, not an assessment explainer.
+ // Methodology remains accessible through the existing explicit help controls.
+ return makePreview({title:chartMeaning||title,subtitle,
+  rows:headline?[['Current',headline]]:[],
+  status,kind:ctx.role==='board'?'board':ctx.role==='sss'?'support':
    guideKey==='engagement'||guideKey==='belonging'?'experience':'academic'});
 }
 export function resolveEvidencePreview(trigger,ctx){
