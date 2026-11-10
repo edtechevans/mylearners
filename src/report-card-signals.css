@@ -99,3 +99,8 @@
 @media(max-width:760px){#app .faculty-concern-filter small{flex-basis:100%;margin-left:0}
  #app .leader-report-fourband{min-width:142px;gap:4px}}
 @media print{#app .leader-report-legend-chip,#app .leader-report-band-count{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+/* Keep the Faculty landing scan-first: filtering shares the roster heading row. */
+#app .roster-daily .sectionhead .faculty-concern-filter{margin:0;justify-content:flex-end;align-self:center;flex:0 1 auto}
+#app .roster-daily .sectionhead .faculty-concern-filter button{padding:7px 10px}
+@media(max-width:760px){#app .roster-daily .sectionhead .faculty-concern-filter{justify-content:flex-start;width:100%}}
