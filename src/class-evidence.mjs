@@ -4,7 +4,8 @@
  * Maia Flourishing examples are synthetic PERMA dimension values, not an official export.
  * Core Phonics and F&P reading are limited to Kindergarten–Grade 5.
  */
-import {academicModesFor,academicFor,latestAcademic,academicCoverage} from './academic-journey-data.mjs';
+import {academicModesFor,academicFor,latestAcademic,academicCoverage,facultyDemoReport} from './academic-journey-data.mjs';
+import {reportGradeBand} from './report-card-signals.mjs';
 import {latestMapGrowth,MAP_SUBJECTS} from './map-growth.mjs';
 import {experienceEligible,summarizeExperience,experienceFor,EXPERIENCE_WINDOWS} from './experience-data.mjs';
 import {gradeNumber} from './data.mjs';
@@ -48,7 +49,7 @@ export function evidenceLabel(mode,{subject='Mathematics',mapSubject='Mathematic
  return labels[mode]||'Learning evidence';
 }
 function reportSubject(students,academic,subject){
- const report=academicFor(academic,students[0]?.id).reports?.[0];
+ const report=facultyDemoReport(academicFor(academic,students[0]?.id));
  const choices=report?.subjects||[];
  return choices.some(s=>s.subject===subject)?subject:choices[0]?.subject||'';
 }
@@ -76,6 +77,11 @@ export function evidenceValue(student,{mode='report',academic,map,experience,mai
  }
  if(!academicModesFor(student.grade).includes(mode))
   return {text:'—',detail:'Not assessed for grade',available:false};
+ const report=mode==='report'?facultyDemoReport(academicFor(academic,student.id)):null;
+ const reportEntry=report?.subjects.find(x=>x.subject===subject);
+ if(mode==='report')return reportEntry?
+  {text:String(reportEntry.value),detail:report.year+' synthetic test report · not issued · '+report.grade,available:true}:
+  {text:'—',detail:'No test report subject result',available:false};
  const value=latestAcademic(academicFor(academic,student.id),mode,subject);
  return value?{text:String(value.value),detail:mode==='report'?'Last issued report · '+value.label:
   mode==='ixl'?'Diagnostic level · '+value.label:
@@ -85,14 +91,16 @@ export function evidenceValue(student,{mode='report',academic,map,experience,mai
 export function evidenceRosterColumn(student,ctx){
  const result=evidenceValue(student,ctx);
  const v=(ctx.mode==='engagement'||ctx.mode==='belonging')&&result.available?experienceFor(ctx.experience,student.id,ctx.mode,ctx.window||'F26')?.value:null;
- const band=Number.isFinite(v)?(v< -1?'band-low':v<0?'band-mid-low':v<1?'band-mid-high':'band-high'):'';
+ const report=ctx.mode==='report'?facultyDemoReport(academicFor(ctx.academic,student.id)):null;
+ const band=ctx.mode==='report'?reportGradeBand(result.text,report?.scale)||'':
+  Number.isFinite(v)?(v< -1?'band-low':v<0?'band-mid-low':v<1?'band-mid-high':'band-high'):'';
  return '<span class="class-evidence-result'+(result.available?'':' is-unavailable')+(band?' evidence-heat '+band:'')+'">'+
   '<strong>'+esc(result.text)+'</strong><small>'+esc(result.detail)+'</small></span>';
 }
 function reportBreakdown(students,academic,subject){
  const groups=new Map();
  for(const student of students){
-  const report=academicFor(academic,student.id).reports?.[0];
+  const report=facultyDemoReport(academicFor(academic,student.id));
   const item=report?.subjects.find(s=>s.subject===subject);
   if(!item)continue;
   const key=[report.year,report.grade,report.framework,report.scale].join('·');
@@ -101,7 +109,7 @@ function reportBreakdown(students,academic,subject){
   group.counts.set(item.value,(group.counts.get(item.value)||0)+1);
   group.total++;
  }
- if(!groups.size)return '<p>No previously issued results for this subject.</p>';
+ if(!groups.size)return '<p>No demonstration grades for this subject.</p>';
  return [...groups.values()].map(g=>
   '<div class="class-evidence-distribution"><strong>'+esc(g.name)+'</strong>'+
   '<span>'+g.total+' learners</span><div class="class-evidence-outcomes">'+
@@ -110,7 +118,7 @@ function reportBreakdown(students,academic,subject){
   '</div></div>').join('');
 }
 const modeHelp={
- report:'Previous issued results only; the subject and prior school year are shown. Report scales are never averaged across programmes.',
+ report:'Current-year synthetic test grades, not issued school reports. Every subject has a result. Previously issued historical reports remain available in learner profiles; programme scales are never combined.',
  map:'Observed RIT change between comparable tests. Projection figures in this demonstration are illustrative, not official NWEA norms.',
  ixl:'Illustrative IXL Mathematics diagnostic levels, not SmartScores, percentages or report-card grades.',
  core:'Fictional 50-item classroom decoding checks; not an official CORE Phonics Survey total or benchmark.',
@@ -129,8 +137,8 @@ export function renderClassEvidencePanel(students,{
  const selectedWindow=EXPERIENCE_WINDOWS.some(w=>w.key===window)?window:'F26';
  const recentWindow=EXPERIENCE_WINDOWS.find(w=>w.key===selectedWindow)?.label||'Fall 2026';
  const chosenSubject=reportSubject(students,academic,subject);
- const subjects=academicFor(academic,students[0]?.id).reports?.[0]?.subjects||[];
- const sample=academicFor(academic,students[0]?.id).reports?.[0];
+ const sample=facultyDemoReport(academicFor(academic,students[0]?.id));
+ const subjects=sample?.subjects||[];
  const ctx={academic,map,experience,maia,subject:chosenSubject,mapSubject,window:selectedWindow,maiaDimension:dim,maiaWindow};
  const tabs=['Learning','Experience'].map(category=>{
   const group=EVIDENCE_MODES.filter(m=>m.category===category&&modes.includes(m.id));
@@ -159,7 +167,7 @@ export function renderClassEvidencePanel(students,{
     '<span>'+result.n+' of '+result.eligible+' check-ins · '+esc(recentWindow)+'</span>';
   }
   return '<strong>'+coverage+' of '+eligible+'</strong><span>learners with evidence'+
-   (mode==='report'&&sample?' · '+esc(sample.year)+' · '+esc(sample.grade)+' (last issued)':'')+
+   (mode==='report'&&sample?' · '+esc(sample.year)+' · '+esc(sample.grade)+' (TEST DATA · NOT ISSUED)':'')+
    (mode==='map'?' · Fall 2026':'')+'</span>';
  };
  const summary=mode=>'<div class="class-evidence-selected"><span>'+esc(evidenceLabel(mode,ctx))+
