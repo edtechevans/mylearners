@@ -537,37 +537,73 @@ try{
  await run('student-reports-1440','student','.student-landing',1440,900,
   async()=>{await click('[data-student-panel="reports"] summary');
    assert(await evaluate("document.querySelector('[data-student-panel=\"reports\"]')?.open===true"),'Report card detail did not expand')});
- await run('leader-experience-colours-1440','leader','.leader-experience-legend',1440,900,
+ await run('leader-experience-colours-1440','leader','.leader-school-voice-grid',1440,900,
   async()=>{
-   const evidence=await evaluate("(function(){const cards=[...document.querySelectorAll('.leader-experience-card')];const key=document.querySelector('.leader-experience-legend');return {cards:cards.length,swatches:key?.querySelectorAll('.leader-experience-legend-swatch').length||0,gauges:cards.map(c=>c.querySelectorAll('.leader-experience-segments > span:not(.leader-experience-marker)').length),markers:cards.map(c=>!!c.querySelector('.leader-experience-marker')),classes:cards.map(c=>c.className),colours:cards.map(c=>getComputedStyle(c).backgroundColor),changes:cards.map(c=>c.querySelector('.leader-experience-change')?.textContent||'')}})()");
-   assert(evidence.cards===4&&evidence.swatches===4,'Leaders must show four experience cards and all four colours');
-   assert(evidence.gauges.every(n=>n===4)&&evidence.markers.every(Boolean),
-    'Every index needs the red-to-dark-green scale and its value marker');
-   assert(evidence.colours.every(v=>v!=='rgb(255, 255, 255)'),
-    'Experience cards must have band-specific background tints');
-   assert(evidence.classes.every(v=>v.includes('index-band-mid-high')),
-    'Fall 2026 demo indices between 0 and +1 must be in the light-green band');
-   assert(evidence.changes.every(v=>!/0\.\d{6,}/.test(v)),
-    'Previous-period changes must use at most two decimal places');
+   const v=await evaluate("(function(){const cards=[...document.querySelectorAll('.leader-school-voice')];return {groups:cards.length,gauges:cards.map(c=>c.querySelectorAll('.leader-experience-scale').length),segments:cards.map(c=>[...c.querySelectorAll('.leader-experience-segments')].map(x=>x.querySelectorAll('span:not(.leader-experience-marker)').length)),markers:cards.map(c=>c.querySelectorAll('.leader-experience-marker').length)}})()");
+   assert(v.groups===2&&v.gauges.every(n=>n===2),'Whole-school landing must keep division survey questions separate');
+   assert(v.segments.every(row=>row.every(n=>n===4))&&v.markers.every(n=>n===2),
+    'Both divisions need accessible red-to-green scales for each index');
   });
- await run('leader-filter-1440','leader','.leader-learning-grid',1440,900,
-  async()=>{const ok=await evaluate("(function(){const s=document.querySelector('[data-select=\"grade\"]');if(!s)return false;s.value='G7';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
-   assert(ok,'Grade filter missing');await sleep(150);
-   assert(await evaluate("document.querySelector('.leader-period')?.textContent.includes('Grade 7')"),'Grade filter did not update');
-    assert(await evaluate("!!document.querySelector('.leader-report-followup')"),'Secondary review should appear for Grade 7');
-    assert(await evaluate("document.querySelectorAll('.leader-report-legend-chip').length===4"),'Leader legend needs four colours');
-    assert(await evaluate("document.querySelectorAll('.leader-report-fourband').length>0"),'Leaders need subject profile colours');
-    assert(await evaluate("!!document.querySelector('[data-leader-report-threshold=\"2\"]')"),
-     'Leaders need the 2 or below threshold control');
-    await click('[data-leader-report-threshold="2"]');
-    assert(await evaluate("document.querySelector('.leader-report-followup h2')?.textContent.includes('2 or below')"),
-     'Leaders must switch to 2 or below');
-    assert(await evaluate("getComputedStyle(document.querySelector('[data-leader-report-threshold=\"2\"]')).backgroundColor==='rgb(166, 55, 63)'"),
-     'Leaders 2 or below selected control should be red');
-    await click('[data-leader-report-threshold="3"]');
-    assert(await evaluate("document.querySelector('.leader-report-followup h2')?.textContent.includes('3 or below')"),
-     'Leaders must restore 3 or below');
-   });
+ await run('leader-secondary-daily-1440','leader','.leader-division-grid',1440,900,
+  async()=>{
+   await click('[data-leader-division="Secondary"]');
+   assert(await evaluate("!!document.querySelector('.leader-daily-priority.red')&&!!document.querySelector('.leader-review-table')"),
+    'Secondary daily screen needs visible subject concerns and a learner review queue');
+   assert(await evaluate("document.querySelectorAll('[data-leader-grade]').length>=8"),
+    'Secondary needs Grades 6–12 drilldowns');
+   await evaluate('window.scrollTo(0,0)');
+  });
+ await run('leader-filter-1440','leader','.leader-division-grid',1440,900,
+  async()=>{
+   await click('[data-leader-division="Secondary"]');
+   await click('[data-leader-grade="G7"]');
+   assert(await evaluate("document.querySelector('.leader-division-hero h2')?.textContent.includes('Grade 7')"),
+    'Grade 7 drilldown must change scope');
+   assert(await evaluate("!!document.querySelector('.leader-report-followup')"),
+    'Secondary detailed subject review must remain available');
+   assert(await evaluate("document.querySelectorAll('.leader-report-legend-chip').length===4"),
+    'Report legend needs all four fixed outcome colours');
+   await click('[data-leader-panel="report"] summary');
+   await click('[data-leader-report-threshold="2"]');
+   assert(await evaluate("document.querySelector('.leader-report-followup h2')?.textContent.includes('2 or below')"),
+    'Secondary detailed review should support 2 or below');
+   await click('[data-leader-report-threshold="3"]');
+   assert(await evaluate("document.querySelector('.leader-report-followup h2')?.textContent.includes('3 or below')"),
+    'Secondary detailed review should support 3 or below');
+   await evaluate('window.scrollTo(0,0)');
+  });
+ await run('leader-dp-grade12-1440','leader','.leader-division-grid',1440,900,
+  async()=>{
+   await click('[data-leader-division="Secondary"]');
+   await click('[data-leader-grade="G12"]');
+   const v=await evaluate("(function(){const cards=[...document.querySelectorAll('.leader-learning-grid .leader-stat')];return {dp:cards.some(x=>x.textContent.includes('DP subject results')),map:cards.some(x=>x.textContent.includes('MAP')),queue:!!document.querySelector('[data-leader-review-filter=academic2]')}})()");
+   assert(v.dp&&!v.map&&v.queue,'Grade 12 needs DP evidence, not unavailable MAP cards');
+   await click('[data-leader-review-filter="academic2"]');
+   await click('[data-leader-student]');
+   assert(await evaluate("!!document.querySelector('.leader-learner-profile')"),
+    'Review should navigate to permitted read-only learner evidence');
+   assert(await evaluate("!document.querySelector('[data-support-new]')&&!document.querySelector('[data-sss-student]')"),
+    'Leaders should not expose protected casework controls');
+   await click('[data-leader-back]');
+   await evaluate('window.scrollTo(0,0)');
+  });
+ await run('leader-elementary-1440','leader','.leader-division-grid',1440,900,
+  async()=>{
+   await click('[data-leader-division="Elementary"]');
+   assert(await evaluate("!!document.querySelector('.leader-daily-priority.blue')&&!document.querySelector('[data-leader-review-filter=academic2]')"),
+    'Elementary must have an age-appropriate literacy lens instead of Secondary thresholds');
+   await click('[data-leader-grade="G4"]');
+   assert(await evaluate("document.querySelector('.leader-division-hero h2')?.textContent.includes('Grade 4')"),
+    'Elementary grade drilldown should work');
+   await click('[data-leader-save-view]');
+   await click('[data-leader-division="All"]');
+   assert(await evaluate("!!document.querySelector('[data-leader-open-saved]')"),
+    'Saved leadership view should be available by explicit action');
+   await click('[data-leader-open-saved]');
+   assert(await evaluate("document.querySelector('.leader-division-hero h2')?.textContent.includes('Grade 4')"),
+    'Saved view should restore selected division and grade');
+   await evaluate('window.scrollTo(0,0)');
+  });
  await run('faculty-map-tab-1440','faculty','.faculty-daily-toolbar',1440,900,
   async()=>{
    await click('[data-class-evidence="map"]');
