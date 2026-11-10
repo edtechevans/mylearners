@@ -238,6 +238,16 @@ export function resolveEvidencePreview(trigger,ctx){
   return compact(PREVIEW_GUIDE[mode]?.label||'Assessment',person.name,null,'academic',
    value(trigger.dataset.evidenceValue));
  }
+ if(kind==='leader-assessment'&&ctx.role==='leader'){
+  const row=trigger.closest?.('tr[data-preview-student]');
+  const id=row?.dataset.previewStudent;
+  const student=id?ctx.data.userIndex.get(id):null;
+  if(student){
+   const subject=t(trigger,'span')||t(trigger,'strong');
+   return compact(subject,student.name,
+    reportProgress(academicFor(ctx.academic,student.id),subject),'academic','—');
+  }
+ }
  if(kind==='tag'){
   const tag=tidy(trigger.dataset.previewTag||trigger.textContent);
   const safeTitle=tag||'Support indicator';
@@ -270,16 +280,18 @@ export function resolveEvidencePreview(trigger,ctx){
    note:help.slice(0,220),kind:'academic'});
  }
  if(kind==='monitor-point'){
-  const week=trigger.dataset.previewWeek;
-  const observed=trigger.dataset.previewObserved;
-  const target=trigger.dataset.previewTarget;
-  return makePreview({title:'Intervention monitoring · Week '+value(week),
-   subtitle:'Fictional weekly observation',rows:[
-    ['Observed',value(observed)+' / 5 opportunities'],
-    ['Example target',value(target)+' / 5 opportunities'],
-    ['Week',value(week)]],
-   note:'Observed values are examples, not diagnostic evidence or an estimate of intervention effectiveness.',
-   kind:'support'});
+  const week=Number(trigger.dataset.previewWeek);
+  const circles=[...(trigger.closest?.('svg')?.querySelectorAll?.('circle[data-preview-week]')||[])];
+  const points=circles.map(x=>({
+   week:Number(x.dataset.previewWeek),observed:Number(x.dataset.previewObserved)
+  })).filter(x=>Number.isFinite(x.week)&&Number.isFinite(x.observed)&&x.week<=week)
+   .sort((a,b)=>a.week-b.week).slice(-3);
+  const last=points.at(-1),before=points.at(-2);
+  return compact('Weekly observations','',{
+   points:points.map(x=>({label:'Week '+x.week,value:x.observed+' / 5'})),
+   change:last&&before?{value:(last.observed-before.observed>0?'+':'')+
+    (last.observed-before.observed)+' observed',from:'Week '+before.week}:null
+  },'support',value(trigger.dataset.previewObserved)+' / 5');
  }
  if(kind==='wida'){
   return simpleGuide('wida','SSS screening example',t(trigger,'strong'));
