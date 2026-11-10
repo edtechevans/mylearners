@@ -449,6 +449,26 @@ try{
     '3 or below filter must be visible beside everyday/focused controls, not in a hidden heading');
    assert(filterPlacement.top<filterPlacement.firstRow,
     'Faculty filter should be encountered before the learner rows');
+   assert(await evaluate("document.querySelectorAll('.faculty-data-wall [data-ux-drag]').length>=8"),
+    'Subject headings need drag handles');
+   assert(await evaluate("document.querySelectorAll('.faculty-data-wall [data-ux-resize]').length>=8"),
+    'Subject headings need resize handles');
+   await click('[data-ux-customize-columns]');
+   assert(await evaluate("(function(){const d=document.querySelector('.ux-faculty-table-controls');return !!d?.open&&!!d.querySelector('.ux-columns-menu')?.open})()"),
+    'Arrange columns shortcut must open the editable column list');
+   const moved=await evaluate("(function(){const t=document.querySelector('.faculty-data-wall'),a=t.querySelector('[data-ux-drag=\"2\"]'),b=t.querySelector('thead th[data-ux-origin=\"4\"]');if(!a||!b)return false;const before=t.querySelector('tbody tr td[data-ux-origin=\"2\"]').textContent;const d=new DataTransfer();a.dispatchEvent(new DragEvent('dragstart',{bubbles:true,dataTransfer:d}));b.dispatchEvent(new DragEvent('dragover',{bubbles:true,cancelable:true,dataTransfer:d}));b.dispatchEvent(new DragEvent('drop',{bubbles:true,cancelable:true,dataTransfer:d,clientX:b.getBoundingClientRect().right-2}));const h=[...t.querySelectorAll('thead th')].map(x=>x.dataset.uxOrigin),r=[...t.querySelector('tbody tr').cells].map(x=>x.dataset.uxOrigin);return h.indexOf('2')>h.indexOf('4')&&h.join(',')===r.join(',')&&t.querySelector('tbody tr td[data-ux-origin=\"2\"]').textContent===before})()");
+   assert(moved,'Dragging a heading must also move its corresponding subject grades');
+   await click('[data-ux-move-left="2"]');
+   const compact=await evaluate("(function(){const e=document.querySelector('[data-ux-column-width=\"2\"]');e.value='compact';e.dispatchEvent(new Event('change',{bubbles:true}));return document.querySelector('.faculty-data-wall col[data-ux-origin=\"2\"]')?.style.width==='96px'})()");
+   assert(compact,'Compact width preset must shrink the selected subject');
+   const hidden=await evaluate("(function(){const e=document.querySelector('[data-ux-column=\"3\"]');e.checked=false;e.dispatchEvent(new Event('change',{bubbles:true}));return document.querySelector('.faculty-data-wall th[data-ux-origin=\"3\"]')?.hasAttribute('data-ux-column-hidden')})()");
+   assert(hidden,'Subject hide option must remove the subject from the visible table');
+   assert(await evaluate("(function(){const k=document.querySelector('.ux-table-shell[data-ux-table-key]')?.dataset.uxTableKey;const p=JSON.parse(localStorage.getItem('mylearners-faculty-columns-v1')||'{}')[k];return !!p&&p.hidden.includes(3)&&p.widths['2']===96})()"),
+    'Faculty arrangement should persist on this device');
+   await click('[data-ux-restore-columns]');
+   assert(await evaluate("(function(){const t=document.querySelector('.faculty-data-wall'),h=[...t.querySelectorAll('thead th')].map(x=>Number(x.dataset.uxOrigin));return h.every((x,i)=>x===i)&&!t.querySelector('[data-ux-column-hidden]')})()"),
+    'Restore default columns must undo drag, sizing and hiding');
+   await evaluate("(function(){const e=document.querySelector('.ux-faculty-table-controls');if(e)e.open=false})()");
    const baselineCount=await evaluate("document.querySelectorAll('.roster-daily tbody .student-link').length");
     await click('[data-faculty-low-filter="low"]');
     assert(await evaluate("document.querySelector('[data-faculty-low-filter=low]')?.getAttribute('aria-pressed')==='true'"),
