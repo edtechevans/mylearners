@@ -275,7 +275,7 @@ function roster(ss,options={}){
   'class="'+(!lowOnly?'active':'')+'">All learners</button>'+
   '<button type="button" data-faculty-low-filter="low" aria-pressed="'+lowOnly+'" '+
   'class="'+(lowOnly?'active':'')+'">3 or below <b>'+concernCount+'</b></button>'+
-  '<small>At least one subject · 2026–27 test data</small></div>':'';
+  '</div>':'';
 
  const showMap=across&&rows.some(s=>gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10);
  const showSEL=across&&rows.some(s=>experienceEligible(s));
@@ -302,8 +302,9 @@ function roster(ss,options={}){
    sss:SSS_RECORDS.has(student.id)};
  });
  const heading=across?'Students matching “'+safe(state.query.trim())+'”':'My Students';
- const context=across?rows.length+' of '+ss.length+' assigned students across all classes':
-  rows.length+' of '+ss.length+' learners in '+safe(activeClass()?.name||'this class');
+ const context=(across?rows.length+' of '+ss.length+' assigned students across all classes':
+  rows.length+' of '+ss.length+' learners in '+safe(activeClass()?.name||'this class'))+
+  ' · 2026–27 synthetic test data · not issued';
  const evidenceColWidth='124px';
  const colgroup=everyday?'<colgroup><col class="roster-col-learner"><col class="roster-col-attendance">'+
   everydayColumns.slice(1).map(()=>'<col class="roster-col-evidence" style="width:'+evidenceColWidth+'">').join('')+
@@ -340,11 +341,9 @@ function roster(ss,options={}){
   (x.sss?'<span>SSS programme · demonstration</span>':'')+
   '</span><span class="roster-arrow" aria-hidden="true">›</span></button>').join('')+'</div>';
  return '<section class="roster roster-daily" data-roster-layout="'+(everyday?'everyday':'focused')+'" aria-label="'+(across?'Search across assigned students':'My class roster')+'">'+
-  '<div class="sectionhead"><div><h2>'+heading+'</h2><span class="tiny">'+context+'</span></div>'+
+  '<div class="sectionhead"><div><h2>'+heading+'</h2><span class="tiny">'+context+'</span></div>'+concernFilter+
   (across?'<button type="button" class="roster-clear-search" data-clear-search>Clear search</button>':'')+'</div>'+
   (options.controls||'')+
-  concernFilter+
-  (everyday?'<p class="faculty-report-test-label"><strong>2026–27 subject grades · SYNTHETIC TEST DATA · NOT ISSUED.</strong> All current-grade subjects have examples; earlier issued report history is kept separately.</p>':'')+
   (everyday&&(hasNumericReports||hasAcademicBands||hasExperienceBands)?'<div class="faculty-evidence-legend" aria-label="Understanding evidence colours">'+
   '<strong>'+(hasNumericReports?'Report card grades 1–7':'Assessment and experience indicators')+'</strong>'+
   '<span class="faculty-legend-swatches">'+
