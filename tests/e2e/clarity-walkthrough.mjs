@@ -410,7 +410,7 @@ try{
    const headers=await evaluate("Array.from(document.querySelectorAll('.roster-daily thead th')).map(th=>th.textContent.trim())");
    for(const expected of ['Learner','Attendance','MAP Mathematics growth','IXL Mathematics','Engagement','Belonging','Support information'])
     assert(headers.some(h=>h.includes(expected)),'Missing default evidence: '+expected);
-   assert(headers.length===7,'Expected learner, five measures and support information');
+    assert(headers.length>=12&&headers.some(h=>h.includes('Report · Language & Literature')),'Expected all issued report subjects and other evidence');
    assert(await evaluate("document.querySelector('.roster-daily').getBoundingClientRect().top<innerHeight-80"),
     'The Faculty data wall should begin within the first viewport');
    assert(await evaluate("(function(){const row=document.querySelector('.faculty-data-wall tbody tr');return !!row&&row.getBoundingClientRect().top<innerHeight-55})()"),
@@ -430,19 +430,19 @@ try{
     'Learner names should stay visible during horizontal scrolling');
    assert(await evaluate("document.querySelectorAll('.faculty-data-wall tbody td[data-ux-sort-value]').length>=80"),
     'Evidence cells must provide raw values for sorting');
-   const numericSort=await evaluate("(function(){const h=document.querySelector('.faculty-data-wall thead [data-ux-sort=\"2\"]');if(!h)return false;h.click();const v=[...document.querySelectorAll('.faculty-data-wall tbody tr td:nth-child(3)')].map(td=>td.getAttribute('data-ux-sort-value')).filter(x=>x!==null&&x!=='').map(Number);return v.length>5&&v.every((n,i)=>i===0||n>=v[i-1])})()");
-   assert(numericSort,'MAP must sort by actual growth rather than the Q band');
+    const numericSort=await evaluate("(function(){const hs=[...document.querySelectorAll('.faculty-data-wall thead th')];const ix=hs.findIndex(th=>th.textContent.includes('MAP Mathematics growth'));if(ix<0)return false;const h=document.querySelector('.faculty-data-wall thead [data-ux-sort=\\\"'+ix+'\\\"]');if(!h)return false;h.click();const v=[...document.querySelectorAll('.faculty-data-wall tbody tr')].map(tr=>tr.cells[ix]?.getAttribute('data-ux-sort-value')).filter(x=>x!==null&&x!=='').map(Number);return v.length>5&&v.every((n,i)=>i===0||n>=v[i-1])})()");
+    assert(numericSort,'MAP must sort by actual growth rather than display colours');
 
    assert(await evaluate("document.querySelectorAll('.roster-daily tbody .class-evidence-result').length>=20"),
     'Everyday columns should show per-learner values without extra clicks');
    const geometry=await evaluate("(function(){const row=document.querySelector('.roster-daily[data-roster-layout=everyday] tbody tr');if(!row)return [];return [...row.cells].slice(2,-1).map(td=>{const r=td.querySelector('.evidence-cell-open .class-evidence-result')?.getBoundingClientRect();return r?{width:r.width,height:r.height,top:r.top}:null}).filter(Boolean)})()");
-   assert(geometry.length===4,'Grade 7 should show four adjacent evidence tiles');
+    assert(geometry.length>=12,'Grade 7 should show all available issued report subjects and non-report measures');
    for(const key of ['width','height','top'])assert(
     Math.max(...geometry.map(r=>r[key]))-Math.min(...geometry.map(r=>r[key]))<2,
     'Everyday evidence tiles must align in '+key);
    const cards=await evaluate("Array.from(document.querySelectorAll('.faculty-daily-summary>.quick-tile[class*=index-band-]')).map(e=>e.querySelector('strong')?.textContent||'')");
    assert(cards.length===2,'Engagement and Belonging summaries need value-driven colour bands');
-   assert(cards.every(value=>/^-?\d+(?:\.\d+)?$/.test(value)),'Summary tiles should display only numbers');
+    assert(cards.every(value=>value==='●'),'Summary tiles should be colour only, without index numbers');
 
    await click('[data-roster-view="focused"]');
    assert(await evaluate("document.querySelector('.roster-daily')?.dataset.rosterLayout==='focused'"),
@@ -583,7 +583,7 @@ try{
    assert(changed,'A Secondary Grade 12 demo class must be selectable');
    await sleep(190);
    const legend=await evaluate("document.querySelector('.faculty-evidence-legend')?.textContent||''");
-   assert(legend.includes('Four fixed experience bands'),'Grade 12 requires fixed survey bands');
+    assert(legend.includes('Report card grades 1–7')&&legend.includes('Other measures are colour-only'),'Grade 12 should distinguish numeric reports from experience indices');
    assert(!legend.includes('Q1'),'Grade 12 should not be told its experience index uses academic quartiles');
   });
  await run('faculty-one-measure-reset-960','faculty','.faculty-daily-toolbar',960,850,
