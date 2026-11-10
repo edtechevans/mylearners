@@ -107,7 +107,7 @@ function apply(table,s){
  [...table.querySelectorAll('thead th')].forEach((th,i)=>{
   if(s.hidden.includes(sourceIndex(th,i)))th.dataset.uxColumnHidden='';else delete th.dataset.uxColumnHidden;
   const button=th.querySelector('[data-ux-sort]');
-  if(button)button.setAttribute('aria-sort',s.order===i?(s.desc?'descending':'ascending'):'none');
+  if(button)button.setAttribute('aria-sort',s.order===sourceIndex(th,i)?(s.desc?'descending':'ascending'):'none');
  });
  [...table.querySelectorAll('colgroup col')].forEach((col,i)=>{
   if(s.hidden.includes(sourceIndex(col,i)))col.dataset.uxColumnHidden='';
@@ -126,7 +126,14 @@ function decorate(table,index){
  if(table.closest('.ux-table-shell')||!table.querySelector('thead th')||!table.querySelector('tbody tr'))return;
  const {headers}=textRows(table);
  if(!headers.length||headers.length>20)return;
- const key=tableKey(table,index),s=stateFor(key,headers.length);
+ const isFacultyColumns=table.matches('table.faculty-data-wall');
+ const key=tableKey(table,index),s=stateFor(key,headers.length,isFacultyColumns);
+ if(isFacultyColumns){
+  [...table.querySelectorAll('thead th')].forEach((cell,i)=>{cell.dataset.uxOrigin=String(i)});
+  for(const tr of table.querySelectorAll('tbody tr'))
+   [...tr.cells].forEach((cell,i)=>{cell.dataset.uxOrigin=String(i)});
+  [...table.querySelectorAll('colgroup col')].forEach((col,i)=>{col.dataset.uxOrigin=String(i)});
+ }
  const shell=document.createElement('div');
  shell.className='ux-table-shell';
  shell.dataset.uxTableKey=key;
@@ -138,12 +145,16 @@ function decorate(table,index){
  const choices=(saved[key]&&typeof saved[key]==='object')?Object.keys(saved[key]):[];
  const fields=headers.map((h,i)=>'<label class="ux-column-filter">'+safe(h)+
    '<input data-ux-field="'+i+'" value="'+safe(s.fields[i]||'')+'" placeholder="Filter…"></label>').join('');
- const columns=headers.map((h,i)=>'<label class="ux-column-row"><input type="checkbox" data-ux-column="'+i+'" '+
+ const columns=isFacultyColumns?
+  '<p class="ux-column-guide">Drag a subject header to move it. Drag its right edge to resize. Or use the arrows and width choices below.</p>'+
+  '<div class="ux-column-manage" data-ux-column-list></div>'+
+  '<button type="button" class="ux-action ux-column-restore" data-ux-restore-columns>Restore default columns</button>':
+  headers.map((h,i)=>'<label class="ux-column-row"><input type="checkbox" data-ux-column="'+i+'" '+
   (!s.hidden.includes(i)?'checked ':'')+(i===0?'disabled ':'')+'><span>'+safe(h)+'</span></label>').join('');
  panel.innerHTML='<div class="ux-tool-main"><label class="ux-filter-label"><span class="sr-only">Search visible table</span>'+
   '<input class="ux-search-input" data-ux-search type="search" value="'+safe(s.search)+'" placeholder="Search these records" aria-label="Search records in this table"></label>'+
   '<details class="ux-menu"><summary>Column filters</summary><div class="ux-popover"><strong>Filter by values</strong><div class="ux-field-grid">'+fields+'</div></div></details>'+
-  '<details class="ux-menu"><summary data-ux-columns>Columns</summary><div class="ux-popover"><strong>Show columns</strong>'+columns+'</div></details>'+
+  '<details class="ux-menu"><summary data-ux-columns>'+(isFacultyColumns?'Arrange / hide columns':'Columns')+'</summary><div class="ux-popover'+(isFacultyColumns?' ux-column-layout-popover':'')+'"><strong>'+(isFacultyColumns?'Arrange, size and hide':'Show columns')+'</strong>'+columns+'</div></details>'+
   toolButton('clear','Reset')+
   ((role()==='faculty'||role()==='board')?toolButton('export','Export visible CSV'):'')+
   '</div><div class="ux-view-row"><label>Saved layout</label><select class="ux-view-picker" data-ux-view aria-label="Select saved table layout">'+
@@ -152,7 +163,8 @@ function decorate(table,index){
   toolButton('save','Save layout')+toolButton('remove','Delete selected')+'</div>';
  const caption=document.createElement('div');
  caption.className='ux-table-caption';
- caption.innerHTML='<output data-ux-count aria-live="polite"></output><span>Click a column header to sort. Views save filters and layout only, not student data.</span>';
+ caption.innerHTML='<output data-ux-count aria-live="polite"></output><span>'+(isFacultyColumns?'Drag a heading to move it, or its right edge to resize.':'Click a column header to sort.')+' Layouts save presentation preferences only, not student data.</span>';
+ if(isFacultyColumns)caption.insertAdjacentHTML('beforeend','<output class="ux-layout-announcement sr-only" data-ux-layout-announcement aria-live="polite"></output>');
  const empty=document.createElement('p');
  empty.className='ux-table-caption';
  empty.dataset.uxNoResults='';
@@ -170,7 +182,7 @@ function decorate(table,index){
   panel.parentNode.insertBefore(controls,panel);
   controls.appendChild(panel);
   // Expose active filters rather than hiding an applied setting.
-  if(faculty&&(s.search||Object.values(s.fields).some(clean)||s.hidden.length))controls.open=true;
+  if(faculty&&(s.search||Object.values(s.fields).some(clean)||(!isFacultyColumns&&s.hidden.length)))controls.open=true;
  }
  shell.appendChild(caption);shell.appendChild(empty);
  [...table.querySelectorAll('thead th')].forEach((th,i)=>{
