@@ -430,7 +430,7 @@ try{
     'Learner names should stay visible during horizontal scrolling');
    assert(await evaluate("document.querySelectorAll('.faculty-data-wall tbody td[data-ux-sort-value]').length>=80"),
     'Evidence cells must provide raw values for sorting');
-    const numericSort=await evaluate("(function(){const hs=[...document.querySelectorAll('.faculty-data-wall thead th')];const ix=hs.findIndex(th=>th.textContent.includes('MAP Mathematics growth'));if(ix<0)return false;const h=document.querySelector('.faculty-data-wall thead [data-ux-sort=\\\"'+ix+'\\\"]');if(!h)return false;h.click();const v=[...document.querySelectorAll('.faculty-data-wall tbody tr')].map(tr=>tr.cells[ix]?.getAttribute('data-ux-sort-value')).filter(x=>x!==null&&x!=='').map(Number);return v.length>5&&v.every((n,i)=>i===0||n>=v[i-1])})()");
+    const numericSort=await evaluate("(function(){const hs=[...document.querySelectorAll('.faculty-data-wall thead th')];const ix=hs.findIndex(th=>th.textContent.includes('MAP Mathematics growth'));if(ix<0)return false;const h=[...document.querySelectorAll('.faculty-data-wall thead [data-ux-sort]')].find(el=>el.dataset.uxSort===String(ix));if(!h)return false;h.click();const v=[...document.querySelectorAll('.faculty-data-wall tbody tr')].map(tr=>tr.cells[ix]?.getAttribute('data-ux-sort-value')).filter(x=>x!==null&&x!=='').map(Number);return v.length>5&&v.every((n,i)=>i===0||n>=v[i-1])})()");
     assert(numericSort,'MAP must sort by actual growth rather than display colours');
 
    assert(await evaluate("document.querySelectorAll('.roster-daily tbody .class-evidence-result').length>=20"),
