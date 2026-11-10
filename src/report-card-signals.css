@@ -63,3 +63,7 @@
 #app .leader-report-expand{margin-top:12px}
 @media(max-width:760px){#app .leader-report-topline{grid-template-columns:1fr 1fr}#app .leader-report-coverage{grid-column:1/-1}}
 @media print{#app .report-grade-chip,#app .roster-daily .evidence-heat{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+/* Clearly separate unissued test grades from the historical report archive. */
+#app .faculty-report-test-label{margin:11px 0 6px;padding:10px 13px;border-left:3px solid #7c8d99;border-radius:5px;background:#f4f7f9;color:#324d5e;font-size:12px;line-height:1.5}
+#app .faculty-report-test-label strong{font-weight:800;color:#344d60}
