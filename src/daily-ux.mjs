@@ -3,6 +3,7 @@
  * No source scores, scopes, app routes or student records are changed.
  */
 import {safeText,compareEvidenceSource,exportCsv,parsePreferences,filteredRecords} from './daily-ux-core.mjs?v=20261031v1';
+import {normaliseColumnOrder,moveColumn,normaliseColumnWidths,clampColumnWidth,COLUMN_WIDTHS,widthPreset} from './faculty-column-layout.mjs';
 const root=document.getElementById('app');
 const states=new Map();
 const clean=x=>String(x??'').replace(/\s+/g,' ').trim();
@@ -14,11 +15,23 @@ try{saved=parsePreferences(localStorage.getItem(preferenceKey)||'{}')}catch{}
 function save(){
  try{localStorage.setItem(preferenceKey,JSON.stringify(saved))}catch{}
 }
+const automaticKey='mylearners-faculty-columns-v1';
+let automatic={};
+try{automatic=parsePreferences(localStorage.getItem(automaticKey)||'{}')}catch{}
+function persistLayout(key,s){
+ automatic[key]={columnOrder:[...(s.columnOrder||[])],hidden:[...s.hidden],widths:{...s.widths}};
+ try{localStorage.setItem(automaticKey,JSON.stringify(automatic))}catch{}
+}
 function tableKey(table,i){
  const context=table.closest('.roster-daily')?'faculty-roster':
   table.closest('.leader-detail')?'leader-evidence':
   table.closest('.board-view')?'board-evidence':role()+'-table';
  const heads=[...table.querySelectorAll('thead th')].map(label).join('|');
+ if(table.matches('table.faculty-data-wall')){
+  // Same teacher + same subjects share a layout, even across multiple classes.
+  const teacher=root.querySelector('[data-select="teacher"]')?.value||'demo';
+  return ['faculty-columns',teacher,heads].join(':').slice(0,500);
+ }
  return [context,i,heads].join(':').slice(0,280);
 }
 function textRows(table){
@@ -26,11 +39,48 @@ function textRows(table){
  const rows=[...table.querySelectorAll('tbody tr')];
  return {headers,rows};
 }
-function stateFor(key,count){
- if(!states.has(key))states.set(key,{search:'',fields:{},order:null,desc:false,hidden:[],name:'',view:''});
+function stateFor(key,count,isFacultyColumns=false){
+ if(!states.has(key)){
+  const original={search:'',fields:{},order:null,desc:false,hidden:[],name:'',view:''};
+  const previous=isFacultyColumns?automatic[key]:null;
+  if(previous&&typeof previous==='object'){
+   original.hidden=Array.isArray(previous.hidden)?previous.hidden:[];
+   original.columnOrder=previous.columnOrder;
+   original.widths=previous.widths;
+  }
+  states.set(key,original);
+ }
  const s=states.get(key);
- s.hidden=s.hidden.filter(i=>i<count && i>0);
+ s.hidden=(Array.isArray(s.hidden)?s.hidden:[]).filter(i=>Number.isInteger(i)&&i>0&&i<count);
+ if(isFacultyColumns){
+  s.columnOrder=normaliseColumnOrder(s.columnOrder,count);
+  s.widths=normaliseColumnWidths(s.widths,count);
+ }
  return s;
+}
+const sourceIndex=(cell,fallback)=>Number.isInteger(Number(cell?.dataset?.uxOrigin))?
+ Number(cell.dataset.uxOrigin):fallback;
+const sourceCell=(row,index)=>row?.querySelector('[data-ux-origin="'+index+'"]')||row?.cells?.[index]||null;
+function updateColumnWidth(table,index,width){
+ const value=clampColumnWidth(width);
+ const col=table.querySelector('colgroup col[data-ux-origin="'+index+'"]');
+ const th=table.querySelector('thead th[data-ux-origin="'+index+'"]');
+ if(col)col.style.width=value+'px';
+ if(th){th.style.width=value+'px';th.style.minWidth=value+'px';th.style.maxWidth=value+'px'}
+}
+function arrangeFacultyColumns(table,s){
+ const order=normaliseColumnOrder(s.columnOrder,table.querySelectorAll('thead th').length);
+ s.columnOrder=order;
+ const sequences=[...table.querySelectorAll('thead tr, tbody tr')];
+ const cols=table.querySelector('colgroup');
+ if(cols)sequences.push(cols);
+ for(const parent of sequences){
+  const elements=[...parent.children];
+  if(elements.length!==order.length)continue;
+  const byId=new Map(elements.map((el,i)=>[sourceIndex(el,i),el]));
+  for(const index of order){const el=byId.get(index);if(el)parent.appendChild(el)}
+ }
+ for(const [index,width] of Object.entries(s.widths||{}))updateColumnWidth(table,Number(index),width);
 }
 function apply(table,s){
  const {rows,headers}=textRows(table);
@@ -41,23 +91,27 @@ function apply(table,s){
  if(body && Number.isInteger(s.order)){
   const col=s.order;
   const source=cell=>cell?.hasAttribute('data-ux-sort-value')?cell.getAttribute('data-ux-sort-value'):null;
-  rows.sort((a,b)=>compareEvidenceSource(a.cells[col]?.textContent,b.cells[col]?.textContent,
-   source(a.cells[col]),source(b.cells[col]),s.desc)).forEach(row=>body.appendChild(row));
+  rows.sort((a,b)=>compareEvidenceSource(sourceCell(a,col)?.textContent,sourceCell(b,col)?.textContent,
+   source(sourceCell(a,col)),source(sourceCell(b,col)),s.desc)).forEach(row=>body.appendChild(row));
  }
  const visibleRows=[...table.querySelectorAll('tbody tr')];
  for(const tr of visibleRows){
   const all=label(tr).toLocaleLowerCase();
   const match=(!query||all.includes(query))&&filters.every(([index,v])=>
-   clean(tr.cells[Number(index)]?.textContent).toLocaleLowerCase().includes(clean(v).toLocaleLowerCase()));
+   clean(sourceCell(tr,Number(index))?.textContent).toLocaleLowerCase().includes(clean(v).toLocaleLowerCase()));
   tr.classList.toggle('ux-hidden',!match);
   tr.hidden=!match;
   if(match)matches++;
-  [...tr.cells].forEach((cell,j)=>{if(s.hidden.includes(j))cell.dataset.uxColumnHidden='';else delete cell.dataset.uxColumnHidden});
+  [...tr.cells].forEach((cell,j)=>{if(s.hidden.includes(sourceIndex(cell,j)))cell.dataset.uxColumnHidden='';else delete cell.dataset.uxColumnHidden});
  }
  [...table.querySelectorAll('thead th')].forEach((th,i)=>{
-  if(s.hidden.includes(i))th.dataset.uxColumnHidden='';else delete th.dataset.uxColumnHidden;
+  if(s.hidden.includes(sourceIndex(th,i)))th.dataset.uxColumnHidden='';else delete th.dataset.uxColumnHidden;
   const button=th.querySelector('[data-ux-sort]');
   if(button)button.setAttribute('aria-sort',s.order===i?(s.desc?'descending':'ascending'):'none');
+ });
+ [...table.querySelectorAll('colgroup col')].forEach((col,i)=>{
+  if(s.hidden.includes(sourceIndex(col,i)))col.dataset.uxColumnHidden='';
+  else delete col.dataset.uxColumnHidden;
  });
  const shell=table.closest('.ux-table-shell');
  const count=shell?.querySelector('[data-ux-count]');
@@ -65,7 +119,8 @@ function apply(table,s){
  const empty=shell?.querySelector('[data-ux-no-results]');
  if(empty)empty.hidden=matches!==0;
 }
-function currentSettings(s){return {search:s.search,fields:{...s.fields},order:s.order,desc:s.desc,hidden:[...s.hidden]}}
+function currentSettings(s){return {search:s.search,fields:{...s.fields},order:s.order,desc:s.desc,hidden:[...s.hidden],
+ columnOrder:Array.isArray(s.columnOrder)?[...s.columnOrder]:null,widths:{...s.widths}}}
 function toolButton(name,text){return '<button type="button" class="ux-action" data-ux-'+name+'>'+text+'</button>'}
 function decorate(table,index){
  if(table.closest('.ux-table-shell')||!table.querySelector('thead th')||!table.querySelector('tbody tr'))return;
