@@ -110,7 +110,7 @@ export function renderMapRitProfile(records){
 }
 /** Fixed-position tooltip escapes the horizontally scrolling Faculty roster. */
 export function installMapRitHeaderTooltips(root){
- if(!root||typeof document==='undefined')return;
+ if(!root||typeof document==='undefined'||typeof document.createElement!=='function'||typeof document.body?.appendChild!=='function')return;
  const popup=document.createElement('div');
  popup.id='map-rit-floating-tooltip';
  popup.className='map-rit-floating-tooltip';
