@@ -493,6 +493,10 @@ try{
    const headers=await evaluate("Array.from(document.querySelectorAll('.roster-daily thead th')).map(th=>th.textContent.trim())");
     for(const expected of ['Learner','Attendance','MAP Reading','MAP Math','MAP Language Usage','IXL Math','Engagement','Belonging','Support information'])
     assert(headers.some(h=>h.includes(expected)),'Missing default evidence: '+expected);
+   assert(headers.includes('Engagement')&&headers.includes('Belonging'),
+    'Everyday Faculty headings must omit the repeated check-in date');
+   assert(!headers.some(h=>/^(Engagement|Belonging).*2026/.test(h)),
+    'No testing window should appear in those table headings');
    assert(!headers.some(h=>h.includes('MAP Mathematics growth')),'Old MAP Mathematics growth column should be removed from everyday roster');
     const mapTiles=await evaluate("(function(){return [...document.querySelectorAll('.faculty-data-wall tbody tr')].map(tr=>[...tr.querySelectorAll('button.map-rit-tile')].map(tile=>({score:tile.querySelector('.map-rit-score')?.textContent,change:tile.querySelector('.map-rit-growth')?.textContent,hasPill:!!tile.querySelector('.map-rit-percentile'),hasTitle:tile.hasAttribute('title'),preview:tile.dataset.evidencePreview})))})()");
     assert(mapTiles.length>=15&&mapTiles.some(row=>row.length===3),'Grade 7 students should show three MAP RIT subject tiles');
@@ -768,10 +772,15 @@ try{
    const period=await evaluate("(function(){const s=document.querySelector('[data-class-window]');if(!s)return false;s.value='S26';s.dispatchEvent(new Event('change',{bubbles:true}));return true})()");
    assert(period,'Check-in period picker missing');
    await sleep(160);
-   assert(await evaluate("document.querySelector('.roster-daily thead')?.textContent.includes('Engagement · Spring 2026')"),
-    'Selected check-in period not shown in first column');
-   assert(await evaluate("document.querySelector('.roster-daily thead')?.textContent.includes('Belonging · Spring 2026')"),
-    'Selected check-in period not shown in second column');
+   const focusedHeaders=await evaluate("Array.from(document.querySelectorAll('.roster-daily thead th')).map(th=>th.textContent.trim())");
+   assert(focusedHeaders.includes('Engagement')&&focusedHeaders.includes('Belonging'),
+    'Focused Faculty headers should show measure names only, without repeated dates');
+   assert(!focusedHeaders.some(h=>h.includes('Spring 2026')),
+    'The selected check-in window belongs in the controls, not column headings');
+   assert(await evaluate("document.querySelector('[data-class-window]')?.value==='S26'&&document.querySelector('.class-evidence-selection')?.textContent.includes('Spring 2026')"),
+    'The selected Spring window must remain clearly visible in Faculty evidence controls');
+   assert(await evaluate("Array.from(document.querySelectorAll('.roster-daily [data-evidence-preview=experience-cell]')).every(el=>!el.hasAttribute('data-preview-window'))"),
+    'Hover previews must derive the chosen window from Faculty state rather than fixed heading text');
    assert(await evaluate("document.querySelector('.roster-daily tbody')?.textContent.includes('Spring 2026')"),
     'Comparison cells should show their source period');
   });
@@ -784,6 +793,9 @@ try{
    const legend=await evaluate("document.querySelector('.faculty-evidence-legend')?.textContent||''");
     assert(legend.includes('Report card grades 1–7')&&legend.includes('Other measures are colour-only'),'Grade 12 should distinguish numeric reports from experience indices');
    assert(!legend.includes('Q1'),'Grade 12 should not be told its experience index uses academic quartiles');
+   const grade12Headings=await evaluate("Array.from(document.querySelectorAll('.roster-daily thead th')).map(th=>th.textContent.trim())");
+   assert(grade12Headings.includes('Engagement')&&grade12Headings.includes('Belonging'),
+    'Grade 12 must use the same compact experience column headings');
   });
  await run('faculty-one-measure-reset-960','faculty','.faculty-daily-toolbar',960,850,
   async()=>{
