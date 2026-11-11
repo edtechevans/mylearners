@@ -5,7 +5,7 @@ import {MAP_RIT_SUBJECTS,mapRitCurrent,mapRitChange,mapRitChangeLabel,renderMapR
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs';
 import {renderLeaderVoiceReview,renderLeaderMapRedReview} from './leader-review-signals.mjs';
 import {renderLeaderSupportSection} from './leader-support-view.mjs';
-import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvidence,leaderAdvisoryClasses} from './leader-daily-workspaces.mjs';
+import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvidence,leaderAdvisoryClasses} from './leader-daily-workspaces.mjs?v=20261111review1';
 import {leaderReportSignalSummary} from './report-card-signals.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
 import {createSSSDemoRecords} from './sss-demo-data.mjs';
@@ -13,12 +13,12 @@ import {seedSupportDemo,loadDraftEntries,storeDraftEntries,createDraftEntry} fro
 import {renderFacultySupportPanel,renderSSSWorkspace,renderSupportForm} from './support-workspace-ui.mjs';
 import {CASE_MANAGERS,REFERRAL_STAGES,STRATEGIES,lastReferralStage} from './sss-leadership-data.mjs';
 import {renderSSSLeadershipDashboard,renderSSSProfileNavigation,renderSSSSummary,renderSSSPlans} from './sss-leadership-ui.mjs';
-import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=20261030wall3';
+import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=20261111review1';
 import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs?v=20261030repair1';
 import {experienceDialogContent} from './experience-explain-modal.mjs?v=20261030wall3';
 import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261111checkin4';
-import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261111checkin4';
+import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261111review1';
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,READING_LEVELS,facultyDemoReport} from './academic-journey-data.mjs';
 import {quartileBand,formatIndex,experienceBand} from './faculty-bands.mjs?v=20261030wall2';
@@ -29,7 +29,7 @@ import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.m
 import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261111mapui3';
 import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261110thresholds1';
 import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile} from './maia-demo.mjs';
-import {renderStudentOverview} from './student-daily-overview.mjs?v=20261028titles1';
+import {renderStudentOverview} from './student-daily-overview.mjs?v=20261111review1';
 import {renderBoard} from './board-map-view.mjs?v=20261029dpaxis1';
 import {renderTrendPointDetails} from './board-map-overview.mjs?v=20261029dpaxis1';
 import {renderDPPointDetails} from './board-dp-view.mjs?v=20261031dp-default1';
