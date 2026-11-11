@@ -324,7 +324,7 @@ function miniSeries(points){
   '<span class="'+(i===points.length-1?'current':'')+'"><small>'+safe(x.label)+'</small>'+
    '<b>'+safe(x.value)+'</b></span>').join('')+'</div>';
 }
-export function renderLeaderLearnerEvidence({student,data,academic,records,window='F26'}){
+export function renderLeaderLearnerEvidence({student,data,academic,records,window='F26',journeyProfile=''}){
  const a=academicFor(academic,student.id),report=facultyDemoReport(a);
  const events=data.attendance[student.id]||[],att=attendanceSummary(events);
  const numeric=report?.scale==='1–7';
@@ -368,7 +368,7 @@ export function renderLeaderLearnerEvidence({student,data,academic,records,windo
    (map||other?'<section><div class="leader-daily-sectionhead"><div><span>ASSESSMENT WINDOWS</span>'+
     '<h3>Progress by measure</h3></div></div>'+
     '<div class="leader-profile-assessments">'+map+other+'</div></section>':'')+
-   renderMapRitProfile(data.map[student.id]||[])+
+   renderMapRitProfile(data.map[student.id]||[])+journeyProfile+
    (voice?'<section><div class="leader-daily-sectionhead"><div><span>STUDENT VOICE</span>'+
     '<h3>Personal check-in indices</h3></div>'+
     '<p>'+safe(EXPERIENCE_WINDOWS.find(x=>x.key===window)?.label||'Selected check-in')+'</p></div>'+

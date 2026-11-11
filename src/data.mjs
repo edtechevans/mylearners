@@ -9,6 +9,18 @@ export const WINDOWS = [
   {key:'S26',label:'Spring 2026',date:'2026-04-22',gradeOffset:-1},
   {key:'F26',label:'Fall 2026',date:'2026-09-16',gradeOffset:0}
 ];
+/** Synthetic MAP history across school years; fall windows are the like-for-like
+ * cohort comparison points. Source-only exports must supply actual past tests.
+ * A learner's data is never synthesised before their fictional enrolment date.
+ */
+export const MAP_LONG_WINDOWS=Object.freeze(
+ Array.from({length:7},(_,i)=>2020+i).flatMap(year=>[
+  ...(year>2020?[{key:'S'+String(year).slice(-2),label:'Spring '+year,
+   date:year+'-04-22',gradeOffset:year-2027}]:[]),
+  {key:'F'+String(year).slice(-2),label:'Fall '+year,
+   date:year+'-09-16',gradeOffset:year-2026}
+ ])
+);
 const FIRST = ['Amelia','Leo','Sofia','Liam','Olivia','Noah','Maya','Ethan','Isla','Aiden','Ella','Daniel','Aria','Benjamin','Chloe','Lucas','Zoe','James','Lily','Henry','Ava','Oscar','Hana','Milo','Emilia','Oliver','Ruby','Theo','Naomi','Isaac','Freya','Samuel','Luna','Felix','Grace','Aaron','Jasmine','Max','Nora','Ryan','Evelyn','Arthur','Ivy','Finn','Kai','Sara','Alex','Mina','Mateo','Nina','Emily','Julian','Anika','Hugo','Mei','Yuna','Aisha','Adam','Clara','Yuki','Jun','Elena','Priya','Hassan','Nadia','Haruto','Nikhil','Jiho','Minseo','Wei','Xinyi','Jia','Haoran','Zihan','Yichen','Jinhui','Tianyi','Rina','An','Yujin','Yue','Ari','Sora','Sienna','Rei','Amir','Sana','Sara','Iris','Ayden','Ming','Xiaoyu','Tao','Ling','Yara','Marcus'];
 const LAST = ['Chen','Wang','Li','Zhang','Liu','Huang','Zhao','Wu','Lin','Zhou','Tan','Yang','Xu','Sun','Guo','Zhu','Hu','Deng','Gao','He','Kim','Park','Lee','Choi','Jung','Kang','Nguyen','Tran','Lim','Tanaka','Sato','Suzuki','Yamamoto','Ito','Takahashi','Singh','Patel','Sharma','Khan','Rahman','Ahmed','Miller','Evans','Smith','Williams','Brown','Wilson','Taylor','Anderson','Martin','Davis','Clark','Thomas','Garcia','Lopez','Rodriguez','Hernandez','Dubois','Moreau','Muller','Schmidt','Weber','Novak','Rossi','Costa','Silva','Almeida','Nielsen','Larsen','Jones','Morgan','Bennett','Walker'];
 const LANGUAGES = ['English','Mandarin Chinese','Korean','Japanese','Cantonese','Hindi','Spanish','French','German','Arabic','Vietnamese','Portuguese'];
@@ -54,7 +66,7 @@ const MAP_GOAL_NAMES=Object.freeze({
 });
 const MAP_BAND_CODE=['Low','LoAvg','Avg','HiAvg','High'];
 const mapBandCode=p=>MAP_BAND_CODE[p<=20?0:p<=40?1:p<=60?2:p<=80?3:4];
-function mapFor(id,grade,subj,scenario){
+function mapFor(id,grade,subj,scenario,enrolledDate='2020-08-15'){
  const n=gradeNumber(grade);
  if(n<3||n>10)return [];
  const r=rng(hash(id+'-'+subj+'-map'));
@@ -62,7 +74,8 @@ function mapFor(id,grade,subj,scenario){
  const base=subj==='Mathematics'?172:subj==='Reading'?168:170;
  const recent=base+n*5.9+variance;
  const slope=scenario==='high'?8:scenario==='flat'?1.5:scenario==='dip'?-0.5:4.2+r()*2.5;
- const eligible=WINDOWS.filter(w=>n+w.gradeOffset>=3&&n+w.gradeOffset<=10);
+ const eligible=MAP_LONG_WINDOWS.filter(w=>n+w.gradeOffset>=3&&n+w.gradeOffset<=10&&
+  w.date>=enrolledDate);
  const start=recent-slope*(eligible.length-1);
  const records=eligible.map((w,j)=>{
   const rit=Math.round(clamp(start+j*slope+(r()-.5)*4,130,285));
@@ -77,6 +90,7 @@ function mapFor(id,grade,subj,scenario){
   });
   const course=subj==='Mathematics'?'Math K-12':subj;
   return {key:w.key,window:w.label,date:w.date,subject:subj,course,
+   gradeAtTest:'G'+(n+w.gradeOffset),
    rit,percentile,achievementQuintile:['low','low-average','average','high-average','high'][percentile<=20?0:percentile<=40?1:percentile<=60?2:percentile<=80?3:4],
    projection,goals,growth:{fallToFall:null},growthMeasure:true,
    simulated:true,status:'valid'};
@@ -120,7 +134,7 @@ serial++;const id=`DEMO-${String(serial).padStart(4,'0')}`;const r=rng(hash(`${i
 const first=FIRST[Math.floor(r()*FIRST.length)],last=LAST[Math.floor(r()*LAST.length)];const age=n+5;const year=2026-age;const dob=`${year}-${String(1+Math.floor(r()*12)).padStart(2,'0')}-${String(1+Math.floor(r()*27)).padStart(2,'0')}`;const years=1+Math.floor(r()*Math.min(7,age));const primary=LANGUAGES[Math.floor(r()*LANGUAGES.length)];const secondary=r()>.35?LANGUAGES[Math.floor(r()*LANGUAGES.length)]:null;const scenario=serial%23===0?'high':serial%29===0?'flat':serial%39===0?'dip':'typical';
 const student={id,first,last,name:`${first} ${last}`,preferred:r()>.93?first.slice(0,3):null,grade,classId,age,dateOfBirth:dob,homeroom:classId,campus:campus(grade),division:division(grade),primaryLanguage:primary,otherLanguages:secondary&&secondary!==primary?[secondary]:[],yearsAtAISG:years,enrolledDate:`${2026-years}-08-15`,eal:r()>.80,scenario,portraitSeed:hash(`${id}-${first}-${last}`),status:serial%83===0?'New to AISG':'Enrolled'};
 students.push(student);classes[classes.length-1].studentIds.push(id);attendance[id]=attendanceFor(id);assessments[id]=assessmentFor(id,grade);support[id]=supportFor(id);
-if(n>=3&&n<=10){map[id]=['Mathematics','Reading','Language Usage'].flatMap(s=>mapFor(id,grade,s,scenario));if(serial%31===0)map[id]=map[id].filter(x=>x.key!=='F26');}else map[id]=[];
+if(n>=3&&n<=10){map[id]=['Mathematics','Reading','Language Usage'].flatMap(s=>mapFor(id,grade,s,scenario,student.enrolledDate));if(serial%31===0)map[id]=map[id].filter(x=>x.key!=='F26');}else map[id]=[];
 }
 }}
 const userIndex=new Map(students.map(s=>[s.id,s]));const classIndex=new Map(classes.map(c=>[c.id,c]));
