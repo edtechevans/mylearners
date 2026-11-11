@@ -1267,18 +1267,44 @@ root.addEventListener('click',e=>{
    if(!chosen||state.division==='All'||chosen.division!==state.division||
       (state.grade!=='All'&&chosen.grade!==state.grade)||
       (state.classId&&chosen.classId!==state.classId))return;
+   const origins=[
+    ['map-journey-students','MAP Journeys'],['leader-academic-results','Academic Follow-up'],
+    ['leader-review','Attendance and learner review'],
+    ['leader-experience-review','Student Experience'],
+    ['leader-report-followup','Academic Trends'],['leader-map-review','Academic Trends']
+   ];
+   const origin=origins.find(([id])=>learner.closest('#'+id));
+   leaderReturnContext={
+    studentId:chosen.id,containerId:origin?.[0]||'leader-daily-priorities',
+    label:origin?.[1]||'division review',
+    scrollY:Math.max(0,globalThis.window?.scrollY||0),
+    section:state.leaderSection
+   };
    state.leaderStudentId=chosen.id;
    render();globalThis.window?.scrollTo?.(0,0);return;
   }
   if(e.target.closest('[data-leader-back]')){
-   state.leaderStudentId='';render();globalThis.window?.scrollTo?.(0,0);return;
+   const origin=leaderReturnContext;
+   state.leaderStudentId='';render();
+   const restore=()=>{
+    const scope=origin?.containerId?root.querySelector('#'+origin.containerId):root;
+    const action=scope?.querySelector?.('[data-leader-student="'+origin?.studentId+'"]');
+    action?.focus?.({preventScroll:true});
+    globalThis.window?.scrollTo?.(0,origin?.scrollY||0);
+    if(!action)root.querySelector('[data-leader-focus="'+(origin?.section||state.leaderSection)+'"]')
+     ?.focus?.({preventScroll:true});
+   };
+   if(typeof globalThis.window?.requestAnimationFrame==='function')
+    globalThis.window.requestAnimationFrame(restore);
+   else restore();
+   return;
   }
   const jump=e.target.closest('[data-leader-jump]');
   if(jump){
    const id=jump.dataset.leaderJump;
-   if(!['leader-report-followup-title','leader-review','leader-support-title',
-      'leader-experience-title','leader-learning-title','leader-academic-detail',
-      'leader-experience-review','leader-map-review','leader-map-journeys'].includes(id))return;
+   const section=leaderSectionForTarget(id);
+   if(!section)return;
+   if(state.leaderSection!==section){state.leaderSection=section;render();}
    const el=root.querySelector('#'+id);
    const panel=el?.closest?.('details.leader-detail');
    if(panel)panel.open=true;
@@ -1691,7 +1717,7 @@ root.addEventListener('change',e=>{
     if('mapJourneyComparisonWindow' in data)state.journeyStart=falls[Math.max(0,falls.indexOf(state.journeyEnd)-1)];
     else state.journeyEnd='F26';
    }
-   state.journeyExpanded=false;render();
+   state.journeyExpanded=false;state.journeyPreset='custom';render();
    const key=Object.keys(data).find(x=>x.startsWith('mapJourney'));
    const attr=key?.replace(/[A-Z]/g,x=>'-'+x.toLowerCase());
    root.querySelector('[data-'+attr+']')?.focus?.({preventScroll:true});
@@ -1726,7 +1752,9 @@ root.addEventListener('change',e=>{
  if(el.dataset.select==='division'){
   if(!['All','Elementary','Secondary'].includes(v))return;
   state.division=v;state.grade='All';state.classId='';state.details=false;
-  state.leaderStudentId='';state.leaderReviewFilter='all';state.leaderReviewExpanded=false;resetLeaderAcademicAction();resetMapJourney();
+  state.leaderStudentId='';state.leaderReviewFilter='all';state.leaderReviewExpanded=false;
+  state.leaderSection='follow-up';state.leaderSaveNotice='';
+  resetLeaderAcademicAction();resetMapJourney();
  }
  if(el.dataset.select==='grade'){
   if(v!=='All'&&!GRADES.includes(v))return;
