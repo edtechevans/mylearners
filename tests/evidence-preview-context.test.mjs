@@ -118,3 +118,19 @@ test('MAP RIT tile hover uses only the shared white evidence preview with percen
   previewStudent:other.id,previewSubject:'Mathematics'}),ctx()),null,
   'MAP hover must not bypass faculty learner access');
 });
+
+test('Date-free Faculty headings still preview the selected earlier check-in window',()=>{
+ const earlierStudent=data.students.find(s=>teacher.classIds.includes(s.classId)&&
+  experienceFor(experience,s.id,'engagement','S26'));
+ assert.ok(earlierStudent,'A valid earlier fictional response is available');
+ const selected=experienceFor(experience,earlierStudent.id,'engagement','S26');
+ const c=ctx('faculty');c.state.classExperienceWindow='S26';
+ // The header carries no year and the decorated target has no previewWindow;
+ // therefore the role-scoped resolver must use the active Faculty selection.
+ const result=resolveEvidencePreview(trigger('experience-cell',{
+  previewStudent:earlierStudent.id,previewMeasure:'engagement'}),c);
+ assert.equal(result.title,'Engagement');
+ assert.equal(result.trend.points.at(-1).label,'Spring 2026');
+ assert.ok(result.trend.points.at(-1).value.includes(selected.value.toFixed(2)));
+ assert.ok(result.trend.points.every(p=>p.label!=='Fall 2026'));
+});
