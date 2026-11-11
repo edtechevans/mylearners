@@ -299,3 +299,9 @@
   scroll-behavior:auto;transition:none
  }
 }
+
+#app[data-workspace="leader"] .map-journey-active-context{
+ color:#355e75;background:#f5f9fb;border:1px solid #e1ebf0;
+ border-radius:7px;padding:8px 11px;font-size:12.5px;line-height:1.5;margin:12px 0 8px
+}
+#app[data-workspace="leader"] .map-journey-active-context strong{color:#164967;font-weight:850}
