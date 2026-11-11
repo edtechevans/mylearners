@@ -38,3 +38,26 @@ Real AISG records require a separate private ingestion and SharePoint workflow, 
 - tests/source-export-adapters.test.mjs uses wholly invented input rows.
 - tests/export-aligned-demo.test.mjs checks deterministic fictional MAP and IXL coverage/fields.
 - No actual uploaded CSV records, actual identifiers, names, school-result distributions or per-student derivatives are committed.
+
+## Leaders: MAP achievement review bands (fictional demonstration)
+
+The Leaders Academic Follow-up card supports three distinct selections, all
+derived from each subject's **achievement percentile**, never from a universal
+RIT score or MAP conditional growth percentile:
+
+- **Low / Red:** 1st–20th percentile.
+- **Low Average / Orange:** 21st–40th percentile.
+- **Combined Red + Orange:** 1st–40th percentile. Each learner appears once,
+  even if their different MAP subjects belong to different bands.
+
+Counts are for distinct learners with at least one qualifying *current-window*
+Reading, Math or Language Usage result within the chosen divisional, grade and
+homeroom scope. The count for combined students is not necessarily the sum
+of Red and Orange counts. Missing results and students outside MAP's eligible
+grades are not classified. Student rows retain every selected-band subject
+with its RIT and percentile, while grade, subject and multiple-subject filters
+operate on the selected bands. The deeper legacy Red-only follow-up remains
+available. This is a review aid, not a combined learner risk score.
+
+Tests use synthetic percentile boundary cases (20/21 and 40/41) to guard
+this behavior. All data remain generated fictional learner records.
