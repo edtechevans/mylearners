@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {generateDemoData} from '../src/data.mjs';
 import {everydayEvidenceForGrade} from '../src/faculty-everyday-columns.mjs';
-import {MAP_RIT_SUBJECTS,MAP_RIT_WINDOWS,mapRitBand,mapRitCurrent,mapRitHistory,renderMapRitHeader,renderMapRitCell,renderMapRitProfile,renderMapRitTooltip} from '../src/map-rit-achievement.mjs';
+import {MAP_RIT_SUBJECTS,MAP_RIT_WINDOWS,mapRitBand,mapRitCurrent,mapRitChange,mapRitChangeLabel,mapRitHistory,renderMapRitHeader,renderMapRitCell,renderMapRitProfile,renderMapRitTooltip} from '../src/map-rit-achievement.mjs';
 const data=generateDemoData();
 
 test('Five NWEA-style achievement quintiles have exact percentile boundaries',()=>{
@@ -47,4 +47,39 @@ test('Headers and learner profiles explain five bands and four periods',()=>{
  for(const w of MAP_RIT_WINDOWS)assert.ok(profile.includes(w.label));
  assert.match(profile,/FICTIONAL MAP DATA/);
  assert.equal(renderMapRitProfile(data.map[data.students.find(s=>s.grade==='G1').id]),'');
+});
+
+test('Each MAP RIT score shows observed growth since the latest earlier valid same-subject test',()=>{
+ const a={subject:'Reading',window:'Spring 2026',key:'S26',date:'2026-04-22',rit:211,percentile:50,status:'valid',simulated:true};
+ const b={subject:'Reading',window:'Fall 2026',key:'F26',date:'2026-09-16',rit:218,percentile:85,status:'valid',simulated:true};
+ const rows=[a,b];
+ const result=mapRitChange(rows,'Reading');
+ assert.equal(result.current.rit,218);
+ assert.equal(result.previous.rit,211);
+ assert.equal(result.delta,7);
+ assert.equal(mapRitChangeLabel(result.delta),'+7 RIT');
+ const html=renderMapRitCell(rows,'Reading','DEMO-test');
+ assert.match(html,/map-rit-high/,'Achievement colour comes from percentile 85');
+ assert.match(html,/<strong class="map-rit-score">218<\/strong>/);
+ assert.match(html,/<span class="map-rit-growth map-rit-growth-up">\+7 RIT<\/span>/);
+ assert.match(html,/P85/);
+ assert.match(html,/since Spring 2026/);
+ const profile=renderMapRitProfile(rows);
+ assert.match(profile,/map-rit-profile-growth/);
+ assert.match(profile,/\+7 RIT/);
+ assert.match(profile,/since Spring 2026/);
+ assert.match(profile,/map-rit-history-growth/);
+});
+test('Negative, flat and missing comparisons are explicit and never filled with fake growth',()=>{
+ const first={subject:'Mathematics',window:'Spring 2026',key:'S26',date:'2026-04-22',rit:222,percentile:45,status:'valid',simulated:true};
+ const negative={subject:'Mathematics',window:'Fall 2026',key:'F26',date:'2026-09-16',rit:220,percentile:45,status:'valid',simulated:true};
+ assert.equal(mapRitChangeLabel(mapRitChange([first,negative],'Mathematics').delta),'-2 RIT');
+ assert.match(renderMapRitCell([first,negative],'Mathematics','X'),/>-2 RIT<\/span>/);
+ assert.equal(mapRitChangeLabel(mapRitChange([first,{...negative,rit:222}],'Mathematics').delta),'0 RIT');
+ assert.equal(mapRitChangeLabel(mapRitChange([negative],'Mathematics').delta),'No prior test');
+ assert.match(renderMapRitCell([negative],'Mathematics','X'),/No prior test/);
+ assert.equal(mapRitChange([first],'Mathematics').delta,null,'Missing fall test is not a zero change');
+ assert.match(renderMapRitCell([first],'Mathematics','X'),/No F26 test/);
+ const mixed=[{...first,subject:'Reading'},negative];
+ assert.equal(mapRitChange(mixed,'Mathematics').delta,null,'Cannot compare scores across subjects');
 });
