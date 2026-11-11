@@ -56,11 +56,20 @@ function source(label,detail){
  return '<span class="leader-daily-source"><strong>'+safe(label)+'</strong><small>'+safe(detail)+'</small></span>';
 }
 function priority(label,value,description,tone,link,sourceText){
+ if(link){
+  const action=link==='leader-review'?'data-leader-attendance-focus':
+   'data-leader-jump="'+safe(link)+'"';
+  return '<button type="button" class="leader-daily-priority is-actionable '+safe(tone)+
+   '" '+action+' aria-label="Open '+safe(label)+': '+safe(value)+'. '+safe(description)+'">'+
+   '<span class="leader-daily-priority-head"><span class="leader-priority-label">'+
+   safe(label)+'</span><strong>'+safe(value)+'</strong></span>'+
+   '<span class="leader-priority-description">'+safe(description)+'</span>'+
+   '<small>'+safe(sourceText)+'</small>'+
+   '<span class="leader-priority-arrow" aria-hidden="true">↗</span></button>';
+ }
  return '<article class="leader-daily-priority '+safe(tone)+'"><div class="leader-daily-priority-head">'+
-  '<h3>'+safe(label)+'</h3><strong>'+safe(value)+'</strong></div><p>'+safe(description)+'</p>'+
-  '<small>'+safe(sourceText)+'</small>'+
-  (link?'<button type="button" data-leader-jump="'+safe(link)+'">Review evidence <span aria-hidden="true">→</span></button>':'')+
-  '</article>';
+  '<h3>'+safe(label)+'</h3><strong>'+safe(value)+'</strong></div><p>'+safe(description)+
+  '</p><small>'+safe(sourceText)+'</small></article>';
 }
 function divisionChoice(name,students,opts){
  const isSecondary=name==='Secondary',attendance=leaderAttendanceReview(students,opts.data),
@@ -188,7 +197,7 @@ function concernsEvidence(x,isSecondary){
 }
 export function renderLeaderDivisionDaily({division,grade,students,allStudents,data,
  academic,records,sssRecords,entries,reviewFilter='all',expanded=false,savedView=null,
- voiceWindow='F26',academicPanels=''}){
+ voiceWindow='F26',academicPanels='',academicActions=''}){
  const secondary=division==='Secondary',
   attendance=leaderAttendanceReview(students,data),
   academics=leaderAcademicReview(students,academic),
@@ -196,7 +205,6 @@ export function renderLeaderDivisionDaily({division,grade,students,allStudents,d
   voice=leaderVoice(students,records);
  const queue=leaderReviewQueue(students,data,academic,reviewFilter,expanded,secondary);
  const voiceReview=leaderVoiceReview(students,records,voiceWindow);
- const mapReview=leaderMapRedReview(students,data.map);
  const delta=voice.map(x=>x.delta).filter(Number.isFinite);
  const change=delta.length?Math.min(...delta):null;
  const supportCount=support.suppressed?'—':support.actionOpen;
@@ -254,7 +262,9 @@ export function renderLeaderDivisionDaily({division,grade,students,allStudents,d
    '<div class="leader-daily-sectionhead"><div><span>START HERE</span>'+
     '<h2 id="leader-daily-priorities-title">Needs attention</h2></div>'+
     '<p>'+students.length+' learners in scope · not an automated risk ranking</p></div>'+
-   '<div class="leader-daily-grid">'+headline+
+   academicActions+
+   '<div class="leader-daily-grid'+(secondary?' leader-operational-grid':'')+'">'+
+    (secondary?'':headline)+
     priority('Attendance checks',attendance.flagged.length,'Below the illustrative 90% review threshold.',
      'amber','leader-review','Simulated attendance')+
     priority('Student voice change',change===null?'—':(change>0?'+':'')+change.toFixed(2),
@@ -264,10 +274,7 @@ export function renderLeaderDivisionDaily({division,grade,students,allStudents,d
      'Small-group summary suppressed. Expand scope.':'Open follow-ups in the fictional support cycle.',
      'blue','leader-support-title','Demo SSS cycle · 28 Oct 2026')+
    '</div>'+
-   '<div class="leader-review-shortcuts" aria-label="Student evidence review shortcuts">'+
-    (mapReview.eligible?'<button type="button" data-leader-jump="leader-map-review">'+
-     '<span><b>MAP red-band review</b><small>One or more subjects · 1st–20th percentile</small></span>'+
-     '<strong>'+mapReview.rows.length+'</strong></button>':'')+
+   '<div class="leader-review-shortcuts leader-voice-shortcut" aria-label="Student Experience review shortcut">'+
     (voiceReview.eligible?'<button type="button" data-leader-jump="leader-experience-review">'+
      '<span><b>Student Experience to review</b><small>Engagement or Belonging ≤0 · selected check-in</small></span>'+
      '<strong>'+voiceReview.rows.length+'</strong></button>':'')+

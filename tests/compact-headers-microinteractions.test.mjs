@@ -73,5 +73,5 @@ test('scripted navigation honours reduced-motion settings, not just stylesheet a
  assert.match(app,/const scrollMotion=\(\)=>globalThis\.window\?\.matchMedia/);
  assert.match(app,/behavior:scrollMotion\(\)/);
  assert.doesNotMatch(app,/behavior:'smooth'/);
- assert.match(html,/student-experience-app\.mjs\?v=20261111(?:feel1|maprit1|maprit2|mapui3|checkin4|review1|photo1|schemas1|leaderprio1)/);
+ assert.match(html,/student-experience-app\.mjs\?v=20261111(?:feel1|maprit1|maprit2|mapui3|checkin4|review1|photo1|schemas1|leaderprio1|academicquick2)/);
 });

@@ -55,11 +55,12 @@ test('division view is personalised: Secondary has subject review, Elementary li
   allStudents:students,reviewFilter:'academic2',...opts});
  assert.match(secondaryHtml,/data-leader-grade="G12"/);
  assert.match(secondaryHtml,/data-leader-review-filter="academic2" aria-pressed="true"/);
- assert.match(secondaryHtml,/Subject results ≤2/);
+ assert.match(secondaryHtml,/Attendance checks/);
  assert.match(secondaryHtml,/data-leader-student=/);
  assert.match(secondaryHtml,/data-leader-jump="leader-experience-review"/);
- assert.match(secondaryHtml,/data-leader-jump="leader-map-review"/);
- assert.match(secondaryHtml,/2026–27 simulated, in progress and not issued/);
+ assert.doesNotMatch(secondaryHtml,/Review evidence →/);
+ assert.match(secondaryHtml,/data-leader-attendance-focus/);
+ assert.match(secondaryHtml,/2026–27 demo · not issued/);
  assert.doesNotMatch(secondaryHtml,/Demo attendance · through|Simulated attendance · through/i);
  const elementaryHtml=renderLeaderDivisionDaily({division:'Elementary',grade:'All',students:elementary,
   allStudents:students,reviewFilter:'all',...opts});
@@ -126,11 +127,16 @@ test('division priorities and injected academic area precede attendance review',
    allStudents:students,academicPanels:marker,...opts});
   const start=html.indexOf('id="leader-daily-priorities"');
   const cards=html.slice(start,html.indexOf('leader-review-shortcuts',start));
-  const labels=[division==='Secondary'?'Subject results ≤2':'Literacy checks',
-   'Attendance checks','Student voice change','Open support actions'];
+  const labels=division==='Secondary'?
+   ['Attendance checks','Student voice change','Open support actions']:
+   ['Literacy checks','Attendance checks','Student voice change','Open support actions'];
   const positions=labels.map(label=>cards.indexOf(label));
   assert.ok(positions.every(x=>x>=0&&x<cards.length),'All four prioritised cards are visible');
-  assert.ok(positions.every((x,i)=>i===0||x>positions[i-1]),division+' top cards must follow academic→attendance→voice order');
+  assert.ok(positions.every((x,i)=>i===0||x>positions[i-1]),division+' supporting cards must follow the academic follow-up area');
+  assert.ok(html.includes('class="leader-daily-priority is-actionable amber"'),
+   'The entire Attendance priority card must be an accessible clickable button');
+  assert.ok(!html.includes('Review evidence →'),
+   'The priority card should not contain a separate Review evidence link');
   assert.ok(html.indexOf('id="test-academic-priority"')<html.indexOf('id="leader-review"'),
    division+' academic evidence must appear before attendance and learner review');
   const deepNav=html.slice(html.indexOf('<nav class="leader-deep-nav"'));
