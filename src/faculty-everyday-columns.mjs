@@ -1,5 +1,5 @@
 /** My Learners | Faculty everyday roster.
- * Exactly four or five existing, age-appropriate evidence measures by grade,
+ * Grade-aware evidence measures, including three MAP RIT subjects for G3–G10,
  * separate from Learner and permission-controlled Support information.
  * A teacher can switch to the existing focused evidence/comparison view.
  */
@@ -10,7 +10,9 @@ const COLUMN=Object.freeze({
  earlyMath:{id:'earlyMath',label:'Early Mathematics · last issued',kind:'report',subject:'Early Mathematics'},
  earlyLiteracy:{id:'earlyLiteracy',label:'Early Literacy · last issued',kind:'report',subject:'Early Literacy'},
  earlyInquiry:{id:'earlyInquiry',label:'Inquiry & Play · last issued',kind:'report',subject:'Inquiry & Play'},
- map:{id:'map',label:'MAP Mathematics growth',kind:'map',subject:'Mathematics'},
+ mapReading:{id:'mapReading',label:'MAP Reading RIT',kind:'mapRit',subject:'Reading'},
+ mapMathematics:{id:'mapMathematics',label:'MAP Mathematics RIT',kind:'mapRit',subject:'Mathematics'},
+ mapLanguage:{id:'mapLanguage',label:'MAP Language Usage RIT',kind:'mapRit',subject:'Language Usage'},
  engagement:{id:'engagement',label:'Engagement · check-in',kind:'engagement'},
  belonging:{id:'belonging',label:'Belonging · check-in',kind:'belonging'},
  core:{id:'core',label:'Core Phonics',kind:'core'},
@@ -23,7 +25,7 @@ export function everydayEvidenceForGrade(grade){
  if(n<0)return [COLUMN.attendance,COLUMN.earlyMath,COLUMN.earlyLiteracy,COLUMN.earlyInquiry];
  if(n===0)return [COLUMN.attendance,COLUMN.math,COLUMN.core,COLUMN.fp];
  if(n<=2)return [COLUMN.attendance,COLUMN.math,COLUMN.core,COLUMN.fp,COLUMN.ixl];
- if(n<=10)return [COLUMN.attendance,COLUMN.map,COLUMN.ixl,COLUMN.engagement,COLUMN.belonging];
+ if(n<=10)return [COLUMN.attendance,COLUMN.mapReading,COLUMN.mapMathematics,COLUMN.mapLanguage,COLUMN.ixl,COLUMN.engagement,COLUMN.belonging];
  return [COLUMN.attendance,COLUMN.math,COLUMN.engagement,COLUMN.belonging,COLUMN.maia];
 }
 export const EVERYDAY_VIEW='everyday';
