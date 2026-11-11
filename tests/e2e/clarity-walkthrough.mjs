@@ -668,6 +668,9 @@ try{
    await click('[data-leader-back]');
    assert(await evaluate("!!document.querySelector('#leader-academic-results:not([hidden])')"),
     'Returning from learner profile must preserve the active filtered list');
+   // Preserve return-to-list behaviour, then restore page heading for the
+   // generic screenshot harness which expects a visible top-level heading.
+   await evaluate('window.scrollTo(0,0)');
   });
  await run('leader-secondary-daily-1440','leader','.leader-division-grid',1440,900,
   async()=>{
