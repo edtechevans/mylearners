@@ -18,7 +18,7 @@ import {renderFacultySupportPanel,renderSSSWorkspace,renderSupportForm} from './
 import {CASE_MANAGERS,REFERRAL_STAGES,STRATEGIES,lastReferralStage} from './sss-leadership-data.mjs';
 import {renderSSSLeadershipDashboard,renderSSSProfileNavigation,renderSSSSummary,renderSSSPlans} from './sss-leadership-ui.mjs';
 import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=20261111review1';
-import {renderStudentPhoto,installStudentPhotoPreview} from './student-photo-preview.mjs';
+import {renderStudentPhoto,installStudentPhotoPreview} from './student-photo-preview.mjs?v=20261111photofix1';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs?v=20261030repair1';
 import {experienceDialogContent} from './experience-explain-modal.mjs?v=20261030wall3';
 import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261111checkin4';
