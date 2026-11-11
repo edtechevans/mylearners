@@ -1588,19 +1588,19 @@ root.addEventListener('change',e=>{
  if(el.dataset.select==='division'){
   if(!['All','Elementary','Secondary'].includes(v))return;
   state.division=v;state.grade='All';state.classId='';state.details=false;
-  state.leaderStudentId='';state.leaderReviewFilter='all';state.leaderReviewExpanded=false;
+  state.leaderStudentId='';state.leaderReviewFilter='all';state.leaderReviewExpanded=false;resetLeaderAcademicAction();
  }
  if(el.dataset.select==='grade'){
   if(v!=='All'&&!GRADES.includes(v))return;
   if(state.division==='All'&&v!=='All')state.division=gradeNumber(v)<=5?'Elementary':'Secondary';
   state.grade=v;state.classId='';state.details=false;state.leaderStudentId='';
-  state.leaderReviewFilter='all';state.leaderReviewExpanded=false;
+  state.leaderReviewFilter='all';state.leaderReviewExpanded=false;resetLeaderAcademicAction();
  }
  if(el.dataset.select==='leader-class'){
   const valid=leaderAdvisoryClasses(DATA.classes,state.division,state.grade);
   if(v&&!valid.some(c=>c.id===v))return;
   state.classId=v;state.details=false;state.leaderStudentId='';
-  state.leaderReviewFilter='all';state.leaderReviewExpanded=false;
+  state.leaderReviewFilter='all';state.leaderReviewExpanded=false;resetLeaderAcademicAction();
  }
  if(el.dataset.select==='sss-grade'&&state.role==='sss'){
   state.sssGrade=v;state.sssStudentId='';
