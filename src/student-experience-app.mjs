@@ -1285,7 +1285,7 @@ root.addEventListener('click',e=>{
     ['leader-experience-review','Student Experience'],
     ['leader-report-followup','Academic Trends'],['leader-map-review','Academic Trends']
    ];
-   const origin=origins.find(([id])=>learner.closest('#'+id));
+   const origin=origins.find(([id])=>learner.closest?.('#'+id));
    leaderReturnContext={
     studentId:chosen.id,containerId:origin?.[0]||'leader-daily-priorities',
     label:origin?.[1]||'division review',
