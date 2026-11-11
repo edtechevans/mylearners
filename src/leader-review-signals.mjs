@@ -43,10 +43,14 @@ export function leaderVoiceReview(students,records,window='F26',threshold=VOICE_
   rows
  };
 }
-/** Current term only, by subject. Red means achievement percentile 1–20,
- * never a grade-independent RIT cutoff. Missing results are excluded.
+/** Achievement band selection uses the NWEA-style quintiles (not RIT cutoffs).
+ * A learner with one Red and one Orange subject appears only ONCE in "both".
+ * Missing / unclassified assessments are excluded from every count.
+ * Preserve the original Red-only wrapper for the existing deeper review.
  */
-export function leaderMapRedReview(students,mapByStudent,window='F26'){
+export const MAP_REVIEW_SELECTIONS=Object.freeze(['both','low','low-average']);
+export function leaderMapBandReview(students,mapByStudent,window='F26',selection='both'){
+ const chosen=MAP_REVIEW_SELECTIONS.includes(selection)?selection:'both';
  const cohort=(students||[]).filter(s=>gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10);
  const measured=cohort.map(student=>{
   const values=MAP_RIT_SUBJECTS.map(subject=>{
@@ -54,16 +58,27 @@ export function leaderMapRedReview(students,mapByStudent,window='F26'){
    return record?{subject,rit:record.rit,percentile:record.percentile,
     band:mapRitBand(record.percentile)?.key||null}:null;
   }).filter(Boolean);
-  return {student,results:values,red:values.filter(x=>x.band===MAP_REVIEW_BAND)};
+  const red=values.filter(x=>x.band==='low');
+  const orange=values.filter(x=>x.band==='low-average');
+  const hits=chosen==='low'?red:chosen==='low-average'?orange:[...red,...orange];
+  return {student,results:values,red,orange,hits};
  });
- const rows=measured.filter(x=>x.red.length).sort(byGradeName);
- return {window,eligible:cohort.length,
+ const rows=measured.filter(x=>x.hits.length).sort(byGradeName);
+ return {window,selection:chosen,eligible:cohort.length,
   tested:measured.filter(x=>x.results.length).length,
   threeSubjects:measured.filter(x=>x.results.length===3).length,
+  bandCounts:{
+   red:measured.filter(x=>x.red.length).length,
+   orange:measured.filter(x=>x.orange.length).length,
+   both:measured.filter(x=>x.red.length||x.orange.length).length
+  },
   subjectCounts:Object.fromEntries(MAP_RIT_SUBJECTS.map(subject=>
-   [subject,rows.filter(x=>x.red.some(t=>t.subject===subject)).length])),
+   [subject,rows.filter(x=>x.hits.some(t=>t.subject===subject)).length])),
   rows
  };
+}
+export function leaderMapRedReview(students,mapByStudent,window='F26'){
+ return leaderMapBandReview(students,mapByStudent,window,'low');
 }
 function reviewList(items,render,kind){
  return '<ul class="leader-followup-list '+kind+'">'+items.map(row=>'<li class="leader-followup-item">'+
