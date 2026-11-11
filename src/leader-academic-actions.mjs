@@ -148,5 +148,7 @@ export function renderLeaderAcademicActions({
   '<h3>Find learners who may need a closer look</h3></div>'+
   '<p>Select a card to open the matching student list immediately.</p></div>'+
   '<div class="leader-academic-action-grid'+(cards.length===1?' only-one':'')+'">'+cards.join('')+'</div>'+
+  (hasMap?'<div class="leader-journeys-entry"><span>How have these same students moved between achievement bands over their years at school?</span>'+
+   '<button type="button" data-leader-jump="leader-map-journeys">Explore MAP Journeys <span aria-hidden="true">→</span></button></div>':'')+
   detail+'</div>';
 }
