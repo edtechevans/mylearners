@@ -927,6 +927,7 @@ const resetMapJourney=()=>{
  state.journeySubject='Reading';state.journeyStart='auto';state.journeyEnd='F26';
  state.journeyStartingBand='both';state.journeyEndingBand='average-plus';
  state.journeyPathway='auto';state.journeyExpanded=false;
+ state.journeyPreset='rising';state.journeyAdvancedOpen=false;
 };
 function render(){
  pinnedChartKey=null;
@@ -1107,6 +1108,7 @@ root.addEventListener('click',e=>{
    if(!['All','Elementary','Secondary'].includes(next))return;
    state.division=next;state.grade='All';state.classId='';state.leaderStudentId='';
    state.leaderReviewFilter='all';state.leaderReviewExpanded=false;state.leaderReportOpen=false;
+   state.leaderSection='follow-up';state.leaderSaveNotice='';
    resetLeaderAcademicAction();resetMapJourney();
    render();globalThis.window?.scrollTo?.(0,0);return;
   }
@@ -1123,18 +1125,56 @@ root.addEventListener('click',e=>{
   }
   if(e.target.closest('[data-leader-save-view]')){
    if(['Elementary','Secondary'].includes(state.division)){
-    try{localStorage.setItem(LEADER_SAVED_KEY,
-      JSON.stringify({division:state.division,grade:state.grade}));}catch{}
+    try{
+     localStorage.setItem(LEADER_SAVED_KEY,JSON.stringify(leaderSavedViewPayload(state)));
+     state.leaderSaveNotice='Saved on this browser · no student records stored';
+    }catch{state.leaderSaveNotice='Browser storage unavailable';}
     render();
+    root.querySelector('[data-leader-save-view]')?.focus?.({preventScroll:true});
    }
    return;
   }
   if(e.target.closest('[data-leader-open-saved]')){
    const saved=savedLeaderView();
    if(!saved)return;
-   state.division=saved.division;state.grade=saved.grade;state.classId='';
-   state.leaderStudentId='';state.leaderReviewFilter='all';state.leaderReviewExpanded=false;
-   resetLeaderAcademicAction();resetMapJourney();render();globalThis.window?.scrollTo?.(0,0);return;
+   resetLeaderAcademicAction();resetMapJourney();
+   leaderApplySavedView(state,saved);
+   state.leaderStudentId='';state.leaderSaveNotice='Saved setup restored';
+   state.leaderReviewExpanded=false;state.leaderAcademicExpanded=false;state.journeyExpanded=false;
+   render();globalThis.window?.scrollTo?.(0,0);return;
+  }
+  const focusTab=e.target.closest('[data-leader-focus]');
+  if(focusTab){
+   const next=focusTab.dataset.leaderFocus;
+   if(!LEADER_FOCUS_VALUES.includes(next))return;
+   if(next==='journeys'&&!DATA.students.some(x=>x.division===state.division&&
+     (state.grade==='All'||x.grade===state.grade)&&(!state.classId||x.classId===state.classId)&&
+     gradeNumber(x.grade)>=3&&gradeNumber(x.grade)<=10))return;
+   state.leaderSection=next;state.leaderSaveNotice='';
+   render();
+   root.querySelector('[data-leader-focus="'+next+'"]')?.focus?.({preventScroll:true});
+   root.querySelector('#leader-focus-panel-'+next)?.scrollIntoView?.({behavior:scrollMotion(),block:'start'});
+   return;
+  }
+  const journeyPreset=e.target.closest('[data-map-journey-preset]');
+  if(journeyPreset){
+   const config=LEADER_JOURNEY_PRESETS.find(x=>x.id===journeyPreset.dataset.mapJourneyPreset);
+   if(!config)return;
+   state.journeyPreset=config.id;
+   state.journeyStartingBand=config.startingBand;
+   state.journeyEndingBand=config.endingBand;
+   state.journeyPathway=state.division==='Elementary'?'all':config.pathway;
+   state.journeyStart='auto';state.journeyEnd='F26';
+   state.journeyExpanded=false;
+   render();
+   root.querySelector('[data-map-journey-preset="'+config.id+'"]')?.focus?.({preventScroll:true});
+   return;
+  }
+  if(e.target.closest('[data-map-journey-refine]')){
+   state.journeyAdvancedOpen=!state.journeyAdvancedOpen;
+   render();
+   root.querySelector('[data-map-journey-refine]')?.focus?.({preventScroll:true});
+   return;
   }
   const journeyCell=e.target.closest('[data-map-journey-cell]');
   if(journeyCell&&!journeyCell.disabled){
@@ -1142,6 +1182,7 @@ root.addEventListener('click',e=>{
    const allowed=['low','low-average','average','high-average','high'];
    if(!allowed.includes(from)||!allowed.includes(to))return;
    state.journeyStartingBand=from;state.journeyEndingBand=to;state.journeyExpanded=false;
+   state.journeyPreset='custom';
    render();
    root.querySelector('#map-journey-students')?.scrollIntoView?.({behavior:scrollMotion(),block:'start'});
    return;
@@ -1150,6 +1191,7 @@ root.addEventListener('click',e=>{
   if(pathway){
    if(!['all','cross'].includes(pathway.dataset.mapJourneyPathway))return;
    state.journeyPathway=pathway.dataset.mapJourneyPathway;state.journeyExpanded=false;
+   state.journeyPreset='custom';
    render();
    root.querySelector('[data-map-journey-pathway="'+state.journeyPathway+'"]')?.focus?.({preventScroll:true});
    return;
@@ -1166,6 +1208,7 @@ root.addEventListener('click',e=>{
    const closing=state.leaderAcademicFocus===next;
    resetLeaderAcademicAction();
    if(!closing)state.leaderAcademicFocus=next;
+   state.leaderSection='follow-up';
    render();
    const target=root.querySelector(closing?
     '[data-leader-academic-focus="'+next+'"]':'#leader-academic-results');
@@ -1199,6 +1242,7 @@ root.addEventListener('click',e=>{
    return;
   }
   if(e.target.closest('[data-leader-attendance-focus]')){
+   state.leaderSection='follow-up';
    state.leaderReviewFilter=state.division==='Secondary'?'attendance':'all';
    state.leaderReviewExpanded=false;render();
    root.querySelector('#leader-review')?.scrollIntoView?.({behavior:scrollMotion(),block:'start'});
