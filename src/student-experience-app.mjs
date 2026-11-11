@@ -4,7 +4,8 @@ import {latestMapGrowth} from './map-growth.mjs';
 import {MAP_RIT_SUBJECTS,mapRitCurrent,mapRitChange,mapRitChangeLabel,renderMapRitCell,renderMapRitHeader,renderMapRitLegend,renderMapRitProfile,installMapRitHeaderTooltips} from './map-rit-achievement.mjs?v=20261111schemas1';
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs?v=20261111schemas1';
 import {renderLeaderVoiceReview,renderLeaderMapRedReview} from './leader-review-signals.mjs?v=20261111mapbands1';
-import {renderLeaderAcademicActions,LEADER_ACADEMIC_FOCUS} from './leader-academic-actions.mjs?v=20261111mapbands1';
+import {renderLeaderAcademicActions,LEADER_ACADEMIC_FOCUS} from './leader-academic-actions.mjs?v=20261111journeys1';
+import {renderMapJourneyCohort,renderMapJourneyProfile} from './map-journeys-view.mjs?v=20261111journeys1';
 import {renderLeaderSupportSection} from './leader-support-view.mjs';
 import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvidence,leaderAdvisoryClasses} from './leader-daily-workspaces.mjs?v=20261111academicquick2';
 import {leaderReportSignalSummary} from './report-card-signals.mjs';
@@ -98,6 +99,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
   leaderSupportOpen:false,leaderReportQuery:'',leaderReportMultiple:false,leaderReportExpanded:false,leaderReportThreshold:3,leaderReportOpen:false,
   leaderStudentId:'',leaderReviewFilter:'all',leaderReviewExpanded:false,
   leaderAcademicFocus:'',leaderAcademicGrade:'',leaderAcademicSubject:'',leaderAcademicMultiple:false,leaderAcademicExpanded:false,leaderMapBand:'both',
+  journeySubject:'Reading',journeyStart:'auto',journeyEnd:'F26',journeyStartingBand:'both',journeyEndingBand:'average-plus',journeyPathway:'auto',journeyExpanded:false,journeyProfileSubject:'Reading',
  sssGrade:'All',sssQuery:'',sssStudentId:'',sssOpenGrades:['G3'],sssAcademicOpen:false,
   supportForm:null,supportFilter:'all',supportQuery:'',
   sssManager:'All',sssPanel:'summary',supportBarrier:'All',
@@ -461,7 +463,7 @@ function learnerProfile(s,studentRole=false){
    renderStudentOverview(s,ACADEMIC_RECORDS,{
     attendance:DATA.attendance[s.id],mathGrowth:mg,
     reflectionDraft:saved('reflection-'+s.id,'')})+
-   renderMapRitProfile(DATA.map[s.id]||[])+studentCheckinPreview+
+   renderMapRitProfile(DATA.map[s.id]||[])+renderMapJourneyProfile({student:s,records:DATA.map[s.id]||[],subject:state.journeyProfileSubject})+studentCheckinPreview+
    '<details class="student-detail-section" data-student-panel="reports" id="student-reports"'+
     (state.studentReportsOpen?' open':'')+'>'+
    '<summary><span class="student-panel-symbol" aria-hidden="true">▤</span>'+
@@ -491,7 +493,9 @@ function learnerProfile(s,studentRole=false){
    safe(t.strategies[0])+'</p></div>').join(' '):
   '<p class="muted">No additional classroom guidance tags in this fictional example.</p>')+
   '<p class="tiny">Detailed support plans and confidential records are not included in this public demo.</p></section>';
- return profileStart+header+profileKpis+renderMapRitProfile(DATA.map[s.id]||[])+academics+wellbeing+maiaFaculty+
+ return profileStart+header+profileKpis+renderMapRitProfile(DATA.map[s.id]||[])+
+  renderMapJourneyProfile({student:s,records:DATA.map[s.id]||[],subject:state.journeyProfileSubject})+
+  academics+wellbeing+maiaFaculty+
    renderFacultySupportPanel(s,supportEntries(),SSS_RECORDS.get(s.id))+guidance;
 }
 
@@ -563,7 +567,9 @@ function leader(){
  const leaderPerson=group.find(s=>s.id===state.leaderStudentId);
  if(leaderPerson)return heading('Leadership Overview','Read-only evidence for leadership review.')+
   renderLeaderLearnerEvidence({student:leaderPerson,data:DATA,academic:ACADEMIC_RECORDS,
-   records:RECORDS,window:state.window})+info();
+   records:RECORDS,window:state.window,
+   journeyProfile:renderMapJourneyProfile({student:leaderPerson,records:DATA.map[leaderPerson.id]||[],
+    subject:state.journeyProfileSubject})})+info();
  const secondaryOnly=group.length>0&&group.every(s=>s.division==='Secondary');
  const scopeLabel=selectedClass?.name||
   (state.grade!=='All'?
@@ -774,7 +780,14 @@ function leader(){
    allStudents:DATA.students,data:DATA,academic:ACADEMIC_RECORDS,records:RECORDS,
    sssRecords:SSS_RECORDS,entries:supportEntries(),reviewFilter:state.leaderReviewFilter,
    expanded:state.leaderReviewExpanded,savedView:savedLeaderView(),voiceWindow:state.window,
-   academicPanels:learning+reportSection+deepAcademic,
+   academicPanels:renderMapJourneyCohort({students:group,map:DATA.map,
+    subject:state.journeySubject,
+    start:state.journeyStart==='auto'?(state.division==='Elementary'?'F24':'F22'):state.journeyStart,
+    end:state.journeyEnd,startingBand:state.journeyStartingBand,
+    endingBand:state.journeyEndingBand,
+    pathway:state.journeyPathway==='auto'?(state.division==='Elementary'?'all':'cross'):state.journeyPathway,
+    expanded:state.journeyExpanded})+
+    learning+reportSection+deepAcademic,
    academicActions:renderLeaderAcademicActions({students:group,map:DATA.map,academic:ACADEMIC_RECORDS,
     focus:state.leaderAcademicFocus,grade:state.leaderAcademicGrade,
     subject:state.leaderAcademicSubject,multiple:state.leaderAcademicMultiple,
@@ -899,6 +912,9 @@ const resetLeaderAcademicAction=()=>{
  state.leaderAcademicFocus='';state.leaderAcademicGrade='';state.leaderAcademicSubject='';
  state.leaderAcademicMultiple=false;state.leaderAcademicExpanded=false;
  state.leaderMapBand='both';
+ state.journeySubject='Reading';state.journeyStart='auto';state.journeyEnd='F26';
+ state.journeyStartingBand='both';state.journeyEndingBand='average-plus';
+ state.journeyPathway='auto';state.journeyExpanded=false;
 };
 function render(){
  pinnedChartKey=null;
@@ -1175,7 +1191,7 @@ root.addEventListener('click',e=>{
    const id=jump.dataset.leaderJump;
    if(!['leader-report-followup-title','leader-review','leader-support-title',
       'leader-experience-title','leader-learning-title','leader-academic-detail',
-      'leader-experience-review','leader-map-review'].includes(id))return;
+      'leader-experience-review','leader-map-review','leader-map-journeys'].includes(id))return;
    const el=root.querySelector('#'+id);
    const panel=el?.closest?.('details.leader-detail');
    if(panel)panel.open=true;
