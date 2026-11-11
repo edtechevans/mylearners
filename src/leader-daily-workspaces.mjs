@@ -7,6 +7,7 @@ import {summarizeExperience,experienceChange,experienceEligible} from './experie
 import {leaderExperienceScale} from './leader-experience-bands.mjs';
 import {reportProgress,mapProgress,academicCheckinProgress} from './evidence-progress.mjs';
 import {esc} from './v2-ui.mjs';
+import {renderMapRitProfile} from './map-rit-achievement.mjs';
 
 const safe=v=>esc(String(v??''));
 const n=v=>Number.isFinite(v)?v.toFixed(1):'—';
@@ -337,6 +338,7 @@ export function renderLeaderLearnerEvidence({student,data,academic,records}){
    (map||other?'<section><div class="leader-daily-sectionhead"><div><span>ASSESSMENT WINDOWS</span>'+
     '<h3>Progress by measure</h3></div></div>'+
     '<div class="leader-profile-assessments">'+map+other+'</div></section>':'')+
+   renderMapRitProfile(data.map[student.id]||[])+
    (voice?'<section><div class="leader-daily-sectionhead"><div><span>STUDENT VOICE</span>'+
     '<h3>Personal check-in indices</h3></div></div>'+
     '<div class="leader-profile-voices">'+voice+'</div></section>':'')+
