@@ -100,3 +100,21 @@ test('Leader table indices show scoped previous check-ins rather than methodolog
  assert.equal(result.trend.points.at(-1).label,'Fall 2026');
  assert.equal(result.note,'');
 });
+
+test('MAP RIT tile hover uses only the shared white evidence preview with percentile context',()=>{
+ const score=data.map[student.id].find(r=>r.key==='F26'&&r.subject==='Mathematics');
+ assert.ok(score,'The selected demo learner needs a current MAP Mathematics score');
+ const result=resolveEvidencePreview(trigger('map-rit',{
+  previewStudent:student.id,previewSubject:'Mathematics'}),ctx());
+ assert.equal(result.title,'MAP Math RIT');
+ assert.match(result.subtitle,/Fall 2026/);
+ assert.ok(result.trend.points.length>1);
+ assert.equal(result.trend.points.at(-1).value,String(score.rit));
+ assert.ok(result.rows.some(([name,v])=>
+  name==='Achievement percentile'&&v.includes('P'+score.percentile)));
+ assert.match(result.note,/not a growth percentile/);
+ const other=data.students.find(s=>!teacher.classIds.includes(s.classId));
+ assert.equal(resolveEvidencePreview(trigger('map-rit',{
+  previewStudent:other.id,previewSubject:'Mathematics'}),ctx()),null,
+  'MAP hover must not bypass faculty learner access');
+});
