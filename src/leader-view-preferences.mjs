@@ -3,7 +3,7 @@
  * evidence, interventions or untrusted free-text filters.
  */
 import {GRADES,gradeNumber} from './data.mjs?v=20261111journeys1';
-import {JOURNEY_FALL_WINDOWS,JOURNEY_START_BANDS,JOURNEY_END_BANDS} from './map-journeys-data.mjs?v=20261111journeys1';
+import {JOURNEY_FALL_WINDOWS,JOURNEY_START_BANDS,JOURNEY_END_BANDS} from './map-journeys-data.mjs?v=20261111uxconsol1';
 import {MAP_RIT_SUBJECTS} from './map-rit-achievement.mjs?v=20261111schemas1';
 
 export const LEADER_FOCUS_SECTIONS=Object.freeze([
