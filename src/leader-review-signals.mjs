@@ -5,6 +5,7 @@
 import {gradeNumber} from './data.mjs';
 import {experienceEligible,experienceFor,EXPERIENCE_WINDOWS} from './experience-data.mjs';
 import {MAP_RIT_SUBJECTS,mapRitBand,mapRitCurrent,mapRitDisplaySubject} from './map-rit-achievement.mjs';
+import {renderStudentPhoto} from './student-photo-preview.mjs';
 
 export const VOICE_REVIEW_THRESHOLD=0;
 export const MAP_REVIEW_BAND='low';
@@ -66,8 +67,9 @@ export function leaderMapRedReview(students,mapByStudent,window='F26'){
 }
 function reviewList(items,render,kind){
  return '<ul class="leader-followup-list '+kind+'">'+items.map(row=>'<li class="leader-followup-item">'+
-  '<div class="leader-followup-person"><strong>'+safe(row.student.name)+'</strong>'+
-  '<small>'+safe(gradeLabel(row.student))+' · '+safe(row.student.classId||'Homeroom not specified')+'</small></div>'+
+  '<div class="leader-followup-person">'+renderStudentPhoto(row.student,'leader')+
+  '<div class="leader-followup-person-text"><strong>'+safe(row.student.name)+'</strong>'+
+  '<small>'+safe(gradeLabel(row.student))+' · '+safe(row.student.classId||'Homeroom not specified')+'</small></div></div>'+
   render(row)+
   '<button type="button" class="leader-followup-open" data-leader-student="'+safe(row.student.id)+
   '" aria-label="Review evidence for '+safe(row.student.name)+'">Review learner <span aria-hidden="true">→</span></button>'+
