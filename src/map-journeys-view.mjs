@@ -104,6 +104,9 @@ export function renderMapJourneyCohort({
    '" aria-pressed="'+(id===preset)+'" class="map-journey-preset'+(id===preset?' is-active':'')+'">'+
    '<strong>'+safe(title)+'</strong><small>'+safe(summary)+'</small></button>').join('')+
   '</div>'+
+  '<p class="map-journey-active-context"><strong>'+safe(mapRitDisplaySubject(m.subject))+'</strong>'+
+   ' · '+safe(first?.label)+' → '+safe(last?.label)+' · '+safe(sourcePathway)+
+   (preset==='custom'?' · Custom filters':'')+'</p>'+
   '<button type="button" class="map-journey-refine" data-map-journey-refine aria-expanded="'+
    (advancedOpen?'true':'false')+'" aria-controls="map-journey-advanced">'+
    (advancedOpen?'Hide advanced filters':'Refine comparison')+
