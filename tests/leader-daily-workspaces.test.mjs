@@ -133,7 +133,9 @@ test('division priorities and injected academic area precede attendance review',
   assert.ok(positions.every((x,i)=>i===0||x>positions[i-1]),division+' top cards must follow academic→attendance→voice order');
   assert.ok(html.indexOf('id="test-academic-priority"')<html.indexOf('id="leader-review"'),
    division+' academic evidence must appear before attendance and learner review');
-  assert.ok(html.indexOf('data-leader-jump="leader-learning-title"')<
-   html.indexOf('data-leader-jump="leader-review"'));
+  const deepNav=html.slice(html.indexOf('<nav class="leader-deep-nav"'));
+  assert.ok(deepNav.indexOf('data-leader-jump="leader-learning-title"')<
+   deepNav.indexOf('data-leader-jump="leader-review"'),
+   'Academic shortcut must appear before the attendance shortcut within deeper navigation');
  }
 });
