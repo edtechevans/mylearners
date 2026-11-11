@@ -3,10 +3,11 @@ import {applyFacultyDemo,DEFAULT_TEACHER_ID} from './faculty-demo.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
 import {MAP_RIT_SUBJECTS,mapRitCurrent,mapRitChange,mapRitChangeLabel,renderMapRitCell,renderMapRitHeader,renderMapRitLegend,renderMapRitProfile,installMapRitHeaderTooltips} from './map-rit-achievement.mjs?v=20261111schemas1';
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs?v=20261111schemas1';
-import {renderLeaderVoiceReview,renderLeaderMapRedReview} from './leader-review-signals.mjs?v=20261111mapbands1';
+import {renderLeaderVoiceReview} from './leader-review-signals.mjs?v=20261111mapbands1';
 import {renderLeaderAcademicActions,LEADER_ACADEMIC_FOCUS} from './leader-academic-actions.mjs?v=20261111journeys1';
 import {renderMapJourneyCohort,renderMapJourneyProfile} from './map-journeys-view.mjs?v=20261111journeys1';
 import {JOURNEY_FALL_WINDOWS,JOURNEY_START_BANDS,JOURNEY_END_BANDS} from './map-journeys-data.mjs?v=20261111journeys1';
+import {LEADER_FOCUS_VALUES,LEADER_JOURNEY_PRESETS,leaderSectionForTarget,normalizeLeaderView,leaderSavedViewPayload,leaderApplySavedView} from './leader-view-preferences.mjs?v=20261111uxconsol1';
 import {renderLeaderSupportSection} from './leader-support-view.mjs';
 import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvidence,leaderAdvisoryClasses} from './leader-daily-workspaces.mjs?v=20261111journeys1';
 import {leaderReportSignalSummary} from './report-card-signals.mjs';
@@ -52,14 +53,12 @@ installMapRitHeaderTooltips(root);
 // Scripted jumps respect the same reduced-motion preference as CSS transitions.
 const scrollMotion=()=>globalThis.window?.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth';
 const saved=(k,d)=>{try{return sessionStorage.getItem(k)||d}catch{return d}};
-const LEADER_SAVED_KEY='mylearners-demo-leaders-saved-view-v1';
+const LEADER_SAVED_KEY='mylearners-demo-leaders-saved-view-v2';
+const LEADER_LEGACY_KEY='mylearners-demo-leaders-saved-view-v1';
 const savedLeaderView=()=>{
  try{
-  const value=JSON.parse(localStorage.getItem(LEADER_SAVED_KEY)||'null');
-  if(!value||!['Elementary','Secondary'].includes(value.division))return null;
-  if(value.grade!=='All'&&(!GRADES.includes(value.grade)||
-    (gradeNumber(value.grade)<=5?'Elementary':'Secondary')!==value.division))return null;
-  return {division:value.division,grade:value.grade};
+  const raw=localStorage.getItem(LEADER_SAVED_KEY)||localStorage.getItem(LEADER_LEGACY_KEY);
+  return normalizeLeaderView(raw?JSON.parse(raw):null,DATA.classes);
  }catch{return null}
 };
 const facultyPref=(teacherId,field,fallback='')=>{
@@ -99,8 +98,10 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
   leaderSupportOpen:false,leaderReportQuery:'',leaderReportMultiple:false,leaderReportExpanded:false,leaderReportThreshold:3,leaderReportOpen:false,
   leaderStudentId:'',leaderReviewFilter:'all',leaderReviewExpanded:false,
+  leaderSection:'follow-up',leaderSaveNotice:'',
   leaderAcademicFocus:'',leaderAcademicGrade:'',leaderAcademicSubject:'',leaderAcademicMultiple:false,leaderAcademicExpanded:false,leaderMapBand:'both',
   journeySubject:'Reading',journeyStart:'auto',journeyEnd:'F26',journeyStartingBand:'both',journeyEndingBand:'average-plus',journeyPathway:'auto',journeyExpanded:false,journeyProfileSubject:'Reading',
+  journeyPreset:'rising',journeyAdvancedOpen:false,
  sssGrade:'All',sssQuery:'',sssStudentId:'',sssOpenGrades:['G3'],sssAcademicOpen:false,
   supportForm:null,supportFilter:'all',supportQuery:'',
   sssManager:'All',sssPanel:'summary',supportBarrier:'All',
@@ -112,6 +113,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  boardDpYear:String(DP_RECORDS.at(-1).end),boardDpRange:'all',boardDpSubject:'math-aa-sl'};
 recallFaculty();
 if(state.role==='leader')state.classId='';
+let leaderReturnContext=null;
 const boardDeepLink=parseBoardHash(globalThis.location?.hash);
 if(boardDeepLink&&state.role==='board')Object.assign(state,boardDeepLink);
 const safe=(v)=>esc(v??'');
