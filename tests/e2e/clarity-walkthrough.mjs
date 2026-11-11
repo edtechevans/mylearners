@@ -728,6 +728,7 @@ try{
    await click('[data-leader-academic-close]');
    assert(await evaluate("document.querySelector('#leader-academic-results')?.hidden===true"),
     'Close should collapse the focus without leaving the divisional workspace');
+   await evaluate('window.scrollTo(0,0)');
   });
  await run('leader-clickable-priorities-1440','leader','.leader-division-grid',1440,900,
   async()=>{
@@ -738,6 +739,7 @@ try{
    await click('[data-leader-attendance-focus]');
    assert(await evaluate("document.querySelector('[data-leader-review-filter=attendance]')?.getAttribute('aria-pressed')==='true'"),
     'Clicking the whole attendance tile should open its filtered learner review');
+   await evaluate('window.scrollTo(0,0)');
   });
  await run('leader-academic-touch-390','leader','.leader-division-grid',390,820,
   async()=>{
@@ -746,6 +748,7 @@ try{
    const result=await evaluate("(function(){const box=document.querySelector('#leader-academic-results'),r=box?.getBoundingClientRect();return {visible:box&&!box.hidden,scrollWidth:document.documentElement.scrollWidth,viewport:innerWidth,top:r?.top}})()");
    assert(result.visible&&result.scrollWidth<=result.viewport+2,
     'Mobile MAP review must open directly without horizontal page overflow');
+   await evaluate('window.scrollTo(0,0)');
   });
  await run('leader-filter-1440','leader','.leader-division-grid',1440,900,
   async()=>{
