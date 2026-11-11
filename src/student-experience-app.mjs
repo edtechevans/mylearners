@@ -1,7 +1,7 @@
 import {generateDemoData,attendanceSummary,gradeNumber,GRADES} from './data.mjs';
 import {applyFacultyDemo,DEFAULT_TEACHER_ID} from './faculty-demo.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
-import {MAP_RIT_SUBJECTS,mapRitCurrent,renderMapRitCell,renderMapRitHeader,renderMapRitLegend,renderMapRitProfile,installMapRitHeaderTooltips} from './map-rit-achievement.mjs';
+import {MAP_RIT_SUBJECTS,mapRitCurrent,mapRitChange,mapRitChangeLabel,renderMapRitCell,renderMapRitHeader,renderMapRitLegend,renderMapRitProfile,installMapRitHeaderTooltips} from './map-rit-achievement.mjs';
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs';
 import {renderLeaderSupportSection} from './leader-support-view.mjs';
 import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvidence,leaderAdvisoryClasses} from './leader-daily-workspaces.mjs';
@@ -354,7 +354,8 @@ function roster(ss,options={}){
     x.compared.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()+'</span>'))+
   (!everyday?'<span>Attendance '+x.attendance+'</span>'+(!showMap?'':MAP_RIT_SUBJECTS.map(subject=>{
    const row=mapRitCurrent(DATA.map[x.student.id]||[],subject);
-   return '<span>MAP '+safe(subject)+' RIT: '+(row?row.rit+' (P'+row.percentile+')':'—')+'</span>';
+   const change=mapRitChange(DATA.map[x.student.id]||[],subject);
+   return '<span>MAP '+safe(subject)+' RIT: '+(row?row.rit+' (P'+row.percentile+') · '+mapRitChangeLabel(change.delta):'—')+'</span>';
   }).join('')):'')+
   (!everyday&&experienceEligible(x.student)?'<span>Engagement '+x.eng+' · Belonging '+x.bel+'</span>':'')+
   (x.sss?'<span>SSS programme · demonstration</span>':'')+
