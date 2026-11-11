@@ -610,6 +610,9 @@ try{
  await run('leader-experience-colours-1440','leader','.leader-school-voice-grid',1440,900,
   async()=>{
    const v=await evaluate("(function(){const cards=[...document.querySelectorAll('.leader-school-voice')];return {groups:cards.length,gauges:cards.map(c=>c.querySelectorAll('.leader-experience-scale').length),segments:cards.map(c=>[...c.querySelectorAll('.leader-experience-segments')].map(x=>x.querySelectorAll('span:not(.leader-experience-marker)').length)),markers:cards.map(c=>c.querySelectorAll('.leader-experience-marker').length)}})()");
+   const pulseOrder=await evaluate("[...document.querySelectorAll('.leader-schoolwide .leader-daily-grid .leader-daily-priority h3')].map(el=>el.textContent)");
+   assert(pulseOrder.join('|')==='Secondary subjects ≤2|Attendance checks|Student Experience to review|Open support actions',
+    'Whole-school Leaders pulse must prioritise academics, attendance and student experience');
    assert(v.groups===2&&v.gauges.every(n=>n===2),'Whole-school landing must keep division survey questions separate');
    assert(v.segments.every(row=>row.every(n=>n===4))&&v.markers.every(n=>n===2),
     'Both divisions need accessible red-to-green scales for each index');
@@ -666,6 +669,11 @@ try{
     'Secondary daily screen needs visible subject concerns and a learner review queue');
    assert(await evaluate("document.querySelectorAll('[data-leader-grade]').length>=8"),
     'Secondary needs Grades 6–12 drilldowns');
+   const order=await evaluate("(function(){const sections=[...document.querySelectorAll('#leader-learning-title,#leader-review,#leader-experience-title')];const cards=[...document.querySelectorAll('#leader-daily-priorities .leader-daily-grid .leader-daily-priority h3')].map(x=>x.textContent.trim());return {sections:sections.map(x=>x.id),cards}})()");
+   assert(order.sections.join('|')==='leader-learning-title|leader-review|leader-experience-title',
+    'Academics section must be before Attendance review and Engagement/Belonging, regardless of division');
+   assert(order.cards.join('|')==='Subject results ≤2|Attendance checks|Student voice change|Open support actions',
+    'Daily summary must follow the same leadership priority order');
    assert(await evaluate("!!document.querySelector('#leader-experience-review')&&!!document.querySelector('#leader-map-review')"),
     'Leaders need actionable Student Experience and MAP achievement review lists');
    assert(await evaluate("!!document.querySelector('[data-leader-jump=leader-experience-review]')&&!!document.querySelector('[data-leader-jump=leader-map-review]')"),
@@ -723,6 +731,9 @@ try{
  await run('leader-elementary-1440','leader','.leader-division-grid',1440,900,
   async()=>{
    await click('[data-leader-division="Elementary"]');
+   const sections=await evaluate("[...document.querySelectorAll('#leader-learning-title,#leader-review,#leader-experience-title')].map(el=>el.id)");
+   assert(sections.join('|')==='leader-learning-title|leader-review|leader-experience-title',
+    'Elementary should also follow Academics → Attendance → Student Experience');
    assert(await evaluate("!!document.querySelector('.leader-daily-priority.blue')&&!document.querySelector('[data-leader-review-filter=academic2]')"),
     'Elementary must have an age-appropriate literacy lens instead of Secondary thresholds');
    await click('[data-leader-grade="G4"]');
