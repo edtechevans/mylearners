@@ -525,7 +525,7 @@ try{
    assert(await evaluate("document.querySelectorAll('.roster-daily tbody .class-evidence-result').length>=20"),
     'Everyday columns should show per-learner values without extra clicks');
    const geometry=await evaluate("(function(){const row=document.querySelector('.roster-daily[data-roster-layout=everyday] tbody tr');if(!row)return [];return [...row.cells].slice(2,-1).map(td=>{const r=td.querySelector('.evidence-cell-open .class-evidence-result')?.getBoundingClientRect();return r?{width:r.width,height:r.height,top:r.top}:null}).filter(Boolean)})()");
-    assert(geometry.length>=12,'Grade 7 should show all synthetic subjects and other measures');
+    assert(geometry.length>=10,'Grade 7 must align current subject and non-MAP evidence tiles; the three MAP RIT tiles are checked separately above');
    for(const key of ['width','height','top'])assert(
     Math.max(...geometry.map(r=>r[key]))-Math.min(...geometry.map(r=>r[key]))<2,
     'Everyday evidence tiles must align in '+key);
