@@ -650,17 +650,23 @@ try{
    await click('[data-leader-division="Secondary"]');
    assert(await evaluate("document.querySelectorAll('.leader-review-table .student-photo-trigger').length>=6"),
     'The Leaders daily learner queue should include portrait thumbnails');
-   assert(await evaluate("document.querySelectorAll('.leader-followup-panel .student-photo-trigger').length>=1"),
-    'Student Experience and MAP review lists should also contain photos');
-   const name=await evaluate("document.querySelector('.leader-followup-panel .student-photo-trigger')?.dataset.photoName");
-   await click('.leader-followup-panel .student-photo-trigger');
+   await click('[data-leader-academic-focus="map"]');
+   assert(await evaluate("document.querySelectorAll('.leader-academic-row .student-photo-trigger').length>=1"),
+    'Academic Follow-up MAP list should include enlargable student photographs');
+   const name=await evaluate("document.querySelector('.leader-academic-row .student-photo-trigger')?.dataset.photoName");
+   await click('.leader-academic-row .student-photo-trigger');
    assert(await evaluate("document.querySelector('.student-photo-preview:not([hidden]) figcaption strong')?.textContent")===name,
     'Leaders should see the exact learner name below the enlarged photo');
    assert(await evaluate("!document.querySelector('.leader-learner-profile')"),
     'Opening a portrait must not accidentally navigate');
-   await click('.leader-followup-panel [data-leader-student]');
+   await click('.leader-academic-row [data-leader-student]');
    assert(await evaluate("!!document.querySelector('.leader-learner-profile .student-photo-trigger')"),
     'Leader profile should also have an enlargable portrait');
+   assert(await evaluate("document.querySelector('[data-leader-back]')?.textContent.includes('Academic Follow-up')"),
+    'Return action should name the exact originating list');
+   await click('[data-leader-back]');
+   assert(await evaluate("!!document.querySelector('#leader-academic-results:not([hidden])')"),
+    'Returning from learner profile must preserve the active filtered list');
   });
  await run('leader-secondary-daily-1440','leader','.leader-division-grid',1440,900,
   async()=>{
@@ -672,17 +678,20 @@ try{
    const order=await evaluate("(function(){const sections=[...document.querySelectorAll('#leader-learning-title,#leader-review,#leader-experience-title')];const cards=[...document.querySelectorAll('#leader-daily-priorities .leader-daily-grid .leader-priority-label')].map(x=>x.textContent.trim());return {sections:sections.map(x=>x.id),cards}})()");
    assert(order.sections.join('|')==='leader-learning-title|leader-review|leader-experience-title',
     'Academics section must be before Attendance review and Engagement/Belonging, regardless of division');
-   assert(order.cards.join('|')==='Attendance checks|Student voice change|Open support actions',
+   assert(order.cards.join('|')==='Attendance checks|Student Experience to review|Open support actions',
     'Daily summary must follow the same leadership priority order');
-   assert(await evaluate("!!document.querySelector('#leader-experience-review')&&!!document.querySelector('#leader-map-review')"),
-    'Leaders need actionable Student Experience and MAP achievement review lists');
+   assert(await evaluate("!!document.querySelector('#leader-experience-review')&&!!document.querySelector('[data-leader-academic-focus=map]')"),
+    'Student Experience and MAP achievement lists must have direct visible entry points');
    assert(await evaluate("!!document.querySelector('[data-leader-jump=leader-experience-review]')&&!!document.querySelector('[data-leader-academic-focus=map]')"),
     'MAP and student voice review should both have direct accessible actions');
    assert(await evaluate("!document.querySelector('.leader-daily-source')?.textContent.includes('through')"),
     'Attendance date captions should not be needed in the Leadership tile summaries');
-   const review=await evaluate("(function(){const v=document.querySelector('#leader-experience-review'),m=document.querySelector('#leader-map-review');return {voice:!!v&&v.textContent.includes('0 or below'),map:!!m&&m.textContent.includes('1st–20th percentile'),links:[...document.querySelectorAll('.leader-followup-open')].length,validVoice:[...v.querySelectorAll('.leader-followup-item')].every(row=>!!row.querySelector('.leader-followup-index.is-low')),validMap:[...m.querySelectorAll('.leader-map-low-chip')].every(chip=>{const p=Number(chip.textContent.match(/P(\\d{1,2})/)?.[1]);return p>=1&&p<=20})}})()");
-   assert(review.voice&&review.map&&review.validVoice&&review.validMap,
-    'Review entries must obey the separate ≤0 voice and 1–20 MAP percentile thresholds');
+   const review=await evaluate("(function(){const v=document.querySelector('#leader-experience-review');return {voice:!!v&&v.textContent.includes('0 or below'),links:[...document.querySelectorAll('.leader-followup-open')].length,validVoice:[...v.querySelectorAll('.leader-followup-item')].every(row=>!!row.querySelector('.leader-followup-index.is-low'))}})()");
+   assert(review.voice&&review.validVoice,
+    'Experience review must still use the independent ≤0 index threshold');
+   await click('[data-leader-jump="leader-experience-review"]');
+   assert(await evaluate("!document.querySelector('#leader-focus-panel-experience')?.hidden"),
+    'Student Experience card must activate the correct focused panel');
    if(review.links){
     const target=await evaluate("document.querySelector('.leader-followup-panel [data-leader-student]')?.dataset.leaderStudent");
     if(target){
@@ -795,6 +804,9 @@ try{
     'MAP Journeys must not add page-wide horizontal overflow on mobile');
    assert(await evaluate("!!document.querySelector('.map-journey-matrix-scroll')&&!!document.querySelector('[data-map-journey-pathway]')"),
     'Mobile should provide a scrollable matrix and grade-pathway filters');
+   await click('[data-map-journey-refine]');
+   assert(await evaluate("!document.querySelector('#map-journey-advanced')?.hidden"),
+    'Advanced comparison controls should become visible only when requested');
    await click('[data-map-journey-pathway="all"]');
    assert(await evaluate("document.querySelector('[data-map-journey-pathway=all]')?.getAttribute('aria-pressed')==='true'"),
     'All grades pathway must be selectable');
@@ -836,6 +848,9 @@ try{
    await click('[data-leader-grade="G7"]');
    assert(await evaluate("document.querySelector('.leader-division-hero h2')?.textContent.includes('Grade 7')"),
     'Grade 7 drilldown must change scope');
+   await click('[data-leader-focus="academics"]');
+   assert(await evaluate("!document.querySelector('#leader-focus-panel-academics')?.hidden"),
+    'Academic Trends tab should show detailed subject evidence');
    assert(await evaluate("!!document.querySelector('.leader-report-followup')"),
     'Secondary detailed subject review must remain available');
    assert(await evaluate("document.querySelectorAll('.leader-report-legend-chip').length===4"),
@@ -853,8 +868,10 @@ try{
   async()=>{
    await click('[data-leader-division="Secondary"]');
    await click('[data-leader-grade="G12"]');
+   await click('[data-leader-focus="academics"]');
    const v=await evaluate("(function(){const cards=[...document.querySelectorAll('.leader-learning-grid .leader-stat')];return {dp:cards.some(x=>x.textContent.includes('DP subject results')),map:cards.some(x=>x.textContent.includes('MAP')),queue:!!document.querySelector('[data-leader-review-filter=academic2]')}})()");
    assert(v.dp&&!v.map&&v.queue,'Grade 12 needs DP evidence, not unavailable MAP cards');
+   await click('[data-leader-focus="follow-up"]');
    await click('[data-leader-review-filter="academic2"]');
    await click('[data-leader-student]');
    assert(await evaluate("!!document.querySelector('.leader-learner-profile')"),
