@@ -108,3 +108,32 @@ test('read-only profile shows comparable academic windows but not support case n
  assert.match(earlier,/Spring 2026/);
  assert.doesNotMatch(html,/case manager|Safeguarding incident|data-support-new|data-sss-student/i);
 });
+
+test('whole-school Leaders priority cards present academics, attendance, Student Experience, then support',()=>{
+ const html=renderLeaderWholeSchool({students,...opts,savedView:null});
+ const pulse=html.slice(html.indexOf('id="leader-pulse-title"'));
+ const labels=['Secondary subjects ≤2','Attendance checks','Student Experience to review','Open support actions'];
+ const positions=labels.map(label=>pulse.indexOf(label));
+ assert.ok(positions.every(x=>x>=0),JSON.stringify(positions));
+ assert.ok(positions.every((x,i)=>i===0||x>positions[i-1]),'Priority cards must follow the agreed leadership sequence');
+ assert.match(pulse,/\d+ fictional learners/,'Cohort count remains available even after retiring the roster priority card');
+ assert.doesNotMatch(html,/data-leader-student=/,'Whole-school priority count must remain aggregate-only');
+});
+test('division priorities and injected academic area precede attendance review',()=>{
+ const marker='<section id="test-academic-priority"><h2>Academic evidence test panel</h2></section>';
+ for(const [division,group] of [['Secondary',secondary],['Elementary',elementary]]){
+  const html=renderLeaderDivisionDaily({division,grade:'All',students:group,
+   allStudents:students,academicPanels:marker,...opts});
+  const start=html.indexOf('id="leader-daily-priorities"');
+  const cards=html.slice(start,html.indexOf('leader-review-shortcuts',start));
+  const labels=[division==='Secondary'?'Subject results ≤2':'Literacy checks',
+   'Attendance checks','Student voice change','Open support actions'];
+  const positions=labels.map(label=>cards.indexOf(label));
+  assert.ok(positions.every(x=>x>=0&&x<cards.length),'All four prioritised cards are visible');
+  assert.ok(positions.every((x,i)=>i===0||x>positions[i-1]),division+' top cards must follow academic→attendance→voice order');
+  assert.ok(html.indexOf('id="test-academic-priority"')<html.indexOf('id="leader-review"'),
+   division+' academic evidence must appear before attendance and learner review');
+  assert.ok(html.indexOf('data-leader-jump="leader-learning-title"')<
+   html.indexOf('data-leader-jump="leader-review"'));
+ }
+});
