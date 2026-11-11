@@ -71,12 +71,12 @@ function divisionChoice(name,students,opts){
   '" type="button"><span class="leader-division-eyebrow">'+
   (isSecondary?'SCIENCE PARK · GRADES 6–12':'ERSHA · EARLY YEARS–GRADE 5')+'</span>'+
   '<strong>'+name+'</strong><span class="leader-division-description">'+
-  (isSecondary?'Subject evidence, attendance, learner review and follow-through':
-   'Literacy, early learning, belonging, attendance and coordinated support')+'</span>'+
-  '<span class="leader-choice-facts"><span><b>'+students.length+'</b> learners</span>'+
-  '<span><b>'+attendance.flagged.length+'</b> attendance checks</span>'+
-  '<span><b>'+(isSecondary?academics.at2.length:literacy.available)+'</b> '+
+  (isSecondary?'Subject evidence, attendance, student experience and follow-through':
+   'Literacy and early learning, attendance, belonging and coordinated support')+'</span>'+
+  '<span class="leader-choice-facts"><span><b>'+(isSecondary?academics.at2.length:literacy.available)+'</b> '+
   (isSecondary?'subject result ≤2':'literacy check-ins')+'</span>'+
+  '<span><b>'+attendance.flagged.length+'</b> attendance checks</span>'+
+  '<span><b>'+students.length+'</b> learners</span>'+
   '<span><b>'+(support.suppressed?'—':support.actionOpen)+'</b> open support actions</span></span>'+
   '<span class="leader-choice-go">Open '+name+' workspace <span aria-hidden="true">→</span></span></button>';
 }
@@ -96,7 +96,8 @@ export function renderLeaderWholeSchool({students,data,academic,records,sssRecor
   secondary=students.filter(s=>s.division==='Secondary');
  const attendance=leaderAttendanceReview(students,data),
   support=studentSupportLeadershipSummary(students,sssRecords,entries),
-  academics=leaderAcademicReview(secondary,academic);
+  academics=leaderAcademicReview(secondary,academic),
+  experience=leaderVoiceReview(students,records,'F26');
  const opts={data,academic,sssRecords,entries};
  return '<div class="leader-view leader-daily leader-schoolwide">'+
   '<section class="leader-welcome" aria-labelledby="leader-welcome-title">'+
@@ -122,13 +123,16 @@ export function renderLeaderWholeSchool({students,data,academic,records,sssRecor
   '<section class="leader-daily-section" aria-labelledby="leader-pulse-title">'+
    '<div class="leader-daily-sectionhead"><div><span>WHOLE-SCHOOL OPERATIONAL PULSE</span>'+
     '<h2 id="leader-pulse-title">What to look into</h2></div>'+
-    '<p>Counts prompt professional inquiry, not automatic decisions.</p></div>'+
+    '<p>Academics · Attendance · Student Experience · '+students.length+
+    ' fictional learners. Counts prompt professional inquiry, not automatic decisions.</p></div>'+
    '<div class="leader-daily-grid">'+
-    priority('Learners included',students.length,'Across both divisions.','neutral',null,'Fictional roster · 8 Oct 2026')+
-    priority('Attendance checks',attendance.flagged.length,'Below an illustrative 90% review threshold.',
-     'amber',null,'Simulated attendance')+
     priority('Secondary subjects ≤2',academics.at2.length,
      'One or more numeric results of 2 or below.','red',null,'Simulated 2026–27 in-progress report results')+
+    priority('Attendance checks',attendance.flagged.length,'Below an illustrative 90% review threshold.',
+     'amber',null,'Simulated attendance')+
+    priority('Student Experience to review',experience.rows.length,
+     'Engagement or Belonging index at 0 or below; missing scores excluded.',
+     'neutral',null,'Fall 2026 · age-specific student voice')+
     priority('Open support actions',support.suppressed?'—':support.actionOpen,
      'Across a fictional coordinated support cycle.','blue',null,'Support cycle · 28 Oct 2026')+
    '</div></section>'+
@@ -183,7 +187,8 @@ function concernsEvidence(x,isSecondary){
  return pieces.join('<span class="leader-review-separator"> • </span>');
 }
 export function renderLeaderDivisionDaily({division,grade,students,allStudents,data,
- academic,records,sssRecords,entries,reviewFilter='all',expanded=false,savedView=null,voiceWindow='F26'}){
+ academic,records,sssRecords,entries,reviewFilter='all',expanded=false,savedView=null,
+ voiceWindow='F26',academicPanels=''}){
  const secondary=division==='Secondary',
   attendance=leaderAttendanceReview(students,data),
   academics=leaderAcademicReview(students,academic),
@@ -252,20 +257,20 @@ export function renderLeaderDivisionDaily({division,grade,students,allStudents,d
    '<div class="leader-daily-grid">'+headline+
     priority('Attendance checks',attendance.flagged.length,'Below the illustrative 90% review threshold.',
      'amber','leader-review','Simulated attendance')+
-    priority('Open support actions',supportCount,support.suppressed?
-     'Small-group summary suppressed. Expand scope.':'Open follow-ups in the fictional support cycle.',
-     'blue','leader-support-title','Demo SSS cycle · 28 Oct 2026')+
     priority('Student voice change',change===null?'—':(change>0?'+':'')+change.toFixed(2),
      'Largest change in the two group indices from the previous window.',
      'green','leader-experience-title','Age-specific index −2 to +2')+
+    priority('Open support actions',supportCount,support.suppressed?
+     'Small-group summary suppressed. Expand scope.':'Open follow-ups in the fictional support cycle.',
+     'blue','leader-support-title','Demo SSS cycle · 28 Oct 2026')+
    '</div>'+
    '<div class="leader-review-shortcuts" aria-label="Student evidence review shortcuts">'+
-    (voiceReview.eligible?'<button type="button" data-leader-jump="leader-experience-review">'+
-     '<span><b>Student Experience to review</b><small>Engagement or Belonging ≤0 · selected check-in</small></span>'+
-     '<strong>'+voiceReview.rows.length+'</strong></button>':'')+
     (mapReview.eligible?'<button type="button" data-leader-jump="leader-map-review">'+
      '<span><b>MAP red-band review</b><small>One or more subjects · 1st–20th percentile</small></span>'+
      '<strong>'+mapReview.rows.length+'</strong></button>':'')+
+    (voiceReview.eligible?'<button type="button" data-leader-jump="leader-experience-review">'+
+     '<span><b>Student Experience to review</b><small>Engagement or Belonging ≤0 · selected check-in</small></span>'+
+     '<strong>'+voiceReview.rows.length+'</strong></button>':'')+
    '</div>'+
    '<p class="leader-daily-note">'+safe(secondary?
     (students.some(s=>gradeNumber(s.grade)>=11)?
@@ -273,9 +278,10 @@ export function renderLeaderDivisionDaily({division,grade,students,allStudents,d
      'MAP applies to eligible Grades 6–10. Current subject results are not issued reports.'):
     'Elementary report descriptors are not 1–7 grades. Literacy checks must be interpreted within grade and programme.')+
     '</p></section>'+
+  academicPanels+
   '<section id="leader-review" class="leader-daily-section leader-review-section" aria-labelledby="leader-review-title">'+
    '<div class="leader-daily-sectionhead"><div><span>LEARNER REVIEW · READ ONLY</span>'+
-    '<h2 id="leader-review-title">'+(secondary?'Academic and attendance review':'Attendance and early learning review')+
+    '<h2 id="leader-review-title">'+(secondary?'Attendance and learner review':'Attendance and early learning review')+
     '</h2></div><p>Select a learner to see the evidence and comparable prior windows.</p></div>'+
    '<div class="leader-review-toolbar" role="group" aria-label="Evidence review filters">'+
     buttons.map(([id,label])=>'<button type="button" data-leader-review-filter="'+id+
@@ -297,10 +303,11 @@ export function renderLeaderDivisionDaily({division,grade,students,allStudents,d
    'No confidential support cases or safeguarding records are shown. Record actual decisions in authorised systems.</p>'+
   '</section>'+
   '<nav class="leader-deep-nav" aria-label="Explore deeper evidence"><span>Explore deeper</span>'+
-   '<button type="button" data-leader-jump="leader-learning-title">Learning evidence</button>'+
-   '<button type="button" data-leader-jump="leader-experience-title">Student experience</button>'+
-   '<button type="button" data-leader-jump="leader-support-title">Support follow-through</button>'+
-   '<button type="button" data-leader-jump="leader-academic-detail">Historical reports</button></nav>'+
+   '<button type="button" data-leader-jump="leader-learning-title">Academics</button>'+
+   '<button type="button" data-leader-jump="leader-academic-detail">Historical reports</button>'+
+   '<button type="button" data-leader-jump="leader-review">Attendance</button>'+
+   '<button type="button" data-leader-jump="leader-experience-title">Engagement / Belonging</button>'+
+   '<button type="button" data-leader-jump="leader-support-title">Support follow-through</button></nav>'+
   '</div>';
 }
 
