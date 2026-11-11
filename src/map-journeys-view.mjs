@@ -3,7 +3,7 @@
  */
 import {MAP_RIT_BANDS,MAP_RIT_SUBJECTS,mapRitDisplaySubject} from './map-rit-achievement.mjs';
 import {JOURNEY_FALL_WINDOWS,JOURNEY_START_BANDS,JOURNEY_END_BANDS,
- JOURNEY_PALETTE,mapJourneyCohort,journeyStudentHistory} from './map-journeys-data.mjs';
+ JOURNEY_PALETTE,mapJourneyCohort,journeyStudentHistory} from './map-journeys-data.mjs?v=20261111uxconsol1';
 import {renderStudentPhoto} from './student-photo-preview.mjs';
 import {esc} from './v2-ui.mjs';
 const safe=x=>esc(String(x??''));
@@ -14,7 +14,8 @@ const labelStart=key=>({
  average:'Average','high-average':'High Average',high:'High',all:'All bands'
 }[key]||'Low or Low Average');
 const labelEnd=key=>({
- 'average-plus':'Average or higher',average:'Average',high:'High',
+ 'average-plus':'Average or higher','below-average':'Low / Low Average',
+ average:'Average',high:'High',
  'high-average':'High Average',low:'Low','low-average':'Low Average',
  all:'All bands'
 }[key]||'Average or higher');
@@ -29,7 +30,8 @@ const bandMark=(entry,term)=>'<span class="map-journey-score '+safe(entry.band)+
 const pct=(n,total)=>total?Math.round(n/total*100):0;
 export function renderMapJourneyCohort({
  students,map,subject='Reading',start='F22',end='F26',startingBand='both',
- endingBand='average-plus',pathway='cross',expanded=false
+ endingBand='average-plus',pathway='cross',expanded=false,
+ preset='rising',advancedOpen=false
 }={}){
  const m=mapJourneyCohort({students,map,subject,start,end,startingBand,endingBand,pathway});
  if(!m.eligible)return '';
@@ -93,6 +95,23 @@ export function renderMapJourneyCohort({
    '<h2 id="map-journeys-title">MAP Journeys</h2>'+
    '<p>Follow the same fictional learners from earlier grades into their current achievement bands.</p></div>'+
    '<span class="map-journeys-demo">FICTIONAL DATA</span></div>'+
+  '<div class="map-journey-presets" role="group" aria-label="Common learning-journey questions">'+
+  [
+   ['rising','Moving into Average+','Low / Low Average → Average or above'],
+   ['continuing','Remaining in lower bands','Low / Low Average → Low / Low Average'],
+   ['all','All movements','Across all five bands']
+  ].map(([id,title,summary])=>'<button type="button" data-map-journey-preset="'+id+
+   '" aria-pressed="'+(id===preset)+'" class="map-journey-preset'+(id===preset?' is-active':'')+'">'+
+   '<strong>'+safe(title)+'</strong><small>'+safe(summary)+'</small></button>').join('')+
+  '</div>'+
+  '<p class="map-journey-active-context"><strong>'+safe(mapRitDisplaySubject(m.subject))+'</strong>'+
+   ' · '+safe(first?.label)+' → '+safe(last?.label)+' · '+safe(sourcePathway)+
+   (preset==='custom'?' · Custom filters':'')+'</p>'+
+  '<button type="button" class="map-journey-refine" data-map-journey-refine aria-expanded="'+
+   (advancedOpen?'true':'false')+'" aria-controls="map-journey-advanced">'+
+   (advancedOpen?'Hide advanced filters':'Refine comparison')+
+   '<span aria-hidden="true">'+(advancedOpen?'−':'+')+'</span></button>'+
+  '<div id="map-journey-advanced" class="map-journey-advanced"'+(advancedOpen?'':' hidden')+'>'+
   '<div class="map-journey-filters" role="group" aria-label="MAP Journeys controls">'+
   choices('Subject',MAP_RIT_SUBJECTS.map(s=>[s,mapRitDisplaySubject(s)]),m.subject)+
   choices('Starting window',windowOptions.filter(w=>w[0]!==JOURNEY_FALL_WINDOWS.at(-1).key),m.start)+
@@ -103,27 +122,29 @@ export function renderMapJourneyCohort({
    [['cross','Elementary → Secondary'],['all','All grade pathways']].map(([k,label])=>
     '<button type="button" data-map-journey-pathway="'+k+'" aria-pressed="'+
     (k===m.pathway?'true':'false')+'">'+safe(label)+(k==='cross'?' · '+m.crossAvailable:'')+'</button>'
-   ).join('')+'</div>'+
+   ).join('')+'</div></div>'+
   '<div class="map-journey-kpis">'+
-   '<div><small>Matched tests</small><strong>'+m.matched+'</strong>'+
+   '<div><small>Matched students</small><strong>'+m.matched+'</strong>'+
     '<span>'+safe(first?.label)+' and '+safe(last?.label)+'</span></div>'+
    '<div><small>Starting cohort</small><strong>'+m.cohort.length+'</strong>'+
     '<span>'+safe(labelStart(m.startingBand))+'</span></div>'+
-   '<div><small>Now Average or higher</small><strong>'+m.endedAveragePlus+'</strong>'+
+   '<div><small>Average+ at comparison</small><strong>'+m.endedAveragePlus+'</strong>'+
     '<span>'+(m.averagePlusPct===null?'No matched cohort':m.averagePlusPct+'% of starting cohort')+'</span></div>'+
    '<div><small>Selected transition</small><strong>'+m.selected.length+'</strong>'+
     '<span>'+safe(labelEnd(m.endingBand))+'</span></div>'+
   '</div>'+
   '<p class="map-journey-coverage">'+m.withStart+' with a starting result · '+
-   m.withEnd+' with a comparison result · '+m.matched+' matched ('+safe(sourcePathway)+
-   ') · '+m.missingPair+' missing at least one window in the selected scope. '+
-   'Only matched students contribute to movement percentages.</p>'+
+   m.withEnd+' with a comparison result · '+m.allMatched+' with both results · '+
+   m.matched+' in the selected pathway ('+safe(sourcePathway)+') · '+
+   m.missingPair+' without both results. '+
+   'Only students with both assessments contribute to movement percentages.</p>'+
   '<div class="map-journey-cohort-grid">'+
    '<section class="map-journey-outcomes"><h3>Where the starting cohort is now</h3>'+
     '<p>Achievement bands in '+safe(last?.label)+' for '+m.cohort.length+' matched learners.</p>'+
     bars+'</section>'+
    '<section class="map-journey-transitions"><h3>Achievement-band transitions</h3>'+
-   '<p>Select any populated cell to open those students in the list below.</p>'+
+   '<p>All '+m.matched+' paired students in this pathway, before starting and current band filters. '+
+   'Select a cell to review those students below.</p>'+
    matrix+'</section></div>'+rows+
   '<p class="map-journey-footnote">Achievement percentiles compare a student with the relevant national norm group. A change in percentile is <strong>not</strong> RIT growth or proof of school impact. Seasons and MAP subjects are held constant; student entry, mobility and absent tests can change the matched cohort. This public demonstration uses independently generated fictional results.</p>'+
  '</section>';

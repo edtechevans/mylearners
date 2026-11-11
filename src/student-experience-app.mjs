@@ -3,12 +3,13 @@ import {applyFacultyDemo,DEFAULT_TEACHER_ID} from './faculty-demo.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
 import {MAP_RIT_SUBJECTS,mapRitCurrent,mapRitChange,mapRitChangeLabel,renderMapRitCell,renderMapRitHeader,renderMapRitLegend,renderMapRitProfile,installMapRitHeaderTooltips} from './map-rit-achievement.mjs?v=20261111schemas1';
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs?v=20261111schemas1';
-import {renderLeaderVoiceReview,renderLeaderMapRedReview} from './leader-review-signals.mjs?v=20261111mapbands1';
+import {renderLeaderVoiceReview} from './leader-review-signals.mjs?v=20261111mapbands1';
 import {renderLeaderAcademicActions,LEADER_ACADEMIC_FOCUS} from './leader-academic-actions.mjs?v=20261111journeys1';
-import {renderMapJourneyCohort,renderMapJourneyProfile} from './map-journeys-view.mjs?v=20261111journeys1';
-import {JOURNEY_FALL_WINDOWS,JOURNEY_START_BANDS,JOURNEY_END_BANDS} from './map-journeys-data.mjs?v=20261111journeys1';
+import {renderMapJourneyCohort,renderMapJourneyProfile} from './map-journeys-view.mjs?v=20261111uxconsol1';
+import {JOURNEY_FALL_WINDOWS,JOURNEY_START_BANDS,JOURNEY_END_BANDS} from './map-journeys-data.mjs?v=20261111uxconsol1';
+import {LEADER_FOCUS_VALUES,LEADER_JOURNEY_PRESETS,leaderSectionForTarget,normalizeLeaderView,leaderSavedViewPayload,leaderApplySavedView} from './leader-view-preferences.mjs?v=20261111uxconsol1';
 import {renderLeaderSupportSection} from './leader-support-view.mjs';
-import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvidence,leaderAdvisoryClasses} from './leader-daily-workspaces.mjs?v=20261111journeys1';
+import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvidence,leaderAdvisoryClasses} from './leader-daily-workspaces.mjs?v=20261111uxconsol1';
 import {leaderReportSignalSummary} from './report-card-signals.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
 import {createSSSDemoRecords} from './sss-demo-data.mjs';
@@ -52,14 +53,12 @@ installMapRitHeaderTooltips(root);
 // Scripted jumps respect the same reduced-motion preference as CSS transitions.
 const scrollMotion=()=>globalThis.window?.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth';
 const saved=(k,d)=>{try{return sessionStorage.getItem(k)||d}catch{return d}};
-const LEADER_SAVED_KEY='mylearners-demo-leaders-saved-view-v1';
+const LEADER_SAVED_KEY='mylearners-demo-leaders-saved-view-v2';
+const LEADER_LEGACY_KEY='mylearners-demo-leaders-saved-view-v1';
 const savedLeaderView=()=>{
  try{
-  const value=JSON.parse(localStorage.getItem(LEADER_SAVED_KEY)||'null');
-  if(!value||!['Elementary','Secondary'].includes(value.division))return null;
-  if(value.grade!=='All'&&(!GRADES.includes(value.grade)||
-    (gradeNumber(value.grade)<=5?'Elementary':'Secondary')!==value.division))return null;
-  return {division:value.division,grade:value.grade};
+  const raw=localStorage.getItem(LEADER_SAVED_KEY)||localStorage.getItem(LEADER_LEGACY_KEY);
+  return normalizeLeaderView(raw?JSON.parse(raw):null,DATA.classes);
  }catch{return null}
 };
 const facultyPref=(teacherId,field,fallback='')=>{
@@ -99,8 +98,10 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
   leaderSupportOpen:false,leaderReportQuery:'',leaderReportMultiple:false,leaderReportExpanded:false,leaderReportThreshold:3,leaderReportOpen:false,
   leaderStudentId:'',leaderReviewFilter:'all',leaderReviewExpanded:false,
+  leaderSection:'follow-up',leaderSaveNotice:'',
   leaderAcademicFocus:'',leaderAcademicGrade:'',leaderAcademicSubject:'',leaderAcademicMultiple:false,leaderAcademicExpanded:false,leaderMapBand:'both',
   journeySubject:'Reading',journeyStart:'auto',journeyEnd:'F26',journeyStartingBand:'both',journeyEndingBand:'average-plus',journeyPathway:'auto',journeyExpanded:false,journeyProfileSubject:'Reading',
+  journeyPreset:'rising',journeyAdvancedOpen:false,
  sssGrade:'All',sssQuery:'',sssStudentId:'',sssOpenGrades:['G3'],sssAcademicOpen:false,
   supportForm:null,supportFilter:'all',supportQuery:'',
   sssManager:'All',sssPanel:'summary',supportBarrier:'All',
@@ -112,6 +113,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  boardDpYear:String(DP_RECORDS.at(-1).end),boardDpRange:'all',boardDpSubject:'math-aa-sl'};
 recallFaculty();
 if(state.role==='leader')state.classId='';
+let leaderReturnContext=null;
 const boardDeepLink=parseBoardHash(globalThis.location?.hash);
 if(boardDeepLink&&state.role==='board')Object.assign(state,boardDeepLink);
 const safe=(v)=>esc(v??'');
@@ -566,9 +568,12 @@ function leader(){
  const classes=leaderAdvisoryClasses(DATA.classes,state.division,state.grade);
  const selectedClass=classes.find(c=>c.id===state.classId);
  const leaderPerson=group.find(s=>s.id===state.leaderStudentId);
+ if(state.leaderSection==='journeys'&&!group.some(s=>gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10))
+  state.leaderSection='follow-up';
  if(leaderPerson)return heading('Leadership Overview','Read-only evidence for leadership review.')+
   renderLeaderLearnerEvidence({student:leaderPerson,data:DATA,academic:ACADEMIC_RECORDS,
    records:RECORDS,window:state.window,
+   returnLabel:leaderReturnContext?.label||'division review',
    journeyProfile:renderMapJourneyProfile({student:leaderPerson,records:DATA.map[leaderPerson.id]||[],
     subject:state.journeyProfileSubject})})+info();
  const secondaryOnly=group.length>0&&group.every(s=>s.division==='Secondary');
@@ -721,7 +726,6 @@ function leader(){
   stat('Historical report coverage',reports.rate===null?'—':reports.rate+'%',
    reports.available+' of '+reports.eligible+' learners with an issued historical record.',
    'Simulated previous school years')+'</div>'+quickEvidence+
-  renderLeaderMapRedReview({students:group,map:DATA.map})+
   '<p class="leader-data-note">'+(mapEligible?
    'MAP growth uses comparable tests for eligible Grades 3–10. It does not measure achievement percentile. ':
    'MAP is not used in this selected grade range. ')+
@@ -769,8 +773,11 @@ function leader(){
   'They do not rank learners or indicate academic achievement. '+
   'Only homeroom/advisory cohorts are shown; taught courses are not survey response groups.</p>'+
   '<h3>Over Time</h3>'+trends+'</div></details>';
+ const leaderPane=(id,content)=>'<section id="leader-focus-panel-'+id+
+  '" class="leader-focus-panel" role="tabpanel" aria-labelledby="leader-focus-tab-'+id+'"'+
+  (state.leaderSection===id?'':' hidden')+'>'+content+'</section>';
  return heading('Leadership Overview',
-  'Academics first, then attendance and Student Experience. Choose a division or grade to investigate.')+
+  'Review learners first, then investigate longitudinal, academic and experience evidence.')+
   '<div class="leader-view leader-daily">'+
   '<div class="toolbar leader-controls leader-scope-controls">'+
   '<label>Division '+selector('division',[['All','Whole school'],['Elementary','Elementary'],['Secondary','Secondary']],state.division)+'</label>'+
@@ -781,21 +788,23 @@ function leader(){
    allStudents:DATA.students,data:DATA,academic:ACADEMIC_RECORDS,records:RECORDS,
    sssRecords:SSS_RECORDS,entries:supportEntries(),reviewFilter:state.leaderReviewFilter,
    expanded:state.leaderReviewExpanded,savedView:savedLeaderView(),voiceWindow:state.window,
-   academicPanels:renderMapJourneyCohort({students:group,map:DATA.map,
+   focusSection:state.leaderSection,savedNotice:state.leaderSaveNotice,
+   journeyPanel:renderMapJourneyCohort({students:group,map:DATA.map,
     subject:state.journeySubject,
     start:state.journeyStart==='auto'?(state.division==='Elementary'?'F24':'F22'):state.journeyStart,
     end:state.journeyEnd,startingBand:state.journeyStartingBand,
     endingBand:state.journeyEndingBand,
     pathway:state.journeyPathway==='auto'?(state.division==='Elementary'?'all':'cross'):state.journeyPathway,
-    expanded:state.journeyExpanded})+
-    learning+reportSection+deepAcademic,
+    expanded:state.journeyExpanded,preset:state.journeyPreset,
+    advancedOpen:state.journeyAdvancedOpen}),
+   academicPanels:learning+reportSection+deepAcademic,
    academicActions:renderLeaderAcademicActions({students:group,map:DATA.map,academic:ACADEMIC_RECORDS,
     focus:state.leaderAcademicFocus,grade:state.leaderAcademicGrade,
     subject:state.leaderAcademicSubject,multiple:state.leaderAcademicMultiple,
     expanded:state.leaderAcademicExpanded,mapBand:state.leaderMapBand})})+
-  experienceSection+deepPatterns+
-  renderLeaderSupportSection({students:group,sssRecords:SSS_RECORDS,entries:supportEntries(),
-   open:state.leaderSupportOpen})+'</div>'+info();
+  leaderPane('experience',experienceSection+deepPatterns)+
+  leaderPane('support',renderLeaderSupportSection({students:group,sssRecords:SSS_RECORDS,
+   entries:supportEntries(),open:state.leaderSupportOpen}))+'</div>'+info();
 }
 function sss(){
  const banner=heading('Student Support Services',
@@ -918,6 +927,7 @@ const resetMapJourney=()=>{
  state.journeySubject='Reading';state.journeyStart='auto';state.journeyEnd='F26';
  state.journeyStartingBand='both';state.journeyEndingBand='average-plus';
  state.journeyPathway='auto';state.journeyExpanded=false;
+ state.journeyPreset='rising';state.journeyAdvancedOpen=false;
 };
 function render(){
  pinnedChartKey=null;
@@ -1059,6 +1069,18 @@ root.addEventListener('focusout',e=>{
  if(e.target.closest?.('[data-board-point],[data-board-dp-point],[data-board-dp-world-point],[data-board-dp-subject-point]'))hideBoardFloat();
 });
 root.addEventListener('keydown',e=>{
+ const leaderTab=e.target.closest?.('[data-leader-focus]');
+ if(leaderTab&&state.role==='leader'&&['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){
+  const tabs=[...root.querySelectorAll('.leader-focus-nav [data-leader-focus]')];
+  const current=tabs.indexOf(leaderTab);
+  if(current>=0&&tabs.length){
+   e.preventDefault();
+   const next=e.key==='Home'?0:e.key==='End'?tabs.length-1:
+    (current+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
+   tabs[next].click();
+   return;
+  }
+ }
  const drawer=root.querySelector('.board-map-drawer[aria-modal="true"]');
  if(drawer){
   if(e.key==='Escape'){e.preventDefault();closeBoardDrawer();return}
@@ -1098,6 +1120,7 @@ root.addEventListener('click',e=>{
    if(!['All','Elementary','Secondary'].includes(next))return;
    state.division=next;state.grade='All';state.classId='';state.leaderStudentId='';
    state.leaderReviewFilter='all';state.leaderReviewExpanded=false;state.leaderReportOpen=false;
+   state.leaderSection='follow-up';state.leaderSaveNotice='';
    resetLeaderAcademicAction();resetMapJourney();
    render();globalThis.window?.scrollTo?.(0,0);return;
   }
@@ -1114,18 +1137,56 @@ root.addEventListener('click',e=>{
   }
   if(e.target.closest('[data-leader-save-view]')){
    if(['Elementary','Secondary'].includes(state.division)){
-    try{localStorage.setItem(LEADER_SAVED_KEY,
-      JSON.stringify({division:state.division,grade:state.grade}));}catch{}
+    try{
+     localStorage.setItem(LEADER_SAVED_KEY,JSON.stringify(leaderSavedViewPayload(state)));
+     state.leaderSaveNotice='Saved on this browser · no student records stored';
+    }catch{state.leaderSaveNotice='Browser storage unavailable';}
     render();
+    root.querySelector('[data-leader-save-view]')?.focus?.({preventScroll:true});
    }
    return;
   }
   if(e.target.closest('[data-leader-open-saved]')){
    const saved=savedLeaderView();
    if(!saved)return;
-   state.division=saved.division;state.grade=saved.grade;state.classId='';
-   state.leaderStudentId='';state.leaderReviewFilter='all';state.leaderReviewExpanded=false;
-   resetLeaderAcademicAction();resetMapJourney();render();globalThis.window?.scrollTo?.(0,0);return;
+   resetLeaderAcademicAction();resetMapJourney();
+   leaderApplySavedView(state,saved);
+   state.leaderStudentId='';state.leaderSaveNotice='Saved setup restored';
+   state.leaderReviewExpanded=false;state.leaderAcademicExpanded=false;state.journeyExpanded=false;
+   render();globalThis.window?.scrollTo?.(0,0);return;
+  }
+  const focusTab=e.target.closest('[data-leader-focus]');
+  if(focusTab){
+   const next=focusTab.dataset.leaderFocus;
+   if(!LEADER_FOCUS_VALUES.includes(next))return;
+   if(next==='journeys'&&!DATA.students.some(x=>x.division===state.division&&
+     (state.grade==='All'||x.grade===state.grade)&&(!state.classId||x.classId===state.classId)&&
+     gradeNumber(x.grade)>=3&&gradeNumber(x.grade)<=10))return;
+   state.leaderSection=next;state.leaderSaveNotice='';
+   render();
+   root.querySelector('[data-leader-focus="'+next+'"]')?.focus?.({preventScroll:true});
+   root.querySelector('#leader-focus-panel-'+next)?.scrollIntoView?.({behavior:scrollMotion(),block:'start'});
+   return;
+  }
+  const journeyPreset=e.target.closest('[data-map-journey-preset]');
+  if(journeyPreset){
+   const config=LEADER_JOURNEY_PRESETS.find(x=>x.id===journeyPreset.dataset.mapJourneyPreset);
+   if(!config)return;
+   state.journeyPreset=config.id;
+   state.journeyStartingBand=config.startingBand;
+   state.journeyEndingBand=config.endingBand;
+   state.journeyPathway=state.division==='Elementary'?'all':config.pathway;
+   state.journeyStart='auto';state.journeyEnd='F26';
+   state.journeyExpanded=false;
+   render();
+   root.querySelector('[data-map-journey-preset="'+config.id+'"]')?.focus?.({preventScroll:true});
+   return;
+  }
+  if(e.target.closest('[data-map-journey-refine]')){
+   state.journeyAdvancedOpen=!state.journeyAdvancedOpen;
+   render();
+   root.querySelector('[data-map-journey-refine]')?.focus?.({preventScroll:true});
+   return;
   }
   const journeyCell=e.target.closest('[data-map-journey-cell]');
   if(journeyCell&&!journeyCell.disabled){
@@ -1133,6 +1194,7 @@ root.addEventListener('click',e=>{
    const allowed=['low','low-average','average','high-average','high'];
    if(!allowed.includes(from)||!allowed.includes(to))return;
    state.journeyStartingBand=from;state.journeyEndingBand=to;state.journeyExpanded=false;
+   state.journeyPreset='custom';
    render();
    root.querySelector('#map-journey-students')?.scrollIntoView?.({behavior:scrollMotion(),block:'start'});
    return;
@@ -1141,6 +1203,7 @@ root.addEventListener('click',e=>{
   if(pathway){
    if(!['all','cross'].includes(pathway.dataset.mapJourneyPathway))return;
    state.journeyPathway=pathway.dataset.mapJourneyPathway;state.journeyExpanded=false;
+   state.journeyPreset='custom';
    render();
    root.querySelector('[data-map-journey-pathway="'+state.journeyPathway+'"]')?.focus?.({preventScroll:true});
    return;
@@ -1157,6 +1220,7 @@ root.addEventListener('click',e=>{
    const closing=state.leaderAcademicFocus===next;
    resetLeaderAcademicAction();
    if(!closing)state.leaderAcademicFocus=next;
+   state.leaderSection='follow-up';
    render();
    const target=root.querySelector(closing?
     '[data-leader-academic-focus="'+next+'"]':'#leader-academic-results');
@@ -1190,6 +1254,7 @@ root.addEventListener('click',e=>{
    return;
   }
   if(e.target.closest('[data-leader-attendance-focus]')){
+   state.leaderSection='follow-up';
    state.leaderReviewFilter=state.division==='Secondary'?'attendance':'all';
    state.leaderReviewExpanded=false;render();
    root.querySelector('#leader-review')?.scrollIntoView?.({behavior:scrollMotion(),block:'start'});
@@ -1214,18 +1279,44 @@ root.addEventListener('click',e=>{
    if(!chosen||state.division==='All'||chosen.division!==state.division||
       (state.grade!=='All'&&chosen.grade!==state.grade)||
       (state.classId&&chosen.classId!==state.classId))return;
+   const origins=[
+    ['map-journey-students','MAP Journeys'],['leader-academic-results','Academic Follow-up'],
+    ['leader-review','Attendance and learner review'],
+    ['leader-experience-review','Student Experience'],
+    ['leader-report-followup','Academic Trends'],['leader-map-review','Academic Trends']
+   ];
+   const origin=origins.find(([id])=>learner.closest?.('#'+id));
+   leaderReturnContext={
+    studentId:chosen.id,containerId:origin?.[0]||'leader-daily-priorities',
+    label:origin?.[1]||'division review',
+    scrollY:Math.max(0,globalThis.window?.scrollY||0),
+    section:state.leaderSection
+   };
    state.leaderStudentId=chosen.id;
    render();globalThis.window?.scrollTo?.(0,0);return;
   }
   if(e.target.closest('[data-leader-back]')){
-   state.leaderStudentId='';render();globalThis.window?.scrollTo?.(0,0);return;
+   const origin=leaderReturnContext;
+   state.leaderStudentId='';render();
+   const restore=()=>{
+    const scope=origin?.containerId?root.querySelector('#'+origin.containerId):root;
+    const action=scope?.querySelector?.('[data-leader-student="'+origin?.studentId+'"]');
+    action?.focus?.({preventScroll:true});
+    globalThis.window?.scrollTo?.(0,origin?.scrollY||0);
+    if(!action)root.querySelector('[data-leader-focus="'+(origin?.section||state.leaderSection)+'"]')
+     ?.focus?.({preventScroll:true});
+   };
+   if(typeof globalThis.window?.requestAnimationFrame==='function')
+    globalThis.window.requestAnimationFrame(restore);
+   else restore();
+   return;
   }
   const jump=e.target.closest('[data-leader-jump]');
   if(jump){
    const id=jump.dataset.leaderJump;
-   if(!['leader-report-followup-title','leader-review','leader-support-title',
-      'leader-experience-title','leader-learning-title','leader-academic-detail',
-      'leader-experience-review','leader-map-review','leader-map-journeys'].includes(id))return;
+   const section=leaderSectionForTarget(id);
+   if(!section)return;
+   if(state.leaderSection!==section){state.leaderSection=section;render();}
    const el=root.querySelector('#'+id);
    const panel=el?.closest?.('details.leader-detail');
    if(panel)panel.open=true;
@@ -1638,7 +1729,7 @@ root.addEventListener('change',e=>{
     if('mapJourneyComparisonWindow' in data)state.journeyStart=falls[Math.max(0,falls.indexOf(state.journeyEnd)-1)];
     else state.journeyEnd='F26';
    }
-   state.journeyExpanded=false;render();
+   state.journeyExpanded=false;state.journeyPreset='custom';render();
    const key=Object.keys(data).find(x=>x.startsWith('mapJourney'));
    const attr=key?.replace(/[A-Z]/g,x=>'-'+x.toLowerCase());
    root.querySelector('[data-'+attr+']')?.focus?.({preventScroll:true});
@@ -1673,7 +1764,9 @@ root.addEventListener('change',e=>{
  if(el.dataset.select==='division'){
   if(!['All','Elementary','Secondary'].includes(v))return;
   state.division=v;state.grade='All';state.classId='';state.details=false;
-  state.leaderStudentId='';state.leaderReviewFilter='all';state.leaderReviewExpanded=false;resetLeaderAcademicAction();resetMapJourney();
+  state.leaderStudentId='';state.leaderReviewFilter='all';state.leaderReviewExpanded=false;
+  state.leaderSection='follow-up';state.leaderSaveNotice='';
+  resetLeaderAcademicAction();resetMapJourney();
  }
  if(el.dataset.select==='grade'){
   if(v!=='All'&&!GRADES.includes(v))return;

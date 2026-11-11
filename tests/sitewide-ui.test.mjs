@@ -121,7 +121,9 @@ test('Secondary shows the daily review, Grade 12 uses DP evidence, and supports 
  const positions=priorities.map(id=>node.innerHTML.indexOf('id="'+id+'"'));
  assert.ok(positions.every(x=>x>=0)&&positions.every((x,i)=>i===0||x>positions[i-1]),
   'Leaders detail order must be Academics, then Attendance, then Engagement/Belonging');
- assert.match(node.innerHTML,/data-leader-jump="leader-review">Attendance</);
+ assert.match(node.innerHTML,/data-leader-focus="follow-up" aria-selected="true"/);
+ assert.match(node.innerHTML,/id="leader-focus-panel-journeys"/);
+ assert.match(node.innerHTML,/id="leader-focus-panel-academics"/);
  click('[data-leader-grade]',{leaderGrade:'G12'});
  assert.match(node.innerHTML,/Grade 12 · priorities and progress/);
  assert.match(node.innerHTML,/DP subject results ≤2/);

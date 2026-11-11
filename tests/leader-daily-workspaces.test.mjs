@@ -126,12 +126,12 @@ test('division priorities and injected academic area precede attendance review',
   const html=renderLeaderDivisionDaily({division,grade:'All',students:group,
    allStudents:students,academicPanels:marker,...opts});
   const start=html.indexOf('id="leader-daily-priorities"');
-  const cards=html.slice(start,html.indexOf('leader-review-shortcuts',start));
+  const cards=html.slice(start,html.indexOf('leader-focus-nav',start));
   const labels=division==='Secondary'?
-   ['Attendance checks','Student voice change','Open support actions']:
-   ['Literacy checks','Attendance checks','Student voice change','Open support actions'];
+   ['Attendance checks','Student Experience to review','Open support actions']:
+   ['Literacy checks','Attendance checks','Student Experience to review','Open support actions'];
   const positions=labels.map(label=>cards.indexOf(label));
-  assert.ok(positions.every(x=>x>=0&&x<cards.length),'All four prioritised cards are visible');
+  assert.ok(positions.every(x=>x>=0&&x<cards.length),'All relevant prioritised cards are visible');
   assert.ok(positions.every((x,i)=>i===0||x>positions[i-1]),division+' supporting cards must follow the academic follow-up area');
   assert.ok(html.includes('class="leader-daily-priority is-actionable amber"'),
    'The entire Attendance priority card must be an accessible clickable button');
@@ -139,9 +139,12 @@ test('division priorities and injected academic area precede attendance review',
    'The priority card should not contain a separate Review evidence link');
   assert.ok(html.indexOf('id="test-academic-priority"')<html.indexOf('id="leader-review"'),
    division+' academic evidence must appear before attendance and learner review');
-  const deepNav=html.slice(html.indexOf('<nav class="leader-deep-nav"'));
-  assert.ok(deepNav.indexOf('data-leader-jump="leader-learning-title"')<
-   deepNav.indexOf('data-leader-jump="leader-review"'),
-   'Academic shortcut must appear before the attendance shortcut within deeper navigation');
+  const tabs=html.slice(html.indexOf('<nav class="leader-focus-nav"'));
+  assert.ok(tabs.indexOf('data-leader-focus="follow-up"')<
+   tabs.indexOf('data-leader-focus="journeys"'),
+   'Primary follow-up must precede longitudinal exploration');
+  assert.match(tabs,/role="tablist"/);
+  assert.match(tabs,/role="tabpanel"/);
+  assert.match(tabs,/data-leader-focus="follow-up" aria-selected="true"/);
  }
 });

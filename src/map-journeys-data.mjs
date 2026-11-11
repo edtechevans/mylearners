@@ -15,7 +15,7 @@ export const JOURNEY_START_BANDS=Object.freeze([
  'both','low','low-average','average','high-average','high','all'
 ]);
 export const JOURNEY_END_BANDS=Object.freeze([
- 'average-plus','average','high-average','high','all','low','low-average'
+ 'average-plus','below-average','average','high-average','high','all','low','low-average'
 ]);
 export const JOURNEY_PALETTE=Object.freeze({
  low:'#a63743','low-average':'#e7972f',average:'#e0b81b',
@@ -31,6 +31,7 @@ export function journeyBandIncludes(choice,key,at='start'){
  if(choice==='all')return true;
  if(at==='start'&&choice==='both')return ['low','low-average'].includes(key);
  if(at==='end'&&choice==='average-plus')return ['average','high-average','high'].includes(key);
+ if(at==='end'&&choice==='below-average')return ['low','low-average'].includes(key);
  return choice===key;
 }
 export function journeyStudentHistory(student,records,subject='Reading'){
