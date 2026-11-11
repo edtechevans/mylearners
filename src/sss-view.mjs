@@ -3,6 +3,7 @@
  * by the main app; the only new records are synthetic membership and WIDA examples.
  * This file must never render genuine intervention notes, diagnoses or identifiers.
  */
+import {renderMapRitProfile} from './map-rit-achievement.mjs';
 import {experienceBand} from './faculty-bands.mjs?v=20261030wall2';
 import {GRADES,attendanceSummary,gradeNumber} from './data.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
@@ -249,6 +250,7 @@ export function renderSSSStudentProfile({
   '<p class="sss-footnote">Report-card outcomes are previously issued. '+
   'MAP uses RIT-point changes; IXL levels, phonics checks and F&P text levels '+
   'are separate measures, not percentages or interchangeable benchmarks.</p></section>'+
+  renderMapRitProfile(data.map[student.id]||[])+
   studentExperience+
   strategies+
   '<details class="sss-detail" data-sss-detail="academics"'+
