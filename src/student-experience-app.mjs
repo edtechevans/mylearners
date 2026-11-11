@@ -1623,19 +1623,19 @@ root.addEventListener('change',e=>{
    '[data-map-journey-comparison-window],[data-map-journey-starting-band],[data-map-journey-current-band]');
   if(journeyChange){
    const data=journeyChange.dataset,falls=JOURNEY_FALL_WINDOWS.map(x=>x.key);
-   if(data.mapJourneySubject&&MAP_RIT_SUBJECTS.includes(journeyChange.value))
+   if('mapJourneySubject' in data&&MAP_RIT_SUBJECTS.includes(journeyChange.value))
     state.journeySubject=journeyChange.value;
-   if(data.mapJourneyStartingWindow&&falls.includes(journeyChange.value))
+   if('mapJourneyStartingWindow' in data&&falls.includes(journeyChange.value))
     state.journeyStart=journeyChange.value;
-   if(data.mapJourneyComparisonWindow&&falls.includes(journeyChange.value))
+   if('mapJourneyComparisonWindow' in data&&falls.includes(journeyChange.value))
     state.journeyEnd=journeyChange.value;
-   if(data.mapJourneyStartingBand&&JOURNEY_START_BANDS.includes(journeyChange.value))
+   if('mapJourneyStartingBand' in data&&JOURNEY_START_BANDS.includes(journeyChange.value))
     state.journeyStartingBand=journeyChange.value;
-   if(data.mapJourneyCurrentBand&&JOURNEY_END_BANDS.includes(journeyChange.value))
+   if('mapJourneyCurrentBand' in data&&JOURNEY_END_BANDS.includes(journeyChange.value))
     state.journeyEndingBand=journeyChange.value;
    const start=state.journeyStart==='auto'?(state.division==='Elementary'?'F24':'F22'):state.journeyStart;
    if(falls.indexOf(start)>=falls.indexOf(state.journeyEnd)){
-    if(data.mapJourneyComparisonWindow)state.journeyStart=falls[Math.max(0,falls.indexOf(state.journeyEnd)-1)];
+    if('mapJourneyComparisonWindow' in data)state.journeyStart=falls[Math.max(0,falls.indexOf(state.journeyEnd)-1)];
     else state.journeyEnd='F26';
    }
    state.journeyExpanded=false;render();
