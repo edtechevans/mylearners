@@ -129,8 +129,12 @@ export function decorateEvidencePreviews(root,role){
     target.dataset.previewStudent=id;
     target.dataset.previewMeasure=kind;
     if(isExperience){
-     target.dataset.previewWindow=heading.includes('spring 2026')?'S26':
-      heading.includes('fall 2025')?'F25':'F26';
+     // Date-free Faculty headings should not force the hover card back to
+     // Fall 2026: the resolver reads the active selected window from state.
+     if(heading.includes('spring 2026'))target.dataset.previewWindow='S26';
+     else if(heading.includes('fall 2025'))target.dataset.previewWindow='F25';
+     else if(heading.includes('fall 2026'))target.dataset.previewWindow='F26';
+     else delete target.dataset.previewWindow;
     }else if(kind==='map'){
      target.dataset.previewSubject=heading.includes('reading')?'Reading':
       heading.includes('language usage')?'Language Usage':'Mathematics';
