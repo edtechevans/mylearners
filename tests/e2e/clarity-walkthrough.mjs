@@ -614,6 +614,51 @@ try{
    assert(v.segments.every(row=>row.every(n=>n===4))&&v.markers.every(n=>n===2),
     'Both divisions need accessible red-to-green scales for each index');
   });
+ await run('faculty-photo-confirmation-1440','faculty','.roster-desktop .student-photo-trigger',1440,900,
+  async()=>{
+   const result=await evaluate("(async()=>{const b=document.querySelector('.roster-desktop .student-photo-trigger');if(!b)return {error:'missing photo'};b.dispatchEvent(new PointerEvent('pointerover',{bubbles:true,pointerType:'mouse'}));await new Promise(r=>setTimeout(r,180));const p=document.querySelector('.student-photo-preview:not([hidden])'),r=p?.getBoundingClientRect();return {shown:!!p,name:b.dataset.photoName,caption:p?.querySelector('figcaption strong')?.textContent,src:b.querySelector('img')?.src,largeSrc:p?.querySelector('img')?.src,within:!!r&&r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight,otherEvidence:!!document.querySelector('.evidence-preview-popup')}})()");
+   assert(result.shown&&result.caption===result.name&&result.largeSrc===result.src,
+    'Hovering the learner portrait should enlarge the exact same picture with their name below');
+   assert(result.within&&!result.otherEvidence,
+    'Floating portrait must stay in viewport and not compete with the academic evidence popup');
+   const before=await evaluate('location.hash');
+   await click('.roster-desktop .student-photo-trigger');
+   assert(await evaluate("!!document.querySelector('.student-photo-preview:not([hidden])')"),
+    'Click should pin the image for touch and keyboard users');
+   assert((await evaluate('location.hash'))===before&&!await evaluate("!!document.querySelector('.profile-head')"),
+    'Inspecting a photo must not navigate to the learner profile');
+   await click('.roster-desktop .student-link');
+   assert(await evaluate("!!document.querySelector('.profile-head .student-photo-trigger')"),
+    'Learner profile should retain the photo enlargement control');
+  });
+ await run('faculty-photo-touch-390','faculty','.roster-mobile .student-photo-trigger',390,820,
+  async()=>{
+   await click('.roster-mobile .student-photo-trigger');
+   assert(await evaluate("!!document.querySelector('.student-photo-preview:not([hidden])')"),
+    'Tap should enlarge the portrait on mobile');
+   assert(await evaluate("!document.querySelector('.profile-head')"),
+    'Tapping the portrait must not open the learner');
+   await click('.roster-mobile .roster-item-main[data-student]');
+   assert(await evaluate("!!document.querySelector('.profile-head')"),
+    'The separate mobile learner-name/action should still open the learner profile');
+  });
+ await run('leader-photo-confirmation-1440','leader','.leader-division-grid',1440,900,
+  async()=>{
+   await click('[data-leader-division="Secondary"]');
+   assert(await evaluate("document.querySelectorAll('.leader-review-table .student-photo-trigger').length>=6"),
+    'The Leaders daily learner queue should include portrait thumbnails');
+   assert(await evaluate("document.querySelectorAll('.leader-followup-panel .student-photo-trigger').length>=1"),
+    'Student Experience and MAP review lists should also contain photos');
+   const name=await evaluate("document.querySelector('.leader-followup-panel .student-photo-trigger')?.dataset.photoName");
+   await click('.leader-followup-panel .student-photo-trigger');
+   assert(await evaluate("document.querySelector('.student-photo-preview:not([hidden]) figcaption strong')?.textContent")===name,
+    'Leaders should see the exact learner name below the enlarged photo');
+   assert(await evaluate("!document.querySelector('.leader-learner-profile')"),
+    'Opening a portrait must not accidentally navigate');
+   await click('.leader-followup-panel [data-leader-student]');
+   assert(await evaluate("!!document.querySelector('.leader-learner-profile .student-photo-trigger')"),
+    'Leader profile should also have an enlargable portrait');
+  });
  await run('leader-secondary-daily-1440','leader','.leader-division-grid',1440,900,
   async()=>{
    await click('[data-leader-division="Secondary"]');

@@ -3,9 +3,9 @@ import {applyFacultyDemo,DEFAULT_TEACHER_ID} from './faculty-demo.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
 import {MAP_RIT_SUBJECTS,mapRitCurrent,mapRitChange,mapRitChangeLabel,renderMapRitCell,renderMapRitHeader,renderMapRitLegend,renderMapRitProfile,installMapRitHeaderTooltips} from './map-rit-achievement.mjs';
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs';
-import {renderLeaderVoiceReview,renderLeaderMapRedReview} from './leader-review-signals.mjs';
+import {renderLeaderVoiceReview,renderLeaderMapRedReview} from './leader-review-signals.mjs?v=20261111photo1';
 import {renderLeaderSupportSection} from './leader-support-view.mjs';
-import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvidence,leaderAdvisoryClasses} from './leader-daily-workspaces.mjs?v=20261111review1';
+import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvidence,leaderAdvisoryClasses} from './leader-daily-workspaces.mjs?v=20261111photo1';
 import {leaderReportSignalSummary} from './report-card-signals.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
 import {createSSSDemoRecords} from './sss-demo-data.mjs';
@@ -14,7 +14,7 @@ import {renderFacultySupportPanel,renderSSSWorkspace,renderSupportForm} from './
 import {CASE_MANAGERS,REFERRAL_STAGES,STRATEGIES,lastReferralStage} from './sss-leadership-data.mjs';
 import {renderSSSLeadershipDashboard,renderSSSProfileNavigation,renderSSSSummary,renderSSSPlans} from './sss-leadership-ui.mjs';
 import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=20261111review1';
-import {portrait} from './portraits.mjs';
+import {renderStudentPhoto,installStudentPhotoPreview} from './student-photo-preview.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs?v=20261030repair1';
 import {experienceDialogContent} from './experience-explain-modal.mjs?v=20261030wall3';
 import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261111checkin4';
@@ -119,6 +119,7 @@ const previewController=installEvidencePreviewController(root,trigger=>resolveEv
  allowedStudentIds:ownStudents().map(s=>s.id),
  allowedClassIds:ownClasses().map(c=>c.id)
 }));
+const photoPreviewController=installStudentPhotoPreview(root,()=>previewController?.dismiss());
 const fmt=v=>v===null||v===undefined?'—':v;
 const avg=(arr)=>arr.length?Math.round(arr.reduce((a,b)=>a+b,0)/arr.length):null;
 const eligible=ss=>ss.filter(experienceEligible);
@@ -337,8 +338,10 @@ function roster(ss,options={}){
   (!everyday&&showMap?MAP_RIT_SUBJECTS.map(renderMapRitHeader).join(''):'')+
   (!everyday&&showSEL?'<th>Engagement</th><th>Belonging</th>':'')+
   '<th>Support information</th></tr></thead><tbody>'+
-  data.map(x=>'<tr><td><button class="student-link" data-student="'+x.student.id+
-   '"><img src="'+portrait(x.student.portraitSeed)+'" alt="">'+safe(x.student.name)+'</button></td>'+
+  data.map(x=>'<tr><td><span class="faculty-learner-entry">'+
+   renderStudentPhoto(x.student)+
+   '<button class="student-link" data-student="'+safe(x.student.id)+
+   '">'+safe(x.student.name)+'</button></span></td>'+
    (across?'<td><span class="roster-class-label">'+safe(x.student.classId)+'</span></td>':'')+
    (everyday?x.everydayCells.map((cell,i)=>'<td data-ux-sort-value="'+
     (Number.isFinite(x.everydaySortValues[i])?String(x.everydaySortValues[i]):'')+'">'+cell+'</td>').join(''):
@@ -348,8 +351,10 @@ function roster(ss,options={}){
    '<td>'+(x.sss?'<span class="pill sss-faculty-indicator" title="Fictional SSS programme membership">SSS</span> ':'')+
     x.tags.map(t=>pill(t.label)).join(' ')+'</td></tr>').join('')+'</tbody></table></div>';
  const mobile='<div class="roster-mobile">'+data.map(x=>
-  '<button class="roster-item" data-student="'+x.student.id+'" aria-label="Open learner '+safe(x.student.name)+'">'+
-  '<img src="'+portrait(x.student.portraitSeed)+'" alt=""><span class="roster-item-body"><strong>'+
+  '<div class="roster-item">'+renderStudentPhoto(x.student,'mobile')+
+  '<button type="button" class="roster-item-main" data-student="'+safe(x.student.id)+
+  '" aria-label="Open learner '+safe(x.student.name)+'">'+
+  '<span class="roster-item-body"><strong>'+
   safe(x.student.name)+'</strong>'+
   (across?'<span>Class '+safe(x.student.classId)+'</span>':'')+
   (everyday?everydayColumns.map((column,i)=>'<span>'+safe(everydayHeading(column))+': '+
@@ -364,7 +369,7 @@ function roster(ss,options={}){
   }).join('')):'')+
   (!everyday&&experienceEligible(x.student)?'<span>Engagement '+x.eng+' · Belonging '+x.bel+'</span>':'')+
   (x.sss?'<span>SSS programme · demonstration</span>':'')+
-  '</span><span class="roster-arrow" aria-hidden="true">›</span></button>').join('')+'</div>';
+  '</span><span class="roster-arrow" aria-hidden="true">›</span></button></div>').join('')+'</div>';
  return '<section class="roster roster-daily" data-roster-layout="'+(everyday?'everyday':'focused')+'" aria-label="'+(across?'Search across assigned students':'My class roster')+'">'+
   '<div class="sectionhead"><div><h2>'+heading+'</h2><span class="tiny">'+context+'</span></div>'+concernFilter+
   (across?'<button type="button" class="roster-clear-search" data-clear-search>Clear search</button>':'')+'</div>'+
@@ -397,7 +402,7 @@ function learnerProfile(s,studentRole=false){
  const n=gradeNumber(s.grade);
  const mapApplicable=n>=3&&n<=10;
  const profileStart=studentRole?'':'<div class="row-between"><button class="back" data-action="back">← Back to my students</button></div>';
- const header='<div class="profile-head"><img src="'+portrait(s.portraitSeed)+'" alt="Fictional portrait">'+
+ const header='<div class="profile-head">'+renderStudentPhoto(s,'profile')+
   '<div><div class="eyebrow">'+(studentRole?'MY LEARNING PROFILE':'WHOLE LEARNER PROFILE')+'</div>'+
   '<h1>'+safe(s.name)+'</h1><p>'+safe(s.grade)+' · '+safe(s.classId)+' · '+safe(s.campus)+'</p>'+
   (!studentRole&&SSS_RECORDS.has(s.id)?'<span class="sss-faculty-profile-tag">SSS · fictional cohort</span>':'')+'</div></div>';
@@ -888,6 +893,7 @@ function render(){
   if(scroller)scroller.scrollLeft=scroller.scrollWidth;
  }
  previewController?.dismiss();
+ photoPreviewController?.dismiss();
  decorateEvidencePreviews(root,state.role);
  try{sessionStorage.setItem('my-role',state.role);sessionStorage.setItem('my-teacher',state.teacher);
  sessionStorage.setItem('my-board-window-v2',state.boardWindow);sessionStorage.setItem('my-board-subject',state.boardSubject);

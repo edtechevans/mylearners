@@ -9,6 +9,7 @@ import {leaderExperienceScale} from './leader-experience-bands.mjs';
 import {reportProgress,mapProgress,academicCheckinProgress} from './evidence-progress.mjs';
 import {esc} from './v2-ui.mjs';
 import {renderMapRitProfile} from './map-rit-achievement.mjs';
+import {renderStudentPhoto} from './student-photo-preview.mjs?v=20261111photo1';
 
 const safe=v=>esc(String(v??''));
 const n=v=>Number.isFinite(v)?v.toFixed(1):'—';
@@ -214,8 +215,11 @@ export function renderLeaderDivisionDaily({division,grade,students,allStudents,d
  const body=queue.shown.map(x=>{
   const issue=x.academic?.at2.length?'Subject result ≤2':x.academic?.at3.length?
    'Subject result ≤3':'Attendance';
-  return '<tr><th scope="row"><button class="leader-student-open" type="button" data-leader-student="'+
-   safe(x.student.id)+'">'+safe(x.student.name)+'</button><small>'+safe(display(x.student.grade))+'</small></th>'+
+  return '<tr><th scope="row"><span class="leader-review-identity">'+
+   renderStudentPhoto(x.student,'leader')+
+   '<span><button class="leader-student-open" type="button" data-leader-student="'+
+   safe(x.student.id)+'">'+safe(x.student.name)+'</button>'+
+   '<small>'+safe(display(x.student.grade))+'</small></span></span></th>'+
    '<td><span class="leader-review-kind '+(x.academic?.at2.length?'severe':'')+'">'+
     safe(secondary?issue:'Attendance check')+'</span></td>'+
    '<td>'+concernsEvidence(x,secondary)+'</td>'+
@@ -335,9 +339,11 @@ export function renderLeaderLearnerEvidence({student,data,academic,records,windo
  return '<div class="leader-daily leader-learner-profile">'+
   '<div class="leader-profile-header"><button type="button" data-leader-back>← Back to division review</button>'+
    '<span>READ-ONLY · FICTIONAL EVIDENCE</span></div>'+
+   '<div class="leader-profile-identity">'+renderStudentPhoto(student,'profile')+
+   '<div class="leader-profile-identity-text">'+
    '<div class="leader-daily-eyebrow">'+safe(student.division)+' / '+safe(display(student.grade))+'</div>'+
    '<h2>'+safe(student.name)+'</h2><p>See the evidence in context before choosing a response. '+
-    'A result or absence pattern is not a judgement about a learner.</p>'+
+    'A result or absence pattern is not a judgement about a learner.</p></div></div>'+
    '<div class="leader-profile-facts"><div><span>Homeroom</span><strong>'+safe(student.classId)+'</strong></div>'+
     '<div><span>Attendance</span><strong>'+n(att.rate)+'%</strong></div>'+
     '<div><span>Current subject results</span><strong>'+safe(report?.year||'Unavailable')+'</strong>'+
