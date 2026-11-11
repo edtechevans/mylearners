@@ -5,7 +5,7 @@
 import {gradeNumber} from './data.mjs';
 import {experienceEligible,experienceFor,EXPERIENCE_WINDOWS} from './experience-data.mjs';
 import {MAP_RIT_SUBJECTS,mapRitBand,mapRitCurrent,mapRitDisplaySubject} from './map-rit-achievement.mjs';
-import {renderStudentPhoto} from './student-photo-preview.mjs';
+import {renderStudentPhoto} from './student-photo-preview.mjs?v=20261111photo1';
 
 export const VOICE_REVIEW_THRESHOLD=0;
 export const MAP_REVIEW_BAND='low';
