@@ -60,7 +60,7 @@ test('division view is personalised: Secondary has subject review, Elementary li
  assert.match(secondaryHtml,/data-leader-jump="leader-experience-review"/);
  assert.doesNotMatch(secondaryHtml,/Review evidence →/);
  assert.match(secondaryHtml,/data-leader-attendance-focus/);
- assert.match(secondaryHtml,/2026–27 simulated, in progress and not issued/);
+ assert.match(secondaryHtml,/2026–27 demo · not issued/);
  assert.doesNotMatch(secondaryHtml,/Demo attendance · through|Simulated attendance · through/i);
  const elementaryHtml=renderLeaderDivisionDaily({division:'Elementary',grade:'All',students:elementary,
   allStudents:students,reviewFilter:'all',...opts});
