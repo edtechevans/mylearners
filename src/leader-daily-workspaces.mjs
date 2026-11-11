@@ -9,7 +9,7 @@ import {leaderExperienceScale} from './leader-experience-bands.mjs';
 import {reportProgress,mapProgress,academicCheckinProgress} from './evidence-progress.mjs';
 import {esc} from './v2-ui.mjs';
 import {renderMapRitProfile} from './map-rit-achievement.mjs';
-import {renderStudentPhoto} from './student-photo-preview.mjs';
+import {renderStudentPhoto} from './student-photo-preview.mjs?v=20261111photo1';
 
 const safe=v=>esc(String(v??''));
 const n=v=>Number.isFinite(v)?v.toFixed(1):'—';
