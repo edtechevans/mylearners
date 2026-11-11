@@ -16,8 +16,8 @@ import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=202610
 import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs?v=20261030repair1';
 import {experienceDialogContent} from './experience-explain-modal.mjs?v=20261030wall3';
-import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261110timeline1';
-import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261110timeline1';
+import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261111mapui3';
+import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261111mapui3';
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,READING_LEVELS,facultyDemoReport} from './academic-journey-data.mjs';
 import {quartileBand,formatIndex,experienceBand} from './faculty-bands.mjs?v=20261030wall2';
@@ -25,7 +25,7 @@ import {leaderExperienceChange,leaderExperienceScale,leaderExperienceLegend,lead
 import {facultyRosterEvidenceColumns,reportGradeBand,hasLowReportGrade} from './report-card-signals.mjs?v=20261110thresholds1';
 import {renderLeaderReportFollowup} from './leader-report-followup.mjs?v=20261110daily1';
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261028titles1';
-import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261111maprit1';
+import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261111mapui3';
 import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261110thresholds1';
 import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile} from './maia-demo.mjs';
 import {renderStudentOverview} from './student-daily-overview.mjs?v=20261028titles1';
