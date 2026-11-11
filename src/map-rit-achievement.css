@@ -9,8 +9,25 @@
 #app .map-rit-unclassified{background:#e7ecef;color:#547184}
 #app .roster-daily .map-rit-th{position:relative;min-width:108px;white-space:normal;cursor:help}
 #app .roster-daily .map-rit-th .ux-sort-button{line-height:1.35;white-space:normal}
-#app .roster-daily .map-rit-th .map-rit-head-unit{display:block;font-size:9px;letter-spacing:.13em;opacity:.7}
-#app .roster-daily .map-rit-th .ux-sort-button:after{content:"ⓘ";display:inline-block;margin-left:5px;font-size:11px;color:#376d97;vertical-align:middle}
+/* Two-level headers: quiet MAP eyebrow, strong subject, small inline help affordance. */
+#app .roster-daily .map-rit-th .map-rit-head-stack{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ min-width:0;gap:3px;line-height:1.12;text-align:center
+}
+#app .roster-daily .map-rit-th .map-rit-head-overline{
+ color:#597a8e;font-size:9px;letter-spacing:.14em;font-weight:800
+}
+#app .roster-daily .map-rit-th .map-rit-head-subject{
+ color:#315a70;font-size:12px;font-weight:850;line-height:1.16;
+ white-space:normal;overflow-wrap:normal;word-break:normal
+}
+#app .roster-daily .map-rit-th .ux-sort-button{position:relative;gap:0}
+#app .roster-daily .map-rit-th .ux-sort-button:after{
+ content:"ⓘ";position:absolute;right:-8px;bottom:1px;margin:0;
+ font-size:11px;color:#6b92a6;opacity:.73;line-height:1
+}
+#app .roster-daily .map-rit-th:hover .ux-sort-button:after,
+#app .roster-daily .map-rit-th:focus-within .ux-sort-button:after{opacity:1;color:#1b6285}
 #app .roster-daily .map-rit-tile{
  width:100%;min-height:37px;border:none;border-radius:7px;
  display:flex;align-items:center;justify-content:center;gap:5px;
@@ -75,11 +92,11 @@
 
 /* RIT / change pairing: one consistent reading order in every subject tile. */
 #app .roster-daily .map-rit-tile{
- position:relative;min-height:53px;flex-direction:column;gap:3px;
- padding:7px 8px 6px;line-height:1.1
+ position:relative;height:58px;min-height:58px;flex-direction:column;gap:4px;
+ padding:7px 8px;line-height:1.1
 }
 #app .roster-daily .map-rit-tile .map-rit-score{
- display:block;font-size:17px;line-height:1.1;font-weight:850;letter-spacing:.015em
+ display:block;font-size:17px;line-height:1.1;font-weight:850;letter-spacing:.005em
 }
 #app .roster-daily .map-rit-tile .map-rit-growth{
  display:block;font-size:10.5px;font-weight:800;line-height:1.2;color:inherit;
@@ -87,16 +104,6 @@
 }
 #app .roster-daily .map-rit-tile .map-rit-growth-missing{
  font-size:9px;font-weight:650;opacity:.82
-}
-#app .roster-daily .map-rit-tile .map-rit-percentile{
- position:absolute;right:5px;top:5px;
- border-radius:4px;padding:2px 3px;font-size:8px;
- font-weight:850;line-height:1.05;
- background:rgba(255,255,255,.18);color:inherit
-}
-#app .roster-daily .map-rit-tile.map-rit-average .map-rit-percentile,
-#app .roster-daily .map-rit-tile.map-rit-low-average .map-rit-percentile{
- background:rgba(13,36,45,.1)
 }
 #app .map-rit-profile-subject{min-height:126px}
 #app .map-rit-profile-growth{
