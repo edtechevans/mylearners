@@ -18,6 +18,7 @@ function recentCheckin(record,growth){
   const list=record[kind]||[];
   if(!list.length)continue;
   const latest=list.at(-1),previous=list.at(-2);
+  if(kind==='ixl'&&(!Number.isFinite(latest.level)||latest.status==='not-completed'))continue;
   if(kind==='ixl'){
    const delta=previous?latest.level-previous.level:null;
    return {title:'Mathematics check-in',
