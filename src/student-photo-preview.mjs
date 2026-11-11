@@ -119,7 +119,10 @@ export function installStudentPhotoPreview(root,onOpen=()=>{}){
   if(active&&!active.contains(e.target)&&!popup?.contains(e.target))dismiss();
  });
  document.addEventListener?.('keydown',e=>{if(e.key==='Escape'&&active)dismiss()});
- document.addEventListener?.('scroll',()=>{if(active)dismiss()},{capture:true,passive:true});
+ document.addEventListener?.('scroll',()=>{
+  if(!active)return;
+  if(pinned)position();else dismiss();
+ },{capture:true,passive:true});
  window.addEventListener?.('resize',position);
  return {dismiss};
 }
