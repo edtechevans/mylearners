@@ -1,0 +1,301 @@
+/* Leaders consolidation / design review release.
+   Keep one decision surface above the fold and display one evidence workspace
+   at a time. Complements, rather than changes, score semantics or permissions.
+ */
+#app[data-workspace="leader"] .heading{margin:0 0 9px;padding:4px 0 7px;gap:10px}
+#app[data-workspace="leader"] .heading h1{font-size:clamp(19px,2vw,24px);letter-spacing:-.024em;margin:3px 0}
+#app[data-workspace="leader"] .heading p{font-size:12.5px;line-height:1.45;max-width:78ch;margin:3px 0}
+#app[data-workspace="leader"] .heading .eyebrow{font-size:10px}
+#app[data-workspace="leader"] .leader-scope-controls{
+ padding:9px 13px;border:1px solid #e0e8ed;background:#fbfcfd;
+ border-radius:10px;gap:10px;margin:0 0 10px
+}
+#app[data-workspace="leader"] .leader-scope-controls select{
+ min-height:38px;font-size:12.5px;color:#204b67
+}
+#app[data-workspace="leader"] .leader-scope-controls label{
+ font-size:12px;line-height:1.45;color:#375c70
+}
+#app[data-workspace="leader"] .leader-division-hero{
+ padding:14px 18px;border-radius:11px;margin-bottom:12px;
+ border-top-width:3px;background:#f9fbfc
+}
+#app[data-workspace="leader"] .leader-breadcrumbs{
+ margin:0 0 4px;font-size:11.5px
+}
+#app[data-workspace="leader"] .leader-division-hero h2{
+ font-size:clamp(18px,2vw,23px);margin:3px 0;line-height:1.22
+}
+#app[data-workspace="leader"] .leader-division-hero p{
+ font-size:12.5px;margin:4px 0;max-width:90ch
+}
+#app[data-workspace="leader"] .leader-daily-eyebrow{font-size:10.5px}
+#app[data-workspace="leader"] .leader-save-view{
+ align-items:flex-end;max-width:250px
+}
+#app[data-workspace="leader"] .leader-save-view button{
+ min-height:39px;font-size:12px;border-color:#9fc3d4;color:#165775
+}
+#app[data-workspace="leader"] .leader-save-view small{
+ max-width:240px;font-size:10.5px
+}
+#app[data-workspace="leader"] .leader-grade-bar{
+ margin:8px 0 5px;gap:6px
+}
+#app[data-workspace="leader"] .leader-grade-bar strong{
+ font-size:11.5px
+}
+#app[data-workspace="leader"] .leader-grade-bar button{
+ min-height:36px;padding:7px 11px;font-size:12px
+}
+#app[data-workspace="leader"] .leader-source-details{
+ border-top:1px solid #e1e9ed;margin-top:8px;padding-top:8px
+}
+#app[data-workspace="leader"] .leader-source-details>summary{
+ display:inline-flex;align-items:center;cursor:pointer;
+ color:#4f7487;font-size:11.5px;font-weight:800;padding:4px 0;
+ border-radius:5px
+}
+#app[data-workspace="leader"] .leader-source-details[open]>summary{
+ color:#174c6b
+}
+#app[data-workspace="leader"] .leader-source-details .leader-daily-sources{
+ margin:9px 0 2px
+}
+#app[data-workspace="leader"] .leader-source-details .leader-daily-source small{font-size:11px}
+#app[data-workspace="leader"] .leader-daily-section{margin-bottom:15px}
+#app[data-workspace="leader"] #leader-daily-priorities{margin:0 0 11px}
+#app[data-workspace="leader"] #leader-daily-priorities .leader-daily-sectionhead{
+ margin-bottom:10px
+}
+#app[data-workspace="leader"] #leader-daily-priorities .leader-daily-sectionhead h2{
+ font-size:19px
+}
+#app[data-workspace="leader"] .leader-academic-actions{
+ margin-bottom:10px
+}
+#app[data-workspace="leader"] .leader-academic-actions-heading{
+ margin-bottom:9px
+}
+#app[data-workspace="leader"] .leader-academic-actions-heading h3{
+ font-size:16px
+}
+#app[data-workspace="leader"] .leader-academic-actions-heading>p{
+ font-size:12px;color:#536f80
+}
+#app[data-workspace="leader"] .leader-academic-action{
+ min-height:140px;padding:13px 15px 12px;gap:7px
+}
+#app[data-workspace="leader"] .leader-academic-action-top small{
+ font-size:10.5px
+}
+#app[data-workspace="leader"] .leader-academic-action-title{
+ font-size:15.5px
+}
+#app[data-workspace="leader"] .leader-academic-action-desc{
+ font-size:12.5px
+}
+#app[data-workspace="leader"] .leader-academic-action-footer>span:first-child{
+ font-size:11.5px
+}
+#app[data-workspace="leader"] .leader-academic-action-view{
+ font-size:12px
+}
+#app[data-workspace="leader"] .leader-journeys-entry{
+ margin:8px 0 10px;padding:7px 11px;background:#f9fbfc;
+ font-size:11.5px
+}
+#app[data-workspace="leader"] .leader-journeys-entry button{
+ min-height:37px;font-size:12px
+}
+#app[data-workspace="leader"] .leader-daily-grid.leader-operational-grid{
+ gap:9px
+}
+#app[data-workspace="leader"] .leader-daily-priority{
+ padding:12px 14px;min-height:105px;gap:5px
+}
+#app[data-workspace="leader"] .leader-daily-priority .leader-priority-label{
+ font-size:12px
+}
+#app[data-workspace="leader"] .leader-daily-priority .leader-priority-description{
+ font-size:12px
+}
+#app[data-workspace="leader"] .leader-daily-priority-head strong{
+ font-size:26px
+}
+#app[data-workspace="leader"] .leader-daily-priority>small{
+ font-size:10.5px
+}
+#app[data-workspace="leader"] .leader-summary-change{
+ margin:8px 0 5px;color:#617c8b;font-size:11.5px;line-height:1.5
+}
+#app[data-workspace="leader"] .leader-summary-change button{
+ border:0;background:none;color:#165e83;cursor:pointer;
+ font:inherit;font-size:11.5px;font-weight:800;text-decoration:underline
+}
+#app[data-workspace="leader"] .leader-focus-nav{
+ position:sticky;top:64px;z-index:15;display:flex;flex-wrap:nowrap;
+ gap:5px;padding:7px 8px;margin:12px 0 13px;
+ border:1px solid #d1e1e8;border-radius:11px;
+ background:rgba(251,253,254,.97);box-shadow:0 3px 12px rgba(17,52,73,.05);
+ overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;
+ scroll-margin-top:72px
+}
+#app[data-workspace="leader"] .leader-focus-nav button{
+ appearance:none;flex:1 0 auto;white-space:nowrap;
+ border:1px solid transparent;border-radius:8px;background:transparent;
+ color:#46687c;font:inherit;font-size:12.5px;font-weight:800;
+ padding:10px 13px;min-height:42px;cursor:pointer
+}
+#app[data-workspace="leader"] .leader-focus-nav button:hover{
+ color:#194f70;background:#eef5f8
+}
+#app[data-workspace="leader"] .leader-focus-nav button[aria-selected="true"]{
+ color:#fff;background:#184d6f;border-color:#184d6f;
+ box-shadow:0 3px 7px rgba(24,77,111,.17)
+}
+#app[data-workspace="leader"] .leader-focus-panel{
+ scroll-margin-top:138px;min-width:0
+}
+#app[data-workspace="leader"] .leader-focus-panel[hidden]{
+ display:none!important
+}
+#app[data-workspace="leader"] .leader-focus-panel:focus{outline:none}
+#app[data-workspace="leader"] #leader-review{
+ border-radius:12px;padding:17px
+}
+#app[data-workspace="leader"] #leader-review .leader-review-toolbar button{
+ min-height:38px;font-size:12px
+}
+#app[data-workspace="leader"] #leader-review .leader-review-table{
+ font-size:12px
+}
+#app[data-workspace="leader"] .leader-academic-filters select{
+ min-height:39px;font-size:12px
+}
+#app[data-workspace="leader"] .leader-academic-row .leader-academic-person strong{
+ font-size:12.5px
+}
+#app[data-workspace="leader"] .leader-academic-row .leader-academic-person small{
+ font-size:11.5px
+}
+#app[data-workspace="leader"] .leader-academic-open{
+ min-height:38px;font-size:12px
+}
+/* Make the distinction between read-only school aggregates and clickable
+   division action cards visible without implying an unavailable click. */
+#app[data-workspace="leader"] .leader-schoolwide .leader-daily-grid{
+ background:#f6f9fa;padding:12px;border:1px dashed #d4e1e8;
+ border-radius:12px
+}
+#app[data-workspace="leader"] .leader-schoolwide .leader-daily-priority{
+ box-shadow:none;cursor:default
+}
+/* MAP Journeys — select a question before tuning the model. */
+#app[data-workspace="leader"] .map-journey-presets{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:9px;margin:15px 0 10px
+}
+#app[data-workspace="leader"] .map-journey-preset{
+ display:flex;flex-direction:column;align-items:flex-start;gap:6px;
+ min-height:80px;padding:12px 13px;cursor:pointer;text-align:left;
+ border:1px solid #d7e4ea;border-top:3px solid #a63743;
+ border-radius:9px;background:#fff;font:inherit;color:#24516b
+}
+#app[data-workspace="leader"] .map-journey-preset:nth-child(2){
+ border-top-color:#e99a3c
+}
+#app[data-workspace="leader"] .map-journey-preset:nth-child(3){
+ border-top-color:#225d81
+}
+#app[data-workspace="leader"] .map-journey-preset strong{
+ font-size:12.5px;line-height:1.32;font-weight:850
+}
+#app[data-workspace="leader"] .map-journey-preset small{
+ font-size:11.5px;color:#607d8e;line-height:1.4
+}
+#app[data-workspace="leader"] .map-journey-preset:hover,
+#app[data-workspace="leader"] .map-journey-preset.is-active{
+ border-color:#769fb6;background:#f0f7fb
+}
+#app[data-workspace="leader"] .map-journey-refine{
+ display:inline-flex;align-items:center;gap:9px;
+ min-height:39px;margin:0 0 13px;padding:7px 11px;
+ color:#245d7c;border:1px solid #c7dce6;background:#fff;
+ border-radius:8px;font:inherit;font-size:12px;font-weight:800;cursor:pointer
+}
+#app[data-workspace="leader"] .map-journey-refine>span{
+ font-size:18px;font-weight:850
+}
+#app[data-workspace="leader"] .map-journey-advanced[hidden]{display:none!important}
+#app[data-workspace="leader"] .map-journey-advanced{
+ margin:0 0 12px;padding:4px 10px 10px;
+ border:1px solid #dce9ef;border-radius:10px;background:#f7fafb
+}
+#app[data-workspace="leader"] .map-journey-filters label{
+ font-size:11.5px
+}
+#app[data-workspace="leader"] .map-journey-filters select{
+ min-height:39px;font-size:12.5px
+}
+#app[data-workspace="leader"] .map-journey-pathways button{
+ min-height:38px;font-size:12px
+}
+#app[data-workspace="leader"] .map-journey-matrix-head{
+ font-size:10.5px
+}
+#app[data-workspace="leader"] .map-journey-matrix-cell{
+ min-height:38px;font-size:12px
+}
+#app[data-workspace="leader"] .map-journey-results-heading strong{
+ font-size:14px
+}
+#app[data-workspace="leader"] .map-journey-results-heading p{
+ font-size:11.5px
+}
+#app[data-workspace="leader"] .map-journey-student-person strong{
+ font-size:12px
+}
+#app[data-workspace="leader"] .map-journey-student-person small{
+ font-size:11.5px
+}
+#app[data-workspace="leader"] .map-journey-open,
+#app[data-workspace="leader"] .map-journey-expand{
+ min-height:39px;font-size:12px
+}
+#app[data-workspace="leader"] :is(.leader-focus-nav button,.map-journey-preset,
+ .map-journey-refine,.leader-source-details summary,.leader-save-view button):focus-visible{
+ outline:3px solid #2d779f;outline-offset:3px
+}
+@media(max-width:1000px){
+ #app[data-workspace="leader"] .leader-focus-nav button{
+  flex:0 0 auto;font-size:12px
+ }
+}
+@media(max-width:700px){
+ #app[data-workspace="leader"] .leader-focus-nav{top:54px;gap:4px;padding:6px}
+ #app[data-workspace="leader"] .leader-focus-nav button{
+  font-size:12.5px;min-height:42px;padding:9px 12px
+ }
+ #app[data-workspace="leader"] .map-journey-presets{
+  grid-template-columns:1fr;gap:7px
+ }
+ #app[data-workspace="leader"] .map-journey-preset{
+  min-height:55px;padding:10px 12px;gap:4px
+ }
+ #app[data-workspace="leader"] .leader-scope-controls{
+  padding:8px 10px
+ }
+ #app[data-workspace="leader"] .leader-division-hero{
+  padding:11px 13px
+ }
+ #app[data-workspace="leader"] .leader-save-view{
+  align-items:flex-start;max-width:none
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ #app[data-workspace="leader"] .leader-focus-nav,
+ #app[data-workspace="leader"] .map-journey-preset{
+  scroll-behavior:auto;transition:none
+ }
+}
