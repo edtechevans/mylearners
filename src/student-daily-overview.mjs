@@ -82,6 +82,6 @@ export function renderStudentOverview(student,records,{attendance,mathGrowth,ref
   '<span id="save-status" aria-live="polite">Saved only in this browser session</span></div></section>'+
   '</div>'+
   '<div class="student-landing-foot"><span>Attendance in the demo: <strong>'+esc(as.rate===null?'—':as.rate+'%')+
-  '</strong> · through 8 Oct 2026</span><span>My numbers describe my learning, not my worth.</span></div>'+
+  '</strong></span><span>My numbers describe my learning, not my worth.</span></div>'+
   '</section>';
 }
