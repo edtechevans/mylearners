@@ -817,6 +817,54 @@ try{
     'Changing MAP journey filters must keep the mobile page within the viewport');
    await evaluate('window.scrollTo(0,0)');
   });
+ await run('leader-focus-tabs-and-saved-context-1440','leader','.leader-division-grid',1440,900,
+  async()=>{
+   await click('[data-leader-division="Secondary"]');
+   let tabs=await evaluate("(function(){const buttons=[...document.querySelectorAll('.leader-focus-nav [role=tab]')];return {labels:buttons.map(x=>x.textContent.trim()),selected:buttons.filter(x=>x.getAttribute('aria-selected')==='true').map(x=>x.dataset.leaderFocus),panels:[...document.querySelectorAll('.leader-focus-panel')].filter(x=>!x.hidden).map(x=>x.id)}})()");
+   assert(tabs.labels.join('|')==='Follow-up|MAP Journeys|Academic Trends|Student Experience|Support'&&
+    tabs.selected.join('|')==='follow-up'&&tabs.panels.join('|')==='leader-focus-panel-follow-up',
+    'Default Leaders page must show one focused follow-up panel with five clear navigation tabs');
+   assert(await evaluate("document.querySelector('.leader-source-details')?.open===false"),
+    'Metadata belongs in an expandable Evidence sources and dates group');
+   await click('[data-leader-focus="journeys"]');
+   assert(await evaluate("!document.querySelector('#leader-focus-panel-journeys')?.hidden&&document.querySelector('#leader-focus-panel-follow-up')?.hidden"),
+    'Journeys tab should show the historical view without a second long attendance page');
+   assert(await evaluate("document.querySelector('.map-journey-active-context')?.textContent.includes('Reading')"),
+    'Active MAP comparison context must stay visible when advanced controls are hidden');
+   await click('[data-map-journey-preset="continuing"]');
+   assert(await evaluate("document.querySelector('[data-map-journey-current-band]')?.value==='below-average'"),
+    'Preset for learners staying in lower bands should select P1–40 destination');
+   await click('[data-map-journey-refine]');
+   assert(await evaluate("document.querySelector('#map-journey-advanced')?.hidden===false"),
+    'Advanced MAP controls should open only on demand');
+   await evaluate("(function(){const s=document.querySelector('[data-map-journey-subject]');s.value='Mathematics';s.dispatchEvent(new Event('change',{bubbles:true}))})()");
+   assert(await evaluate("document.querySelector('[data-map-journey-subject]')?.value==='Mathematics'"),
+    'Refined subject should persist in a custom MAP journey');
+   await click('[data-leader-save-view]');
+   assert(await evaluate("document.querySelector('.leader-save-view [role=status]')?.textContent.includes('Saved')"),
+    'Save should confirm that only presentation and filter preferences were stored');
+   await click('[data-leader-division="All"]');
+   await click('[data-leader-open-saved]');
+   assert(await evaluate("document.querySelector('[data-leader-focus=journeys]')?.getAttribute('aria-selected')==='true'"),
+    'Reopen saved layout should restore the selected investigation tab');
+   assert(await evaluate("document.querySelector('[data-map-journey-subject]')?.value==='Mathematics'"),
+    'Reopen saved layout should restore the MAP subject, not merely grade and division');
+   assert(await evaluate("document.querySelector('[data-map-journey-current-band]')?.value==='below-average'"),
+    'Reopen saved layout should restore the longitudinal comparison band');
+   await click('[data-leader-focus="academics"]');
+   assert(await evaluate("!document.querySelector('#leader-focus-panel-academics')?.hidden&&document.querySelector('#leader-focus-panel-journeys')?.hidden"),
+    'Academic Trends should be independently navigable');
+   await click('[data-leader-focus="experience"]');
+   assert(await evaluate("!document.querySelector('#leader-focus-panel-experience')?.hidden"),
+    'Student Experience data should have its own focused panel');
+   await click('[data-leader-focus="support"]');
+   assert(await evaluate("!document.querySelector('#leader-focus-panel-support')?.hidden"),
+    'Support processes should have their own focused panel');
+   await click('[data-leader-focus="follow-up"]');
+   assert(await evaluate("!document.querySelector('#leader-focus-panel-follow-up')?.hidden"),
+    'Follow-up must return to actionable student and attendance lists');
+   await evaluate('window.scrollTo(0,0)');
+  });
  await run('leader-clickable-priorities-1440','leader','.leader-division-grid',1440,900,
   async()=>{
    await click('[data-leader-division="Secondary"]');
