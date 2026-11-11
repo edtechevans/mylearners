@@ -115,7 +115,7 @@ test('Longitudinal learner chart is coloured by achievement percentile, not RIT 
  assert.match(html,/My MAP Journey/);
  assert.match(html,/data-map-journey-profile-subject="Mathematics"/);
  assert.match(html,/Fall MAP achievement results/);
- assert.match(html,/percentile-rank points, not RIT growth/);
+ assert.match(html,/Percentile-rank points, not RIT growth/);
  const missing=renderMapJourneyProfile({student:learner,records:[],subject:'Reading'});
  assert.equal(missing,'');
 });
