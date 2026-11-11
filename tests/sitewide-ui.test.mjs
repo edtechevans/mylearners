@@ -109,7 +109,7 @@ test('Secondary shows the daily review, Grade 12 uses DP evidence, and supports 
  click('[data-leader-division]',{leaderDivision:'Secondary'});
  assert.match(node.innerHTML,/Secondary daily lens/);
  assert.match(node.innerHTML,/leader-daily-priorities/);
- assert.match(node.innerHTML,/Subject results ≤2/);
+ assert.match(node.innerHTML,/Students with subject results ≤2/);
  assert.match(node.innerHTML,/data-leader-review-filter="academic2"/);
  assert.match(node.innerHTML,/data-leader-grade="G12"/);
  assert.match(node.innerHTML,/data-leader-panel="support"/);
