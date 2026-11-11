@@ -259,7 +259,7 @@ export function resolveEvidencePreview(trigger,ctx){
     ['Grade-level tier',latest.tier||'Not classified'],
     ['IXL diagnostic percentile',Number.isInteger(latest.percentile)?'P'+latest.percentile:'—'],
     ...(latest.domains||[]).slice(0,3).map(d=>[d.name,
-     String(d.scoreLabel||d.score??'—')+(d.tier?' · '+d.tier:'')])
+     String(d.scoreLabel??d.score??'—')+(d.tier?' · '+d.tier:'')])
    ]:[['Current diagnostic','Not completed or unavailable']];
    return makePreview({title:'IXL Math Diagnostic',subtitle:person.name+' · Fictional',
     trend:academicCheckinProgress(academic,'ixl'),rows,
