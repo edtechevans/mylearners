@@ -16,8 +16,8 @@ import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=202610
 import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs?v=20261030repair1';
 import {experienceDialogContent} from './experience-explain-modal.mjs?v=20261030wall3';
-import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261111mapui3';
-import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261111mapui3';
+import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261111checkin4';
+import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261111checkin4';
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,READING_LEVELS,facultyDemoReport} from './academic-journey-data.mjs';
 import {quartileBand,formatIndex,experienceBand} from './faculty-bands.mjs?v=20261030wall2';
