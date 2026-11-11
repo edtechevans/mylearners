@@ -1069,6 +1069,18 @@ root.addEventListener('focusout',e=>{
  if(e.target.closest?.('[data-board-point],[data-board-dp-point],[data-board-dp-world-point],[data-board-dp-subject-point]'))hideBoardFloat();
 });
 root.addEventListener('keydown',e=>{
+ const leaderTab=e.target.closest?.('[data-leader-focus]');
+ if(leaderTab&&state.role==='leader'&&['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){
+  const tabs=[...root.querySelectorAll('.leader-focus-nav [data-leader-focus]')];
+  const current=tabs.indexOf(leaderTab);
+  if(current>=0&&tabs.length){
+   e.preventDefault();
+   const next=e.key==='Home'?0:e.key==='End'?tabs.length-1:
+    (current+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
+   tabs[next].click();
+   return;
+  }
+ }
  const drawer=root.querySelector('.board-map-drawer[aria-modal="true"]');
  if(drawer){
   if(e.key==='Escape'){e.preventDefault();closeBoardDrawer();return}
