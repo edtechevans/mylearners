@@ -751,6 +751,60 @@ try{
     'Close should collapse the focus without leaving the divisional workspace');
    await evaluate('window.scrollTo(0,0)');
   });
+ await run('leader-map-journeys-1440','leader','.leader-division-grid',1440,900,
+  async()=>{
+   await click('[data-leader-division="Secondary"]');
+   assert(await evaluate("!!document.querySelector('[data-leader-jump=leader-map-journeys]')"),
+    'Academic Follow-up should provide a MAP Journeys entry point');
+   await click('[data-leader-jump=leader-map-journeys]');
+   assert(await evaluate("!!document.querySelector('#leader-map-journeys')&&document.querySelector('#map-journeys-title')?.textContent.includes('MAP Journeys')"),
+    'MAP Journeys must open as an integrated Leaders section');
+   const initial=await evaluate("(function(){const root=document.querySelector('#leader-map-journeys');const controls=[...root.querySelectorAll('.map-journey-filters select')].map(x=>x.value);const summary=[...root.querySelectorAll('.map-journey-kpis>div strong')].map(x=>Number(x.textContent));const matrix=[...root.querySelectorAll('.map-journey-matrix tbody .map-journey-matrix-cell')].map(x=>Number(x.textContent));return {controls,summary,matrix,rows:root.querySelectorAll('.map-journey-student-list li').length,names:root.textContent.includes('FICTIONAL DATA')}})()");
+   assert(initial.controls.join('|')==='Reading|F22|F26|both|average-plus',
+    'Default journey should compare like-for-like Fall tests across Elementary and Secondary');
+   assert(initial.summary[0]>0&&initial.matrix.reduce((a,b)=>a+b,0)===initial.summary[0],
+    'Transition matrix total must equal matched learners, with no duplicates');
+   assert(initial.summary[1]>=initial.summary[3]&&initial.names,
+    'Starting cohort and selected transition counts must use fictional matched learners');
+   const activeCell=await evaluate("document.querySelector('#leader-map-journeys .map-journey-matrix-cell:not([disabled])')?.dataset.mapJourneyCell");
+   assert(activeCell,'At least one transition cell should be populated in the fictional cohort');
+   await click('[data-map-journey-cell="'+activeCell+'"]');
+   const afterCell=await evaluate("(function(){const [from,to]=document.querySelector('.map-journey-matrix-cell.is-active')?.dataset.mapJourneyCell.split('|')||[];return {from,to,start:document.querySelector('[data-map-journey-starting-band]')?.value,end:document.querySelector('[data-map-journey-current-band]')?.value,visible:document.querySelectorAll('.map-journey-student-list li').length}})()");
+   assert(afterCell.from===afterCell.start&&afterCell.to===afterCell.end&&afterCell.visible>0,
+    'Clicking a transition cell must filter exactly to those matched students');
+   assert(await evaluate("!!document.querySelector('.map-journey-open[data-leader-student]')"),
+    'Transition list needs direct learner-profile actions');
+   await click('.map-journey-open[data-leader-student]');
+   assert(await evaluate("!!document.querySelector('.leader-learner-profile .map-journey-profile')"),
+    'Student journey must be visible in the individual Leaders profile');
+   assert(await evaluate("!!document.querySelector('.leader-learner-profile .map-journey-chart[role=img]')"),
+    'Student journey should display an accessible percentile trajectory graph');
+   await click('[data-map-journey-profile-subject="Mathematics"]');
+   assert(await evaluate("document.querySelector('[data-map-journey-profile-subject=Mathematics]')?.getAttribute('aria-pressed')==='true'"),
+    'Individual journey subject tabs must switch without leaving the learner');
+   await click('[data-leader-back]');
+   assert(await evaluate("!!document.querySelector('#leader-map-journeys')"),
+    'Returning to Leaders should preserve the cohort journey area');
+   await evaluate('window.scrollTo(0,0)');
+  });
+ await run('leader-map-journeys-mobile-390','leader','.leader-division-grid',390,820,
+  async()=>{
+   await click('[data-leader-division="Secondary"]');
+   await click('[data-leader-jump="leader-map-journeys"]');
+   assert(await evaluate("document.documentElement.scrollWidth<=innerWidth+2"),
+    'MAP Journeys must not add page-wide horizontal overflow on mobile');
+   assert(await evaluate("!!document.querySelector('.map-journey-matrix-scroll')&&!!document.querySelector('[data-map-journey-pathway]')"),
+    'Mobile should provide a scrollable matrix and grade-pathway filters');
+   await click('[data-map-journey-pathway="all"]');
+   assert(await evaluate("document.querySelector('[data-map-journey-pathway=all]')?.getAttribute('aria-pressed')==='true'"),
+    'All grades pathway must be selectable');
+   await evaluate("(function(){const el=document.querySelector('[data-map-journey-subject]');el.value='Mathematics';el.dispatchEvent(new Event('change',{bubbles:true}))})()");
+   assert(await evaluate("document.querySelector('[data-map-journey-subject]')?.value==='Mathematics'"),
+    'MAP subject selection must update the cohort model');
+   assert(await evaluate("document.documentElement.scrollWidth<=innerWidth+2"),
+    'Changing MAP journey filters must keep the mobile page within the viewport');
+   await evaluate('window.scrollTo(0,0)');
+  });
  await run('leader-clickable-priorities-1440','leader','.leader-division-grid',1440,900,
   async()=>{
    await click('[data-leader-division="Secondary"]');
