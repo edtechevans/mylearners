@@ -3,7 +3,7 @@
  */
 import {MAP_RIT_BANDS,MAP_RIT_SUBJECTS,mapRitDisplaySubject} from './map-rit-achievement.mjs';
 import {JOURNEY_FALL_WINDOWS,JOURNEY_START_BANDS,JOURNEY_END_BANDS,
- JOURNEY_PALETTE,mapJourneyCohort,journeyStudentHistory} from './map-journeys-data.mjs';
+ JOURNEY_PALETTE,mapJourneyCohort,journeyStudentHistory} from './map-journeys-data.mjs?v=20261111uxconsol1';
 import {renderStudentPhoto} from './student-photo-preview.mjs';
 import {esc} from './v2-ui.mjs';
 const safe=x=>esc(String(x??''));
