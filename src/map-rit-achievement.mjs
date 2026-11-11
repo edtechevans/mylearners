@@ -111,20 +111,28 @@ export function renderMapRitProfile(records){
 /** Fixed-position tooltip escapes the horizontally scrolling Faculty roster. */
 export function installMapRitHeaderTooltips(root){
  if(!root||typeof document==='undefined'||typeof document.createElement!=='function'||typeof document.body?.appendChild!=='function')return;
- const popup=document.createElement('div');
- popup.id='map-rit-floating-tooltip';
- popup.className='map-rit-floating-tooltip';
- popup.hidden=true;
- document.body.appendChild(popup);
+ // Create the floating panel only on first real header hover/focus.
+ // This also keeps non-browser app consumers and test harnesses unaffected.
+ let popup=null;
  let active=null;
+ const ensurePopup=()=>{
+  if(popup)return popup;
+  popup=document.createElement('div');
+  popup.id='map-rit-floating-tooltip';
+  popup.className='map-rit-floating-tooltip';
+  popup.hidden=true;
+  document.body.appendChild(popup);
+  return popup;
+ };
  const hide=()=>{
   if(active)active.querySelector('[data-ux-sort]')?.removeAttribute('aria-describedby');
-  active=null;popup.hidden=true;
+  active=null;if(popup)popup.hidden=true;
  };
  const show=th=>{
   if(!th||th===active)return;
   hide();
   active=th;
+  ensurePopup();
   popup.innerHTML=renderMapRitTooltip(th.dataset.mapRitSubject||'Reading');
   popup.hidden=false;
   const rect=th.getBoundingClientRect(),box=popup.getBoundingClientRect();
@@ -149,6 +157,6 @@ export function installMapRitHeaderTooltips(root){
   if(active&&!active.contains(e.relatedTarget))hide();
  });
  root.addEventListener('keydown',e=>{if(e.key==='Escape')hide()});
- document.addEventListener('scroll',hide,{capture:true,passive:true});
+ document.addEventListener?.('scroll',hide,{capture:true,passive:true});
  window.addEventListener('resize',hide);
 }
