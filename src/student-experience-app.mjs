@@ -6,7 +6,7 @@ import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReport
 import {renderLeaderVoiceReview,renderLeaderMapRedReview} from './leader-review-signals.mjs?v=20261111photo1';
 import {renderLeaderAcademicActions,LEADER_ACADEMIC_FOCUS} from './leader-academic-actions.mjs?v=20261111academicquick2';
 import {renderLeaderSupportSection} from './leader-support-view.mjs';
-import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvidence,leaderAdvisoryClasses} from './leader-daily-workspaces.mjs?v=20261111photo1';
+import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvidence,leaderAdvisoryClasses} from './leader-daily-workspaces.mjs?v=20261111academicquick2';
 import {leaderReportSignalSummary} from './report-card-signals.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
 import {createSSSDemoRecords} from './sss-demo-data.mjs';
