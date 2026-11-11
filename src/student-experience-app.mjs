@@ -340,7 +340,7 @@ function roster(ss,options={}){
   '<th>Support information</th></tr></thead><tbody>'+
   data.map(x=>'<tr><td><span class="faculty-learner-entry">'+
    renderStudentPhoto(x.student)+
-   '<button type="button" class="student-link" data-student="'+safe(x.student.id)+
+   '<button class="student-link" type="button" data-student="'+safe(x.student.id)+
    '">'+safe(x.student.name)+'</button></span></td>'+
    (across?'<td><span class="roster-class-label">'+safe(x.student.classId)+'</span></td>':'')+
    (everyday?x.everydayCells.map((cell,i)=>'<td data-ux-sort-value="'+
