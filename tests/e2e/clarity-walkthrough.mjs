@@ -719,7 +719,7 @@ try{
    await click('[data-leader-academic-multiple]');
    assert(await evaluate("document.querySelector('[data-leader-academic-multiple]')?.getAttribute('aria-pressed')==='true'"),
     'Two-or-more-subjects filter must work');
-   const firstGrade=await evaluate("document.querySelector('[data-leader-academic-grade] option:not([value=''])?.value");
+   const firstGrade=await evaluate("document.querySelector('[data-leader-academic-grade]')?.options?.[1]?.value||''");
    if(firstGrade){
     await evaluate("(function(){const s=document.querySelector('[data-leader-academic-grade]');s.value=Array.from(s.options).find(o=>o.value)?.value||'';s.dispatchEvent(new Event('change',{bubbles:true}))})()");
     assert(await evaluate("!!document.querySelector('#leader-academic-results')"),
