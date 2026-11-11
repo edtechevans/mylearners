@@ -655,8 +655,9 @@ try{
     'Academic Follow-up MAP list should include enlargable student photographs');
    const name=await evaluate("document.querySelector('.leader-academic-row .student-photo-trigger')?.dataset.photoName");
    await click('.leader-academic-row .student-photo-trigger');
-   assert(await evaluate("document.querySelector('.student-photo-preview:not([hidden]) figcaption strong')?.textContent")===name,
-    'Leaders should see the exact learner name below the enlarged photo');
+   const portraitDebug=await evaluate("(function(){const p=document.querySelector('.student-photo-preview'),t=document.querySelector('.leader-academic-row .student-photo-trigger');return {expected:t?.dataset.photoName,found:p?.querySelector('figcaption strong')?.textContent,hidden:p?.hidden,visible:!!document.querySelector('.student-photo-preview:not([hidden])'),present:!!p,html:p?.outerHTML?.slice(0,600),trigger:t?.outerHTML?.slice(0,350)}})()");
+   assert(portraitDebug.found===name&&portraitDebug.visible,
+    'Leaders should see the exact learner name below the enlarged photo. Details: '+JSON.stringify(portraitDebug));
    assert(await evaluate("!document.querySelector('.leader-learner-profile')"),
     'Opening a portrait must not accidentally navigate');
    await click('.leader-academic-row [data-leader-student]');
