@@ -197,7 +197,8 @@ function concernsEvidence(x,isSecondary){
 }
 export function renderLeaderDivisionDaily({division,grade,students,allStudents,data,
  academic,records,sssRecords,entries,reviewFilter='all',expanded=false,savedView=null,
- voiceWindow='F26',academicPanels='',academicActions=''}){
+ voiceWindow='F26',academicPanels='',journeyPanel='',academicActions='',
+ focusSection='follow-up',savedNotice=''}){
  const secondary=division==='Secondary',
   attendance=leaderAttendanceReview(students,data),
   academics=leaderAcademicReview(students,academic),
@@ -205,6 +206,13 @@ export function renderLeaderDivisionDaily({division,grade,students,allStudents,d
   voice=leaderVoice(students,records);
  const queue=leaderReviewQueue(students,data,academic,reviewFilter,expanded,secondary);
  const voiceReview=leaderVoiceReview(students,records,voiceWindow);
+ const hasMap=students.some(st=>gradeNumber(st.grade)>=3&&gradeNumber(st.grade)<=10);
+ const focusTabs=[['follow-up','Follow-up'],...(hasMap?[['journeys','MAP Journeys']]:[]),
+  ['academics','Academic Trends'],['experience','Student Experience'],['support','Support']];
+ const currentFocus=focusTabs.some(t=>t[0]===focusSection)?focusSection:'follow-up';
+ const panel=(id,content)=>'<section id="leader-focus-panel-'+id+
+  '" class="leader-focus-panel" role="tabpanel" aria-labelledby="leader-focus-tab-'+id+'"'+
+  (currentFocus===id?'':' hidden')+'>'+content+'</section>';
  const delta=voice.map(x=>x.delta).filter(Number.isFinite);
  const change=delta.length?Math.min(...delta):null;
  const supportCount=support.suppressed?'—':support.actionOpen;
@@ -247,17 +255,20 @@ export function renderLeaderDivisionDaily({division,grade,students,allStudents,d
     (grade==='All'?'':'<span aria-hidden="true">/</span><strong>'+safe(display(grade))+'</strong>')+'</nav>'+
    '<div class="leader-division-hero-row"><div><div class="leader-daily-eyebrow">'+safe(focus)+'</div>'+
     '<h2>'+safe(gradeLabel)+' · priorities and progress</h2><p>'+safe(lens)+'</p></div>'+
-    '<div class="leader-save-view"><button data-leader-save-view type="button">Save this view</button>'+
+    '<div class="leader-save-view"><button data-leader-save-view type="button">Save this setup</button>'+
     (savedView?'<small>Saved: '+safe(savedView.division)+
-      (savedView.grade!=='All'?' · '+safe(display(savedView.grade)):'')+'</small>':'')+
+      (savedView.grade!=='All'?' · '+safe(display(savedView.grade)):'')+
+      ' · '+safe(focusTabs.find(t=>t[0]===savedView.section)?.[1]||'Follow-up')+'</small>':'')+
+    '<small role="status" aria-live="polite">'+safe(savedNotice)+'</small>'+
     '</div></div>'+
    gradesBar(division,grade,allStudents)+
+   '<details class="leader-source-details"><summary>Evidence sources and dates</summary>'+
    '<div class="leader-daily-sources">'+
     source('SUBJECTS','2026–27 demo · not issued')+
     source('ATTENDANCE','Demo attendance')+
     source('STUDENT VOICE','Fall 2026 simulated')+
     source('SUPPORT','Synthetic · 28 Oct 2026')+
-   '</div></section>'+
+   '</div></details></section>'+
   '<section id="leader-daily-priorities" class="leader-daily-section" aria-labelledby="leader-daily-priorities-title">'+
    '<div class="leader-daily-sectionhead"><div><span>START HERE</span>'+
     '<h2 id="leader-daily-priorities-title">Needs attention</h2></div>'+
@@ -267,25 +278,31 @@ export function renderLeaderDivisionDaily({division,grade,students,allStudents,d
     (secondary?'':headline)+
     priority('Attendance checks',attendance.flagged.length,'Below the illustrative 90% review threshold.',
      'amber','leader-review','Simulated attendance')+
-    priority('Student voice change',change===null?'—':(change>0?'+':'')+change.toFixed(2),
-     'Largest change in the two group indices from the previous window.',
-     'green','leader-experience-title','Age-specific index −2 to +2')+
+    priority('Student Experience to review',voiceReview.rows.length,
+     'Engagement or Belonging at or below 0 in the selected check-in.',
+     'green','leader-experience-review','Selected fictional check-in · −2 to +2')+
     priority('Open support actions',supportCount,support.suppressed?
      'Small-group summary suppressed. Expand scope.':'Open follow-ups in the fictional support cycle.',
      'blue','leader-support-title','Demo SSS cycle · 28 Oct 2026')+
    '</div>'+
-   '<div class="leader-review-shortcuts leader-voice-shortcut" aria-label="Student Experience review shortcut">'+
-    (voiceReview.eligible?'<button type="button" data-leader-jump="leader-experience-review">'+
-     '<span><b>Student Experience to review</b><small>Engagement or Belonging ≤0 · selected check-in</small></span>'+
-     '<strong>'+voiceReview.rows.length+'</strong></button>':'')+
-   '</div>'+
+   (Number.isFinite(change)?'<p class="leader-summary-change">Student Experience change: '+
+    (change>0?'+':'')+change.toFixed(2)+' index points in the least-improved measure. '+
+    '<button type="button" data-leader-jump="leader-experience-title">Explore trend</button></p>':'')+
    '<p class="leader-daily-note">'+safe(secondary?
     (students.some(s=>gradeNumber(s.grade)>=11)?
      'Grades 11–12 use DP subject evidence; MAP and IXL end at Grade 10. MYP and DP results are not combined into a grade average.':
      'MAP applies to eligible Grades 6–10. Current subject results are not issued reports.'):
     'Elementary report descriptors are not 1–7 grades. Literacy checks must be interpreted within grade and programme.')+
     '</p></section>'+
-  academicPanels+
+  '<nav class="leader-focus-nav" role="tablist" aria-label="Explore Leadership evidence">'+
+   focusTabs.map(([id,label])=>
+    '<button type="button" role="tab" id="leader-focus-tab-'+id+'" data-leader-focus="'+id+
+    '" aria-selected="'+(currentFocus===id)+'" aria-controls="leader-focus-panel-'+id+'"'+
+    (currentFocus===id?' tabindex="0"':' tabindex="-1"')+'>'+safe(label)+'</button>'
+   ).join('')+'</nav>'+
+  panel('journeys',journeyPanel)+panel('academics',academicPanels)+
+  '<section id="leader-focus-panel-follow-up" class="leader-focus-panel" role="tabpanel"'+
+  ' aria-labelledby="leader-focus-tab-follow-up"'+(currentFocus==='follow-up'?'':' hidden')+'>'+
   '<section id="leader-review" class="leader-daily-section leader-review-section" aria-labelledby="leader-review-title">'+
    '<div class="leader-daily-sectionhead"><div><span>LEARNER REVIEW · READ ONLY</span>'+
     '<h2 id="leader-review-title">'+(secondary?'Attendance and learner review':'Attendance and early learning review')+
@@ -309,12 +326,7 @@ export function renderLeaderDivisionDaily({division,grade,students,allStudents,d
    '<p class="leader-review-footnote">The 90% attendance threshold is illustrative, not an official AISG intervention rule. '+
    'No confidential support cases or safeguarding records are shown. Record actual decisions in authorised systems.</p>'+
   '</section>'+
-  '<nav class="leader-deep-nav" aria-label="Explore deeper evidence"><span>Explore deeper</span>'+
-   '<button type="button" data-leader-jump="leader-learning-title">Academics</button>'+
-   '<button type="button" data-leader-jump="leader-academic-detail">Historical reports</button>'+
-   '<button type="button" data-leader-jump="leader-review">Attendance</button>'+
-   '<button type="button" data-leader-jump="leader-experience-title">Engagement / Belonging</button>'+
-   '<button type="button" data-leader-jump="leader-support-title">Support follow-through</button></nav>'+
+  '</section>'+
   '</div>';
 }
 
@@ -324,7 +336,7 @@ function miniSeries(points){
   '<span class="'+(i===points.length-1?'current':'')+'"><small>'+safe(x.label)+'</small>'+
    '<b>'+safe(x.value)+'</b></span>').join('')+'</div>';
 }
-export function renderLeaderLearnerEvidence({student,data,academic,records,window='F26',journeyProfile=''}){
+export function renderLeaderLearnerEvidence({student,data,academic,records,window='F26',journeyProfile='',returnLabel='division review'}){
  const a=academicFor(academic,student.id),report=facultyDemoReport(a);
  const events=data.attendance[student.id]||[],att=attendanceSummary(events);
  const numeric=report?.scale==='1–7';
@@ -351,7 +363,7 @@ export function renderLeaderLearnerEvidence({student,data,academic,records,windo
    leaderExperienceScale(score,metric)+'</article>';
  }).join(''):'';
  return '<div class="leader-daily leader-learner-profile">'+
-  '<div class="leader-profile-header"><button type="button" data-leader-back>← Back to division review</button>'+
+  '<div class="leader-profile-header"><button type="button" data-leader-back>← Back to '+safe(returnLabel)+'</button>'+
    '<span>READ-ONLY · FICTIONAL EVIDENCE</span></div>'+
    '<div class="leader-profile-identity">'+renderStudentPhoto(student,'profile')+
    '<div class="leader-profile-identity-text">'+
