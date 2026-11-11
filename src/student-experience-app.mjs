@@ -16,8 +16,8 @@ import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=202610
 import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs?v=20261030repair1';
 import {experienceDialogContent} from './experience-explain-modal.mjs?v=20261030wall3';
-import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261111mapui3';
-import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261111mapui3';
+import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261111checkin4';
+import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261111checkin4';
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,READING_LEVELS,facultyDemoReport} from './academic-journey-data.mjs';
 import {quartileBand,formatIndex,experienceBand} from './faculty-bands.mjs?v=20261030wall2';
@@ -208,9 +208,11 @@ function roster(ss,options={}){
  const hasAcademicBands=everydayColumns.some(c=>['map','ixl','core','fp','flourishing'].includes(c.kind));
  const hasNumericReports=everydayColumns.some(c=>c.kind==='report'&&ss.some(student=>{const r=facultyDemoReport(academicFor(ACADEMIC_RECORDS,student.id));return reportGradeBand(r?.subjects?.find(x=>x.subject===c.subject)?.value,r?.scale)}));
  const hasExperienceBands=everydayColumns.some(c=>['engagement','belonging'].includes(c.kind));
- const checkinLabel=EXPERIENCE_WINDOWS.find(w=>w.key===state.classExperienceWindow)?.label||'Fall 2026';
- const everydayHeading=column=>column.kind==='engagement'||column.kind==='belonging'?
-  (column.kind==='engagement'?'Engagement':'Belonging')+' · '+checkinLabel:column.label;
+ // Keep the selected check-in window in the evidence controls and hover details,
+ // not repeated in every Faculty roster heading.
+ const facultyExperienceHeading=(kind,label)=>kind==='engagement'?'Engagement':
+  kind==='belonging'?'Belonging':label;
+ const everydayHeading=column=>facultyExperienceHeading(column.kind,column.label);
  const gradeCohort=DATA.students.filter(s=>s.grade===grade);
  const gradeReferences=new Map();
  const evidenceNumeric=(s,column)=>{
@@ -274,8 +276,10 @@ function roster(ss,options={}){
   return '<span class="evidence-cell-layout">'+button+'</span>';
  };
  
- const modeLabel=across?'2026–27 demo test report':evidenceLabel(mode,{...evidenceCtx,subject});
- const compareLabel=compare==='none'?'':evidenceLabel(compare,{...evidenceCtx,subject});
+ const modeLabel=across?'2026–27 demo test report':
+  facultyExperienceHeading(mode,evidenceLabel(mode,{...evidenceCtx,subject}));
+ const compareLabel=compare==='none'?'':facultyExperienceHeading(
+  compare,evidenceLabel(compare,{...evidenceCtx,subject}));
  const query=state.query.trim().toLowerCase();
  const numericEligible=ss.some(s=>facultyDemoReport(academicFor(ACADEMIC_RECORDS,s.id))?.scale==='1–7');
  const filterLevel=numericEligible?(state.facultyGradeFilter==='2'?2:state.facultyGradeFilter==='3'?3:null):null;
