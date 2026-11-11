@@ -70,7 +70,7 @@ export function normalizeLeaderView(raw,classes=[]){
   journeyStartingBand:allowed(raw.journeyStartingBand,JOURNEY_START_BANDS,'both'),
   journeyEndingBand:allowed(raw.journeyEndingBand,JOURNEY_END_BANDS,'average-plus'),
   journeyPathway:allowed(raw.journeyPathway,['auto','cross','all'],'auto'),
-  journeyPreset:allowed(raw.journeyPreset,LEADER_JOURNEY_PRESETS.map(x=>x.id),'rising'),
+  journeyPreset:allowed(raw.journeyPreset,[...LEADER_JOURNEY_PRESETS.map(x=>x.id),'custom'],'rising'),
   journeyAdvancedOpen:raw.journeyAdvancedOpen===true,
   journeyProfileSubject:allowed(raw.journeyProfileSubject,MAP_RIT_SUBJECTS,'Reading')
  };
