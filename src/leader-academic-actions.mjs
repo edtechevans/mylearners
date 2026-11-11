@@ -5,7 +5,7 @@
  */
 import {gradeNumber} from './data.mjs';
 import {MAP_RIT_SUBJECTS,mapRitDisplaySubject} from './map-rit-achievement.mjs';
-import {leaderMapRedReview} from './leader-review-signals.mjs';
+import {leaderMapBandReview,MAP_REVIEW_SELECTIONS} from './leader-review-signals.mjs?v=20261111mapbands1';
 import {leaderReportSignalSummary} from './report-card-signals.mjs';
 import {renderStudentPhoto} from './student-photo-preview.mjs?v=20261111photo1';
 import {esc} from './v2-ui.mjs';
@@ -15,10 +15,10 @@ const gradeText=v=>v==='K'?'K':v;
 const gradeOrder=(a,b)=>gradeNumber(a)-gradeNumber(b);
 export const LEADER_ACADEMIC_FOCUS=Object.freeze(['map','subjects']);
 
-export function leaderAcademicActionModel(students,map,academic){
+export function leaderAcademicActionModel(students,map,academic,mapBand='both'){
  const inScope=students||[];
  return {
-  map:leaderMapRedReview(inScope,map,'F26'),
+  map:leaderMapBandReview(inScope,map,'F26',mapBand),
   subjects:leaderReportSignalSummary(inScope,academic,2),
   selected:inScope.length
  };
@@ -42,7 +42,9 @@ const chip=(title,detail,kind)=>'<span class="leader-academic-evidence-chip '+ki
  safe(title)+'</b><span>'+safe(detail)+'</span></span>';
 const rowHtml=(entry,kind)=>{
  const subjectBadges=kind==='map'?
-  entry.red.map(x=>chip(mapRitDisplaySubject(x.subject),x.rit+' RIT · P'+x.percentile,'map')):
+  entry.hits.map(x=>chip(mapRitDisplaySubject(x.subject),
+   x.rit+' RIT · P'+x.percentile+' · '+(x.band==='low'?'Low':'Low Average'),
+   x.band==='low'?'map map-low':'map map-low-average')):
   entry.low.map(x=>chip(x.subject,String(x.value)+' / 7','subject'));
  return '<li class="leader-academic-row">'+rowIdentity(entry.student)+
   '<div class="leader-academic-row-evidence">'+subjectBadges.join('')+'</div>'+
@@ -56,9 +58,10 @@ const select=(name,items,value,label)=>'<label>'+safe(label)+
  safe(title)+'</option>').join('')+'</select></label>';
 
 export function renderLeaderAcademicActions({
- students,map,academic,focus='',grade='',subject='',multiple=false,expanded=false
+ students,map,academic,focus='',grade='',subject='',multiple=false,expanded=false,mapBand='both'
 }={}){
- const model=leaderAcademicActionModel(students,map,academic);
+ const selectedBand=MAP_REVIEW_SELECTIONS.includes(mapBand)?mapBand:'both';
+ const model=leaderAcademicActionModel(students,map,academic,selectedBand);
  const hasMap=model.map.eligible>0;
  const hasReports=model.subjects.numericReports>0||
   (students||[]).some(s=>gradeNumber(s.grade)>=6&&gradeNumber(s.grade)<=12);
@@ -66,9 +69,11 @@ export function renderLeaderAcademicActions({
  const validFocus=focus==='map'&&hasMap?'map':focus==='subjects'&&hasReports?'subjects':'';
  const cards=[
   ...(hasMap?[actionCard({kind:'map',count:model.map.rows.length,
-   title:'Students in MAP Low band',
-   description:'Achievement percentile 1–20 · Reading, Math or Language Usage',
-   foot:model.map.tested+' of '+model.map.eligible+' with a current MAP test',
+   title:'Students in MAP Low / Low Average',
+   description:'Red P1–20 · Orange P21–40 · '+(selectedBand==='both'?'Both bands':
+    selectedBand==='low'?'Red only':'Orange only'),
+   foot:'Red '+model.map.bandCounts.red+' · Orange '+model.map.bandCounts.orange+
+    ' · '+model.map.tested+' of '+model.map.eligible+' tested',
    active:validFocus==='map'})]:[]),
   ...(hasReports?[actionCard({kind:'subjects',count:model.subjects.flagged,
    title:'Students with subject results ≤2',
@@ -85,22 +90,40 @@ export function renderLeaderAcademicActions({
   const gradeValue=grades.includes(grade)?grade:'';
   const subjectValue=subjects.includes(subject)?subject:'';
   const matched=rows.filter(x=>{
-   const hits=validFocus==='map'?x.red:x.low;
+   const hits=validFocus==='map'?x.hits:x.low;
    return (!gradeValue||x.student.grade===gradeValue)&&
     (!subjectValue||hits.some(z=>z.subject===subjectValue))&&
     (!multiple||hits.length>=2);
   });
   const shown=expanded?matched:matched.slice(0,12);
-  const title=validFocus==='map'?'MAP Low achievement — student list':'Subject results ≤2 — student list';
+  const mapBandLabel=selectedBand==='both'?'Red + Orange (P1–40)':
+   selectedBand==='low'?'Low · Red (P1–20)':'Low Average · Orange (P21–40)';
+  const title=validFocus==='map'?'MAP achievement — '+mapBandLabel:'Subject results ≤2 — student list';
+  const mapBandFilters=validFocus==='map'?
+   '<div class="leader-map-band-filters" role="group" aria-label="Filter MAP achievement percentile bands">'+
+   [
+    ['both','Red + Orange','P1–40',model.map.bandCounts.both],
+    ['low','Low · Red','P1–20',model.map.bandCounts.red],
+    ['low-average','Low Average · Orange','P21–40',model.map.bandCounts.orange]
+   ].map(([key,label,range,count])=>
+    '<button type="button" class="leader-map-band-select '+(key==='both'?'both':key==='low'?'red':'orange')+
+    (selectedBand===key?' is-active':'')+'" data-leader-map-band="'+key+'" aria-pressed="'+
+    (selectedBand===key?'true':'false')+'" aria-label="'+safe(label)+' '+safe(range)+
+    '; '+count+' learners">'+
+    '<span class="leader-map-band-indicator" aria-hidden="true"></span>'+
+    '<span class="leader-map-band-text"><strong>'+safe(label)+'</strong><small>'+safe(range)+'</small></span>'+
+    '<b>'+count+'</b></button>').join('')+'</div>':'';
+
   detail='<section id="leader-academic-results" class="leader-academic-results" tabindex="-1"'+
    ' aria-labelledby="leader-academic-results-title">'+
    '<div class="leader-academic-results-head"><div><span>IN SCOPE · FICTIONAL LEARNERS</span>'+
    '<h3 id="leader-academic-results-title">'+safe(title)+'</h3>'+
    '<p>'+(validFocus==='map'?
-    'Current Fall 2026 MAP Reading, Math or Language Usage in the 1st–20th achievement percentile.':
+    'Fall 2026 MAP Reading, Math or Language Usage achievement percentiles. Red is P1–20, Orange is P21–40.':
     'In-progress 2026–27 numeric subject results of 2 or below (MYP/DP, 1–7 scale).')+
    '</p></div><button type="button" class="leader-academic-close" data-leader-academic-close'+
    ' aria-label="Close academic student list">Close <span aria-hidden="true">×</span></button></div>'+
+   mapBandFilters+
    '<div class="leader-academic-filters" role="group" aria-label="Filter academic review students">'+
    select('grade',[['','All grades'],...grades.map(g=>[g,gradeText(g)])],gradeValue,'Grade')+
    select('subject',[['','All subjects'],...subjects.map(x=>[x,mapRitDisplaySubject(x)])],
@@ -115,7 +138,7 @@ export function renderLeaderAcademicActions({
    (matched.length>12?'<button type="button" class="leader-academic-expand" data-leader-academic-expand>'+
     (expanded?'Show first 12':'Show all '+matched.length+' learners')+'</button>':'')+
    '<p class="leader-academic-note">'+(validFocus==='map'?
-    'These are achievement percentile bands, not growth percentiles or universal RIT cutoffs.':
+    'Red means Low (P1–20); Orange means Low Average (P21–40). Combined is the unique number of learners in either band, not the sum of the separate counts. These are achievement percentiles, not growth percentiles or universal RIT cutoffs.':
     'These are simulated current-year subject results, not issued reports or an overall learner grade.')+
     ' Review the learner’s context and prior windows before deciding on support. This demo uses fictional student data.</p>'+
    '</section>';
