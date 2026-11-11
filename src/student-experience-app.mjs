@@ -761,7 +761,7 @@ function leader(){
   'Only homeroom/advisory cohorts are shown; taught courses are not survey response groups.</p>'+
   '<h3>Over Time</h3>'+trends+'</div></details>';
  return heading('Leadership Overview',
-  'Daily priorities first. Choose Elementary or Secondary, then drill down to a grade.')+
+  'Academics first, then attendance and Student Experience. Choose a division or grade to investigate.')+
   '<div class="leader-view leader-daily">'+
   '<div class="toolbar leader-controls leader-scope-controls">'+
   '<label>Division '+selector('division',[['All','Whole school'],['Elementary','Elementary'],['Secondary','Secondary']],state.division)+'</label>'+
@@ -771,11 +771,11 @@ function leader(){
   renderLeaderDivisionDaily({division:state.division,grade:state.grade,students:group,
    allStudents:DATA.students,data:DATA,academic:ACADEMIC_RECORDS,records:RECORDS,
    sssRecords:SSS_RECORDS,entries:supportEntries(),reviewFilter:state.leaderReviewFilter,
-   expanded:state.leaderReviewExpanded,savedView:savedLeaderView(),voiceWindow:state.window})+
-  reportSection+
+   expanded:state.leaderReviewExpanded,savedView:savedLeaderView(),voiceWindow:state.window,
+   academicPanels:learning+reportSection+deepAcademic})+
+  experienceSection+deepPatterns+
   renderLeaderSupportSection({students:group,sssRecords:SSS_RECORDS,entries:supportEntries(),
-   open:state.leaderSupportOpen})+
-  experienceSection+learning+deepAcademic+deepPatterns+'</div>'+info();
+   open:state.leaderSupportOpen})+'</div>'+info();
 }
 function sss(){
  const banner=heading('Student Support Services',
