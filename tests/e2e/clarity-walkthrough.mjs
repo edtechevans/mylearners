@@ -665,19 +665,19 @@ try{
  await run('leader-secondary-daily-1440','leader','.leader-division-grid',1440,900,
   async()=>{
    await click('[data-leader-division="Secondary"]');
-   assert(await evaluate("!!document.querySelector('.leader-daily-priority.red')&&!!document.querySelector('.leader-review-table')"),
+   assert(await evaluate("!!document.querySelector('.leader-academic-action.subjects')&&!!document.querySelector('.leader-review-table')"),
     'Secondary daily screen needs visible subject concerns and a learner review queue');
    assert(await evaluate("document.querySelectorAll('[data-leader-grade]').length>=8"),
     'Secondary needs Grades 6–12 drilldowns');
-   const order=await evaluate("(function(){const sections=[...document.querySelectorAll('#leader-learning-title,#leader-review,#leader-experience-title')];const cards=[...document.querySelectorAll('#leader-daily-priorities .leader-daily-grid .leader-daily-priority h3')].map(x=>x.textContent.trim());return {sections:sections.map(x=>x.id),cards}})()");
+   const order=await evaluate("(function(){const sections=[...document.querySelectorAll('#leader-learning-title,#leader-review,#leader-experience-title')];const cards=[...document.querySelectorAll('#leader-daily-priorities .leader-daily-grid .leader-priority-label')].map(x=>x.textContent.trim());return {sections:sections.map(x=>x.id),cards}})()");
    assert(order.sections.join('|')==='leader-learning-title|leader-review|leader-experience-title',
     'Academics section must be before Attendance review and Engagement/Belonging, regardless of division');
-   assert(order.cards.join('|')==='Subject results ≤2|Attendance checks|Student voice change|Open support actions',
+   assert(order.cards.join('|')==='Attendance checks|Student voice change|Open support actions',
     'Daily summary must follow the same leadership priority order');
    assert(await evaluate("!!document.querySelector('#leader-experience-review')&&!!document.querySelector('#leader-map-review')"),
     'Leaders need actionable Student Experience and MAP achievement review lists');
-   assert(await evaluate("!!document.querySelector('[data-leader-jump=leader-experience-review]')&&!!document.querySelector('[data-leader-jump=leader-map-review]')"),
-    'Two quick links should make learner review signals easy to find');
+   assert(await evaluate("!!document.querySelector('[data-leader-jump=leader-experience-review]')&&!!document.querySelector('[data-leader-academic-focus=map]')"),
+    'MAP and student voice review should both have direct accessible actions');
    assert(await evaluate("!document.querySelector('.leader-daily-source')?.textContent.includes('through')"),
     'Attendance date captions should not be needed in the Leadership tile summaries');
    const review=await evaluate("(function(){const v=document.querySelector('#leader-experience-review'),m=document.querySelector('#leader-map-review');return {voice:!!v&&v.textContent.includes('0 or below'),map:!!m&&m.textContent.includes('1st–20th percentile'),links:[...document.querySelectorAll('.leader-followup-open')].length,validVoice:[...v.querySelectorAll('.leader-followup-item')].every(row=>!!row.querySelector('.leader-followup-index.is-low')),validMap:[...m.querySelectorAll('.leader-map-low-chip')].every(chip=>{const p=Number(chip.textContent.match(/P(\\d{1,2})/)?.[1]);return p>=1&&p<=20})}})()");
@@ -693,6 +693,59 @@ try{
     }
    }
    await evaluate('window.scrollTo(0,0)');
+  });
+ await run('leader-academic-one-click-1440','leader','.leader-division-grid',1440,900,
+  async()=>{
+   await click('[data-leader-division="Secondary"]');
+   const cards=await evaluate("(function(){return [...document.querySelectorAll('.leader-academic-action')].map(x=>({kind:x.dataset.leaderAcademicFocus,expanded:x.getAttribute('aria-expanded'),count:x.querySelector('.leader-academic-action-top strong')?.textContent}))})()");
+   assert(cards.map(x=>x.kind).join('|')==='map|subjects'&&cards.every(x=>x.expanded==='false'),
+    'Academic Follow-up must offer both MAP Low and subject ≤2 as the first two actions');
+   assert(await evaluate("document.querySelector('.leader-academic-actions')?.compareDocumentPosition(document.querySelector('.leader-daily-grid'))&Node.DOCUMENT_POSITION_FOLLOWING"),
+    'Academic actions must appear before attendance and student voice tiles');
+   await click('[data-leader-academic-focus="map"]');
+   assert(await evaluate("document.querySelector('#leader-academic-results:not([hidden])')?.textContent.includes('MAP Low achievement')"),
+    'Single MAP card click should immediately open a filtered student list');
+   assert(await evaluate("document.querySelector('.leader-academic-row .student-photo-trigger')&&document.querySelector('.leader-academic-row [data-leader-student]')"),
+    'Rapid MAP list must include photos and profile actions');
+   const values=await evaluate("Array.from(document.querySelectorAll('#leader-academic-results .leader-academic-evidence-chip span')).map(x=>x.textContent)");
+   assert(values.length>0&&values.every(v=>{const p=Number(v.match(/P(\d+)/)?.[1]);return p>=1&&p<=20}),
+    'MAP card must only show genuinely Low (1–20) achievement results');
+   await click('[data-leader-academic-focus="subjects"]');
+   assert(await evaluate("document.querySelector('#leader-academic-results:not([hidden])')?.textContent.includes('Subject results ≤2')"),
+    'Switching to subject review should show the ≤2 learner list without opening another panel');
+   const grades=await evaluate("Array.from(document.querySelectorAll('#leader-academic-results .leader-academic-evidence-chip span')).map(x=>x.textContent)");
+   assert(grades.length>0&&grades.every(v=>Number(v.match(/(\d+)\s*\/\s*7/)?.[1])<=2),
+    'Subject action must only display numeric 1–7 grades at or below 2');
+   await click('[data-leader-academic-multiple]');
+   assert(await evaluate("document.querySelector('[data-leader-academic-multiple]')?.getAttribute('aria-pressed')==='true'"),
+    'Two-or-more-subjects filter must work');
+   const firstGrade=await evaluate("document.querySelector('[data-leader-academic-grade] option:not([value=''])?.value");
+   if(firstGrade){
+    await evaluate("(function(){const s=document.querySelector('[data-leader-academic-grade]');s.value=Array.from(s.options).find(o=>o.value)?.value||'';s.dispatchEvent(new Event('change',{bubbles:true}))})()");
+    assert(await evaluate("!!document.querySelector('#leader-academic-results')"),
+     'Grade selection must preserve direct Academic Follow-up');
+   }
+   await click('[data-leader-academic-close]');
+   assert(await evaluate("document.querySelector('#leader-academic-results')?.hidden===true"),
+    'Close should collapse the focus without leaving the divisional workspace');
+  });
+ await run('leader-clickable-priorities-1440','leader','.leader-division-grid',1440,900,
+  async()=>{
+   await click('[data-leader-division="Secondary"]');
+   const tileCheck=await evaluate("(function(){const b=[...document.querySelectorAll('#leader-daily-priorities .leader-daily-grid .leader-daily-priority')];return {length:b.length,buttons:b.every(x=>x.tagName==='BUTTON'),nested:b.some(x=>x.querySelector('button')),legacy:b.some(x=>x.textContent.includes('Review evidence'))}})()");
+   assert(tileCheck.length===3&&tileCheck.buttons&&!tileCheck.nested&&!tileCheck.legacy,
+    'Attendance, voice and support tiles must be full accessible buttons without Review evidence links');
+   await click('[data-leader-attendance-focus]');
+   assert(await evaluate("document.querySelector('[data-leader-review-filter=attendance]')?.getAttribute('aria-pressed')==='true'"),
+    'Clicking the whole attendance tile should open its filtered learner review');
+  });
+ await run('leader-academic-touch-390','leader','.leader-division-grid',390,820,
+  async()=>{
+   await click('[data-leader-division="Secondary"]');
+   await click('[data-leader-academic-focus="map"]');
+   const result=await evaluate("(function(){const box=document.querySelector('#leader-academic-results'),r=box?.getBoundingClientRect();return {visible:box&&!box.hidden,scrollWidth:document.documentElement.scrollWidth,viewport:innerWidth,top:r?.top}})()");
+   assert(result.visible&&result.scrollWidth<=result.viewport+2,
+    'Mobile MAP review must open directly without horizontal page overflow');
   });
  await run('leader-filter-1440','leader','.leader-division-grid',1440,900,
   async()=>{
