@@ -252,3 +252,81 @@
  #app[data-workspace="leader"] .leader-academic-action:hover,
  #app[data-workspace="leader"] .leader-daily-priority.is-actionable:hover{transform:none}
 }
+
+
+/* MAP learner review: achievement percentile bands are red P1-20,
+   orange P21-40 and the unique combined cohort P1-40. Colour is always
+   paired with a readable band label, percentile and numerical count. */
+#app[data-workspace="leader"] .leader-academic-action.map{
+ position:relative;border-top-color:#b23c47
+}
+#app[data-workspace="leader"] .leader-academic-action.map::before{
+ content:"";position:absolute;top:-4px;left:48%;right:0;height:4px;
+ border-radius:0 10px 0 0;background:#e9a04e;pointer-events:none
+}
+#app[data-workspace="leader"] .leader-map-band-filters{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:8px;margin:15px 0 6px
+}
+#app[data-workspace="leader"] .leader-map-band-select{
+ width:100%;min-width:0;display:flex;align-items:center;gap:9px;
+ padding:10px 11px;min-height:56px;border:1px solid #d7e3e8;
+ border-radius:9px;background:#fff;color:#254d64;
+ font:inherit;text-align:left;cursor:pointer;
+ transition:background .14s ease,border-color .14s ease,box-shadow .14s ease
+}
+#app[data-workspace="leader"] .leader-map-band-select:hover{
+ background:#f7fbfc;border-color:#9cbccc
+}
+#app[data-workspace="leader"] .leader-map-band-select:focus-visible{
+ outline:3px solid #327ba3;outline-offset:3px
+}
+#app[data-workspace="leader"] .leader-map-band-select.is-active{
+ border-color:#6f99b4;background:#eff7fa;
+ box-shadow:0 0 0 1px #c2dce9
+}
+#app[data-workspace="leader"] .leader-map-band-indicator{
+ width:9px;min-width:9px;height:27px;border-radius:3px;background:#a6373f
+}
+#app[data-workspace="leader"] .leader-map-band-select.orange .leader-map-band-indicator{
+ background:#e89b33
+}
+#app[data-workspace="leader"] .leader-map-band-select.both .leader-map-band-indicator{
+ background:linear-gradient(to bottom,#a6373f 0%,#a6373f 50%,#e89b33 50%,#e89b33 100%)
+}
+#app[data-workspace="leader"] .leader-map-band-text{
+ display:flex;flex-direction:column;gap:3px;min-width:0;flex:1
+}
+#app[data-workspace="leader"] .leader-map-band-text strong{
+ font-size:11px;line-height:1.3;color:#244e64;font-weight:850
+}
+#app[data-workspace="leader"] .leader-map-band-text small{
+ font-size:9.5px;line-height:1.2;color:#67838e
+}
+#app[data-workspace="leader"] .leader-map-band-select>b{
+ font-size:17px;line-height:1;font-weight:850;
+ color:#1c465d;font-variant-numeric:tabular-nums
+}
+#app[data-workspace="leader"] .leader-academic-evidence-chip.map-low-average{
+ background:#fff2e4;border-color:#edcc9c;border-left-color:#e39a30
+}
+#app[data-workspace="leader"] .leader-academic-evidence-chip.map-low-average b{
+ color:#885117
+}
+#app[data-workspace="leader"] .leader-academic-evidence-chip.map-low{
+ background:#fff3f4;border-color:#edcbd0;border-left-color:#a6373f
+}
+@media(max-width:700px){
+ #app[data-workspace="leader"] .leader-map-band-filters{
+  grid-template-columns:1fr;gap:7px
+ }
+ #app[data-workspace="leader"] .leader-map-band-select{
+  min-height:48px
+ }
+ #app[data-workspace="leader"] .leader-map-band-indicator{
+  height:22px
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ #app[data-workspace="leader"] .leader-map-band-select{transition:none}
+}
