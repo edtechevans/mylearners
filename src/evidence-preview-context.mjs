@@ -9,7 +9,7 @@ import {experienceFor,EXPERIENCE_WINDOWS} from './experience-data.mjs';
 import {reportProgress,issuedReportProgress,academicCheckinProgress,mapProgress,experienceProgress,groupExperienceProgress,maiaProgress} from './evidence-progress.mjs';
 import {MAIA_DEFAULT_DIMENSION} from './maia-demo.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
-import {PREVIEW_GUIDE,makePreview} from './evidence-previews.mjs?v=20261110timeline1';
+import {PREVIEW_GUIDE,makePreview} from './evidence-previews.mjs?v=20261111mapui3';
 const tidy=v=>String(v??'').replace(/\s+/g,' ').trim();
 const value=v=>v===undefined||v===null||v===''?'Not available':String(v);
 const fmtDate=(v)=>/^\d{4}-\d{2}-\d{2}$/.test(String(v||''))?String(v):'See assessment record';
