@@ -32,11 +32,25 @@ export function mapRitHistory(records,subject){
  const indexed=new Map((validSubject(subject)?subjectMapRecords(records,subject):[]).map(r=>[r.key,r]));
  return MAP_RIT_WINDOWS.map(w=>({...w,record:indexed.get(w.key)||null}));
 }
+/** Actual point change from the most recent earlier valid same-subject test.
+ * Never interpret a RIT-point change as an NWEA growth percentile or projection.
+ * Missing current or earlier tests have no growth value.
+ */
+export function mapRitChange(records,subject,window='F26'){
+ const ordered=validSubject(subject)?subjectMapRecords(records,subject):[];
+ const current=ordered.find(r=>r.key===window)||null;
+ const previous=current?ordered.filter(r=>r.date<current.date).at(-1)||null:null;
+ return {current,previous,delta:current&&previous?current.rit-previous.rit:null};
+}
+export function mapRitChangeLabel(delta){
+ return Number.isFinite(delta)?(delta>0?'+':'')+delta+' RIT':'No prior test';
+}
 const subjectTitle=subject=>'MAP '+subject+' RIT';
 const pText=p=>Number.isInteger(p)?'P'+p:'Percentile unavailable';
 function historyTitle(records,subject){
  return subjectTitle(subject)+' · '+mapRitHistory(records,subject).slice().reverse().map(w=>
-  w.label+': '+(w.record?w.record.rit+' RIT ('+pText(w.record.percentile)+')':'not assessed')
+  w.label+': '+(w.record?w.record.rit+' RIT ('+pText(w.record.percentile)+'), '+
+   mapRitChangeLabel(mapRitChange(records,subject,w.key).delta):'not assessed')
  ).join(' · ')+' · FICTIONAL DATA';
 }
 export function renderMapRitHeader(subject){
@@ -45,16 +59,22 @@ export function renderMapRitHeader(subject){
  '">MAP '+esc(subject)+' <span class="map-rit-head-unit">RIT</span></th>';
 }
 export function renderMapRitCell(records,subject,studentId){
- const current=mapRitCurrent(records,subject);
+ const {current,previous,delta}=mapRitChange(records,subject);
  if(!current)return '<span class="map-rit-missing" title="'+esc(historyTitle(records,subject))+
  '"><strong>—</strong><small>No F26 test</small></span>';
  const band=mapRitBand(current.percentile);
+ const growth=mapRitChangeLabel(delta);
+ const comparison=previous?' since '+previous.window:'; no previous comparable test';
  return '<button type="button" class="map-rit-tile '+(band?'map-rit-'+band.key:'map-rit-unclassified')+
  '" data-student="'+esc(studentId)+'" title="'+esc(historyTitle(records,subject))+
- '" aria-label="'+esc(subjectTitle(subject)+': Fall 2026 '+current.rit+' RIT; percentile rank '+
- (Number.isInteger(current.percentile)?current.percentile:'unavailable')+
+ '" aria-label="'+esc(subjectTitle(subject)+': Fall 2026 '+current.rit+' RIT; '+growth+comparison+
+ '; percentile rank '+(Number.isInteger(current.percentile)?current.percentile:'unavailable')+
  (band?', '+band.label:'')+'. Open learner profile for four testing windows.')+'">'+
- '<strong>'+esc(current.rit)+'</strong><small>'+esc(pText(current.percentile))+'</small></button>';
+ '<span class="map-rit-percentile" aria-hidden="true">'+esc(pText(current.percentile))+'</span>'+
+ '<strong class="map-rit-score">'+esc(current.rit)+'</strong>'+
+ '<span class="map-rit-growth '+(delta===null?'map-rit-growth-missing':
+ delta>0?'map-rit-growth-up':delta<0?'map-rit-growth-down':'map-rit-growth-flat')+'">'+
+ esc(growth)+'</span></button>';
 }
 const bandsHighFirst=MAP_RIT_BANDS.slice().reverse();
 function bandRows(){
@@ -65,7 +85,7 @@ function bandRows(){
 export function renderMapRitTooltip(subject){
  return '<div class="map-rit-tooltip-heading"><strong>'+esc(subjectTitle(subject))+'</strong>'+
  '<small>Achievement interpretation</small></div>'+
- '<p>The number is a RIT scale score. Colour reflects the achievement percentile band for that grade and test term—not growth.</p>'+
+ '<p>The large number is the RIT score. The signed number underneath (e.g. +7 RIT) is the change since the most recent earlier valid test in the same subject. It is not a projected growth figure. Colour represents the achievement percentile band for that grade and term.</p>'+
  '<div class="map-rit-band-list">'+bandRows()+'</div>'+
  '<p class="map-rit-tooltip-note">NWEA-style quintiles; all displayed scores and percentiles are fictional, not calculated from official NWEA norms.</p>';
 }
@@ -73,27 +93,31 @@ export function renderMapRitLegend(){
  return '<details class="map-rit-inline-legend"><summary><span class="map-rit-legend-dots" aria-hidden="true">'+
  bandsHighFirst.map(b=>'<i class="map-rit-'+b.key+'"></i>').join('')+
  '</span>MAP RIT colours · percentile guide</summary><div class="map-rit-inline-legend-body">'+
- '<p><strong>RIT is the number.</strong> The five colours come from achievement percentile, not universal RIT cutoffs or growth.</p>'+
+ '<p><strong>Large number = current RIT.</strong> The number beneath shows the RIT-point change from the most recent earlier valid test. The five background colours use achievement percentiles, not RIT cutoffs or growth. No previous test means no change can be calculated.</p>'+
  '<div class="map-rit-band-list">'+bandRows()+'</div><small>All MAP results in this demonstration are fictional.</small></div></details>';
 }
-function historyScore(record){
+function historyScore(record,delta){
  if(!record)return '<span class="map-rit-history-empty">—</span>';
  const band=mapRitBand(record.percentile);
- return '<span class="map-rit-history-value '+(band?'map-rit-'+band.key:'map-rit-unclassified')+
- '"><strong>'+esc(record.rit)+'</strong><small>'+esc(pText(record.percentile))+'</small></span>';
+ return '<span class="map-rit-history-value '+(band?'map-rit-'+band.key:'map-rit-unclassified')+'">'+
+ '<span class="map-rit-history-score"><strong>'+esc(record.rit)+'</strong><small>'+esc(pText(record.percentile))+'</small></span>'+
+ '<span class="map-rit-history-growth">'+esc(mapRitChangeLabel(delta))+'</span></span>';
 }
 export function renderMapRitProfile(records){
  if(!MAP_RIT_SUBJECTS.some(subject=>subjectMapRecords(records,subject).length))return '';
  const current=MAP_RIT_SUBJECTS.map(subject=>({subject,record:mapRitCurrent(records,subject)}));
  return '<section class="map-rit-profile" aria-label="MAP achievement RIT and score history">'+
  '<div class="map-rit-profile-heading"><div><span>MAP GROWTH ASSESSMENT</span>'+
- '<h2>RIT achievement across subjects</h2><p>Fall 2026 scores · expand below to compare testing windows.</p></div>'+
+ '<h2>RIT achievement across subjects</h2><p>Fall 2026 RIT scores and change since each subject’s previous valid test.</p></div>'+
  '<span class="map-rit-fictional">FICTIONAL MAP DATA</span></div>'+
  '<div class="map-rit-profile-grid">'+current.map(({subject,record})=>{
   const band=mapRitBand(record?.percentile);
+  const change=mapRitChange(records,subject);
   return '<article class="map-rit-profile-subject '+(band?'map-rit-'+band.key:'map-rit-unclassified')+'">'+
-   '<span>MAP '+esc(subject)+'</span><strong>'+(record?esc(record.rit):'—')+
-   '</strong><small>'+(record?esc(pText(record.percentile)+' · '+(band?.label||'Not classified')):'No Fall 2026 assessment')+
+   '<span>MAP '+esc(subject)+'</span><strong>'+(record?esc(record.rit):'—')+'</strong>'+
+   (record?'<span class="map-rit-profile-growth">'+esc(mapRitChangeLabel(change.delta))+
+    (change.previous?'<small>since '+esc(change.previous.window)+'</small>':'')+'</span>':'')+
+   '<small>'+(record?esc(pText(record.percentile)+' · '+(band?.label||'Not classified')):'No Fall 2026 assessment')+
    '</small></article>';
  }).join('')+'</div>'+
  '<details class="map-rit-history"><summary>View MAP RIT history · Fall 2026 + three earlier windows</summary>'+
@@ -102,10 +126,10 @@ export function renderMapRitProfile(records){
  '</tr></thead><tbody>'+MAP_RIT_WINDOWS.slice().reverse().map(w=>
   '<tr><th scope="row">'+esc(w.label)+'</th>'+MAP_RIT_SUBJECTS.map(s=>{
    const match=mapRitHistory(records,s).find(row=>row.key===w.key);
-   return '<td>'+historyScore(match?.record||null)+'</td>';
+   return '<td>'+historyScore(match?.record||null,mapRitChange(records,s,w.key).delta)+'</td>';
   }).join('')+'</tr>'
  ).join('')+'</tbody></table></div>'+
- '<p class="map-rit-history-note">RIT is an achievement scale score; colours are determined by the synthetic achievement percentiles for each grade and term. They are not fixed RIT-score thresholds. Missing windows remain blank. No genuine student records or official NWEA norm calculations are used.</p>'+
+ '<p class="map-rit-history-note">The signed change is the difference from the most recent earlier valid assessment in that subject; the previous test may be outside these four displayed windows. This is observed RIT-point change, not projected growth or growth percentile. Colours use synthetic achievement percentiles, not fixed RIT-score thresholds. Missing tests and missing comparisons remain unavailable. No actual student records or official NWEA norm calculations are used.</p>'+
  '</details></section>';
 }
 /** Fixed-position tooltip escapes the horizontally scrolling Faculty roster. */
