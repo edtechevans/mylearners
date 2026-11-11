@@ -251,7 +251,22 @@ export function resolveEvidencePreview(trigger,ctx){
   const subject=trigger.dataset.evidenceSubject||ctx.state.academicSubject||'Mathematics';
   if(mode==='report')
    return compact(subject,person.name,reportProgress(academic,subject),'academic','—');
-  if(['ixl','core','fp'].includes(mode))
+  if(mode==='ixl'){
+   const latest=latestAcademic(academic,'ixl');
+   const rows=latest?[
+    ['Overall math score',String(latest.scoreLabel||latest.level)],
+    ['Overall scale score',Number.isFinite(latest.scaleScore)?latest.scaleScore.toFixed(2):'—'],
+    ['Grade-level tier',latest.tier||'Not classified'],
+    ['IXL diagnostic percentile',Number.isInteger(latest.percentile)?'P'+latest.percentile:'—'],
+    ...(latest.domains||[]).slice(0,3).map(d=>[d.name,
+     String(d.scoreLabel||d.score??'—')+(d.tier?' · '+d.tier:'')])
+   ]:[['Current diagnostic','Not completed or unavailable']];
+   return makePreview({title:'IXL Math Diagnostic',subtitle:person.name+' · Fictional',
+    trend:academicCheckinProgress(academic,'ixl'),rows,
+    note:'Overall diagnostic score, scale score, grade-level tier and percentile are separate IXL fields. These do not use MAP RIT bands. Missing diagnostics are not zero.',
+    kind:'academic'});
+  }
+  if(['core','fp'].includes(mode))
    return compact(PREVIEW_GUIDE[mode].label,person.name,
     academicCheckinProgress(academic,mode),'academic','—');
   if(mode==='flourishing'){
