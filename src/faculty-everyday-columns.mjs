@@ -11,13 +11,13 @@ const COLUMN=Object.freeze({
  earlyLiteracy:{id:'earlyLiteracy',label:'Early Literacy · last issued',kind:'report',subject:'Early Literacy'},
  earlyInquiry:{id:'earlyInquiry',label:'Inquiry & Play · last issued',kind:'report',subject:'Inquiry & Play'},
  mapReading:{id:'mapReading',label:'MAP Reading RIT',kind:'mapRit',subject:'Reading'},
- mapMathematics:{id:'mapMathematics',label:'MAP Mathematics RIT',kind:'mapRit',subject:'Mathematics'},
+ mapMathematics:{id:'mapMathematics',label:'MAP Math RIT',kind:'mapRit',subject:'Mathematics'},
  mapLanguage:{id:'mapLanguage',label:'MAP Language Usage RIT',kind:'mapRit',subject:'Language Usage'},
  engagement:{id:'engagement',label:'Engagement · check-in',kind:'engagement'},
  belonging:{id:'belonging',label:'Belonging · check-in',kind:'belonging'},
  core:{id:'core',label:'Core Phonics',kind:'core'},
  fp:{id:'fp',label:'F&P Reading',kind:'fp'},
- ixl:{id:'ixl',label:'IXL Mathematics',kind:'ixl'},
+ ixl:{id:'ixl',label:'IXL Math',kind:'ixl'},
  maia:{id:'maia',label:'Maia · Relationships',kind:'flourishing'}
 });
 export function everydayEvidenceForGrade(grade){
