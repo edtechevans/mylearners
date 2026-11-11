@@ -182,14 +182,14 @@ function concernsEvidence(x,isSecondary){
  return pieces.join('<span class="leader-review-separator"> • </span>');
 }
 export function renderLeaderDivisionDaily({division,grade,students,allStudents,data,
- academic,records,sssRecords,entries,reviewFilter='all',expanded=false,savedView=null}){
+ academic,records,sssRecords,entries,reviewFilter='all',expanded=false,savedView=null,voiceWindow='F26'}){
  const secondary=division==='Secondary',
   attendance=leaderAttendanceReview(students,data),
   academics=leaderAcademicReview(students,academic),
   support=studentSupportLeadershipSummary(students,sssRecords,entries),
   voice=leaderVoice(students,records);
  const queue=leaderReviewQueue(students,data,academic,reviewFilter,expanded,secondary);
- const voiceReview=leaderVoiceReview(students,records);
+ const voiceReview=leaderVoiceReview(students,records,voiceWindow);
  const mapReview=leaderMapRedReview(students,data.map);
  const delta=voice.map(x=>x.delta).filter(Number.isFinite);
  const change=delta.length?Math.min(...delta):null;
@@ -257,7 +257,7 @@ export function renderLeaderDivisionDaily({division,grade,students,allStudents,d
    '</div>'+
    '<div class="leader-review-shortcuts" aria-label="Student evidence review shortcuts">'+
     (voiceReview.eligible?'<button type="button" data-leader-jump="leader-experience-review">'+
-     '<span><b>Student Experience to review</b><small>Engagement or Belonging ≤0 · latest check-in</small></span>'+
+     '<span><b>Student Experience to review</b><small>Engagement or Belonging ≤0 · selected check-in</small></span>'+
      '<strong>'+voiceReview.rows.length+'</strong></button>':'')+
     (mapReview.eligible?'<button type="button" data-leader-jump="leader-map-review">'+
      '<span><b>MAP red-band review</b><small>One or more subjects · 1st–20th percentile</small></span>'+
