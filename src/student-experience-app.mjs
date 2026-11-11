@@ -249,6 +249,21 @@ function roster(ss,options={}){
    return '<span class="class-evidence-result"><strong>'+safe(value)+'</strong></span>';
   }
   if(column.kind==='mapRit')return renderMapRitCell(DATA.map[student.id]||[],column.subject,student.id);
+  if(column.kind==='ixl'){
+   const result=latestAcademic(academicFor(ACADEMIC_RECORDS,student.id),'ixl');
+   const status=result?.tier==='Above grade'?'above':result?.tier==='On grade'?'on':
+    result?.tier==='Below grade'?'below':result?.tier==='Far below grade'?'far-below':'missing';
+   const detail=result?
+    'Overall diagnostic '+result.value+'; '+(result.tier||'tier unavailable')+
+    '; '+(Number.isInteger(result.percentile)?'IXL percentile '+result.percentile:'IXL percentile unavailable'):
+    'No completed current IXL diagnostic; missing is not zero';
+   return '<span class="evidence-cell-layout"><button type="button" class="evidence-cell-open ixl-diagnostic-open"'+
+    ' data-student="'+safe(student.id)+'" data-evidence-value="'+safe(result?.value||'—')+
+    '" data-evidence-context="'+safe(detail)+'" aria-label="IXL Math: '+safe(detail)+'. Open learner profile">'+
+    '<span class="ixl-diagnostic-tile ixl-tier-'+status+'">'+
+    '<strong>'+safe(result?.value||'—')+'</strong>'+
+    '<small>'+safe(result?.tier||'Not completed')+'</small></span></button></span>';
+  }
   const report=facultyDemoReport(academicFor(ACADEMIC_RECORDS,student.id));
   const entry=column.kind==='report'?report?.subjects?.find(x=>x.subject===column.subject):null;
   const context={...evidenceCtx,mode:column.kind,subject:column.subject||state.academicSubject,
@@ -382,13 +397,13 @@ function roster(ss,options={}){
   '<span class="faculty-legend-chip band-mid-high">'+(hasNumericReports?'5–6':'Higher')+'</span>'+
   '<span class="faculty-legend-chip band-high">'+(hasNumericReports?'7':'High')+'</span></span>'+
   '<span class="faculty-legend-caption">Reports use fixed grade bands. Other measures are colour-only. Hover or focus for exact data.</span>'+
-  '<details><summary>Interpret colours</summary><p>Numeric report TEST grades: 1–3 red, 4 orange, 5–6 light green, 7 dark green. Elementary developmental descriptors are not converted to grades. IXL and other assessments use same-grade fictional comparisons; MAP RIT uses five separate percentile quintiles; experience uses fixed −2 to +2 bands. Grey means missing. A colour is not a learner label.</p></details></div>':'')+
+  '<details><summary>Interpret colours</summary><p>Numeric report TEST grades: 1–3 red, 4 orange, 5–6 light green, 7 dark green. Elementary developmental descriptors are not converted to grades. IXL uses source-style diagnostic tiers with incomplete results shown as missing; MAP RIT uses five separate achievement percentile quintiles; other assessments use fictional same-grade comparisons; experience uses fixed −2 to +2 bands. Grey means missing. A colour is not a learner label.</p></details></div>':'')+
   (everyday&&everydayColumns.some(c=>c.kind==='mapRit')?renderMapRitLegend():'')+
   table+mobile+
   (rows.length?'':'<p class="empty-message">'+(filterLevel!==null?'No learners have a subject result of '+filterLevel+' or below in this selection.':'No matching students in your assigned classes. Try a different name.')+'</p>')+
   '<details class="faculty-inquiry-prompt"><summary>From evidence to action</summary>'+
    '<p>Notice a pattern, check the source and date, and consider what more you might need to know. Select a learner to review their context and use the existing classroom response or follow-up tools. Do not draw conclusions from colour alone.</p></details>'+
-  '<p class="tiny roster-caption">All subjects show explicitly fictional 2026–27 current-grade examples, not issued report grades. Numeric test outcomes use fixed 1–7 thresholds; Elementary developmental descriptors retain their own wording. MAP RIT colours use five NWEA-style achievement percentile bands from simulated percentiles. Other non-report colours use fictional same-grade comparisons or fixed experience bands. Hover for the exact result and reporting context.</p>'+
+  '<p class="tiny roster-caption">All subjects show explicitly fictional 2026–27 current-grade examples, not issued report grades. Numeric test outcomes use fixed 1–7 thresholds; Elementary developmental descriptors retain their own wording. MAP RIT uses five achievement percentile bands; IXL Math uses separate diagnostic grade-level tiers, and incomplete tests are missing rather than zero. Other non-report colours use fictional same-grade comparisons or fixed experience bands. Hover for the exact result and reporting context.</p>'+
   '</section>';
 }
 
