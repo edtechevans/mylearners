@@ -26,7 +26,9 @@ test('Current RIT tiles show the score, and band is based on percentile',()=>{
   assert.match(html,new RegExp('>'+current.rit+'</strong>'));
   assert.match(html,new RegExp('map-rit-'+mapRitBand(current.percentile).key));
   assert.match(html,/data-student=/);
-  assert.match(html,/Spring 2026/);
+  assert.match(html,/since Spring 2026/);
+  assert.doesNotMatch(html, /map-rit-percentile| title=/);
+  assert.match(html, /aria-label="MAP /);
  }
 });
 test('Missing test windows stay missing, and four requested windows remain ordered',()=>{
@@ -39,11 +41,15 @@ test('Missing test windows stay missing, and four requested windows remain order
 });
 test('Headers and learner profiles explain five bands and four periods',()=>{
  assert.match(renderMapRitHeader('Language Usage'),/data-map-rit-subject="Language Usage"/);
+ const mathHeader=renderMapRitHeader('Mathematics');
+ assert.match(mathHeader,/>Math<\/span>/);
+ assert.doesNotMatch(mathHeader,/\stitle=/);
+ assert.doesNotMatch(mathHeader,/map-rit-head-unit/);
  const help=renderMapRitTooltip('Language Usage');
  for(const term of ['Low Average','High Average','81–99'])assert.ok(help.includes(term));
  const student=data.students.find(s=>s.grade==='G7');
  const profile=renderMapRitProfile(data.map[student.id]);
- for(const subject of MAP_RIT_SUBJECTS)assert.ok(profile.includes('MAP '+subject));
+ for(const subject of MAP_RIT_SUBJECTS)assert.ok(profile.includes('MAP '+(subject==='Mathematics'?'Math':subject)));
  for(const w of MAP_RIT_WINDOWS)assert.ok(profile.includes(w.label));
  assert.match(profile,/FICTIONAL MAP DATA/);
  assert.equal(renderMapRitProfile(data.map[data.students.find(s=>s.grade==='G1').id]),'');
@@ -62,7 +68,8 @@ test('Each MAP RIT score shows observed growth since the latest earlier valid sa
  assert.match(html,/map-rit-high/,'Achievement colour comes from percentile 85');
  assert.match(html,/<strong class="map-rit-score">218<\/strong>/);
  assert.match(html,/<span class="map-rit-growth map-rit-growth-up">\+7 RIT<\/span>/);
- assert.match(html,/P85/);
+ assert.doesNotMatch(html,/P85|title=|map-rit-percentile/);
+ assert.match(html,/percentile rank 85/);
  assert.match(html,/since Spring 2026/);
  const profile=renderMapRitProfile(rows);
  assert.match(profile,/map-rit-profile-growth/);
