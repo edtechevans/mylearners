@@ -35,11 +35,68 @@ function dateIso(d){return d.toISOString().slice(0,10)}
 const dayList=(()=>{const dates=[];let d=new Date('2026-08-10T12:00:00Z');const end=new Date('2026-10-08T12:00:00Z');for(;d<=end;d.setUTCDate(d.getUTCDate()+1)){if(d.getUTCDay()>0&&d.getUTCDay()<6&&!['2026-10-01','2026-10-02','2026-10-05','2026-10-06'].includes(dateIso(d)))dates.push(dateIso(d))}return dates})();
 function attendanceFor(id){const r=rng(hash(`${id}-attendance`));const frag=(hash(id)%19===0)?0.15:(hash(id)%13===0)?0.085:0.025;return dayList.map(date=>{const u=r();const state=u<frag?'absent':u<frag+0.04?'late':'present';return {date,status:state,excused:state==='absent'&&r()>0.3,unit:'day'}})}
 export function attendanceSummary(events){const abs=events.filter(e=>e.status==='absent').length;const late=events.filter(e=>e.status==='late').length;const present=events.length-abs;return {total:events.length,present,absences:abs,lates:late,rate:events.length?Math.round(present*1000/events.length)/10:null}}
-function mapFor(id,grade,subj,scenario){const n=gradeNumber(grade);if(n<3||n>10)return [];const r=rng(hash(`${id}-${subj}-map`));const variance=Math.round((r()-.5)*29);const base = subj==='Mathematics'?172:subj==='Reading'?168:170;
-const recent=base+n*5.9+variance;const slope=scenario==='high'?8:scenario==='flat'?1.5:scenario==='dip'?-0.5:4.2+r()*2.5;
-const eligible=WINDOWS.filter(w=>n+w.gradeOffset>=3&&n+w.gradeOffset<=10);
-const start=recent-slope*(eligible.length-1);
-return eligible.map((w,j)=>{const rit=Math.round(clamp(start+j*slope+(r()-.5)*4,130,285));const percentile=clamp(Math.round(50+(rit-(base+(n+w.gradeOffset)*5.9))*2.15),1,99);const projection=j?Math.round(clamp(3+(10-n)*.17,2,8)):null;return {key:w.key,window:w.label,date:w.date,subject:subj,rit,percentile,projection,simulated:true,status:'valid'}})
+// Generic learning-goal categories modeled after the exported MAP Course/Goal# fields.
+const MAP_GOAL_NAMES=Object.freeze({
+ Reading:['Literary Text','Informational Text','Vocabulary'],
+ 'Language Usage':[
+  'Writing: Write, Revise Texts for Purpose and Audience',
+  'Language: Understand, Edit for Grammar, Usage',
+  'Language: Understand, Edit for Mechanics'
+ ],
+ 'Mathematics-early':[
+  'Operations and Algebraic Thinking','Number and Operations',
+  'Measurement and Data','Geometry'
+ ],
+ 'Mathematics-later':[
+  'Operations and Algebraic Thinking','The Real and Complex Number Systems',
+  'Geometry','Statistics and Probability'
+ ]
+});
+const MAP_BAND_CODE=['Low','LoAvg','Avg','HiAvg','High'];
+const mapBandCode=p=>MAP_BAND_CODE[p<=20?0:p<=40?1:p<=60?2:p<=80?3:4];
+function mapFor(id,grade,subj,scenario){
+ const n=gradeNumber(grade);
+ if(n<3||n>10)return [];
+ const r=rng(hash(id+'-'+subj+'-map'));
+ const variance=Math.round((r()-.5)*29);
+ const base=subj==='Mathematics'?172:subj==='Reading'?168:170;
+ const recent=base+n*5.9+variance;
+ const slope=scenario==='high'?8:scenario==='flat'?1.5:scenario==='dip'?-0.5:4.2+r()*2.5;
+ const eligible=WINDOWS.filter(w=>n+w.gradeOffset>=3&&n+w.gradeOffset<=10);
+ const start=recent-slope*(eligible.length-1);
+ const records=eligible.map((w,j)=>{
+  const rit=Math.round(clamp(start+j*slope+(r()-.5)*4,130,285));
+  const percentile=clamp(Math.round(50+(rit-(base+(n+w.gradeOffset)*5.9))*2.15),1,99);
+  const projection=j?Math.round(clamp(3+(10-n)*.17,2,8)):null;
+  const goalKey=subj==='Mathematics'?'Mathematics-'+(n+w.gradeOffset<=5?'early':'later'):subj;
+  const goals=MAP_GOAL_NAMES[goalKey].map(name=>{
+   const goalRit=Math.round(clamp(rit+(r()-.5)*25,130,290));
+   const goalP=clamp(percentile+Math.round((r()-.5)*20),1,99);
+   return {name,rit:goalRit,standardError:Math.round((4+r()*3)*10)/10,
+    range:(goalRit-7)+'-'+(goalRit+7),adjective:mapBandCode(goalP)};
+  });
+  const course=subj==='Mathematics'?'Math K-12':subj;
+  return {key:w.key,window:w.label,date:w.date,subject:subj,course,
+   rit,percentile,achievementQuintile:['low','low-average','average','high-average','high'][percentile<=20?0:percentile<=40?1:percentile<=60?2:percentile<=80?3:4],
+   projection,goals,growth:{fallToFall:null},growthMeasure:true,
+   simulated:true,status:'valid'};
+ });
+ // Fall-to-Fall is a separate interval from the latest prior-window RIT change
+ // displayed in the main subject tile. Both values here are entirely synthetic.
+ const fall=records.find(x=>x.key==='F26');
+ const previousFall=records.find(x=>x.key==='F25');
+ if(fall&&previousFall){
+  const observed=fall.rit-previousFall.rit;
+  const projected=fall.projection;
+  const growthP=clamp(Math.round(49+observed*3+(r()-.5)*15),1,99);
+  fall.growth.fallToFall={period:'Fall to Fall',observed,projected,
+   observedSE:Math.round((3+r()*2)*10)/10,
+   conditionalGrowthPercentile:growthP,
+   growthQuintile:mapBandCode(growthP),
+   met:projected===null?null:observed>=projected,
+   metFlagged:false,source:'simulated'};
+ }
+ return records;
 }
 function assessmentFor(id,g){const r=rng(hash(`${id}-assessment`));const n=gradeNumber(g);const subjects=n<=5?SUBJECTS_E:SUBJECTS_S;const titles=n<=5?['Learning evidence','Unit reflection','Skills check','Inquiry performance task','Learning conversation']:['Unit summative','Research task','Criterion assessment','Knowledge application','Reflection task'];const rows=[];for(let i=0;i<7;i++){const score=r();const subject=subjects[i%subjects.length];const day=Number(String(10+i*3).slice(-2))+1;const date=`2026-09-${String(Math.min(day,29)).padStart(2,'0')}`;
 rows.push({id:`${id}-AS-${i}`,subject,title:titles[i%titles.length],date,status:score<.09?'Missing':score<.17?'Pending':'Published',scale:n<=5?'developmental':n<=10?'MYP':'DP',outcome:n<=5?['Emerging','Developing','Applying','Extending'][Math.floor(score*4)]:n<=10?`${clamp(Math.round(score*8),1,8)} / 8`:`${clamp(Math.round(score*7),1,7)} / 7`,feedback:i%3===0?'Feedback available':null});}

@@ -74,8 +74,19 @@ test('IXL snapshots are diagnostic-style levels, Core is item counts and F&P is 
  for(const student of DATA.students){
   const rec=academicFor(records,student.id);
   for(const item of rec.ixl){
-   assert.ok(item.level>=80&&item.level<=1150&&Number.isInteger(item.level));
    assert.ok(item.year<=2026&&item.year>=2024&&item.measure.includes('diagnostic level'));
+   if(item.status==='completed'){
+    assert.ok(item.level>=80&&item.level<=1150&&Number.isInteger(item.level));
+    assert.ok(Number.isFinite(item.scaleScore)&&item.scaleScore>0);
+    assert.ok(Number.isInteger(item.percentile)&&item.percentile>=1&&item.percentile<=99);
+    assert.ok(['Above grade','On grade','Below grade','Far below grade'].includes(item.tier));
+    assert.ok(item.domains.length>=3);
+   }else{
+    assert.equal(item.status,'not-completed');
+    assert.equal(item.level,null,'A missing diagnostic is not a zero');
+    assert.equal(item.tier,null);
+    assert.equal(item.percentile,null);
+   }
   }
   for(const item of rec.core){
    assert.equal(item.assessed,50);

@@ -38,7 +38,7 @@ export function leaderCheckSnapshot(students,records,mode){
  }
  const recent=(students||[]).filter(s=>academicModesFor(s.grade).includes(mode))
   .map(s=>academicFor(records,s.id)[mode]?.at(-1))
-  .filter(item=>item?.date==='Fall 2026');
+  .filter(item=>item?.date==='Fall 2026'&&(mode!=='ixl'||Number.isFinite(item.level)));
  if(!recent.length)return {...coverage,recent:0,typical:null};
  const values=recent.map(item=>mode==='ixl'?item.level:
   mode==='core'?item.correct:READING_LEVELS.indexOf(item.level))

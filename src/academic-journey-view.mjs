@@ -123,18 +123,31 @@ function showProgressTimeline(items,kind){
  }).join('')+'</div>';
 }
 function evidenceCard(record,kind,studentRole=false){
- const items=record[kind]||[];
+ const items=(record[kind]||[]).filter(x=>kind!=='ixl'||Number.isFinite(x.level));
  if(!items.length)return '';
  const recent=items.at(-1),prev=items.at(-2);
  const definitions={
-  ixl:{title:'IXL Mathematics',eyebrow:'MATHS DIAGNOSTIC · G1–10',value:String(recent.level),
-   unit:'diagnostic level',help:'A fictional IXL Mathematics diagnostic level (0–1300), not a SmartScore or a percentage. A difference between check-ins is not a report-card grade.'},
+  ixl:{title:'IXL Mathematics',eyebrow:'MATHS DIAGNOSTIC · G1–10',value:String(recent.scoreLabel||recent.level),
+   unit:'overall math diagnostic score',help:'The IXL Overall math score is a diagnostic level (not a SmartScore, scale score, percentage or MAP RIT). Overall scale score, tier, percentile and learning-domain scores are separate fields. All values are fictional.'},
   core:{title:'Core Phonics',eyebrow:'DECODING SKILLS · K–G5',value:recent.correct+' / '+recent.assessed,
    unit:'items demonstrated',help:'A fictional 50-item classroom decoding check, shown to illustrate how Core Phonics evidence could appear. Not an official CORE Phonics Survey total or norm.'},
   fp:{title:'F&P Reading',eyebrow:'TEXT LEVEL · K–G5',value:recent.level,
    unit:'text level',help:'A fictional Fountas & Pinnell reading text level (A–Z+). Letters describe text complexity and do not measure the whole reader or equal a grade.'}
  };
  const meta=definitions[kind];
+ const ixlDetails=kind==='ixl'?'<div class="ixl-diagnostic-facts">'+
+  '<span>Scale score <strong>'+esc(recent.scaleScore??'—')+'</strong></span>'+
+  '<span>Tier <strong>'+esc(recent.tier||'Not classified')+'</strong></span>'+
+  '<span>IXL percentile <strong>'+(Number.isInteger(recent.percentile)?'P'+recent.percentile:'—')+'</strong></span>'+
+  '</div>'+
+  ((record.ixl||[]).at(-1)?.status==='not-completed'?
+   '<p class="ixl-diagnostic-note">No completed diagnostic in Fall 2026. The score above is from '+esc(recent.date)+'.</p>':'')+
+  (recent.domains?.length?'<details class="ixl-domain-details"><summary>View IXL skill domains</summary>'+
+   '<div class="ixl-domain-list">'+recent.domains.map(row=>'<div><strong>'+esc(row.name)+'</strong>'+
+    '<span>'+esc(row.scoreLabel||String(row.score??'—'))+
+    (row.tier?' · '+esc(row.tier):'')+
+    (Number.isInteger(row.percentile)?' · P'+row.percentile:'')+'</span></div>').join('')+
+   '</div></details>':''):'';
  const delta=kind==='ixl'&&prev?'Change since previous check-in: '+(recent.level-prev.level>0?'+':'')+(recent.level-prev.level)+' level points':
   kind==='core'&&prev?'Change since previous check-in: '+(recent.correct-prev.correct>0?'+':'')+(recent.correct-prev.correct)+' items':
   'Use other reading evidence alongside this snapshot';
@@ -144,14 +157,17 @@ function evidenceCard(record,kind,studentRole=false){
  '<div><span class="academic-eyebrow">'+esc(meta.eyebrow)+'</span><h3>'+esc(meta.title)+'</h3></div></div>'+
  '<div class="academic-evidence-primary"><strong>'+esc(meta.value)+'</strong><span>'+esc(meta.unit)+'</span></div>'+
  '<p class="academic-evidence-delta">'+esc(delta)+'</p>'+
- showProgressTimeline(items,kind)+
+ showProgressTimeline(items,kind)+ixlDetails+
  '<details class="academic-evidence-help"><summary>What does this mean?</summary><p>'+esc(meta.help)+'</p></details></article>';
 }
 export function renderAcademicProfile(student,records,studentRole=false,selectedYear=''){
  const record=academicFor(records,student.id);
  const reports=record.reports||[];
  const year=reports.find(r=>r.year===selectedYear)||reports[0]||null;
- const available=['ixl','core','fp'].filter(kind=>record[kind]?.length);
+ const available=['ixl','core','fp'].filter(kind=>
+  kind==='ixl'?(record.ixl||[]).some(x=>Number.isFinite(x.level)):record[kind]?.length);
+ const missingIXL=academicModesFor(student.grade).includes('ixl')&&
+  !(record.ixl||[]).some(x=>Number.isFinite(x.level));
  const title=studentRole?'My School Reports':'Report Card Grades';
  const evidenceHeading=studentRole?'My Maths and Reading Journey':'Maths and Reading Evidence';
  const sectionLabel=studentRole?'MY ACHIEVEMENT & PROGRESS':'ACADEMIC EVIDENCE';
@@ -176,5 +192,6 @@ export function renderAcademicProfile(student,records,studentRole=false,selected
  '<h2>'+evidenceHeading+'</h2><p>Separate measures that help us notice progress—not a combined score.</p></div>'+
  '<div class="academic-evidence-grid">'+available.map(kind=>evidenceCard(record,kind,studentRole)).join('')+'</div></section>':
  '<p class="academic-skill-none">IXL Mathematics diagnostic: Grades 1–10. Core Phonics and F&P reading levels: Kindergarten–Grade 5. No other measures are shown outside their eligible grades.</p>')+
+ (missingIXL?'<p class="ixl-diagnostic-note">IXL: No completed diagnostic available in these fictional records. An incomplete or missing test is not a score of zero.</p>':'')+
  '</section>';
 }

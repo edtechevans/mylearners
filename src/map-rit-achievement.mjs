@@ -40,7 +40,11 @@ export function mapRitChange(records,subject,window='F26'){
  const ordered=validSubject(subject)?subjectMapRecords(records,subject):[];
  const current=ordered.find(r=>r.key===window)||null;
  const previous=current?ordered.filter(r=>r.date<current.date).at(-1)||null:null;
- return {current,previous,delta:current&&previous?current.rit-previous.rit:null};
+ const reported=current?.growth?.fallToFall?.observed;
+ if(!previous&&current&&Number.isFinite(reported))
+  return {current,previous:null,delta:reported,comparison:'Fall to Fall',source:'reported'};
+ return {current,previous,delta:current&&previous?current.rit-previous.rit:null,
+  comparison:previous?previous.window:null,source:previous?'calculated':null};
 }
 export function mapRitChangeLabel(delta){
  return Number.isFinite(delta)?(delta>0?'+':'')+delta+' RIT':'No prior test';
@@ -60,7 +64,8 @@ export function renderMapRitCell(records,subject,studentId){
  '" data-map-rit-subject="'+esc(subject)+'"><strong>—</strong><small>No F26 test</small></span>';
  const band=mapRitBand(current.percentile);
  const growth=mapRitChangeLabel(delta);
- const comparison=previous?' since '+previous.window:'; no previous comparable test';
+ const comparison=previous?' since '+previous.window:
+  (Number.isFinite(delta)?' · reported Fall-to-Fall':' · no previous comparable test');
  return '<button type="button" class="map-rit-tile '+(band?'map-rit-'+band.key:'map-rit-unclassified')+
  '" data-student="'+esc(studentId)+'" data-map-rit-subject="'+esc(subject)+
  '" aria-label="'+esc(subjectTitle(subject)+': Fall 2026 '+current.rit+' RIT; '+growth+comparison+
@@ -98,6 +103,39 @@ function historyScore(record,delta){
  '<span class="map-rit-history-score"><strong>'+esc(record.rit)+'</strong><small>'+esc(pText(record.percentile))+'</small></span>'+
  '<span class="map-rit-history-growth">'+esc(mapRitChangeLabel(delta))+'</span></span>';
 }
+/** NWEA supplies strand/goal RITs and an annual growth interval separately.
+ * Keep this detail available for teacher inquiry without cluttering the roster.
+ */
+export function renderMapRitExportDetails(records){
+ const subjectRecords=MAP_RIT_SUBJECTS.map(subject=>({
+  subject,record:mapRitCurrent(records,subject)
+ })).filter(x=>x.record);
+ const withGoals=subjectRecords.filter(x=>x.record?.goals?.length);
+ const withGrowth=subjectRecords.filter(x=>Number.isFinite(x.record?.growth?.fallToFall?.observed));
+ if(!withGoals.length&&!withGrowth.length)return '';
+ const annual=withGrowth.length?'<div class="map-rit-source-growth">'+
+  '<strong>Fall-to-Fall growth · separate from the tile’s latest-prior-test change</strong>'+
+  withGrowth.map(({subject,record})=>{
+   const growth=record.growth.fallToFall;
+   return '<div>MAP '+esc(mapRitDisplaySubject(subject))+': '+
+    esc(mapRitChangeLabel(growth.observed))+
+    (Number.isFinite(growth.projected)?' · projected '+esc(growth.projected)+' RIT':'')+
+    (Number.isFinite(growth.conditionalGrowthPercentile)?
+     ' · growth percentile P'+esc(growth.conditionalGrowthPercentile):'')+'</div>';
+  }).join('')+'</div>':'';
+ const strands=withGoals.length?'<details class="map-rit-goal-details">'+
+  '<summary>Explore MAP goal areas and learning strands</summary>'+
+  withGoals.map(({subject,record})=>'<div class="map-rit-goal-subject">'+
+   '<h4>MAP '+esc(mapRitDisplaySubject(subject))+'</h4>'+
+   '<div class="map-rit-goal-list">'+record.goals.map(goal=>
+    '<div><strong>'+esc(goal.name)+'</strong><span>'+
+     (Number.isFinite(goal.rit)?esc(goal.rit)+' RIT':'No RIT')+
+     (goal.adjective?' · '+esc(goal.adjective):'')+'</span></div>'
+   ).join('')+'</div></div>').join('')+
+  '<p class="map-rit-goal-foot">Goal-area results have their own RIT scale scores and descriptors; they should support instructional questions, not form a new overall grade. Fictional demonstration values.</p>'+
+  '</details>':'';
+ return annual+strands;
+}
 export function renderMapRitProfile(records){
  if(!MAP_RIT_SUBJECTS.some(subject=>subjectMapRecords(records,subject).length))return '';
  const current=MAP_RIT_SUBJECTS.map(subject=>({subject,record:mapRitCurrent(records,subject)}));
@@ -111,7 +149,8 @@ export function renderMapRitProfile(records){
   return '<article class="map-rit-profile-subject '+(band?'map-rit-'+band.key:'map-rit-unclassified')+'">'+
    '<span>MAP '+esc(mapRitDisplaySubject(subject))+'</span><strong>'+(record?esc(record.rit):'—')+'</strong>'+
    (record?'<span class="map-rit-profile-growth">'+esc(mapRitChangeLabel(change.delta))+
-    (change.previous?'<small>since '+esc(change.previous.window)+'</small>':'')+'</span>':'')+
+    (change.previous?'<small>since '+esc(change.previous.window)+'</small>':
+     change.source==='reported'?'<small>reported Fall-to-Fall</small>':'')+'</span>':'')+
    '<small>'+(record?esc(pText(record.percentile)+' · '+(band?.label||'Not classified')):'No Fall 2026 assessment')+
    '</small></article>';
  }).join('')+'</div>'+
@@ -124,8 +163,9 @@ export function renderMapRitProfile(records){
    return '<td>'+historyScore(match?.record||null,mapRitChange(records,s,w.key).delta)+'</td>';
   }).join('')+'</tr>'
  ).join('')+'</tbody></table></div>'+
- '<p class="map-rit-history-note">The signed change is the difference from the most recent earlier valid assessment in that subject; the previous test may be outside these four displayed windows. This is observed RIT-point change, not projected growth or growth percentile. Colours use synthetic achievement percentiles, not fixed RIT-score thresholds. Missing tests and missing comparisons remain unavailable. No actual student records or official NWEA norm calculations are used.</p>'+
- '</details></section>';
+ '<p class="map-rit-history-note">The signed change normally compares each RIT with the previous valid test in the same subject. If the only imported result is Fall 2026, an explicitly reported Fall-to-Fall observed growth may be shown instead and is labelled accordingly. Neither is a growth percentile or a universal RIT cutoff. Missing windows are not fabricated. All visible records are fictional.</p>'+
+ '</details>'+
+ renderMapRitExportDetails(records)+'</section>';
 }
 /** Fixed-position tooltip escapes the horizontally scrolling Faculty roster. */
 export function installMapRitHeaderTooltips(root){

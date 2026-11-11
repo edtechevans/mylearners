@@ -52,7 +52,7 @@ export function issuedReportProgress(record,subject,year){
  return result(points,'grade points',0,selected.scale==='1–7');
 }
 export function academicCheckinProgress(record,mode){
- const items=record?.[mode]||[];
+ const items=(record?.[mode]||[]).filter(x=>mode!=='ixl'||Number.isFinite(x.level));
  if(!['ixl','core','fp'].includes(mode))return result([]);
  const points=items.map(x=>({
   label:x.date,

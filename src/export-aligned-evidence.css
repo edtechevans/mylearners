@@ -1,0 +1,83 @@
+/* Assessment export-aligned fiction: IXL LevelUp is NOT MAP RIT.
+   Use IXL's four source-style grade-level tier labels and a distinct tile style.
+   Grey means no completed diagnostic, never score zero. */
+#app .roster-daily .ixl-diagnostic-open{
+ width:100%;display:block;border:0;background:transparent;padding:0;cursor:pointer
+}
+#app .roster-daily .ixl-diagnostic-tile{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+ min-height:57px;padding:6px 7px;border-radius:7px;
+ border:1px solid transparent;font-variant-numeric:tabular-nums;
+ transition:filter 140ms ease,transform 140ms ease
+}
+#app .roster-daily .ixl-diagnostic-tile strong{
+ font-size:16px;font-weight:850;line-height:1.1;color:inherit
+}
+#app .roster-daily .ixl-diagnostic-tile small{
+ font-size:9px;font-weight:750;line-height:1.15;color:inherit;
+ text-align:center;white-space:normal
+}
+#app .roster-daily .ixl-tier-above{background:#216b58;color:#fff}
+#app .roster-daily .ixl-tier-on{background:#b6c9a4;color:#1d3b37}
+#app .roster-daily .ixl-tier-below{background:#f0a95b;color:#273b43}
+#app .roster-daily .ixl-tier-far-below{background:#9f3945;color:#fff}
+#app .roster-daily .ixl-tier-missing{
+ background:#eef2f4;color:#748692;border:1px dashed #d3dde2
+}
+#app .roster-daily .ixl-diagnostic-open:hover .ixl-diagnostic-tile{
+ filter:brightness(1.06);transform:translateY(-1px)
+}
+#app .roster-daily .ixl-diagnostic-open:focus-visible{
+ outline:3px solid #317fa9;outline-offset:3px;border-radius:8px
+}
+#app .ixl-diagnostic-facts{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:7px;margin:9px 0 12px
+}
+#app .ixl-diagnostic-facts span{
+ border:1px solid #e0e9ee;border-radius:8px;background:#f6f9fa;
+ display:flex;flex-direction:column;gap:4px;padding:10px;
+ font-size:10px;line-height:1.4;color:#618091
+}
+#app .ixl-diagnostic-facts strong{font-size:13px;color:#214a61}
+#app .ixl-diagnostic-note{
+ padding:10px 13px;border-left:3px solid #cc9e55;background:#fbf7ee;
+ color:#68583f;font-size:11px;line-height:1.55;border-radius:0 8px 8px 0
+}
+#app .ixl-domain-details,#app .map-rit-goal-details{
+ margin:12px 0;border:1px solid #e1e9ee;border-radius:9px;
+ background:#fbfdfe;padding:0
+}
+#app .ixl-domain-details>summary,#app .map-rit-goal-details>summary{
+ padding:10px 12px;cursor:pointer;font-size:11px;font-weight:800;color:#225875
+}
+#app .ixl-domain-list,#app .map-rit-goal-list{
+ display:grid;gap:0;margin:0 12px 12px
+}
+#app .ixl-domain-list>div,#app .map-rit-goal-list>div{
+ display:flex;justify-content:space-between;align-items:center;
+ flex-wrap:wrap;gap:7px;padding:8px 0;border-top:1px solid #e5edf1;
+ font-size:10.5px;color:#486d82
+}
+#app .ixl-domain-list strong,#app .map-rit-goal-list strong{color:#254c63;font-weight:750;max-width:65%}
+#app .ixl-domain-list span,#app .map-rit-goal-list span{
+ font-variant-numeric:tabular-nums;font-weight:700;color:#2c5369
+}
+#app .map-rit-goal-subject{margin:9px 0 15px}
+#app .map-rit-goal-subject>h4{font-size:12px;font-weight:850;color:#254c63;margin:0 12px 5px}
+#app .map-rit-goal-foot{
+ margin:0 12px 12px;color:#687d89;font-size:10px;line-height:1.5
+}
+#app .map-rit-source-growth{
+ margin:12px 0 5px;border-top:1px solid #e3edf1;padding:10px 2px 3px;
+ color:#426176;font-size:11px;line-height:1.55
+}
+#app .map-rit-source-growth strong{font-weight:800;color:#244b63}
+@media(max-width:640px){
+ #app .ixl-diagnostic-facts{grid-template-columns:1fr}
+ #app .ixl-domain-list strong,#app .map-rit-goal-list strong{max-width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+ #app .roster-daily .ixl-diagnostic-tile{transition:none}
+ #app .roster-daily .ixl-diagnostic-open:hover .ixl-diagnostic-tile{transform:none}
+}
