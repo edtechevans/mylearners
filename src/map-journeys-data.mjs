@@ -61,7 +61,7 @@ const oneDecimal=x=>Math.round(x*10)/10;
  */
 export function mapJourneyCohort({
  students=[],map={},subject='Reading',start='F22',end='F26',
- startingBand='both',endingBand='average-plus'
+ startingBand='both',endingBand='average-plus',pathway='all'
 }={}){
  const studySubject=MAP_RIT_SUBJECTS.includes(subject)?subject:'Reading';
  const startKey=validKey(start)?start:'F22';
@@ -69,18 +69,23 @@ export function mapJourneyCohort({
  const startChoice=JOURNEY_START_BANDS.includes(startingBand)?startingBand:'both';
  const endChoice=JOURNEY_END_BANDS.includes(endingBand)?endingBand:'average-plus';
  const eligible=(students||[]).filter(s=>gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10);
- const matched=[],withStart=[],withEnd=[],withoutBoth=[];
+ const allMatched=[],withStart=[],withEnd=[],withoutBoth=[];
  for(const student of eligible){
   const history=journeyStudentHistory(student,map?.[student.id]||[],studySubject);
   const byKey=new Map(history.map(x=>[x.key,x]));
   const from=byKey.get(startKey)||null,to=byKey.get(endKey)||null;
   if(from)withStart.push(student.id);
   if(to)withEnd.push(student.id);
-  if(from&&to)matched.push({student,from,to,history,
+  if(from&&to)allMatched.push({student,from,to,history,
    movement:to.percentile-from.percentile});
   else withoutBoth.push(student.id);
  }
- matched.sort(sortStudents);
+ allMatched.sort(sortStudents);
+ const isCross=row=>Number(row.from.grade?.slice(1))<=5&&
+  Number(row.to.grade?.slice(1))>=6;
+ const crossCount=allMatched.filter(isCross).length;
+ const selectedPathway=pathway==='cross'?'cross':'all';
+ const matched=selectedPathway==='cross'?allMatched.filter(isCross):allMatched;
  const cohort=matched.filter(row=>journeyBandIncludes(startChoice,row.from.band,'start'));
  const selected=cohort.filter(row=>journeyBandIncludes(endChoice,row.to.band,'end'));
  const destinations=emptyBands();
@@ -92,7 +97,8 @@ export function mapJourneyCohort({
  const improving=cohort.filter(row=>row.to.percentile>row.from.percentile).length;
  const endedAveragePlus=cohort.filter(row=>journeyBandIncludes('average-plus',row.to.band,'end')).length;
  return {
-  subject:studySubject,start:startKey,end:endKey,
+  subject:studySubject,start:startKey,end:endKey,pathway:selectedPathway,
+  crossAvailable:crossCount,allMatched:allMatched.length,
   startingBand:startChoice,endingBand:endChoice,eligible:eligible.length,
   withStart:withStart.length,withEnd:withEnd.length,
   matched:matched.length,missingPair:withoutBoth.length,
