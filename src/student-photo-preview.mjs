@@ -110,7 +110,9 @@ export function installStudentPhotoPreview(root,onOpen=()=>{}){
  root.addEventListener('click',e=>{
   const node=fromEvent(e);if(!node)return;
   e.preventDefault();e.stopImmediatePropagation?.();
-  if(active===node&&pinned){dismiss();return}
+  // A portrait click always opens and pins the confirmation card. Avoid
+  // toggling it closed when an earlier focus/hover event already displayed it.
+  // Outside click, Escape, scrolling or navigating still dismisses it.
   cancel();show(node);pinned=true;
  },true);
  document.addEventListener?.('pointerdown',e=>{
