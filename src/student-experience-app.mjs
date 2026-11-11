@@ -1,6 +1,7 @@
 import {generateDemoData,attendanceSummary,gradeNumber,GRADES} from './data.mjs';
 import {applyFacultyDemo,DEFAULT_TEACHER_ID} from './faculty-demo.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
+import {MAP_RIT_SUBJECTS,mapRitCurrent,renderMapRitCell,renderMapRitHeader,renderMapRitLegend,renderMapRitProfile,installMapRitHeaderTooltips} from './map-rit-achievement.mjs';
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs';
 import {renderLeaderSupportSection} from './leader-support-view.mjs';
 import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvidence,leaderAdvisoryClasses} from './leader-daily-workspaces.mjs';
@@ -24,7 +25,7 @@ import {leaderExperienceChange,leaderExperienceScale,leaderExperienceLegend,lead
 import {facultyRosterEvidenceColumns,reportGradeBand,hasLowReportGrade} from './report-card-signals.mjs?v=20261110thresholds1';
 import {renderLeaderReportFollowup} from './leader-report-followup.mjs?v=20261110daily1';
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261028titles1';
-import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261030wall1';
+import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261111maprit1';
 import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261110thresholds1';
 import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile} from './maia-demo.mjs';
 import {renderStudentOverview} from './student-daily-overview.mjs?v=20261028titles1';
@@ -43,6 +44,7 @@ const SUPPORT_SEEDED=seedSupportDemo(DATA.students,SSS_RECORDS);
 let SUPPORT_DRAFTS=loadDraftEntries();
 const supportEntries=()=>[...SUPPORT_SEEDED.filter(x=>!SUPPORT_DRAFTS.some(d=>d.id===x.id)),...SUPPORT_DRAFTS];
 const root=document.getElementById('app');
+installMapRitHeaderTooltips(root);
 // Scripted jumps respect the same reduced-motion preference as CSS transitions.
 const scrollMotion=()=>globalThis.window?.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth';
 const saved=(k,d)=>{try{return sessionStorage.getItem(k)||d}catch{return d}};
@@ -226,6 +228,7 @@ function roster(ss,options={}){
  };
  const everydaySort=(student,column)=>{
   if(column.kind==='attendance')return attendanceSummary(DATA.attendance[student.id]||[]).rate;
+  if(column.kind==='mapRit')return mapRitCurrent(DATA.map[student.id]||[],column.subject)?.rit??null;
   if(column.kind==='engagement'||column.kind==='belonging')
    return experienceFor(RECORDS,student.id,column.kind,state.classExperienceWindow)?.value??null;
   if(column.kind==='report'){
@@ -241,6 +244,7 @@ function roster(ss,options={}){
    const value=attendance.rate===null||attendance.rate===undefined?'—':fmt(attendance.rate)+'%';
    return '<span class="class-evidence-result"><strong>'+safe(value)+'</strong><small>Through 8 Oct 2026</small></span>';
   }
+  if(column.kind==='mapRit')return renderMapRitCell(DATA.map[student.id]||[],column.subject,student.id);
   const report=facultyDemoReport(academicFor(ACADEMIC_RECORDS,student.id));
   const entry=column.kind==='report'?report?.subjects?.find(x=>x.subject===column.subject):null;
   const context={...evidenceCtx,mode:column.kind,subject:column.subject||state.academicSubject,
@@ -323,9 +327,9 @@ function roster(ss,options={}){
   '<col class="roster-col-support"></colgroup>':'';
  const table='<div class="tablewrap roster-desktop"><table'+(everyday?' class="faculty-data-wall"':'')+'>'+colgroup+'<thead><tr><th>Learner</th>'+
   (across?'<th>Class</th>':'')+
-  (everyday?everydayColumns.map(column=>'<th>'+safe(everydayHeading(column))+'</th>').join(''):
+  (everyday?everydayColumns.map(column=>column.kind==='mapRit'?renderMapRitHeader(column.subject):'<th>'+safe(everydayHeading(column))+'</th>').join(''):
    '<th>Attendance</th><th>'+safe(modeLabel)+'</th>'+(compare==='none'?'':'<th>'+safe(compareLabel)+'</th>'))+
-  (!everyday&&showMap?'<th>MAP Math growth</th>':'')+
+  (!everyday&&showMap?MAP_RIT_SUBJECTS.map(renderMapRitHeader).join(''):'')+
   (!everyday&&showSEL?'<th>Engagement</th><th>Belonging</th>':'')+
   '<th>Support information</th></tr></thead><tbody>'+
   data.map(x=>'<tr><td><button class="student-link" data-student="'+x.student.id+
@@ -334,7 +338,7 @@ function roster(ss,options={}){
    (everyday?x.everydayCells.map((cell,i)=>'<td data-ux-sort-value="'+
     (Number.isFinite(x.everydaySortValues[i])?String(x.everydaySortValues[i]):'')+'">'+cell+'</td>').join(''):
     '<td>'+x.attendance+'</td><td>'+x.academics+'</td>'+(compare==='none'?'':'<td>'+x.compared+'</td>'))+
-   (!everyday&&showMap?'<td>'+safe(x.growth)+'</td>':'')+
+   (!everyday&&showMap?MAP_RIT_SUBJECTS.map(subject=>'<td>'+renderMapRitCell(DATA.map[x.student.id]||[],subject,x.student.id)+'</td>').join(''):'')+
    (!everyday&&showSEL?'<td>'+x.eng+'</td><td>'+x.bel+'</td>':'')+
    '<td>'+(x.sss?'<span class="pill sss-faculty-indicator" title="Fictional SSS programme membership">SSS</span> ':'')+
     x.tags.map(t=>pill(t.label)).join(' ')+'</td></tr>').join('')+'</tbody></table></div>';
@@ -348,7 +352,10 @@ function roster(ss,options={}){
    '<span>'+safe(modeLabel)+': '+x.academics.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()+
    '</span>'+(compare==='none'?'':'<span>'+safe(compareLabel)+': '+
     x.compared.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()+'</span>'))+
-  (!everyday?'<span>Attendance '+x.attendance+(showMap?' · MAP '+safe(x.growth):'')+'</span>':'')+
+  (!everyday?'<span>Attendance '+x.attendance+'</span>'+(!showMap?'':MAP_RIT_SUBJECTS.map(subject=>{
+   const row=mapRitCurrent(DATA.map[x.student.id]||[],subject);
+   return '<span>MAP '+safe(subject)+' RIT: '+(row?row.rit+' (P'+row.percentile+')':'—')+'</span>';
+  }).join('')):'')+
   (!everyday&&experienceEligible(x.student)?'<span>Engagement '+x.eng+' · Belonging '+x.bel+'</span>':'')+
   (x.sss?'<span>SSS programme · demonstration</span>':'')+
   '</span><span class="roster-arrow" aria-hidden="true">›</span></button>').join('')+'</div>';
@@ -364,12 +371,13 @@ function roster(ss,options={}){
   '<span class="faculty-legend-chip band-mid-high">'+(hasNumericReports?'5–6':'Higher')+'</span>'+
   '<span class="faculty-legend-chip band-high">'+(hasNumericReports?'7':'High')+'</span></span>'+
   '<span class="faculty-legend-caption">Reports use fixed grade bands. Other measures are colour-only. Hover or focus for exact data.</span>'+
-  '<details><summary>Interpret colours</summary><p>Numeric report TEST grades: 1–3 red, 4 orange, 5–6 light green, 7 dark green. Elementary developmental descriptors are not converted to grades. MAP, IXL and other assessments use same-grade fictional comparisons; experience uses fixed −2 to +2 bands. Grey means missing. A colour is not a learner label.</p></details></div>':'')+
+  '<details><summary>Interpret colours</summary><p>Numeric report TEST grades: 1–3 red, 4 orange, 5–6 light green, 7 dark green. Elementary developmental descriptors are not converted to grades. IXL and other assessments use same-grade fictional comparisons; MAP RIT uses five separate percentile quintiles; experience uses fixed −2 to +2 bands. Grey means missing. A colour is not a learner label.</p></details></div>':'')+
+  (everyday&&everydayColumns.some(c=>c.kind==='mapRit')?renderMapRitLegend():'')+
   table+mobile+
   (rows.length?'':'<p class="empty-message">'+(filterLevel!==null?'No learners have a subject result of '+filterLevel+' or below in this selection.':'No matching students in your assigned classes. Try a different name.')+'</p>')+
   '<details class="faculty-inquiry-prompt"><summary>From evidence to action</summary>'+
    '<p>Notice a pattern, check the source and date, and consider what more you might need to know. Select a learner to review their context and use the existing classroom response or follow-up tools. Do not draw conclusions from colour alone.</p></details>'+
-  '<p class="tiny roster-caption">All subjects show explicitly fictional 2026–27 current-grade examples, not issued report grades. Numeric test outcomes use fixed 1–7 thresholds; Elementary developmental descriptors retain their own wording. Non-report colours represent fictional same-grade comparisons or fixed experience bands. Hover for the exact result and reporting context.</p>'+
+  '<p class="tiny roster-caption">All subjects show explicitly fictional 2026–27 current-grade examples, not issued report grades. Numeric test outcomes use fixed 1–7 thresholds; Elementary developmental descriptors retain their own wording. MAP RIT colours use five NWEA-style achievement percentile bands from simulated percentiles. Other non-report colours use fictional same-grade comparisons or fixed experience bands. Hover for the exact result and reporting context.</p>'+
   '</section>';
 }
 
@@ -424,7 +432,8 @@ function learnerProfile(s,studentRole=false){
   return profileStart+header+
    renderStudentOverview(s,ACADEMIC_RECORDS,{
     attendance:DATA.attendance[s.id],mathGrowth:mg,
-    reflectionDraft:saved('reflection-'+s.id,'')})+studentCheckinPreview+
+    reflectionDraft:saved('reflection-'+s.id,'')})+
+   renderMapRitProfile(DATA.map[s.id]||[])+studentCheckinPreview+
    '<details class="student-detail-section" data-student-panel="reports" id="student-reports"'+
     (state.studentReportsOpen?' open':'')+'>'+
    '<summary><span class="student-panel-symbol" aria-hidden="true">▤</span>'+
@@ -454,7 +463,7 @@ function learnerProfile(s,studentRole=false){
    safe(t.strategies[0])+'</p></div>').join(' '):
   '<p class="muted">No additional classroom guidance tags in this fictional example.</p>')+
   '<p class="tiny">Detailed support plans and confidential records are not included in this public demo.</p></section>';
- return profileStart+header+profileKpis+academics+wellbeing+maiaFaculty+
+ return profileStart+header+profileKpis+renderMapRitProfile(DATA.map[s.id]||[])+academics+wellbeing+maiaFaculty+
    renderFacultySupportPanel(s,supportEntries(),SSS_RECORDS.get(s.id))+guidance;
 }
 
