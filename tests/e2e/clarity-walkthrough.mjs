@@ -703,13 +703,34 @@ try{
    assert(await evaluate("document.querySelector('.leader-academic-actions')?.compareDocumentPosition(document.querySelector('.leader-daily-grid'))&Node.DOCUMENT_POSITION_FOLLOWING"),
     'Academic actions must appear before attendance and student voice tiles');
    await click('[data-leader-academic-focus="map"]');
-   assert(await evaluate("document.querySelector('#leader-academic-results:not([hidden])')?.textContent.includes('MAP Low achievement')"),
-    'Single MAP card click should immediately open a filtered student list');
+   assert(await evaluate("document.querySelector('#leader-academic-results:not([hidden])')?.textContent.includes('MAP achievement — Red + Orange')"),
+    'Single MAP card click should immediately open the combined Red and Orange student list');
    assert(await evaluate("document.querySelector('.leader-academic-row .student-photo-trigger')&&document.querySelector('.leader-academic-row [data-leader-student]')"),
     'Rapid MAP list must include photos and profile actions');
-   const values=await evaluate("Array.from(document.querySelectorAll('#leader-academic-results .leader-academic-evidence-chip span')).map(x=>x.textContent)");
-   assert(values.length>0&&values.every(v=>{const p=Number(v.match(/P(\d+)/)?.[1]);return p>=1&&p<=20}),
-    'MAP card must only show genuinely Low (1–20) achievement results');
+   const check=()=>evaluate("(function(){const t=[...document.querySelectorAll('#leader-academic-results .leader-academic-evidence-chip span')];const p=t.map(x=>Number(x.textContent.match(/P(\\d+)/)?.[1]));return {p,orange:document.querySelectorAll('#leader-academic-results .leader-academic-evidence-chip.map-low-average').length,red:document.querySelectorAll('#leader-academic-results .leader-academic-evidence-chip.map-low:not(.map-low-average)').length,ids:[...document.querySelectorAll('#leader-academic-results [data-leader-student]')].map(x=>x.dataset.leaderStudent)}})()");
+   const combined=await check();
+   assert(combined.p.length>0&&combined.p.every(p=>p>=1&&p<=40)&&combined.orange>0&&combined.red>0,
+    'Combined MAP list must include both Red P1–20 and Orange P21–40 with distinct chips');
+   assert(new Set(combined.ids).size===combined.ids.length,'Combined list must never duplicate a student');
+   const bands=await evaluate("(function(){return [...document.querySelectorAll('[data-leader-map-band]')].map(x=>({band:x.dataset.leaderMapBand,pressed:x.getAttribute('aria-pressed'),count:Number(x.querySelector('b')?.textContent)}))})()");
+   assert(bands.length===3&&bands[0].band==='both'&&bands[0].pressed==='true',
+    'MAP band filter must provide Both, Red and Orange selections');
+   assert(bands[0].count<=bands[1].count+bands[2].count,
+    'Combined count is unique students, not sum of independent band counts');
+   await click('[data-leader-map-band="low-average"]');
+   const orange=await check();
+   assert(orange.p.length>0&&orange.p.every(p=>p>=21&&p<=40)&&orange.red===0,
+    'Orange selection must show only P21–40 Low Average MAP achievement');
+   assert(await evaluate("document.querySelector('[data-leader-map-band=low-average]')?.getAttribute('aria-pressed')==='true'"),
+    'Orange band button must reflect its selected state');
+   await click('[data-leader-map-band="low"]');
+   const red=await check();
+   assert(red.p.length>0&&red.p.every(p=>p>=1&&p<=20)&&red.orange===0,
+    'Red selection must show only P1–20 Low MAP achievement');
+   await click('[data-leader-map-band="both"]');
+   const again=await check();
+   assert(again.orange>0&&again.red>0,
+    'Selecting Both must restore red and orange MAP chips together');
    await click('[data-leader-academic-focus="subjects"]');
    assert(await evaluate("document.querySelector('#leader-academic-results:not([hidden])')?.textContent.includes('Subject results ≤2')"),
     'Switching to subject review should show the ≤2 learner list without opening another panel');
@@ -748,6 +769,11 @@ try{
    const result=await evaluate("(function(){const box=document.querySelector('#leader-academic-results'),r=box?.getBoundingClientRect();return {visible:box&&!box.hidden,scrollWidth:document.documentElement.scrollWidth,viewport:innerWidth,top:r?.top}})()");
    assert(result.visible&&result.scrollWidth<=result.viewport+2,
     'Mobile MAP review must open directly without horizontal page overflow');
+   await click('[data-leader-map-band="low-average"]');
+   assert(await evaluate("document.querySelector('[data-leader-map-band=low-average]')?.getAttribute('aria-pressed')==='true'"),
+    'Mobile should support the Orange Low Average band filter');
+   assert(await evaluate("document.documentElement.scrollWidth<=window.innerWidth+2"),
+    'Mobile MAP band controls must not cause horizontal overflow');
    await evaluate('window.scrollTo(0,0)');
   });
  await run('leader-filter-1440','leader','.leader-division-grid',1440,900,

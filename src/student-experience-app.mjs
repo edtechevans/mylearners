@@ -3,8 +3,8 @@ import {applyFacultyDemo,DEFAULT_TEACHER_ID} from './faculty-demo.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
 import {MAP_RIT_SUBJECTS,mapRitCurrent,mapRitChange,mapRitChangeLabel,renderMapRitCell,renderMapRitHeader,renderMapRitLegend,renderMapRitProfile,installMapRitHeaderTooltips} from './map-rit-achievement.mjs?v=20261111schemas1';
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs?v=20261111schemas1';
-import {renderLeaderVoiceReview,renderLeaderMapRedReview} from './leader-review-signals.mjs?v=20261111photo1';
-import {renderLeaderAcademicActions,LEADER_ACADEMIC_FOCUS} from './leader-academic-actions.mjs?v=20261111academicquick2';
+import {renderLeaderVoiceReview,renderLeaderMapRedReview} from './leader-review-signals.mjs?v=20261111mapbands1';
+import {renderLeaderAcademicActions,LEADER_ACADEMIC_FOCUS} from './leader-academic-actions.mjs?v=20261111mapbands1';
 import {renderLeaderSupportSection} from './leader-support-view.mjs';
 import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvidence,leaderAdvisoryClasses} from './leader-daily-workspaces.mjs?v=20261111academicquick2';
 import {leaderReportSignalSummary} from './report-card-signals.mjs';
@@ -97,7 +97,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
   leaderSupportOpen:false,leaderReportQuery:'',leaderReportMultiple:false,leaderReportExpanded:false,leaderReportThreshold:3,leaderReportOpen:false,
   leaderStudentId:'',leaderReviewFilter:'all',leaderReviewExpanded:false,
-  leaderAcademicFocus:'',leaderAcademicGrade:'',leaderAcademicSubject:'',leaderAcademicMultiple:false,leaderAcademicExpanded:false,
+  leaderAcademicFocus:'',leaderAcademicGrade:'',leaderAcademicSubject:'',leaderAcademicMultiple:false,leaderAcademicExpanded:false,leaderMapBand:'both',
  sssGrade:'All',sssQuery:'',sssStudentId:'',sssOpenGrades:['G3'],sssAcademicOpen:false,
   supportForm:null,supportFilter:'all',supportQuery:'',
   sssManager:'All',sssPanel:'summary',supportBarrier:'All',
@@ -778,7 +778,7 @@ function leader(){
    academicActions:renderLeaderAcademicActions({students:group,map:DATA.map,academic:ACADEMIC_RECORDS,
     focus:state.leaderAcademicFocus,grade:state.leaderAcademicGrade,
     subject:state.leaderAcademicSubject,multiple:state.leaderAcademicMultiple,
-    expanded:state.leaderAcademicExpanded})})+
+    expanded:state.leaderAcademicExpanded,mapBand:state.leaderMapBand})})+
   experienceSection+deepPatterns+
   renderLeaderSupportSection({students:group,sssRecords:SSS_RECORDS,entries:supportEntries(),
    open:state.leaderSupportOpen})+'</div>'+info();
@@ -898,6 +898,7 @@ let pinnedChartKey=null;
 const resetLeaderAcademicAction=()=>{
  state.leaderAcademicFocus='';state.leaderAcademicGrade='';state.leaderAcademicSubject='';
  state.leaderAcademicMultiple=false;state.leaderAcademicExpanded=false;
+ state.leaderMapBand='both';
 };
 function render(){
  pinnedChartKey=null;
@@ -1111,6 +1112,15 @@ root.addEventListener('click',e=>{
     '[data-leader-academic-focus="'+next+'"]':'#leader-academic-results');
    if(!closing)target?.scrollIntoView?.({behavior:scrollMotion(),block:'start'});
    target?.focus?.({preventScroll:true});
+   return;
+  }
+  const mapBandFilter=e.target.closest('[data-leader-map-band]');
+  if(mapBandFilter&&state.leaderAcademicFocus==='map'){
+   const band=mapBandFilter.dataset.leaderMapBand;
+   if(!['both','low','low-average'].includes(band))return;
+   state.leaderMapBand=band;state.leaderAcademicExpanded=false;
+   render();
+   root.querySelector('[data-leader-map-band="'+band+'"]')?.focus?.({preventScroll:true});
    return;
   }
   if(e.target.closest('[data-leader-academic-close]')){
