@@ -1,18 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {everydayEvidenceForGrade,validRosterView} from '../src/faculty-everyday-columns.mjs';
-test('Faculty landing defaults to 4 or 5 existing measures suited to each grade',()=>{
+test('Faculty landing shows grade-appropriate evidence including MAP RIT',()=>{
  for(const grade of ['PK3','PK4','K','G1','G2','G3','G5','G6','G7','G10','G11','G12']){
   const cols=everydayEvidenceForGrade(grade);
-  assert.ok(cols.length>=4&&cols.length<=5,grade);
+  assert.ok(cols.length>=4&&cols.length<=7,grade);
   assert.equal(new Set(cols.map(x=>x.id)).size,cols.length,grade);
   assert.equal(cols[0].id,'attendance',grade);
   if(!['G3','G5','G6','G7','G10'].includes(grade))assert.ok(cols.some(x=>x.kind==='report'),grade);
  }
 });
-test('Middle grades see MAP, IXL, Engagement and Belonging together',()=>{
+test('Middle grades see MAP Reading, Math, Language Usage RIT, IXL and Student Experience',()=>{
  const cols=everydayEvidenceForGrade('G7');
- assert.deepEqual(cols.map(x=>x.id),['attendance','map','ixl','engagement','belonging']);
+ assert.deepEqual(cols.map(x=>x.id),['attendance','mapReading','mapMathematics','mapLanguage','ixl','engagement','belonging']);
+ assert.ok(!cols.some(c=>c.kind==='map'));
 });
 test('Primary and upper Secondary do not show assessments outside eligible grade bands',()=>{
  assert.deepEqual(everydayEvidenceForGrade('K').map(x=>x.id),
