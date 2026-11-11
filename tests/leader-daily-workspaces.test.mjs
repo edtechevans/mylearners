@@ -31,6 +31,7 @@ test('whole-school landing separates divisions, offers a division filter and exp
  assert.doesNotMatch(html,/learner risk score.*\d+\/100/i);
  const named=students[0].name;
  assert.ok(!html.includes(named),'Schoolwide overview should not display learner names');
+ assert.doesNotMatch(html,/Demo attendance · through|Simulated attendance · through/i);
 });
 test('attendance review is explicit, bounded and based only on observed attendance events',()=>{
  const result=leaderAttendanceReview(secondary,data,90);
@@ -56,7 +57,10 @@ test('division view is personalised: Secondary has subject review, Elementary li
  assert.match(secondaryHtml,/data-leader-review-filter="academic2" aria-pressed="true"/);
  assert.match(secondaryHtml,/Subject results ≤2/);
  assert.match(secondaryHtml,/data-leader-student=/);
+ assert.match(secondaryHtml,/data-leader-jump="leader-experience-review"/);
+ assert.match(secondaryHtml,/data-leader-jump="leader-map-review"/);
  assert.match(secondaryHtml,/2026–27 simulated, in progress and not issued/);
+ assert.doesNotMatch(secondaryHtml,/Demo attendance · through|Simulated attendance · through/i);
  const elementaryHtml=renderLeaderDivisionDaily({division:'Elementary',grade:'All',students:elementary,
   allStudents:students,reviewFilter:'all',...opts});
  assert.match(elementaryHtml,/Literacy checks/);
@@ -99,5 +103,8 @@ test('read-only profile shows comparable academic windows but not support case n
  assert.match(html,/leader-mini-series/);
  assert.match(html,/leader-profile-grade/);
  assert.match(html,/leader-profile-voices/);
+ assert.doesNotMatch(html,/Demo through|Attendance.*through/i);
+ const earlier=renderLeaderLearnerEvidence({student,...opts,window:'S26'});
+ assert.match(earlier,/Spring 2026/);
  assert.doesNotMatch(html,/case manager|Safeguarding incident|data-support-new|data-sss-student/i);
 });

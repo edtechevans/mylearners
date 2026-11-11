@@ -180,7 +180,7 @@ export function renderSSSStudentProfile({
  const showWida=record.wida!==null;
  const measures=[
   evidenceTile('Attendance',attendance.rate===null?'—':attendance.rate+'%',
-    'Through 8 Oct 2026 · shared Faculty record'),
+    'Shared Faculty attendance record'),
   evidenceTile('Latest Mathematics report',math?.value||'—',math?.detail||'No completed report'),
   evidenceTile('Latest literacy report',literacy?.value||'—',literacy?.detail||'No completed report')
  ];

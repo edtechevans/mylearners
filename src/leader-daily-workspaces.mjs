@@ -3,7 +3,8 @@ import {attendanceSummary,gradeNumber,gradeDisplay,GRADES} from './data.mjs';
 import {academicFor,facultyDemoReport,academicModesFor} from './academic-journey-data.mjs';
 import {leaderMapSummary,leaderCheckSnapshot} from './leader-summary.mjs';
 import {studentSupportLeadershipSummary} from './leader-support-summary.mjs';
-import {summarizeExperience,experienceChange,experienceEligible} from './experience-data.mjs';
+import {summarizeExperience,experienceChange,experienceEligible,EXPERIENCE_WINDOWS} from './experience-data.mjs';
+import {leaderVoiceReview,leaderMapRedReview} from './leader-review-signals.mjs';
 import {leaderExperienceScale} from './leader-experience-bands.mjs';
 import {reportProgress,mapProgress,academicCheckinProgress} from './evidence-progress.mjs';
 import {esc} from './v2-ui.mjs';
@@ -124,7 +125,7 @@ export function renderLeaderWholeSchool({students,data,academic,records,sssRecor
    '<div class="leader-daily-grid">'+
     priority('Learners included',students.length,'Across both divisions.','neutral',null,'Fictional roster · 8 Oct 2026')+
     priority('Attendance checks',attendance.flagged.length,'Below an illustrative 90% review threshold.',
-     'amber',null,'Demo attendance · through '+attendance.latest)+
+     'amber',null,'Simulated attendance')+
     priority('Secondary subjects ≤2',academics.at2.length,
      'One or more numeric results of 2 or below.','red',null,'Simulated 2026–27 in-progress report results')+
     priority('Open support actions',support.suppressed?'—':support.actionOpen,
@@ -181,13 +182,15 @@ function concernsEvidence(x,isSecondary){
  return pieces.join('<span class="leader-review-separator"> • </span>');
 }
 export function renderLeaderDivisionDaily({division,grade,students,allStudents,data,
- academic,records,sssRecords,entries,reviewFilter='all',expanded=false,savedView=null}){
+ academic,records,sssRecords,entries,reviewFilter='all',expanded=false,savedView=null,voiceWindow='F26'}){
  const secondary=division==='Secondary',
   attendance=leaderAttendanceReview(students,data),
   academics=leaderAcademicReview(students,academic),
   support=studentSupportLeadershipSummary(students,sssRecords,entries),
   voice=leaderVoice(students,records);
  const queue=leaderReviewQueue(students,data,academic,reviewFilter,expanded,secondary);
+ const voiceReview=leaderVoiceReview(students,records,voiceWindow);
+ const mapReview=leaderMapRedReview(students,data.map);
  const delta=voice.map(x=>x.delta).filter(Number.isFinite);
  const change=delta.length?Math.min(...delta):null;
  const supportCount=support.suppressed?'—':support.actionOpen;
@@ -234,7 +237,7 @@ export function renderLeaderDivisionDaily({division,grade,students,allStudents,d
    gradesBar(division,grade,allStudents)+
    '<div class="leader-daily-sources">'+
     source('SUBJECTS','2026–27 demo · not issued')+
-    source('ATTENDANCE','Demo through '+attendance.latest)+
+    source('ATTENDANCE','Demo attendance')+
     source('STUDENT VOICE','Fall 2026 simulated')+
     source('SUPPORT','Synthetic · 28 Oct 2026')+
    '</div></section>'+
@@ -244,13 +247,21 @@ export function renderLeaderDivisionDaily({division,grade,students,allStudents,d
     '<p>'+students.length+' learners in scope · not an automated risk ranking</p></div>'+
    '<div class="leader-daily-grid">'+headline+
     priority('Attendance checks',attendance.flagged.length,'Below the illustrative 90% review threshold.',
-     'amber','leader-review','Simulated attendance · through '+attendance.latest)+
+     'amber','leader-review','Simulated attendance')+
     priority('Open support actions',supportCount,support.suppressed?
      'Small-group summary suppressed. Expand scope.':'Open follow-ups in the fictional support cycle.',
      'blue','leader-support-title','Demo SSS cycle · 28 Oct 2026')+
     priority('Student voice change',change===null?'—':(change>0?'+':'')+change.toFixed(2),
      'Largest change in the two group indices from the previous window.',
      'green','leader-experience-title','Age-specific index −2 to +2')+
+   '</div>'+
+   '<div class="leader-review-shortcuts" aria-label="Student evidence review shortcuts">'+
+    (voiceReview.eligible?'<button type="button" data-leader-jump="leader-experience-review">'+
+     '<span><b>Student Experience to review</b><small>Engagement or Belonging ≤0 · selected check-in</small></span>'+
+     '<strong>'+voiceReview.rows.length+'</strong></button>':'')+
+    (mapReview.eligible?'<button type="button" data-leader-jump="leader-map-review">'+
+     '<span><b>MAP red-band review</b><small>One or more subjects · 1st–20th percentile</small></span>'+
+     '<strong>'+mapReview.rows.length+'</strong></button>':'')+
    '</div>'+
    '<p class="leader-daily-note">'+safe(secondary?
     (students.some(s=>gradeNumber(s.grade)>=11)?
@@ -295,7 +306,7 @@ function miniSeries(points){
   '<span class="'+(i===points.length-1?'current':'')+'"><small>'+safe(x.label)+'</small>'+
    '<b>'+safe(x.value)+'</b></span>').join('')+'</div>';
 }
-export function renderLeaderLearnerEvidence({student,data,academic,records}){
+export function renderLeaderLearnerEvidence({student,data,academic,records,window='F26'}){
  const a=academicFor(academic,student.id),report=facultyDemoReport(a);
  const events=data.attendance[student.id]||[],att=attendanceSummary(events);
  const numeric=report?.scale==='1–7';
@@ -316,7 +327,7 @@ export function renderLeaderLearnerEvidence({student,data,academic,records}){
    '<div class="leader-profile-assessment"><strong>MAP '+safe(subject)+'</strong>'+
     miniSeries(mapProgress(data.map[student.id]||[],subject).points)+'</div>').join(''):'';
  const voice=experienceEligible(student)?['engagement','belonging'].map(metric=>{
-  const score=summarizeExperience(records,[student],metric,'F26').value;
+  const score=summarizeExperience(records,[student],metric,window).value;
   return '<article class="leader-profile-voice"><strong>'+safe(metric==='engagement'?'Engagement':'Belonging')+
    '</strong><b>'+(Number.isFinite(score)?score.toFixed(2):'—')+'</b>'+
    leaderExperienceScale(score,metric)+'</article>';
@@ -328,8 +339,7 @@ export function renderLeaderLearnerEvidence({student,data,academic,records}){
    '<h2>'+safe(student.name)+'</h2><p>See the evidence in context before choosing a response. '+
     'A result or absence pattern is not a judgement about a learner.</p>'+
    '<div class="leader-profile-facts"><div><span>Homeroom</span><strong>'+safe(student.classId)+'</strong></div>'+
-    '<div><span>Attendance</span><strong>'+n(att.rate)+'%</strong>'+
-     '<small>Demo through '+safe(events.at(-1)?.date||'8 Oct 2026')+'</small></div>'+
+    '<div><span>Attendance</span><strong>'+n(att.rate)+'%</strong></div>'+
     '<div><span>Current subject results</span><strong>'+safe(report?.year||'Unavailable')+'</strong>'+
      '<small>'+safe(numeric?'1–7 in progress · not issued':'Developmental descriptors · simulated')+'</small></div></div>'+
    '<section><div class="leader-daily-sectionhead"><div><span>SUBJECT RESULTS</span>'+
@@ -340,7 +350,8 @@ export function renderLeaderLearnerEvidence({student,data,academic,records}){
     '<div class="leader-profile-assessments">'+map+other+'</div></section>':'')+
    renderMapRitProfile(data.map[student.id]||[])+
    (voice?'<section><div class="leader-daily-sectionhead"><div><span>STUDENT VOICE</span>'+
-    '<h3>Personal check-in indices</h3></div></div>'+
+    '<h3>Personal check-in indices</h3></div>'+
+    '<p>'+safe(EXPERIENCE_WINDOWS.find(x=>x.key===window)?.label||'Selected check-in')+'</p></div>'+
     '<div class="leader-profile-voices">'+voice+'</div></section>':'')+
    '<div class="leader-daily-disclaimer">These records are synthetic. Reports and assessment tools use different '+
     'scales and dates. Support casework, confidential notes and safeguarding data are not displayed. '+

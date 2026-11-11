@@ -64,7 +64,7 @@ function studentPreview(student,ctx,specialist=false){
   latestMapGrowth(ctx.data.map[student.id]||[]):null;
  const rows=[
   ['Class',value(student.classId)],
-  ['Attendance',att.rate===null?'Not available':att.rate+'% · through 8 Oct 2026'],
+  ['Attendance',att.rate===null?'Not available':att.rate+'%'],
   ['Last issued Mathematics',math?math.value+' · '+issued.year:'No issued result']
  ];
  if(map?.status==='comparable')rows.push(['MAP Mathematics growth',(map.actual>=0?'+':'')+map.actual+' RIT']);
@@ -327,7 +327,7 @@ export function resolveEvidencePreview(trigger,ctx){
    kind:'support'});
  }
  if(kind==='attendance-scope'){
-  return simpleGuide('attendance','Fictional attendance · through 8 Oct 2026',tidy(trigger.textContent));
+  return simpleGuide('attendance','Fictional attendance',tidy(trigger.textContent));
  }
  if(kind==='student-tile'||kind==='academic-card'||kind==='sss-evidence'||kind==='support-summary'||
     kind==='leader-stat'||kind==='leader-check'||kind==='leader-support'||kind==='leader-monitor'||

@@ -621,6 +621,24 @@ try{
     'Secondary daily screen needs visible subject concerns and a learner review queue');
    assert(await evaluate("document.querySelectorAll('[data-leader-grade]').length>=8"),
     'Secondary needs Grades 6–12 drilldowns');
+   assert(await evaluate("!!document.querySelector('#leader-experience-review')&&!!document.querySelector('#leader-map-review')"),
+    'Leaders need actionable Student Experience and MAP achievement review lists');
+   assert(await evaluate("!!document.querySelector('[data-leader-jump=leader-experience-review]')&&!!document.querySelector('[data-leader-jump=leader-map-review]')"),
+    'Two quick links should make learner review signals easy to find');
+   assert(await evaluate("!document.querySelector('.leader-daily-source')?.textContent.includes('through')"),
+    'Attendance date captions should not be needed in the Leadership tile summaries');
+   const review=await evaluate("(function(){const v=document.querySelector('#leader-experience-review'),m=document.querySelector('#leader-map-review');return {voice:!!v&&v.textContent.includes('0 or below'),map:!!m&&m.textContent.includes('1st–20th percentile'),links:[...document.querySelectorAll('.leader-followup-open')].length,validVoice:[...v.querySelectorAll('.leader-followup-item')].every(row=>!!row.querySelector('.leader-followup-index.is-low')),validMap:[...m.querySelectorAll('.leader-map-low-chip')].every(chip=>{const p=Number(chip.textContent.match(/P(\\d{1,2})/)?.[1]);return p>=1&&p<=20})}})()");
+   assert(review.voice&&review.map&&review.validVoice&&review.validMap,
+    'Review entries must obey the separate ≤0 voice and 1–20 MAP percentile thresholds');
+   if(review.links){
+    const target=await evaluate("document.querySelector('.leader-followup-panel [data-leader-student]')?.dataset.leaderStudent");
+    if(target){
+     await click('.leader-followup-panel [data-leader-student]');
+     assert(await evaluate("!!document.querySelector('.leader-learner-profile')"),
+      'A review cue must open that same learner in the read-only Leaders profile');
+     await click('[data-leader-back]');
+    }
+   }
    await evaluate('window.scrollTo(0,0)');
   });
  await run('leader-filter-1440','leader','.leader-division-grid',1440,900,

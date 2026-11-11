@@ -3,8 +3,9 @@ import {applyFacultyDemo,DEFAULT_TEACHER_ID} from './faculty-demo.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
 import {MAP_RIT_SUBJECTS,mapRitCurrent,mapRitChange,mapRitChangeLabel,renderMapRitCell,renderMapRitHeader,renderMapRitLegend,renderMapRitProfile,installMapRitHeaderTooltips} from './map-rit-achievement.mjs';
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs';
+import {renderLeaderVoiceReview,renderLeaderMapRedReview} from './leader-review-signals.mjs';
 import {renderLeaderSupportSection} from './leader-support-view.mjs';
-import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvidence,leaderAdvisoryClasses} from './leader-daily-workspaces.mjs';
+import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvidence,leaderAdvisoryClasses} from './leader-daily-workspaces.mjs?v=20261111review1';
 import {leaderReportSignalSummary} from './report-card-signals.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
 import {createSSSDemoRecords} from './sss-demo-data.mjs';
@@ -12,12 +13,12 @@ import {seedSupportDemo,loadDraftEntries,storeDraftEntries,createDraftEntry} fro
 import {renderFacultySupportPanel,renderSSSWorkspace,renderSupportForm} from './support-workspace-ui.mjs';
 import {CASE_MANAGERS,REFERRAL_STAGES,STRATEGIES,lastReferralStage} from './sss-leadership-data.mjs';
 import {renderSSSLeadershipDashboard,renderSSSProfileNavigation,renderSSSSummary,renderSSSPlans} from './sss-leadership-ui.mjs';
-import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=20261030wall3';
+import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=20261111review1';
 import {portrait} from './portraits.mjs';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs?v=20261030repair1';
 import {experienceDialogContent} from './experience-explain-modal.mjs?v=20261030wall3';
 import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261111checkin4';
-import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261111checkin4';
+import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261111review1';
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,READING_LEVELS,facultyDemoReport} from './academic-journey-data.mjs';
 import {quartileBand,formatIndex,experienceBand} from './faculty-bands.mjs?v=20261030wall2';
@@ -28,7 +29,7 @@ import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.m
 import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261111mapui3';
 import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261110thresholds1';
 import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile} from './maia-demo.mjs';
-import {renderStudentOverview} from './student-daily-overview.mjs?v=20261028titles1';
+import {renderStudentOverview} from './student-daily-overview.mjs?v=20261111review1';
 import {renderBoard} from './board-map-view.mjs?v=20261029dpaxis1';
 import {renderTrendPointDetails} from './board-map-overview.mjs?v=20261029dpaxis1';
 import {renderDPPointDetails} from './board-dp-view.mjs?v=20261031dp-default1';
@@ -244,7 +245,7 @@ function roster(ss,options={}){
   if(column.kind==='attendance'){
    const attendance=attendanceSummary(DATA.attendance[student.id]||[]);
    const value=attendance.rate===null||attendance.rate===undefined?'—':fmt(attendance.rate)+'%';
-   return '<span class="class-evidence-result"><strong>'+safe(value)+'</strong><small>Through 8 Oct 2026</small></span>';
+   return '<span class="class-evidence-result"><strong>'+safe(value)+'</strong></span>';
   }
   if(column.kind==='mapRit')return renderMapRitCell(DATA.map[student.id]||[],column.subject,student.id);
   const report=facultyDemoReport(academicFor(ACADEMIC_RECORDS,student.id));
@@ -457,7 +458,7 @@ function learnerProfile(s,studentRole=false){
     '<p class="academic-early-checkin-note">Student engagement and belonging check-ins begin in Grade 3 in this demo.</p>');
  }
  const profileKpis='<div class="kpis profile-kpis">'+
-  kpi('Attendance',fmt(aa.rate)+'%','Through 8 Oct 2026')+
+  kpi('Attendance',fmt(aa.rate)+'%','')+
   (mapApplicable?kpi('MAP Mathematics growth',mg.status==='comparable'?
    (mg.actual>=0?'+':'')+mg.actual:'—',
    mg.status==='comparable'?'RIT points · latest comparable MAP tests':'Not yet comparable'):'')+
@@ -509,7 +510,7 @@ function faculty(){
    selector('teacher',DATA.teachers.map(t=>[t.id,t.name]),state.teacher)+'</label></details></div>';
  const summary=searching?'':'<div class="quick-summary faculty-daily-summary">'+
   quickStat('My Class',ss.length,'Learners in '+safe(activeClass()?.name||'this class'))+
-  quickStat('Attendance',fmt(meanAttendance)+'%','Through 8 Oct 2026')+
+  quickStat('Attendance',fmt(meanAttendance)+'%','')+
   (gradeHasCheckins?score('engagement')+score('belonging'):
    '<div class="quick-note">Student-reported experience indices start at Grade 3 in this demo.</div>')+'</div>';
  const lowGradeFilter=ss.some(s=>facultyDemoReport(academicFor(ACADEMIC_RECORDS,s.id))?.scale==='1–7')?
@@ -540,7 +541,7 @@ function leader(){
  const leaderPerson=group.find(s=>s.id===state.leaderStudentId);
  if(leaderPerson)return heading('Leadership Overview','Read-only evidence for leadership review.')+
   renderLeaderLearnerEvidence({student:leaderPerson,data:DATA,academic:ACADEMIC_RECORDS,
-   records:RECORDS})+info();
+   records:RECORDS,window:state.window})+info();
  const secondaryOnly=group.length>0&&group.every(s=>s.division==='Secondary');
  const scopeLabel=selectedClass?.name||
   (state.grade!=='All'?
@@ -691,6 +692,7 @@ function leader(){
   stat('Historical report coverage',reports.rate===null?'—':reports.rate+'%',
    reports.available+' of '+reports.eligible+' learners with an issued historical record.',
    'Simulated previous school years')+'</div>'+quickEvidence+
+  renderLeaderMapRedReview({students:group,map:DATA.map})+
   '<p class="leader-data-note">'+(mapEligible?
    'MAP growth uses comparable tests for eligible Grades 3–10. It does not measure achievement percentile. ':
    'MAP is not used in this selected grade range. ')+
@@ -703,6 +705,7 @@ function leader(){
   '<label class="leader-window-select">Check-in period '+
   selector('window',EXPERIENCE_WINDOWS.map(w=>[w.key,w.label]),state.window)+
   '</label></div>'+leaderExperienceLegend()+experience+
+  renderLeaderVoiceReview({students:group,records:RECORDS,window:state.window})+
   '<p class="leader-data-note">These indices are on a fixed −2 to +2 scale. '+
   'Interpret trends within the same age-appropriate question set, not as academic results.</p></section>';
  const reportSection=secondaryOnly?
@@ -748,7 +751,7 @@ function leader(){
   renderLeaderDivisionDaily({division:state.division,grade:state.grade,students:group,
    allStudents:DATA.students,data:DATA,academic:ACADEMIC_RECORDS,records:RECORDS,
    sssRecords:SSS_RECORDS,entries:supportEntries(),reviewFilter:state.leaderReviewFilter,
-   expanded:state.leaderReviewExpanded,savedView:savedLeaderView()})+
+   expanded:state.leaderReviewExpanded,savedView:savedLeaderView(),voiceWindow:state.window})+
   reportSection+
   renderLeaderSupportSection({students:group,sssRecords:SSS_RECORDS,entries:supportEntries(),
    open:state.leaderSupportOpen})+
@@ -1093,7 +1096,8 @@ root.addEventListener('click',e=>{
   if(jump){
    const id=jump.dataset.leaderJump;
    if(!['leader-report-followup-title','leader-review','leader-support-title',
-      'leader-experience-title','leader-learning-title','leader-academic-detail'].includes(id))return;
+      'leader-experience-title','leader-learning-title','leader-academic-detail',
+      'leader-experience-review','leader-map-review'].includes(id))return;
    const el=root.querySelector('#'+id);
    const panel=el?.closest?.('details.leader-detail');
    if(panel)panel.open=true;
