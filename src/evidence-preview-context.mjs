@@ -6,7 +6,7 @@ import {latestMapGrowth} from './map-growth.mjs';
 import {mapRitBand,mapRitChange,mapRitDisplaySubject} from './map-rit-achievement.mjs';
 import {academicFor,latestAcademic,facultyDemoReport} from './academic-journey-data.mjs';
 import {experienceFor,EXPERIENCE_WINDOWS} from './experience-data.mjs';
-import {reportProgress,issuedReportProgress,academicCheckinProgress,mapProgress,experienceProgress,groupExperienceProgress,maiaProgress} from './evidence-progress.mjs';
+import {reportProgress,issuedReportProgress,academicCheckinProgress,mapProgress,experienceProgress,groupExperienceProgress,maiaProgress} from './evidence-progress.mjs?v=20261111schemas1';
 import {MAIA_DEFAULT_DIMENSION} from './maia-demo.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
 import {PREVIEW_GUIDE,makePreview} from './evidence-previews.mjs?v=20261111checkin4';
