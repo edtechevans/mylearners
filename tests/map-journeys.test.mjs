@@ -98,7 +98,7 @@ test('Cohort controls, coloured transition cells, matched rows and accessible le
  assert.match(html,/Refine comparison/);
  assert.match(html,/data-map-journey-preset="rising"/);
  assert.match(html,/FICTIONAL DATA/);
- assert.match(html,/Only matched students contribute to movement percentages/);
+ assert.match(html,/Only students with both assessments contribute to movement percentages/);
  assert.match(html,/not<\/strong> RIT growth/);
  assert.match(html,/data-leader-student=/);
  assert.doesNotMatch(html,/https?:\/\/.+(?:csv|xlsx)/i,'Do not link any source data file');
