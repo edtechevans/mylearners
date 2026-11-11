@@ -3,12 +3,13 @@
  */
 import {attendanceSummary,gradeNumber} from './data.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
+import {mapRitBand,mapRitChange,mapRitDisplaySubject} from './map-rit-achievement.mjs';
 import {academicFor,latestAcademic,facultyDemoReport} from './academic-journey-data.mjs';
 import {experienceFor,EXPERIENCE_WINDOWS} from './experience-data.mjs';
 import {reportProgress,issuedReportProgress,academicCheckinProgress,mapProgress,experienceProgress,groupExperienceProgress,maiaProgress} from './evidence-progress.mjs';
 import {MAIA_DEFAULT_DIMENSION} from './maia-demo.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
-import {PREVIEW_GUIDE,makePreview} from './evidence-previews.mjs?v=20261110timeline1';
+import {PREVIEW_GUIDE,makePreview} from './evidence-previews.mjs?v=20261111mapui3';
 const tidy=v=>String(v??'').replace(/\s+/g,' ').trim();
 const value=v=>v===undefined||v===null||v===''?'Not available':String(v);
 const fmtDate=(v)=>/^\d{4}-\d{2}-\d{2}$/.test(String(v||''))?String(v):'See assessment record';
@@ -210,6 +211,28 @@ export function resolveEvidencePreview(trigger,ctx){
   const window=trigger.dataset.previewWindow||ctx.state.classExperienceWindow||'F26';
   return compact(PREVIEW_GUIDE[metric].label,person.name,
    experienceProgress(ctx.experience,person.id,metric,window),'experience','—');
+ }
+ if(kind==='map-rit'){
+  if(!person)return null;
+  const subject=trigger.dataset.previewSubject||'Mathematics';
+  const records=ctx.data.map[person.id]||[];
+  const {current,previous}=mapRitChange(records,subject);
+  const band=mapRitBand(current?.percentile);
+  const percentile=Number.isInteger(current?.percentile)?
+   'P'+current.percentile+(band?' · '+band.label:''):'Not available';
+  return makePreview({
+   title:'MAP '+mapRitDisplaySubject(subject)+' RIT',
+   subtitle:person.name+' · Fall 2026 · Fictional',
+   trend:current?mapProgress(records,subject):null,
+   rows:current?[
+    ['Achievement percentile',percentile],
+    ...(!previous?[['Previous assessment','Not available']]:[])
+   ]:[['Fall 2026','No assessment recorded']],
+   note:current?
+    'Colour shows the achievement percentile band. RIT change compares valid tests in the same subject; it is not a growth percentile.':
+    'No score is available for this testing window. Missing is not zero.',
+   kind:'academic'
+  });
  }
  if(kind==='academic'||kind==='attendance'||kind==='map'){
   if(!person)return null;

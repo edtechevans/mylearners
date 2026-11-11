@@ -45,32 +45,27 @@ export function mapRitChange(records,subject,window='F26'){
 export function mapRitChangeLabel(delta){
  return Number.isFinite(delta)?(delta>0?'+':'')+delta+' RIT':'No prior test';
 }
-const subjectTitle=subject=>'MAP '+subject+' RIT';
+export const mapRitDisplaySubject=subject=>subject==='Mathematics'?'Math':subject;
+const subjectTitle=subject=>'MAP '+mapRitDisplaySubject(subject)+' RIT';
 const pText=p=>Number.isInteger(p)?'P'+p:'Percentile unavailable';
-function historyTitle(records,subject){
- return subjectTitle(subject)+' · '+mapRitHistory(records,subject).slice().reverse().map(w=>
-  w.label+': '+(w.record?w.record.rit+' RIT ('+pText(w.record.percentile)+'), '+
-   mapRitChangeLabel(mapRitChange(records,subject,w.key).delta):'not assessed')
- ).join(' · ')+' · FICTIONAL DATA';
-}
 export function renderMapRitHeader(subject){
- return '<th scope="col" class="map-rit-th" data-map-rit-subject="'+esc(subject)+'" title="'+
- esc(subjectTitle(subject)+'. Hover for NWEA achievement bands: red Low 1–20, orange Low Average 21–40, yellow Average 41–60, green High Average 61–80, blue High 81–99. RIT is the score; colour represents percentile, not growth. Synthetic data.')+
- '">MAP '+esc(subject)+' <span class="map-rit-head-unit">RIT</span></th>';
+ return '<th scope="col" class="map-rit-th" data-map-rit-subject="'+esc(subject)+
+ '" aria-label="'+esc(subjectTitle(subject)+'. Hover or focus for percentile interpretation')+'">'+
+ '<span class="map-rit-head-stack"><span class="map-rit-head-overline">MAP </span>'+
+ '<span class="map-rit-head-subject">'+esc(mapRitDisplaySubject(subject))+'</span></span></th>';
 }
 export function renderMapRitCell(records,subject,studentId){
  const {current,previous,delta}=mapRitChange(records,subject);
- if(!current)return '<span class="map-rit-missing" title="'+esc(historyTitle(records,subject))+
- '"><strong>—</strong><small>No F26 test</small></span>';
+ if(!current)return '<span class="map-rit-missing" data-student="'+esc(studentId)+
+ '" data-map-rit-subject="'+esc(subject)+'"><strong>—</strong><small>No F26 test</small></span>';
  const band=mapRitBand(current.percentile);
  const growth=mapRitChangeLabel(delta);
  const comparison=previous?' since '+previous.window:'; no previous comparable test';
  return '<button type="button" class="map-rit-tile '+(band?'map-rit-'+band.key:'map-rit-unclassified')+
- '" data-student="'+esc(studentId)+'" title="'+esc(historyTitle(records,subject))+
+ '" data-student="'+esc(studentId)+'" data-map-rit-subject="'+esc(subject)+
  '" aria-label="'+esc(subjectTitle(subject)+': Fall 2026 '+current.rit+' RIT; '+growth+comparison+
  '; percentile rank '+(Number.isInteger(current.percentile)?current.percentile:'unavailable')+
  (band?', '+band.label:'')+'. Open learner profile for four testing windows.')+'">'+
- '<span class="map-rit-percentile" aria-hidden="true">'+esc(pText(current.percentile))+'</span>'+
  '<strong class="map-rit-score">'+esc(current.rit)+'</strong>'+
  '<span class="map-rit-growth '+(delta===null?'map-rit-growth-missing':
  delta>0?'map-rit-growth-up':delta<0?'map-rit-growth-down':'map-rit-growth-flat')+'">'+
@@ -114,7 +109,7 @@ export function renderMapRitProfile(records){
   const band=mapRitBand(record?.percentile);
   const change=mapRitChange(records,subject);
   return '<article class="map-rit-profile-subject '+(band?'map-rit-'+band.key:'map-rit-unclassified')+'">'+
-   '<span>MAP '+esc(subject)+'</span><strong>'+(record?esc(record.rit):'—')+'</strong>'+
+   '<span>MAP '+esc(mapRitDisplaySubject(subject))+'</span><strong>'+(record?esc(record.rit):'—')+'</strong>'+
    (record?'<span class="map-rit-profile-growth">'+esc(mapRitChangeLabel(change.delta))+
     (change.previous?'<small>since '+esc(change.previous.window)+'</small>':'')+'</span>':'')+
    '<small>'+(record?esc(pText(record.percentile)+' · '+(band?.label||'Not classified')):'No Fall 2026 assessment')+
@@ -122,7 +117,7 @@ export function renderMapRitProfile(records){
  }).join('')+'</div>'+
  '<details class="map-rit-history"><summary>View MAP RIT history · Fall 2026 + three earlier windows</summary>'+
  '<div class="map-rit-history-scroll"><table><thead><tr><th scope="col">Test window</th>'+
- MAP_RIT_SUBJECTS.map(s=>'<th scope="col">'+esc(s)+'</th>').join('')+
+ MAP_RIT_SUBJECTS.map(s=>'<th scope="col">'+esc(mapRitDisplaySubject(s))+'</th>').join('')+
  '</tr></thead><tbody>'+MAP_RIT_WINDOWS.slice().reverse().map(w=>
   '<tr><th scope="row">'+esc(w.label)+'</th>'+MAP_RIT_SUBJECTS.map(s=>{
    const match=mapRitHistory(records,s).find(row=>row.key===w.key);

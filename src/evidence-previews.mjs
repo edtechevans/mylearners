@@ -108,6 +108,15 @@ export function decorateEvidencePreviews(root,role){
      });
      return;
     }
+    // MAP RIT tiles share this one white evidence preview, with percentile details.
+    // Never mark the containing cell as a second competing hover target.
+    const rit=cell.querySelector('.map-rit-tile,.map-rit-missing');
+    if(rit){
+     mark(rit,'map-rit');
+     rit.dataset.previewStudent=id;
+     rit.dataset.previewSubject=rit.dataset.mapRitSubject||'Mathematics';
+     return;
+    }
     const kind=guideKey(heading);
     const isExperience=kind==='engagement'||kind==='belonging';
     const isAttendance=kind==='attendance';

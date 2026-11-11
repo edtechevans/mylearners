@@ -491,14 +491,15 @@ try{
    assert(await evaluate("document.querySelector('.roster-daily[data-roster-layout=everyday]')!==null"),
     'Faculty should open with everyday evidence visible');
    const headers=await evaluate("Array.from(document.querySelectorAll('.roster-daily thead th')).map(th=>th.textContent.trim())");
-   for(const expected of ['Learner','Attendance','MAP Reading RIT','MAP Mathematics RIT','MAP Language Usage RIT','IXL Mathematics','Engagement','Belonging','Support information'])
+    for(const expected of ['Learner','Attendance','MAP Reading','MAP Math','MAP Language Usage','IXL Math','Engagement','Belonging','Support information'])
     assert(headers.some(h=>h.includes(expected)),'Missing default evidence: '+expected);
    assert(!headers.some(h=>h.includes('MAP Mathematics growth')),'Old MAP Mathematics growth column should be removed from everyday roster');
-   const mapTiles=await evaluate("(function(){return [...document.querySelectorAll('.faculty-data-wall tbody tr')].map(tr=>[...tr.querySelectorAll('button.map-rit-tile')].map(tile=>({score:tile.querySelector('.map-rit-score')?.textContent,change:tile.querySelector('.map-rit-growth')?.textContent,percentile:tile.querySelector('.map-rit-percentile')?.textContent})))})()");
-   assert(mapTiles.length>=15&&mapTiles.some(row=>row.length===3),'Grade 7 students should show three MAP RIT subject tiles');
-   assert(mapTiles.flat().every(tile=>/^\d{3}$/.test(tile.score)&&
-    (/^[+\-]?\d+ RIT$/.test(tile.change)||tile.change==='No prior test')&&/^P\d{1,2}$/.test(tile.percentile)),
-    'All present MAP tiles must show a score, change/no-prior state, and percentile');
+    const mapTiles=await evaluate("(function(){return [...document.querySelectorAll('.faculty-data-wall tbody tr')].map(tr=>[...tr.querySelectorAll('button.map-rit-tile')].map(tile=>({score:tile.querySelector('.map-rit-score')?.textContent,change:tile.querySelector('.map-rit-growth')?.textContent,hasPill:!!tile.querySelector('.map-rit-percentile'),hasTitle:tile.hasAttribute('title'),preview:tile.dataset.evidencePreview})))})()");
+    assert(mapTiles.length>=15&&mapTiles.some(row=>row.length===3),'Grade 7 students should show three MAP RIT subject tiles');
+    assert(mapTiles.flat().every(tile=>/^\d{3}$/.test(tile.score)&&
+     (/^[+\-]?\d+ RIT$/.test(tile.change)||tile.change==='No prior test')&&
+     !tile.hasPill&&!tile.hasTitle&&tile.preview==='map-rit'),
+     'MAP tiles must show RIT and growth, while percentile moves to one white hover preview');
     assert(headers.length>=12&&headers.some(h=>h.trim()==='Language & Literature'),'Expected subject names without Report prefixes');
    assert(await evaluate("document.querySelector('.roster-daily').getBoundingClientRect().top<innerHeight-80"),
     'The Faculty data wall should begin within the first viewport');
@@ -520,7 +521,7 @@ try{
    assert(await evaluate("document.querySelectorAll('.faculty-data-wall tbody td[data-ux-sort-value]').length>=80"),
     'Evidence cells must provide raw values for sorting');
     const numericSort=await evaluate("(function(){const hs=[...document.querySelectorAll('.faculty-data-wall thead th')];const h=hs.find(th=>th.dataset.mapRitSubject==='Mathematics');if(!h)return false;const ix=Number(h.dataset.uxOrigin);const btn=h.querySelector('[data-ux-sort]');if(!btn)return false;btn.click();const v=[...document.querySelectorAll('.faculty-data-wall tbody tr')].map(tr=>[...tr.cells].find(td=>Number(td.dataset.uxOrigin)===ix)?.getAttribute('data-ux-sort-value')).filter(x=>x!==null&&x!=='').map(Number);return v.length>5&&v.every((n,i)=>i===0||n>=v[i-1])})()");
-    assert(numericSort,'MAP Mathematics RIT must sort by raw RIT score rather than colour or growth');
+    assert(numericSort,'MAP Math RIT must sort by raw RIT score rather than colour or growth');
 
    assert(await evaluate("document.querySelectorAll('.roster-daily tbody .class-evidence-result').length>=20"),
     'Everyday columns should show per-learner values without extra clicks');
