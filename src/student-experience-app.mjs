@@ -568,9 +568,12 @@ function leader(){
  const classes=leaderAdvisoryClasses(DATA.classes,state.division,state.grade);
  const selectedClass=classes.find(c=>c.id===state.classId);
  const leaderPerson=group.find(s=>s.id===state.leaderStudentId);
+ if(state.leaderSection==='journeys'&&!group.some(s=>gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10))
+  state.leaderSection='follow-up';
  if(leaderPerson)return heading('Leadership Overview','Read-only evidence for leadership review.')+
   renderLeaderLearnerEvidence({student:leaderPerson,data:DATA,academic:ACADEMIC_RECORDS,
    records:RECORDS,window:state.window,
+   returnLabel:leaderReturnContext?.label||'division review',
    journeyProfile:renderMapJourneyProfile({student:leaderPerson,records:DATA.map[leaderPerson.id]||[],
     subject:state.journeyProfileSubject})})+info();
  const secondaryOnly=group.length>0&&group.every(s=>s.division==='Secondary');
@@ -723,7 +726,6 @@ function leader(){
   stat('Historical report coverage',reports.rate===null?'—':reports.rate+'%',
    reports.available+' of '+reports.eligible+' learners with an issued historical record.',
    'Simulated previous school years')+'</div>'+quickEvidence+
-  renderLeaderMapRedReview({students:group,map:DATA.map})+
   '<p class="leader-data-note">'+(mapEligible?
    'MAP growth uses comparable tests for eligible Grades 3–10. It does not measure achievement percentile. ':
    'MAP is not used in this selected grade range. ')+
@@ -771,8 +773,11 @@ function leader(){
   'They do not rank learners or indicate academic achievement. '+
   'Only homeroom/advisory cohorts are shown; taught courses are not survey response groups.</p>'+
   '<h3>Over Time</h3>'+trends+'</div></details>';
+ const leaderPane=(id,content)=>'<section id="leader-focus-panel-'+id+
+  '" class="leader-focus-panel" role="tabpanel" aria-labelledby="leader-focus-tab-'+id+'"'+
+  (state.leaderSection===id?'':' hidden')+'>'+content+'</section>';
  return heading('Leadership Overview',
-  'Academics first, then attendance and Student Experience. Choose a division or grade to investigate.')+
+  'Review learners first, then investigate longitudinal, academic and experience evidence.')+
   '<div class="leader-view leader-daily">'+
   '<div class="toolbar leader-controls leader-scope-controls">'+
   '<label>Division '+selector('division',[['All','Whole school'],['Elementary','Elementary'],['Secondary','Secondary']],state.division)+'</label>'+
@@ -783,21 +788,23 @@ function leader(){
    allStudents:DATA.students,data:DATA,academic:ACADEMIC_RECORDS,records:RECORDS,
    sssRecords:SSS_RECORDS,entries:supportEntries(),reviewFilter:state.leaderReviewFilter,
    expanded:state.leaderReviewExpanded,savedView:savedLeaderView(),voiceWindow:state.window,
-   academicPanels:renderMapJourneyCohort({students:group,map:DATA.map,
+   focusSection:state.leaderSection,savedNotice:state.leaderSaveNotice,
+   journeyPanel:renderMapJourneyCohort({students:group,map:DATA.map,
     subject:state.journeySubject,
     start:state.journeyStart==='auto'?(state.division==='Elementary'?'F24':'F22'):state.journeyStart,
     end:state.journeyEnd,startingBand:state.journeyStartingBand,
     endingBand:state.journeyEndingBand,
     pathway:state.journeyPathway==='auto'?(state.division==='Elementary'?'all':'cross'):state.journeyPathway,
-    expanded:state.journeyExpanded})+
-    learning+reportSection+deepAcademic,
+    expanded:state.journeyExpanded,preset:state.journeyPreset,
+    advancedOpen:state.journeyAdvancedOpen}),
+   academicPanels:learning+reportSection+deepAcademic,
    academicActions:renderLeaderAcademicActions({students:group,map:DATA.map,academic:ACADEMIC_RECORDS,
     focus:state.leaderAcademicFocus,grade:state.leaderAcademicGrade,
     subject:state.leaderAcademicSubject,multiple:state.leaderAcademicMultiple,
     expanded:state.leaderAcademicExpanded,mapBand:state.leaderMapBand})})+
-  experienceSection+deepPatterns+
-  renderLeaderSupportSection({students:group,sssRecords:SSS_RECORDS,entries:supportEntries(),
-   open:state.leaderSupportOpen})+'</div>'+info();
+  leaderPane('experience',experienceSection+deepPatterns)+
+  leaderPane('support',renderLeaderSupportSection({students:group,sssRecords:SSS_RECORDS,
+   entries:supportEntries(),open:state.leaderSupportOpen}))+'</div>'+info();
 }
 function sss(){
  const banner=heading('Student Support Services',
