@@ -127,6 +127,18 @@ function createReports(student){
  });
 }
 const range=(min,max,n)=>clamp(n,min,max);
+// IXL LevelUp diagnostics are separate from IXL practice SmartScores.
+// Incomplete exports contain "--", which must never be treated as a zero.
+// All coverage decisions and values here are deterministic *synthetic* examples.
+const IXL_DOMAINS_ES=[
+ 'Measurement and Data','Number and Operations in Base Ten',
+ 'Operations and Algebraic Thinking','Geometry',
+ 'Number and Operations-Fractions'
+];
+const IXL_DOMAINS_SEC=[
+ 'Ratios and Proportional Relationships','Expressions and Equations',
+ 'The Number System','Statistics and Probability','Functions'
+];
 function createIXL(student){
  const current=gradeNumber(student.grade);
  if(current<1||current>10)return [];
@@ -134,14 +146,33 @@ function createIXL(student){
   const grade=currentGradeInYear(student,window.year);
   const n=grade?gradeNumber(grade):-1;
   if(n<1||n>10||!hasBeenEnrolled(student,window.year))return [];
+  const percentileSeed=pseudo(student.id+'-ixl-coverage-'+window.year);
+  const threshold=n<=5?.89:n===6?.38:n===7?.18:.08;
+  const seat=Number(student.id.slice(-4))%20;
+  const complete=seat===1||percentileSeed<threshold;
+  const identity={date:window.label,year:window.year,grade,
+   measure:'Illustrative IXL Mathematics diagnostic level, not a SmartScore',
+   source:'Synthetic IXL LevelUp-style export',simulated:true};
+  if(!complete)return [{...identity,level:null,scoreLabel:null,
+   scaleScore:null,percentile:null,tier:null,domains:[],status:'not-completed'}];
   const aptitude=(pseudo(student.id+'-ixl-aptitude')-.5)*86;
   const individual=(pseudo(student.id+'-ixl-'+window.year)-.5)*24;
   const level=range(80,1150,Math.round((n*100+49+aptitude+individual)/5)*5);
-  return [{
-   date:window.label,year:window.year,grade,
-   level,measure:'Illustrative IXL Mathematics diagnostic level',
-   simulated:true
-  }];
+  const scaleScore=Math.round((80+n*19+pseudo(student.id+'-ixl-scale-'+window.year)*18)*100)/100;
+  const percentile=range(1,99,Math.round(50+(level-(n*100+50))*.28));
+  const tier=level>=n*100+80?'Above grade':
+   level>=n*100+0?'On grade':
+   level>=n*100-75?'Below grade':'Far below grade';
+  const names=n<=5?IXL_DOMAINS_ES:IXL_DOMAINS_SEC;
+  const domains=names.map(name=>{
+   const score=range(40,1200,Math.round((level+(pseudo(student.id+name+window.year)-.5)*125)/10)*10);
+   const p=range(1,99,Math.round(percentile+(pseudo(name+student.id+window.year)-.5)*25));
+   const t=score>=n*100+80?'Above grade':score>=n*100?'On grade':
+    score>=n*100-75?'Below grade':'Far below grade';
+   return {name,score,scoreLabel:String(score),tier:t,percentile:p,atLeast:false};
+  });
+  return [{...identity,level,scoreLabel:String(level),scaleScore,percentile,
+   tier,domains,status:'completed'}];
  }).sort((a,b)=>a.year-b.year);
 }
 function createCore(student){
@@ -199,9 +230,9 @@ export function latestAcademic(record,mode='report',subject='Mathematics'){
   return report&&entry?{...entry,label:report.year,grade:report.grade,framework:report.framework}:null;
  }
  const item=record[mode]?.at(-1)||null;
- if(!item)return null;
+ if(!item||mode==='ixl'&&(!Number.isFinite(item.level)||item.status==='not-completed'))return null;
  return {...item,label:item.date,
-  value:mode==='ixl'?String(item.level):mode==='core'?item.correct+'/'+item.assessed:item.level};
+  value:mode==='ixl'?String(item.scoreLabel||item.level):mode==='core'?item.correct+'/'+item.assessed:item.level};
 }
 export function academicCoverage(students,records,mode='report',subject='Mathematics'){
  const eligible=(students||[]).filter(student=>academicModesFor(student.grade).includes(mode));
