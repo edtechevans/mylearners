@@ -195,7 +195,7 @@ test('Student profile displays all latest report subjects and 2–3 year history
   const rec=academicFor(records,student.id);
   const html=renderAcademicProfile(student,records,true);
   assert.match(html,/My School Reports/);
-  assert.match(html,/Fictional demonstration/);
+  assert.match(html,/Issued reports/);
   assert.equal((html.match(/data-academic-report-year="/g)||[]).length,rec.reports.length,g);
   if(rec.reports.length){
    for(const subject of rec.reports[0].subjects)assert.ok(html.includes(subject.subject.replaceAll('&','&amp;')),g+': '+subject.subject);

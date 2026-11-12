@@ -26,7 +26,7 @@ test('G6-G10 projected MYP grades always mirror current best fit and use an aste
   assert.equal((html.match(/class="myp-best-fit-marker sg-asterisk"/g)||[]).length,projected*2-
    report.subjects.filter(x=>x.provisional&&!academicFor(records,learner.id).reports.some(r=>r.issued&&r.framework===report.framework&&r.scale===report.scale&&r.subjects.some(y=>y.subject===x.subject))).length);
   for(const subject of report.subjects){
-   assert.ok(html.includes(subject.subject));
+   assert.ok(html.includes(subject.subject.replaceAll('&','&amp;')));
    assert.ok(html.includes('Criterion A:'));
    assert.ok(html.includes('Criterion D:'));
   }
