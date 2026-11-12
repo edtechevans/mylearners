@@ -176,3 +176,63 @@
  .evidence-preview-popup:has(.evidence-preview-questions){max-height:70vh}
  .evidence-preview-popup .evidence-preview-inner:has(.evidence-preview-questions){padding:12px}
 }
+
+
+/* Fix: a long evidence popup must scroll inside itself instead of dismissing
+   when the parent window receives the nested scroll event (Q3 clipped).
+   One scrollable body + an always-visible, conditional scroll cue. */
+.evidence-preview-popup{
+ display:flex;
+ flex-direction:column;
+ overflow:hidden;
+}
+.evidence-preview-scroll-pane{
+ flex:1 1 auto;
+ min-height:0;
+ min-width:0;
+ overflow-y:auto;
+ overflow-x:hidden;
+ overscroll-behavior:contain;
+ -webkit-overflow-scrolling:touch;
+ touch-action:pan-y;
+ scrollbar-width:thin;
+ scrollbar-color:#7194aa #eaf1f5;
+}
+.evidence-preview-scroll-pane::-webkit-scrollbar{width:9px}
+.evidence-preview-scroll-pane::-webkit-scrollbar-track{background:#eaf1f5}
+.evidence-preview-scroll-pane::-webkit-scrollbar-thumb{
+ background:#7194aa;
+ border:2px solid #eaf1f5;
+ border-radius:10px;
+}
+.evidence-preview-scroll-pane:focus-visible{
+ outline:3px solid #267fae;
+ outline-offset:-4px;
+ border-radius:11px;
+}
+.evidence-preview-scroll-cue{
+ flex:0 0 auto;
+ padding:9px 13px;
+ border-top:1px solid #d7e5ed;
+ background:#eaf3f8;
+ color:#194b67;
+ font-size:11px;
+ font-weight:800;
+ line-height:1.35;
+ text-align:center;
+}
+.evidence-preview-scroll-cue[hidden]{display:none!important}
+.evidence-preview-popup:has(.evidence-preview-questions){
+ max-height:min(760px,calc(100vh - 24px));
+ max-height:min(760px,calc(100dvh - 24px));
+}
+@media(max-width:480px){
+ .evidence-preview-popup:has(.evidence-preview-questions){
+  max-height:calc(100vh - 20px);
+  max-height:calc(100dvh - 20px);
+ }
+ .evidence-preview-scroll-cue{font-size:12px;padding:10px 12px}
+}
+@media print{
+ .evidence-preview-scroll-cue{display:none!important}
+}

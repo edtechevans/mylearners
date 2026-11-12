@@ -260,21 +260,39 @@ export function decorateEvidencePreviews(root,role){
  */
 export function installEvidencePreviewController(root,resolve){
  if(!root?.addEventListener||typeof resolve!=='function')return {dismiss(){}};
- let popup=null,anchor=null,showTimer=null,hideTimer=null,pinned=false;
+ let popup=null,anchor=null,scrollPane=null,scrollCue=null,showTimer=null,hideTimer=null,pinned=false;
  const clearTimers=()=>{if(showTimer!==null)clearTimeout(showTimer);if(hideTimer!==null)clearTimeout(hideTimer);showTimer=hideTimer=null};
  const dismiss=()=>{
   clearTimers();
+  // Escape from a long keyboard-scrollable preview returns to its trigger.
+  if(scrollPane&&document.activeElement===scrollPane&&anchor?.focus)
+   anchor.focus({preventScroll:true});
   if(popup){popup.remove();popup=null}
   if(anchor?.removeAttribute)anchor.removeAttribute('aria-describedby');
-  anchor=null;pinned=false;
+  popup=null;scrollPane=null;scrollCue=null;anchor=null;pinned=false;
+ };
+ const updateScrollCue=()=>{
+  if(!scrollPane||!scrollCue)return;
+  scrollCue.hidden=scrollPane.scrollHeight-scrollPane.scrollTop-scrollPane.clientHeight<=12;
  };
  const ensure=()=>{
   if(popup)return popup;
   if(!document.createElement||!document.body?.appendChild)return null;
   popup=document.createElement('div');popup.className='evidence-preview-popup';
   popup.id='evidence-preview-active';popup.setAttribute('role','tooltip');
+  // The scroll area is separate from the footer, which stays visible while
+  // any questions remain below the fold.
+  popup.innerHTML='<div class="evidence-preview-scroll-pane"></div>'+
+   '<div class="evidence-preview-scroll-cue" hidden aria-hidden="true">More questions below ↓ · Scroll to view</div>';
+  scrollPane=popup.querySelector('.evidence-preview-scroll-pane');
+  scrollCue=popup.querySelector('.evidence-preview-scroll-cue');
+  scrollPane?.addEventListener('scroll',updateScrollCue,{passive:true});
   popup.addEventListener('pointerenter',()=>{if(hideTimer!==null)clearTimeout(hideTimer);hideTimer=null});
   popup.addEventListener('pointerleave',()=>{if(!pinned)scheduleHide()});
+  popup.addEventListener('focusin',()=>{if(hideTimer!==null)clearTimeout(hideTimer);hideTimer=null});
+  popup.addEventListener('focusout',e=>{
+   if(!pinned&&!popup.contains(e.relatedTarget)&&!anchor?.contains?.(e.relatedTarget))scheduleHide();
+  });
   document.body.appendChild(popup);
   return popup;
  };
@@ -282,10 +300,13 @@ export function installEvidencePreviewController(root,resolve){
   if(!popup||!anchor?.getBoundingClientRect)return;
   const r=anchor.getBoundingClientRect(),w=popup.offsetWidth||300,h=popup.offsetHeight||180;
   const vw=window.innerWidth||1440,vh=window.innerHeight||900;
-  const left=Math.max(10,Math.min(vw-w-12,r.left+r.width/2-w/2));
-  const y=r.bottom+10+h>vh?r.top-h-10:r.bottom+10;
+  const left=Math.max(12,Math.min(vw-w-12,r.left+r.width/2-w/2));
+  const below=vh-r.bottom-10,above=r.top-10;
+  const y=below>=h?r.bottom+10:above>=h?r.top-h-10:
+   below>=above?r.bottom+10:r.top-h-10;
   popup.style.left=Math.max(8,left)+'px';
   popup.style.top=Math.max(8,Math.min(vh-h-8,y))+'px';
+  updateScrollCue();
  };
  const display=target=>{
   const item=resolve(target);
@@ -293,10 +314,25 @@ export function installEvidencePreviewController(root,resolve){
   clearTimers();
   if(anchor&&anchor!==target)anchor.removeAttribute('aria-describedby');
   anchor=target;
-  const el=ensure();if(!el)return;
-  el.innerHTML=previewMarkup(item);
+  const el=ensure();if(!el||!scrollPane)return;
+  scrollPane.innerHTML=previewMarkup(item);
+  scrollPane.scrollTop=0;
+  // Long three-question previews can be entered with Tab and scrolled using
+  // keys, wheel, trackpad or touch; compact summaries remain regular tooltips.
+  const long=!!item.experienceDetail;
+  el.setAttribute('role',long?'region':'tooltip');
+  if(long){
+   el.setAttribute('aria-label',item.title+' question-level evidence');
+   scrollPane.setAttribute('tabindex','0');
+   scrollPane.setAttribute('aria-label','Scroll to view all questions and responses');
+  }else{
+   el.removeAttribute('aria-label');
+   scrollPane.removeAttribute('tabindex');
+   scrollPane.removeAttribute('aria-label');
+  }
   target.setAttribute?.('aria-describedby',el.id);
   position();
+  updateScrollCue();
  };
  function scheduleHide(){
   if(hideTimer!==null)clearTimeout(hideTimer);
@@ -321,7 +357,9 @@ export function installEvidencePreviewController(root,resolve){
   if(trigger&&!trigger.contains?.(e.relatedTarget)&&!pinned)scheduleHide();
  });
  root.addEventListener('focusin',e=>{const trigger=parent(e);if(trigger)scheduleShow(trigger,true)});
- root.addEventListener('focusout',e=>{if(parent(e)&&!pinned)scheduleHide()});
+ root.addEventListener('focusout',e=>{
+  if(parent(e)&&!pinned&&!popup?.contains?.(e.relatedTarget))scheduleHide();
+ });
  root.addEventListener('click',e=>{
   const trigger=parent(e);
   if(!trigger)return;
@@ -344,9 +382,29 @@ export function installEvidencePreviewController(root,resolve){
   if(popup&&!popup.contains(e.target)&&!anchor?.contains?.(e.target))dismiss();
  });
  document.addEventListener?.('keydown',e=>{
-  if(e.key==='Escape'&&popup){dismiss()}
+  if(e.key==='Escape'&&popup){dismiss();return}
+  if(!popup||!scrollPane||scrollPane.scrollHeight<=scrollPane.clientHeight+2)return;
+  const onTrigger=e.target===anchor||anchor?.contains?.(e.target);
+  const inPreview=e.target===scrollPane||scrollPane.contains?.(e.target);
+  if(!onTrigger&&!inPreview)return;
+  const step=Math.max(70,Math.round(scrollPane.clientHeight*.7));
+  if(e.key==='ArrowDown')scrollPane.scrollTop+=48;
+  else if(e.key==='ArrowUp')scrollPane.scrollTop-=48;
+  else if(e.key==='PageDown')scrollPane.scrollTop+=step;
+  else if(e.key==='PageUp')scrollPane.scrollTop-=step;
+  else if(e.key==='End')scrollPane.scrollTop=scrollPane.scrollHeight;
+  else if(e.key==='Home')scrollPane.scrollTop=0;
+  else return;
+  e.preventDefault?.();
+  updateScrollCue();
  });
  window.addEventListener?.('resize',position);
- window.addEventListener?.('scroll',()=>{if(popup&&!pinned)dismiss();else position()},true);
+ // Window capture also receives *nested* scroll events. Never dismiss a
+ // hover when the user scrolls its own content (the original Q3 failure).
+ window.addEventListener?.('scroll',e=>{
+  if(!popup)return;
+  if(e?.target===scrollPane||popup.contains?.(e?.target)){updateScrollCue();return}
+  if(!pinned)dismiss();else position();
+ },true);
  return {dismiss,refresh:position};
 }
