@@ -8,6 +8,8 @@ import {renderFacultyStrandQuickCheck,facultyStrandQuickModel} from './faculty-s
 import {MAP_RIT_SUBJECTS,mapRitCurrent,mapRitChange,mapRitChangeLabel,renderMapRitCell,renderMapRitHeader,renderMapRitLegend,renderMapRitProfile,installMapRitHeaderTooltips} from './map-rit-achievement.mjs?v=20261111schemas1';
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs?v=20261111schemas1';
 import {renderLeaderVoiceReview} from './leader-review-signals.mjs?v=20261111mapbands1';
+import {universalScreenerFor,renderUniversalScreenerTile} from './universal-screener.mjs';
+import {renderLeaderUniversalScreener} from './universal-screener-leader.mjs';
 import {renderLeaderAcademicActions,LEADER_ACADEMIC_FOCUS} from './leader-academic-actions.mjs?v=20261111journeys1';
 import {renderMapJourneyCohort,renderMapJourneyProfile} from './map-journeys-view.mjs?v=20261111uxconsol1';
 import {JOURNEY_FALL_WINDOWS,JOURNEY_START_BANDS,JOURNEY_END_BANDS} from './map-journeys-data.mjs?v=20261111uxconsol1';
@@ -110,6 +112,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
   leaderStudentId:'',leaderReviewFilter:'all',leaderReviewExpanded:false,
   leaderDirectoryDivision:'All',leaderDirectoryGrade:'All',leaderDirectoryStatus:'has-support',
   leaderDirectoryQuery:'',leaderDirectoryExpanded:false,
+  leaderScreenerBand:'all',leaderScreenerGrade:'All',leaderScreenerExpanded:false,
   leaderSection:'follow-up',leaderSaveNotice:'',
   leaderAcademicFocus:'',leaderAcademicGrade:'',leaderAcademicSubject:'',leaderAcademicMultiple:false,leaderAcademicExpanded:false,leaderMapBand:'both',
   journeySubject:'Reading',journeyStart:'auto',journeyEnd:'F26',journeyStartingBand:'both',journeyEndingBand:'average-plus',journeyPathway:'auto',journeyExpanded:false,journeyProfileSubject:'Reading',
@@ -259,6 +262,7 @@ function roster(ss,options={}){
  const everydaySort=(student,column)=>{
   if(column.kind==='attendance')return attendanceSummary(DATA.attendance[student.id]||[]).rate;
   if(column.kind==='mapRit')return mapRitCurrent(DATA.map[student.id]||[],column.subject)?.rit??null;
+  if(column.kind==='screener')return universalScreenerFor(student)?.percent??null;
   if(column.kind==='engagement'||column.kind==='belonging')
    return experienceFor(RECORDS,student.id,column.kind,state.classExperienceWindow)?.value??null;
   if(column.kind==='report'){
@@ -275,6 +279,14 @@ function roster(ss,options={}){
    return '<span class="class-evidence-result"><strong>'+safe(value)+'</strong></span>';
   }
   if(column.kind==='mapRit')return renderMapRitCell(DATA.map[student.id]||[],column.subject,student.id);
+  if(column.kind==='screener'){
+   const value=universalScreenerFor(student)?.percent;
+   return '<span class="evidence-cell-layout"><button type="button" class="evidence-cell-open universal-screener-open"'+
+    ' data-student="'+safe(student.id)+'" data-preview-student="'+safe(student.id)+'"'+
+    ' data-evidence-preview="universal-screener" aria-label="Universal Screener, demo '+value+
+    ' percent. Open '+safe(student.name)+' learner profile">'+
+    renderUniversalScreenerTile(student)+'</button></span>';
+  }
   if(column.kind==='ixl'){
    const result=latestAcademic(academicFor(ACADEMIC_RECORDS,student.id),'ixl');
    const status=result?.tier==='Above grade'?'above':result?.tier==='On grade'?'on':
@@ -369,7 +381,7 @@ function roster(ss,options={}){
  const context=(across?rows.length+' of '+ss.length+' assigned students across all classes':
   rows.length+' of '+ss.length+' learners in '+safe(activeClass()?.name||'this class'))+
   ' · 2026–27 synthetic test data · not issued';
- const evidenceColWidth='124px';
+ const evidenceColWidth='116px';
  const colgroup=everyday?'<colgroup><col class="roster-col-learner"><col class="roster-col-attendance">'+
   everydayColumns.slice(1).map(()=>'<col class="roster-col-evidence" style="width:'+evidenceColWidth+'">').join('')+
   '<col class="roster-col-support"></colgroup>':'';
@@ -510,6 +522,8 @@ function learnerProfile(s,studentRole=false){
  }
  const profileKpis='<div class="kpis profile-kpis">'+
   kpi('Attendance',fmt(aa.rate)+'%','')+
+  '<div class="kpi us-profile-fact"><span>Universal Screener · demo</span>'+renderUniversalScreenerTile(s)+
+   '<small>2026–27 · fictional percentage, not a validated cutoff</small></div>'+
   (mapApplicable?kpi('MAP Mathematics growth',mg.status==='comparable'?
    (mg.actual>=0?'+':'')+mg.actual:'—',
    mg.status==='comparable'?'RIT points · latest comparable MAP tests':'Not yet comparable'):'')+
