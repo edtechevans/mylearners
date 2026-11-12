@@ -96,6 +96,15 @@ test('only advisory and homeroom cohorts are eligible for Student Experience cla
  assert.ok(chosen.every(x=>x.name!=='IB2 Mathematics Analysis HL'));
  assert.equal(leaderAdvisoryClasses(mixed,'Elementary','G12').length,0);
 });
+test('Leader learner profiles mark partial G6–10 MYP best fits but never DP grades',()=>{
+ const partial=secondary.filter(s=>s.grade==='G7').find(student=>
+  academic.get(student.id)?.workingReport?.subjects?.some(item=>item.provisional));
+ assert.ok(partial);
+ assert.match(renderLeaderLearnerEvidence({student:partial,...opts}),/myp-best-fit-marker/);
+ const dp=secondary.find(s=>s.grade==='G12');
+ assert.ok(dp);
+ assert.doesNotMatch(renderLeaderLearnerEvidence({student:dp,...opts}),/myp-best-fit-marker/);
+});
 test('read-only profile shows comparable academic windows but not support case narratives',()=>{
  const student=secondary.find(s=>s.grade==='G7');
  const html=renderLeaderLearnerEvidence({student,...opts});
