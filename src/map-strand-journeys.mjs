@@ -141,8 +141,8 @@ export function strandCohortJourney({
  const selected=allNames.includes(goalName)?goalName:defaultName;
  const timeline=windows.map(w=>{
   let tested=0,assessed=0,low=0,lowAverage=0,averagePlus=0,unclassified=0;
-  for(const {tests} of tests){
-   const r=tests.find(x=>x.key===w.key);
+  for(const {tests:history} of tests){
+   const r=history.find(x=>x.key===w.key);
    if(!r)continue;
    tested++;
    const goal=strandGoalAt(r,selected);
