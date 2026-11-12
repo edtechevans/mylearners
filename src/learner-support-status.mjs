@@ -46,7 +46,8 @@ export function supportStatusForStudent(student){
  if(!isDemo(student))return null;
  const tagIds=new Set(demoTagsForStudent(student).map(t=>t.id));
  const hasEAL=tagIds.has('eal');
- const hasLearning=tagIds.has('ss')||tagIds.has('iep');
+ // Independent synthetic assignment: hidden legacy IEP flags never determine displayed support tiers.
+ const hasLearning=tagIds.has('ss')||hash(student.id+'-learning-support-example-v2')%11===0;
  const eal=hasEAL?EAL_SEQUENCE[hash(student.id+'-eal-stage-v1')%EAL_SEQUENCE.length]:
   hash(student.id+'-eal-exit-v1')%19===0?'exited':'not-needed';
  const tier=hasLearning?1+hash(student.id+'-learning-tier-v1')%3:null;
