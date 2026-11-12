@@ -8,6 +8,7 @@ import {academicFor,latestAcademic,facultyDemoReport} from './academic-journey-d
 import {experienceFor,EXPERIENCE_WINDOWS} from './experience-data.mjs';
 import {buildExperienceQuestionPreview} from './experience-question-preview.mjs';
 import {universalScreenerFor} from './universal-screener.mjs';
+import {ufliLessonFor} from './ufli-demo.mjs';
 import {reportProgress,issuedReportProgress,academicCheckinProgress,mapProgress,experienceProgress,groupExperienceProgress,maiaProgress} from './evidence-progress.mjs?v=20261111schemas1';
 import {MAIA_DEFAULT_DIMENSION} from './maia-demo.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
@@ -242,6 +243,17 @@ export function resolveEvidencePreview(trigger,ctx){
   if(!person||!ctx.experience||!['engagement','belonging'].includes(metric))return null;
   return experienceQuestions(ctx,[person],metric,
    trigger.dataset.previewWindow||ctx.state.classExperienceWindow||'F26',person.name,true);
+ }
+ if(kind==='ufli'){
+  if(ctx.role!=='faculty'||!person)return null;
+  const placement=ufliLessonFor(person);
+  if(!placement)return null;
+  return makePreview({title:'UFLI Foundations · '+placement.code,
+   subtitle:person.name+' · Synthetic 2026–27 placement',kind:'academic',
+   rows:[['Official lesson number',placement.lesson+' of 128'],
+    ['Sequence focus',placement.phase.label],
+    ['Colour grouping',placement.group.label+' · '+placement.group.start+'–'+placement.group.end]],
+   note:'UFLI Foundations specifies a lesson sequence, not a proficiency-level or grade scale. This random, stable example is not an actual assessment, instructional recommendation, or mastery judgment. The official document covers K–2; Grades 3–5 are demonstration intervention examples.'});
  }
  if(kind==='universal-screener'){
   const id=trigger.dataset.previewStudent;

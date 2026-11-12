@@ -9,6 +9,7 @@ import {MAP_RIT_SUBJECTS,mapRitCurrent,mapRitChange,mapRitChangeLabel,renderMapR
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs?v=20261111schemas1';
 import {renderLeaderVoiceReview} from './leader-review-signals.mjs?v=20261111mapbands1';
 import {universalScreenerFor,renderUniversalScreenerTile} from './universal-screener.mjs';
+import {ufliLessonFor,renderUfliLessonTile,renderUfliLegend} from './ufli-demo.mjs';
 import {renderLeaderUniversalScreener} from './universal-screener-leader.mjs';
 import {renderLeaderAcademicActions,LEADER_ACADEMIC_FOCUS} from './leader-academic-actions.mjs?v=20261111journeys1';
 import {renderMapJourneyCohort,renderMapJourneyProfile} from './map-journeys-view.mjs?v=20261111uxconsol1';
@@ -263,6 +264,7 @@ function roster(ss,options={}){
   if(column.kind==='attendance')return attendanceSummary(DATA.attendance[student.id]||[]).rate;
   if(column.kind==='mapRit')return mapRitCurrent(DATA.map[student.id]||[],column.subject)?.rit??null;
   if(column.kind==='screener')return universalScreenerFor(student)?.percent??null;
+  if(column.kind==='ufli')return ufliLessonFor(student)?.lesson??null;
   if(column.kind==='engagement'||column.kind==='belonging')
    return experienceFor(RECORDS,student.id,column.kind,state.classExperienceWindow)?.value??null;
   if(column.kind==='report'){
@@ -279,6 +281,15 @@ function roster(ss,options={}){
    return '<span class="class-evidence-result"><strong>'+safe(value)+'</strong></span>';
   }
   if(column.kind==='mapRit')return renderMapRitCell(DATA.map[student.id]||[],column.subject,student.id);
+  if(column.kind==='ufli'){
+   const placement=ufliLessonFor(student);
+   if(!placement)return '';
+   return '<span class="evidence-cell-layout"><button type="button" class="evidence-cell-open ufli-lesson-open"'+
+    ' data-student="'+safe(student.id)+'" data-preview-student="'+safe(student.id)+'"'+
+    ' data-evidence-preview="ufli" aria-label="UFLI Foundations demo lesson '+placement.lesson+
+    '. '+safe(placement.phase.label)+'. Open '+safe(student.name)+' learner profile">'+
+    renderUfliLessonTile(student)+'</button></span>';
+  }
   if(column.kind==='screener'){
    const value=universalScreenerFor(student)?.percent;
    return '<span class="evidence-cell-layout"><button type="button" class="evidence-cell-open universal-screener-open"'+
@@ -383,7 +394,9 @@ function roster(ss,options={}){
   ' · 2026–27 synthetic test data · not issued';
  const evidenceColWidth='116px';
  const colgroup=everyday?'<colgroup><col class="roster-col-learner"><col class="roster-col-attendance">'+
-  everydayColumns.slice(1).map(()=>'<col class="roster-col-evidence" style="width:'+evidenceColWidth+'">').join('')+
+  everydayColumns.slice(1).map(column=>'<col class="roster-col-evidence'+
+   (column.kind==='ufli'?' roster-col-ufli':'')+'" style="width:'+
+   (column.kind==='ufli'?'106px':evidenceColWidth)+'">').join('')+
   '<col class="roster-col-support"></colgroup>':'';
  const table='<div class="tablewrap roster-desktop"><table'+(everyday?' class="faculty-data-wall"':'')+'>'+colgroup+'<thead><tr><th>Learner</th>'+
   (across?'<th>Class</th>':'')+
@@ -439,6 +452,7 @@ function roster(ss,options={}){
   '<span class="faculty-legend-caption">Reports use fixed grade bands. Other measures are colour-only. Hover or focus for exact data.</span>'+
   '<details><summary>Interpret colours</summary><p>Numeric report TEST grades: 1–3 red, 4 orange, 5–6 light green, 7 dark green. Elementary developmental descriptors are not converted to grades. IXL uses source-style diagnostic tiers with incomplete results shown as missing; MAP RIT uses five separate achievement percentile quintiles; other assessments use fictional same-grade comparisons; experience uses fixed −2 to +2 bands. Grey means missing. A colour is not a learner label.</p></details></div>':'')+
   (everyday&&everydayColumns.some(c=>c.kind==='mapRit')?renderMapRitLegend():'')+
+  (everyday&&everydayColumns.some(c=>c.kind==='ufli')?renderUfliLegend():'')+
   table+mobile+
   (rows.length?'':'<p class="empty-message">'+(filterLevel!==null?'No learners have a subject result of '+filterLevel+' or below in this selection.':'No matching students in your assigned classes. Try a different name.')+'</p>')+
   '<details class="faculty-inquiry-prompt"><summary>From evidence to action</summary>'+
@@ -524,6 +538,9 @@ function learnerProfile(s,studentRole=false){
   kpi('Attendance',fmt(aa.rate)+'%','')+
   '<div class="kpi us-profile-fact"><span>Universal Screener · demo</span>'+renderUniversalScreenerTile(s)+
    '<small>2026–27 · fictional percentage, not a validated cutoff</small></div>'+
+  (n>=0&&n<=5?'<div class="kpi ufli-profile-fact"><span>UFLI Foundations · demo lesson</span>'+
+   renderUfliLessonTile(s,{compact:true})+'<small>'+safe(ufliLessonFor(s).phase.label)+
+   ' · Fictional instructional placement</small></div>':'')+
   (mapApplicable?kpi('MAP Mathematics growth',mg.status==='comparable'?
    (mg.actual>=0?'+':'')+mg.actual:'—',
    mg.status==='comparable'?'RIT points · latest comparable MAP tests':'Not yet comparable'):'')+

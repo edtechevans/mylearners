@@ -19,7 +19,8 @@ const COLUMN=Object.freeze({
  fp:{id:'fp',label:'F&P Reading',kind:'fp'},
  ixl:{id:'ixl',label:'IXL Math',kind:'ixl'},
  maia:{id:'maia',label:'Maia · Relationships',kind:'flourishing'},
- screener:{id:'screener',label:'Universal Screener',kind:'screener'}
+ screener:{id:'screener',label:'Universal Screener',kind:'screener'},
+ ufli:{id:'ufli',label:'UFLI Lesson',kind:'ufli'}
 });
 export function everydayEvidenceForGrade(grade){
  const n=gradeNumber(grade);
@@ -28,7 +29,8 @@ export function everydayEvidenceForGrade(grade){
   n<=2?[COLUMN.attendance,COLUMN.math,COLUMN.core,COLUMN.fp,COLUMN.ixl]:
   n<=10?[COLUMN.attendance,COLUMN.mapReading,COLUMN.mapMathematics,COLUMN.mapLanguage,COLUMN.ixl,COLUMN.engagement,COLUMN.belonging]:
   [COLUMN.attendance,COLUMN.math,COLUMN.engagement,COLUMN.belonging,COLUMN.maia];
- return [base[0],COLUMN.screener,...base.slice(1)];
+ return n>=0&&n<=5?[base[0],COLUMN.screener,COLUMN.ufli,...base.slice(1)]:
+  [base[0],COLUMN.screener,...base.slice(1)];
 }
 export const EVERYDAY_VIEW='everyday';
 export const FOCUSED_VIEW='focused';
