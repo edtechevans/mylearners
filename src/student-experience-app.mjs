@@ -3,6 +3,8 @@ import {applyFacultyDemo,DEFAULT_TEACHER_ID} from './faculty-demo.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
 import {STRAND_SUBJECTS} from './map-strand-explorer.mjs';
 import {renderMapStrandExplorer,renderMapStrandProfile} from './map-strand-view.mjs';
+import {renderStudentStrandJourney,renderCohortStrandJourney} from './map-strand-journeys-view.mjs';
+import {renderFacultyStrandQuickCheck,facultyStrandQuickModel} from './faculty-strand-quickcheck.mjs';
 import {MAP_RIT_SUBJECTS,mapRitCurrent,mapRitChange,mapRitChangeLabel,renderMapRitCell,renderMapRitHeader,renderMapRitLegend,renderMapRitProfile,installMapRitHeaderTooltips} from './map-rit-achievement.mjs?v=20261111schemas1';
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs?v=20261111schemas1';
 import {renderLeaderVoiceReview} from './leader-review-signals.mjs?v=20261111mapbands1';
@@ -106,6 +108,8 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
   journeySubject:'Reading',journeyStart:'auto',journeyEnd:'F26',journeyStartingBand:'both',journeyEndingBand:'average-plus',journeyPathway:'auto',journeyExpanded:false,journeyProfileSubject:'Reading',
   journeyPreset:'rising',journeyAdvancedOpen:false,
   strandSubject:'Reading',strandWindow:'F26',strandGrade:'All',strandBand:'both',strandGoal:'',strandExpanded:false,
+  strandProfileSubject:'Reading',strandProfileGoal:'',strandProfileSeason:'fall',
+  strandJourneyStart:'auto',strandJourneyEnd:'auto',strandJourneyExpanded:false,
  sssGrade:'All',sssQuery:'',sssStudentId:'',sssOpenGrades:['G3'],sssAcademicOpen:false,
   supportForm:null,supportFilter:'all',supportQuery:'',
   sssManager:'All',sssPanel:'summary',supportBarrier:'All',
@@ -471,7 +475,9 @@ function learnerProfile(s,studentRole=false){
    renderStudentOverview(s,ACADEMIC_RECORDS,{
     attendance:DATA.attendance[s.id],mathGrowth:mg,
     reflectionDraft:saved('reflection-'+s.id,'')})+
-   subjectGrades+renderMapRitProfile(DATA.map[s.id]||[])+renderMapStrandProfile(DATA.map[s.id]||[],{studentRole:true})+renderMapJourneyProfile({student:s,records:DATA.map[s.id]||[],subject:state.journeyProfileSubject})+studentCheckinPreview+
+   subjectGrades+renderMapRitProfile(DATA.map[s.id]||[])+renderMapStrandProfile(DATA.map[s.id]||[],{studentRole:true})+
+   renderStudentStrandJourney({student:s,records:DATA.map[s.id]||[],subject:state.strandProfileSubject,
+    goalName:state.strandProfileGoal,season:state.strandProfileSeason,studentRole:true})+renderMapJourneyProfile({student:s,records:DATA.map[s.id]||[],subject:state.journeyProfileSubject})+studentCheckinPreview+
    '<details class="student-detail-section" data-student-panel="reports" id="student-reports"'+
     (state.studentReportsOpen?' open':'')+'>'+
    '<summary><span class="student-panel-symbol" aria-hidden="true">▤</span>'+
@@ -503,6 +509,8 @@ function learnerProfile(s,studentRole=false){
   '<p class="tiny">Detailed support plans and confidential records are not included in this public demo.</p></section>';
  return profileStart+header+profileKpis+subjectGrades+renderMapRitProfile(DATA.map[s.id]||[])+
   renderMapStrandProfile(DATA.map[s.id]||[])+
+  renderStudentStrandJourney({student:s,records:DATA.map[s.id]||[],subject:state.strandProfileSubject,
+   goalName:state.strandProfileGoal,season:state.strandProfileSeason})+
   renderMapJourneyProfile({student:s,records:DATA.map[s.id]||[],subject:state.journeyProfileSubject})+
   academics+wellbeing+maiaFaculty+
    renderFacultySupportPanel(s,supportEntries(),SSS_RECORDS.get(s.id))+guidance;
@@ -558,10 +566,16 @@ function faculty(){
   mapSubject:state.classMapSubject,compare:state.classCompare,window:state.classExperienceWindow});
  return heading('My students','Find a learner, see essential information, or choose a class result.')+
   toolbar+summary+
+  (!searching?renderFacultyStrandQuickCheck({students:ss,map:DATA.map,subject:state.strandSubject,
+    band:state.strandBand,window:'F26'}):'')+
   roster(searching?ownStudents():ss,{across:searching,controls:reportControls})+
   renderMapStrandExplorer({students:searching?ownStudents():ss,map:DATA.map,mode:'faculty',
    subject:state.strandSubject,window:state.strandWindow,grade:state.strandGrade,
    band:state.strandBand,goalName:state.strandGoal,expanded:state.strandExpanded})+
+  renderCohortStrandJourney({students:searching?ownStudents():ss,map:DATA.map,
+   subject:state.strandSubject,goalName:state.strandGoal,grade:state.strandGrade,
+   start:state.strandJourneyStart,end:state.strandJourneyEnd,
+   expanded:state.strandJourneyExpanded,mode:'faculty'})+
   info();
 }
 
@@ -585,7 +599,10 @@ function leader(){
    returnLabel:leaderReturnContext?.label||'division review',
    journeyProfile:renderMapJourneyProfile({student:leaderPerson,records:DATA.map[leaderPerson.id]||[],
     subject:state.journeyProfileSubject})})+
-  renderMapStrandProfile(DATA.map[leaderPerson.id]||[])+info();
+  renderMapStrandProfile(DATA.map[leaderPerson.id]||[])+
+  renderStudentStrandJourney({student:leaderPerson,records:DATA.map[leaderPerson.id]||[],
+   subject:state.strandProfileSubject,goalName:state.strandProfileGoal,
+   season:state.strandProfileSeason})+info();
  const secondaryOnly=group.length>0&&group.every(s=>s.division==='Secondary');
  const scopeLabel=selectedClass?.name||
   (state.grade!=='All'?
@@ -810,6 +827,10 @@ function leader(){
    academicPanels:renderMapStrandExplorer({students:group,map:DATA.map,mode:'leader',
     subject:state.strandSubject,window:state.strandWindow,grade:state.strandGrade,
     band:state.strandBand,goalName:state.strandGoal,expanded:state.strandExpanded})+
+    renderCohortStrandJourney({students:group,map:DATA.map,mode:'leader',
+     subject:state.strandSubject,goalName:state.strandGoal,grade:state.strandGrade,
+     start:state.strandJourneyStart,end:state.strandJourneyEnd,
+     expanded:state.strandJourneyExpanded})+
     learning+reportSection+deepAcademic,
    academicActions:renderLeaderAcademicActions({students:group,map:DATA.map,academic:ACADEMIC_RECORDS,
     focus:state.leaderAcademicFocus,grade:state.leaderAcademicGrade,
@@ -1133,6 +1154,56 @@ root.addEventListener('keydown',e=>{
  if(e.key==='Escape'){hideBoardFloat();if(pinnedChartKey)unpinChartPoint()}
 });
 root.addEventListener('click',e=>{
+ const strandProfileSubject=e.target.closest('[data-map-strand-profile-subject]');
+ if(strandProfileSubject&&['faculty','student','leader'].includes(state.role)){
+  const subject=strandProfileSubject.dataset.mapStrandProfileSubject;
+  if(!STRAND_SUBJECTS.includes(subject))return;
+  state.strandProfileSubject=subject;state.strandProfileGoal='';
+  render();root.querySelector('[data-map-strand-profile-subject="'+subject+'"]')?.focus?.({preventScroll:true});return;
+ }
+ const strandProfileSeason=e.target.closest('[data-map-strand-profile-season]');
+ if(strandProfileSeason&&['faculty','student','leader'].includes(state.role)){
+  state.strandProfileSeason=strandProfileSeason.dataset.mapStrandProfileSeason==='all'?'all':'fall';
+  render();root.querySelector('[data-map-strand-profile-season="'+state.strandProfileSeason+'"]')
+   ?.focus?.({preventScroll:true});return;
+ }
+ if(state.role==='faculty'){
+  const facultyStrandSubject=e.target.closest('[data-faculty-strand-subject]');
+  if(facultyStrandSubject){
+   const subject=facultyStrandSubject.dataset.facultyStrandSubject;
+   if(!STRAND_SUBJECTS.includes(subject))return;
+   state.strandSubject=subject;state.strandGoal='';state.strandWindow='F26';
+   state.strandJourneyStart='auto';state.strandJourneyEnd='auto';state.strandJourneyExpanded=false;
+   render();root.querySelector('[data-faculty-strand-subject="'+subject+'"]')
+    ?.focus?.({preventScroll:true});return;
+  }
+  const facultyBand=e.target.closest('[data-faculty-strand-band]');
+  if(facultyBand){
+   const band=facultyBand.dataset.facultyStrandBand;
+   if(!['both','low','low-average'].includes(band))return;
+   state.strandBand=band;state.strandWindow='F26';state.strandGoal='';
+   render();root.querySelector('[data-faculty-strand-band="'+band+'"]')?.focus?.({preventScroll:true});return;
+  }
+  const facultyGoal=e.target.closest('[data-faculty-strand-goal]');
+  if(facultyGoal){
+   const target=facultyGoal.dataset.facultyStrandGoal;
+   const scope=(activeClass()?.studentIds||[]).map(id=>DATA.userIndex.get(id)).filter(Boolean);
+   const quick=facultyStrandQuickModel({students:scope,map:DATA.map,
+    subject:state.strandSubject,band:state.strandBand,window:'F26'});
+   if(!quick.active.groups.some(g=>g.name===target))return;
+   state.strandGoal=target;state.strandWindow='F26';state.strandExpanded=false;
+   render();root.querySelector('#map-strand-explorer')?.scrollIntoView?.({behavior:scrollMotion(),block:'start'});
+   root.querySelector('[data-map-strand-filter="goal"]')?.focus?.({preventScroll:true});return;
+  }
+  if(e.target.closest('[data-faculty-strand-open]')){
+   root.querySelector('#map-strand-explorer')?.scrollIntoView?.({behavior:scrollMotion(),block:'start'});
+   root.querySelector('[data-map-strand-filter="subject"]')?.focus?.({preventScroll:true});return;
+  }
+ }
+ if(e.target.closest('[data-map-strand-journey-expand]')&&['leader','faculty'].includes(state.role)){
+  state.strandJourneyExpanded=!state.strandJourneyExpanded;render();
+  root.querySelector('[data-map-strand-journey-expand]')?.focus?.({preventScroll:true});return;
+ }
  if(e.target.closest('[data-map-strand-expand]')&&['leader','faculty'].includes(state.role)){
   state.strandExpanded=!state.strandExpanded;render();
   root.querySelector('[data-map-strand-expand]')?.focus?.({preventScroll:true});return;
@@ -1312,7 +1383,7 @@ root.addEventListener('click',e=>{
       (state.grade!=='All'&&chosen.grade!==state.grade)||
       (state.classId&&chosen.classId!==state.classId))return;
    const origins=[
-    ['map-journey-students','MAP Journeys'],['leader-academic-results','Academic Follow-up'],
+    ['map-strand-cohort','MAP Strand Journeys'],['map-journey-students','MAP Journeys'],['leader-academic-results','Academic Follow-up'],
     ['leader-review','Attendance and learner review'],
     ['leader-experience-review','Student Experience'],
     ['leader-report-followup','Academic Trends'],['leader-map-review','Academic Trends']
@@ -1655,15 +1726,31 @@ root.addEventListener('click',e=>{
  const link=e.target.closest('[data-student]');if(link){state.studentId=link.dataset.student;state.details=false;state.academicReportYear='';render();window.scrollTo(0,0)}
 });
 root.addEventListener('change',e=>{
+ const strandProfileGoal=e.target.closest('[data-map-strand-profile-goal]');
+ if(strandProfileGoal&&['leader','faculty','student'].includes(state.role)){
+  state.strandProfileGoal=strandProfileGoal.value;render();
+  root.querySelector('[data-map-strand-profile-goal]')?.focus?.({preventScroll:true});return;
+ }
+ const strandJourneyChoice=e.target.closest('[data-map-strand-journey-start],[data-map-strand-journey-end]');
+ if(strandJourneyChoice&&['leader','faculty'].includes(state.role)){
+  if(strandJourneyChoice.hasAttribute('data-map-strand-journey-start'))
+   state.strandJourneyStart=strandJourneyChoice.value;
+  else state.strandJourneyEnd=strandJourneyChoice.value;
+  state.strandJourneyExpanded=false;render();
+  root.querySelector(strandJourneyChoice.hasAttribute('data-map-strand-journey-start')?
+   '[data-map-strand-journey-start]':'[data-map-strand-journey-end]')?.focus?.({preventScroll:true});return;
+ }
  const strandSelect=e.target.closest('[data-map-strand-filter]');
  if(strandSelect&&['leader','faculty'].includes(state.role)){
   const filter=strandSelect.dataset.mapStrandFilter;
   if(filter==='subject'&&STRAND_SUBJECTS.includes(strandSelect.value)){
    state.strandSubject=strandSelect.value;state.strandGoal='';state.strandGrade='All';
+   state.strandJourneyStart='auto';state.strandJourneyEnd='auto';
   }else if(filter==='window'){state.strandWindow=strandSelect.value;state.strandGoal='';
   }else if(filter==='grade'){state.strandGrade=strandSelect.value;state.strandGoal='';
   }else if(filter==='band'){state.strandBand=strandSelect.value;
   }else if(filter==='goal'){state.strandGoal=strandSelect.value;}
+  if(filter==='grade'||filter==='goal')state.strandJourneyExpanded=false;
   state.strandExpanded=false;render();
   root.querySelector('[data-map-strand-filter="'+filter+'"]')?.focus?.({preventScroll:true});return;
  }
