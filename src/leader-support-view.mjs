@@ -1,5 +1,7 @@
 /** Executive-level Student Support section. Fictional counts only, no case details. */
 import {studentSupportLeadershipSummary} from './leader-support-summary.mjs';
+import {supportStatusCounts} from './learner-support-status.mjs';
+import {supportStatusSummaryTiles} from './learner-support-status-ui.mjs';
 import {esc} from './v2-ui.mjs';
 const safe=v=>esc(String(v??''));
 const n=(value)=>Number.isFinite(value)?value.toLocaleString('en-GB'):'—';
@@ -12,6 +14,7 @@ const bar=(name,value,detail)=>'<div class="leader-support-bar-row">'+
 
 export function renderLeaderSupportSection({students,sssRecords,entries,open=false}){
  const metrics=studentSupportLeadershipSummary(students,sssRecords,entries);
+ const referenceCounts=supportStatusCounts(students);
  const {suppressed,cohort,scopeSize}=metrics;
  const metric=(label,value,context)=>'<article class="leader-support-metric"><span>'+safe(label)+'</span>'+
   '<strong>'+safe(value)+'</strong><small>'+safe(context)+'</small></article>';
@@ -80,6 +83,8 @@ export function renderLeaderSupportSection({students,sssRecords,entries,open=fal
   '<p>Support coverage, follow-through and progress-monitoring context.</p></div>'+
   '<span class="leader-period">Fictional support cycle · 28 Oct 2026</span></div>'+
   headline+
+  '<div class="leader-support-reference-summary"><h3>Learning Support, EAL & SST references</h3>'+supportStatusSummaryTiles(students)+
+  '<p>Illustrative cohort only · '+referenceCounts.learners+' demo learners. Reference counts may overlap; not school prevalence.</p></div>'+
   '<p class="leader-support-caption">Counts reflect the division, grade and class filters above. '+
   'The SSS cohort is synthetic and separate from classroom support tags. No individual notes or case identities are exposed.</p>'+
   '<details class="leader-detail leader-support-detail" data-leader-panel="support"'+(open?' open':'')+'>'+
