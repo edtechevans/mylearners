@@ -33,7 +33,8 @@ export function reportProgress(record,subject){
    numeric:report.scale==='1–7'&&/^[1-7]$/.test(String(entry.value))?Number(entry.value):null};
  });
  points.push({label:current.year,value:chosen.value,
-  numeric:current.scale==='1–7'&&/^[1-7]$/.test(String(chosen.value))?Number(chosen.value):null});
+  numeric:current.scale==='1–7'&&/^[1-7]$/.test(String(chosen.value))?Number(chosen.value):null,
+  provisional:chosen.mypBestFit===true&&chosen.provisional===true});
  return result(points,'grade points',0,current.scale==='1–7');
 }
 /** Historical issued records only, stopping at the report selected in the profile. */
