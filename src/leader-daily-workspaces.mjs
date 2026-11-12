@@ -3,6 +3,7 @@ import {attendanceSummary,gradeNumber,gradeDisplay,GRADES} from './data.mjs';
 import {academicFor,facultyDemoReport,academicModesFor} from './academic-journey-data.mjs';
 import {leaderMapSummary,leaderCheckSnapshot} from './leader-summary.mjs';
 import {studentSupportLeadershipSummary} from './leader-support-summary.mjs';
+import {supportStatusBadges,supportStatusDetails} from './learner-support-status-ui.mjs';
 import {summarizeExperience,experienceChange,experienceEligible,EXPERIENCE_WINDOWS} from './experience-data.mjs';
 import {leaderVoiceReview,leaderMapRedReview} from './leader-review-signals.mjs';
 import {leaderExperienceScale} from './leader-experience-bands.mjs';
@@ -373,13 +374,13 @@ export function renderLeaderLearnerEvidence({student,data,academic,records,windo
    '<div class="leader-profile-identity">'+renderStudentPhoto(student,'profile')+
    '<div class="leader-profile-identity-text">'+
    '<div class="leader-daily-eyebrow">'+safe(student.division)+' / '+safe(display(student.grade))+'</div>'+
-   '<h2>'+safe(student.name)+'</h2><p>See the evidence in context before choosing a response. '+
+   '<h2>'+safe(student.name)+'</h2>'+supportStatusBadges(student)+'<p>See the evidence in context before choosing a response. '+
     'A result or absence pattern is not a judgement about a learner.</p></div></div>'+
    '<div class="leader-profile-facts"><div><span>Homeroom</span><strong>'+safe(student.classId)+'</strong></div>'+
     '<div><span>Attendance</span><strong>'+n(att.rate)+'%</strong></div>'+
     '<div><span>Current subject results</span><strong>'+safe(report?.year||'Unavailable')+'</strong>'+
      '<small>'+safe(numeric?'1–7 in progress · not issued':'Developmental descriptors · simulated')+'</small></div></div>'+
-   '<section><div class="leader-daily-sectionhead"><div><span>SUBJECT RESULTS</span>'+
+   supportStatusDetails(student)+'<section><div class="leader-daily-sectionhead"><div><span>SUBJECT RESULTS</span>'+
     '<h3>Current evidence and comparable previous windows</h3></div></div>'+
     '<div class="leader-profile-subjects">'+grades+'</div></section>'+
    (map||other?'<section><div class="leader-daily-sectionhead"><div><span>ASSESSMENT WINDOWS</span>'+
