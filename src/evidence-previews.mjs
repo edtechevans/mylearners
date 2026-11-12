@@ -21,7 +21,7 @@ export const PREVIEW_GUIDE=Object.freeze({
  review:{label:'Support review',description:'A scheduled review date or recorded follow-up status; not evidence of an intervention effect.',source:'Demonstration support record'},
  ibdp:{label:'IB Diploma result',description:'A graduating-cohort outcome. A Diploma average uses the 0–45 point scale; a pass rate uses the eligible full-Diploma candidate denominator.',source:'Aggregated school examination statistics'}
 });
-export function makePreview({title='',subtitle='',rows=[],note='',status='',kind='neutral',trend=null}={}){
+export function makePreview({title='',subtitle='',rows=[],note='',status='',kind='neutral',trend=null,experienceDetail=null}={}){
  const points=Array.isArray(trend?.points)?trend.points.filter(x=>x&&x.label&&x.value!==undefined&&x.value!==null)
   .slice(-3).map(x=>({label:clean(x.label),value:clean(x.value),provisional:x.provisional===true})):[];
  const change=trend?.change&&points.length>=2?{
@@ -29,8 +29,39 @@ export function makePreview({title='',subtitle='',rows=[],note='',status='',kind
  return {title:clean(title),subtitle:clean(subtitle),
   rows:(rows||[]).filter(x=>x&&x[0]).slice(0,5).map(([key,val])=>[clean(key),clean(val)]),
   trend:points.length?{points,change}:null,
-  note:clean(note),status:clean(status),
+  note:clean(note),status:clean(status),experienceDetail,
   kind:['neutral','academic','experience','support','board'].includes(kind)?kind:'neutral'};
+}
+const indexLabel=value=>Number.isFinite(value)?(value>0?'+':'')+Number(value).toFixed(2):'—';
+function questionDetailMarkup(detail){
+ const mixed=detail.groups?.length>1;
+ const header='<div class="evidence-preview-answer-head"><span>'+esc(detail.windowLabel)+
+  '</span><strong>'+(mixed?'Separate question sets':indexLabel(detail.value)+' index')+
+  '</strong><small>'+(detail.individual?(detail.n?'Individual response':'No response recorded'):
+   detail.n+' of '+detail.eligible+' students responded')+'</small></div>';
+ const groups=(detail.groups||[]).map(group=>{
+  const cohort=detail.individual?'':'<div class="evidence-preview-cohort"><strong>'+
+   esc(group.label)+' · '+indexLabel(group.value)+'</strong><span>'+
+   group.n+' of '+group.eligible+' responded</span></div>';
+  return '<section class="evidence-preview-question-group">'+cohort+
+   (group.questions||[]).map((q,i)=>{
+    const answer=detail.individual?
+     '<div class="evidence-preview-answer">Response: <strong>'+esc(q.label)+
+     '</strong><span>'+(Number.isFinite(q.points)?(q.points>0?'+':'')+q.points+' points':'No score')+'</span></div>':
+     '<div class="evidence-preview-question-summary"><strong>'+
+     (Number.isFinite(q.favorable)?q.favorable+'% positive':'No responses')+
+     '</strong><span>'+q.n+' responses</span></div>'+
+     (q.n?'<div class="evidence-preview-choices">'+(q.choices||[]).map((choice,j)=>
+      '<div class="evidence-preview-choice response-'+j+'"><span>'+esc(choice.label)+
+      '</span><strong>'+choice.count+'</strong></div>').join('')+'</div>':'');
+    return '<div class="evidence-preview-question"><div class="evidence-preview-question-label"><b>'+
+     (i+1)+'.</b><span>'+esc(q.question)+'</span></div>'+answer+'</div>';
+   }).join('')+'</section>';
+ }).join('');
+ return '<div class="evidence-preview-questions" aria-label="Question-level answers">'+header+groups+
+  '<p class="evidence-preview-method">Strongly disagree −2 · Disagree −1 · Agree +1 · Strongly agree +2. '+
+  (detail.individual?'Index = average of three answers.':'Group index = average of student indices.')+
+  ' Fictional check-in responses only.</p></div>';
 }
 export function previewMarkup(p){
  if(!p)return '';
@@ -49,6 +80,7 @@ export function previewMarkup(p){
    '</strong><span>vs '+esc(p.trend.change.from)+'</span></div>':'')+'</div>':'')+
  (p.rows?.length?'<dl>'+p.rows.map(([label,value])=>'<div><dt>'+esc(label)+'</dt><dd>'+esc(value)+'</dd></div>').join('')+'</dl>':'')+
  (p.status?'<div class="evidence-preview-status">'+esc(p.status)+'</div>':'')+
+  (p.experienceDetail?questionDetailMarkup(p.experienceDetail):'')+
  (p.note?'<p>'+esc(p.note)+'</p>':'')+
  '</div>';
 }
@@ -146,6 +178,11 @@ export function decorateEvidencePreviews(root,role){
    });
   }
   for(const button of q('.quick-summary .quick-score'))mark(button,'experience-summary');
+  for(const e of q('.class-evidence-selected')){
+   const label=clean(e.querySelector('span')?.textContent).toLowerCase();
+   const metric=label.includes('belonging')?'belonging':label.includes('engagement')?'engagement':null;
+   if(metric){mark(e,'class-evidence-experience');e.dataset.previewMeasure=metric}
+  }
   for(const result of q('.academic-profile .academic-subject-result'))mark(result,'issued');
   for(const result of q('.academic-profile .academic-evidence-card'))mark(result,'academic-card');
   for(const result of q('.profile-head + .kpis .kpi'))mark(result,'academic-card');
@@ -170,6 +207,10 @@ export function decorateEvidencePreviews(root,role){
   // SSS case notes, diagnoses and narrative records are intentionally excluded.
   for(const b of q('.sss-roster-row[data-sss-student]'))mark(b,'sss-person');
   for(const e of q('.sss-evidence-tile'))mark(e,'sss-evidence');
+  for(const e of q('.sss-experience-with-help .sss-evidence-tile')){
+   mark(e,'sss-experience');e.dataset.evidencePreview='sss-experience';
+   e.dataset.previewMeasure=clean(e.textContent).toLowerCase().includes('belonging')?'belonging':'engagement';
+  }
   for(const e of q('.support-progress-stats > div'))mark(e,'monitor-stat');
   for(const e of q('.support-summary-grid .support-snapshot-card'))mark(e,'support-summary');
   for(const e of q('.sss-wida-composite,.sss-wida-domain'))mark(e,'wida');
@@ -182,6 +223,26 @@ export function decorateEvidencePreviews(root,role){
   for(const e of q('.leader-support-track'))mark(e,'leader-monitor');
   for(const e of q('.leader-report-subject,.leader-check-row'))mark(e,'leader-assessment');
   for(const e of q('.leader-experience-card'))mark(e,'leader-experience');
+  for(const e of q('.leader-school-voice-measure')){
+   mark(e,'leader-school-voice');
+   e.dataset.previewMeasure=clean(e.querySelector('strong')?.textContent).toLowerCase().includes('belonging')?'belonging':'engagement';
+   e.dataset.previewGroup=clean(e.closest('.leader-school-voice')?.querySelector('h3')?.textContent).startsWith('Elementary')?'Elementary':'Secondary';
+  }
+  for(const e of q('.leader-profile-voice')){
+   mark(e,'leader-profile-voice');
+   e.dataset.previewMeasure=clean(e.querySelector('strong')?.textContent).toLowerCase().includes('belonging')?'belonging':'engagement';
+  }
+  for(const e of q('.leader-followup-index')){
+   mark(e,'leader-followup-voice');
+   e.dataset.previewMeasure=clean(e.querySelector('small')?.textContent).toLowerCase().includes('belonging')?'belonging':'engagement';
+   e.dataset.previewLeaderStudent=e.closest('.leader-followup-item')?.querySelector('[data-leader-student]')?.dataset.leaderStudent||'';
+  }
+  for(const e of q('.leader-trend-period > span')){
+   mark(e,'leader-trend');e.dataset.previewMeasure=clean(e.textContent).toLowerCase().includes('belonging')?'belonging':'engagement';
+   e.dataset.previewGroup=clean(e.closest('.leader-trend-group')?.querySelector('h4')?.textContent);
+   const period=clean(e.closest('.leader-trend-period')?.querySelector('strong')?.textContent);
+   e.dataset.previewWindow=period==='Fall 2025'?'F25':period==='Spring 2026'?'S26':'F26';
+  }
  }
  if(role==='board'){
   for(const e of q('.board-strength-card,.board-overview-card'))mark(e,'board-card');
