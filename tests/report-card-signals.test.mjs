@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {generateDemoData} from '../src/data.mjs';
 import {applyFacultyDemo} from '../src/faculty-demo.mjs';
 import {createAcademicDemoRecords,academicFor,reportSubjectsFor,facultyDemoReport,DEMO_REPORT_YEAR,PRIMARY_DESCRIPTORS} from '../src/academic-journey-data.mjs';
-import {numericReportGrade,reportGradeBand,facultyRosterEvidenceColumns,leaderReportSignalSummary,hasLowReportGrade} from '../src/report-card-signals.mjs';
+import {numericReportGrade,reportGradeBand,facultyRosterEvidenceColumns,leaderReportSignalSummary,hasLowReportGrade,mypBestFitMarker} from '../src/report-card-signals.mjs';
 import {everydayEvidenceForGrade} from '../src/faculty-everyday-columns.mjs';
 import {renderLeaderReportFollowup} from '../src/leader-report-followup.mjs';
 const data=applyFacultyDemo(generateDemoData());
@@ -15,6 +15,12 @@ test('numeric report grades use fixed thresholds and reject descriptors',()=>{
  for(const input of ['Emerging','Developing','Applying','Extending','',null,'8','0'])
   assert.equal(numericReportGrade(input,'1–7'),null);
  assert.equal(reportGradeBand('3','descriptors'),null);
+});
+test('provisional MYP best fits use an asterisk while completed criteria and other grades do not',()=>{
+ assert.match(mypBestFitMarker({mypBestFit:true,provisional:true}),/myp-best-fit-marker/);
+ assert.match(mypBestFitMarker({mypBestFit:true,provisional:true}),/>\*<\/sup>/);
+ assert.equal(mypBestFitMarker({mypBestFit:true,provisional:false}),'');
+ assert.equal(mypBestFitMarker({provisional:true}),'');
 });
 test('Faculty landing includes all current-year test subjects without Report prefixes',()=>{
  for(const grade of ['G3','G7','G12']){
