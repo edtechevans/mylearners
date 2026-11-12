@@ -1241,6 +1241,12 @@ root.addEventListener('click',e=>{
   return;
  }
  if(state.role==='leader'){
+  if(e.target.closest('[data-leader-directory-jump]')){
+   const target=root.querySelector('#leader-support-directory');
+   target?.scrollIntoView?.({behavior:scrollMotion(),block:'start'});
+   target?.querySelector?.('[data-leader-directory-filter="status"]')?.focus?.({preventScroll:true});
+   return;
+  }
   const directoryStudent=e.target.closest('[data-leader-directory-student]');
   if(directoryStudent){
    const id=directoryStudent.dataset.leaderDirectoryStudent;
