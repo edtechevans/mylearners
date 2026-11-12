@@ -129,6 +129,20 @@ test('Leaders begin with an aggregated whole-school landing and explicit divisio
  assert.doesNotMatch(node.innerHTML,/data-leader-student=/,'No individual learner on whole-school screen');
  assert.match(node.innerHTML,/DEMONSTRATION/);
 });
+test('Leaders can open a supported learner from whole-school directory and return',()=>{
+ click('[data-role]',{role:'leader'});
+ assert.match(node.innerHTML,/Support Student Directory/);
+ assert.match(node.innerHTML,/data-leader-directory-filter="grade"/);
+ assert.match(node.innerHTML,/data-leader-directory-filter="status"/);
+ const match=node.innerHTML.match(/data-leader-directory-student="(DEMO-[0-9]{4})"/);
+ assert.ok(match,'support directory must list a synthetic learner');
+ click('[data-leader-directory-student]',{leaderDirectoryStudent:match[1]});
+ assert.match(node.innerHTML,/leader-learner-profile/);
+ assert.match(node.innerHTML,/Learning, EAL & SST/);
+ assert.doesNotMatch(node.innerHTML,/>IEP<|>Medical<|>Behavioural</);
+ click('[data-leader-back]');
+ assert.match(node.innerHTML,/Support Student Directory/);
+});
 test('Secondary shows the daily review, Grade 12 uses DP evidence, and supports learner drilldown',()=>{
  click('[data-leader-division]',{leaderDivision:'Secondary'});
  assert.match(node.innerHTML,/Secondary daily lens/);
