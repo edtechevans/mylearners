@@ -92,7 +92,7 @@ test('Leader full-school and individual views share the same learner value and a
  assert.match(html,new RegExp('>'+amount+'%<'));
  assert.match(html,new RegExp('data-leader-screener-student="'+student.id+'"'));
  assert.match(leader,/renderUniversalScreenerTile\(student,\{compact:true\}\)/);
- assert.match(app,/renderLeaderUniversalScreener\(\{students:DATA.students/);
+ assert.match(app,/renderLeaderUniversalScreener\(\{students:group,scopeLabel:'Whole school'/);
  assert.match(app,/screenerPanel:renderLeaderUniversalScreener/);
  assert.match(app,/state\.leaderScreenerBand/);
  assert.match(app,/data-leader-screener-student/);
