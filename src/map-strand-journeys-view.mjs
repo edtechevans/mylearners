@@ -122,7 +122,7 @@ export function renderCohortStrandJourney({
   ' without both named-goal results · '+m.statuses['version-break']+
   ' with form / stage change</p></div>'+ 
   '<div class="strand-journey-cross-filter"><button type="button" data-map-strand-journey-cross aria-pressed="'+crossOnly+'" class="'+(crossOnly?'active':'')+'">Elementary → Secondary transitions only · '+m.crossStage+'</button></div>'+ 
-  (rows.length?result:'<p class="map-strand-empty">No students have goal-area results in both chosen Fall windows. Try another pair of windows.</p>')+
+  (rows.length?result:'<p class="map-strand-empty">'+(crossOnly?'No recorded Elementary–Secondary transitions in this selection.':'No students have goal-area results in both chosen Fall windows. Try another pair of windows.')+'</p>')+
   (candidates.length>12?'<button type="button" class="strand-journey-expand" data-map-strand-journey-expand aria-expanded="'+ 
    expanded+'">'+(expanded?'Show first 12':'Show all '+candidates.length+' matched students')+'</button>':'')+
   '<p class="map-strand-foot">Only the same exact goal heading and compatible test forms can be treated as a comparable strand series. Mathematics across Elementary–Secondary stage changes remains non-comparable without an approved crosswalk. Grade transitions require grade-at-test data; the source AssessmentResults export alone may not provide it. Public demo: synthetic records only.</p></section>';
