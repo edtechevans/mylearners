@@ -115,6 +115,8 @@ export function normalizeNweaAssessment(row){
  const quintile=val(row.AchievementQuintile);
  return {
   studentId,subject,key:term.key,window:term.label,date,
+  // Grade at this specific test, only if the export provides it.
+  gradeAtTest:csvGrade(row.GradeAtTest||row.TestGrade||row.NWEAStandard_Grade||row.Grade),
   testTime:val(row.TestStartTime),testId:val(row.TestID),
   course:val(row.Course),testName:val(row.TestName),
   rit,percentile:Number.isInteger(percentile)&&percentile>=1&&percentile<=99?percentile:null,
@@ -176,7 +178,7 @@ export function normalizeIxlDiagnostic(row){
  * No names, IDs or data are logged, persisted or sent to GitHub.
  * A single term export cannot supply historical test windows.
  */
-export function indexAssessmentExports({students=[],map=[],ixl=[]}={}){
+export function indexAssessmentExports({students=[],map=[],ixl=[],termRosters={}}={}){
  const indexedStudents=(students||[]).map(normalizeNweaStudent).filter(Boolean);
  const ids=new Set(indexedStudents.map(s=>s.id));
  const mapByStudent=Object.fromEntries(indexedStudents.map(s=>[s.id,[]]));
@@ -186,6 +188,9 @@ export function indexAssessmentExports({students=[],map=[],ixl=[]}={}){
  for(const row of map||[]){
   const n=normalizeNweaAssessment(row);
   if(!n)continue;
+  // Optional term-specific roster grade map, supplied privately by the caller.
+  // Never use the current roster to infer a previous testing-year grade.
+  if(!n.gradeAtTest) n.gradeAtTest=csvGrade(termRosters?.[n.key]?.[n.studentId]);
   if(!ids.has(n.studentId)){unmatchedMap++;continue}
   const key=n.studentId+'|'+n.key+'|'+n.subject;
   const previous=seen.get(key);
