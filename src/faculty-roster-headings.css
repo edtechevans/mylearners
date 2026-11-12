@@ -1,0 +1,64 @@
+/* Faculty Everyday roster: readable, full-word headers at Chrome 100%.
+ * Abbreviated subject names are presentation-only. Native title and visible
+ * hover/focus hint preserve the complete subject name.
+ */
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall{
+ min-width:var(--faculty-roster-table-width,1200px)!important;
+ table-layout:fixed;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall thead th{
+ box-sizing:border-box;min-width:0!important;
+ padding-inline:7px 24px!important;
+ word-break:normal!important;overflow-wrap:normal!important;
+ hyphens:none!important;
+ vertical-align:middle;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall thead th .ux-sort-button{
+ display:block!important;position:relative!important;
+ width:100%!important;max-width:100%!important;min-width:0!important;
+ box-sizing:border-box;white-space:normal!important;
+ word-break:normal!important;overflow-wrap:normal!important;
+ hyphens:none!important;
+ font-size:12px!important;font-weight:800!important;line-height:1.25!important;
+ padding:8px 8px 9px 1px!important;text-align:center!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall thead th .ux-sort-button::after{
+ position:absolute;bottom:6px;right:-11px;white-space:nowrap;
+ pointer-events:none;margin:0;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .faculty-heading-text{
+ word-break:normal!important;overflow-wrap:normal!important;hyphens:none!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .faculty-heading-text.is-compact{
+ display:inline-block;white-space:nowrap!important;
+ font-size:13px;line-height:1.25;letter-spacing:.01em;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .faculty-heading-text.is-single-word{
+ white-space:nowrap!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] th.faculty-subject-abbr{
+ position:sticky;cursor:help;
+}
+/* Immediate explanation when hovering a shortened subject, including keyboard
+   focus. Native title stays as a fallback outside the table's scrollport. */
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] th.faculty-subject-abbr:hover,
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] th.faculty-subject-abbr:focus-within{
+ z-index:12!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] th.faculty-subject-abbr:hover::before,
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] th.faculty-subject-abbr:focus-within::before{
+ content:attr(data-full-heading);display:block;
+ position:absolute;top:calc(100% + 5px);left:50%;transform:translateX(-50%);
+ min-width:max-content;max-width:270px;pointer-events:none;white-space:nowrap;
+ z-index:30;padding:8px 11px;background:#153c57;color:#ffffff;
+ border:1px solid #2b5b79;border-radius:8px;box-shadow:0 8px 24px #0d2a4350;
+ font-size:12px;font-weight:700;letter-spacing:0;line-height:1.4;
+}
+@media(max-width:760px){
+ #app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] th.faculty-subject-abbr::before{
+  display:none!important;
+ }
+}
+@media print{
+ #app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] th.faculty-subject-abbr::before{display:none!important}
+}
