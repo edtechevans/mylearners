@@ -568,11 +568,14 @@ function faculty(){
   maiaDimension:state.maiaDimension,maiaWindow:state.maiaWindow,
   rosterView:state.rosterView,lowGradeFilter,mode:state.classEvidence,subject:state.academicSubject,
   mapSubject:state.classMapSubject,compare:state.classCompare,window:state.classExperienceWindow});
+ // Lead with the student roster and its subject, attendance and MAP evidence.
+ // Keep the class summary and MAP strand quick-check available further down.
  return heading('My students','Find a learner, see essential information, or choose a class result.')+
-  toolbar+summary+
+  toolbar+
+  roster(searching?ownStudents():ss,{across:searching,controls:reportControls})+
+  summary+
   (!searching?renderFacultyStrandQuickCheck({students:ss,map:DATA.map,subject:state.strandSubject,
     band:state.strandBand,window:'F26'}):'')+
-  roster(searching?ownStudents():ss,{across:searching,controls:reportControls})+
   renderMapStrandExplorer({students:searching?ownStudents():ss,map:DATA.map,mode:'faculty',
    subject:state.strandSubject,window:state.strandWindow,grade:state.strandGrade,
    band:state.strandBand,goalName:state.strandGoal,expanded:state.strandExpanded})+
