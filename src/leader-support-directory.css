@@ -72,3 +72,11 @@
 @media(prefers-reduced-motion:reduce){
  .leader-directory-open,.leader-directory-name,.leader-directory-expand{transition:none}
 }
+
+/* Whole-school entry point to the searchable directory. */
+.leader-directory-cta{display:inline-flex;align-items:center;justify-content:center;gap:12px;
+ margin-top:14px;padding:10px 15px;border-radius:9px;
+ border:1px solid #afc8d9;background:#e9f2f8;color:#164969;
+ font:800 12px/1.4 'DM Sans',Arial,sans-serif;cursor:pointer}
+.leader-directory-cta:hover{background:#dcecf6;border-color:#91b8d1}
+.leader-directory-cta:focus-visible{outline:3px solid #82b1d4;outline-offset:2px}
