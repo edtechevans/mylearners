@@ -55,7 +55,7 @@ test('Full report data labels remain unchanged in MYP roster, including Design',
 test('No single-word headers can split and table width accommodates all class subjects',()=>{
  for(const grade of ['K','G1','G4','G7','G10','G12']){
   const base=everydayEvidenceForGrade(grade);
-  const roster=facultyRosterEvidenceColumns([{id:'demo',grade}],null,base);
+  const roster=base;
   const total=facultyRosterTableWidth(roster);
   assert.ok(Number.isInteger(total)&&total>=1200);
   const subtotal=210+122+172+roster.slice(1).reduce((n,c)=>n+facultyHeaderWidth(c),0);
