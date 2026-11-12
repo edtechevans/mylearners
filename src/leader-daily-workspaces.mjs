@@ -115,13 +115,15 @@ export function renderLeaderWholeSchool({students,data,academic,records,sssRecor
    '<div class="leader-daily-eyebrow">WHOLE SCHOOL · START HERE</div>'+
    '<h2 id="leader-welcome-title">What deserves leadership attention today?</h2>'+
    '<p>Choose a division to see daily priorities, then drill into a grade and learner evidence. '+
-   'The schoolwide view stays aggregated; it does not rank or label children.</p>'+
+   'The overview stays aggregated; use the separate Support Student Directory to explore individual fictional examples.</p>'+
    '<label class="leader-school-division-select">Division <select data-select="division" aria-label="Choose leadership division">'+
     '<option value="All" selected>Whole school</option><option value="Elementary">Elementary</option>'+
     '<option value="Secondary">Secondary</option></select></label>'+
    '<div class="leader-daily-sources">'+
     source('DEMONSTRATION','Roster, academic, experience and support data are simulated')+
-    source('NOT LIVE','Each measure retains its own source and evidence date')+'</div>'+
+    source('NOT LIVE','Each measure retains its own source and evidence date')+'</div>'+ 
+   '<button type="button" class="leader-directory-cta" data-leader-directory-jump>'+ 
+   'Browse Support Student Directory <span aria-hidden="true">→</span></button>'+
    (savedView?'<button type="button" class="leader-saved-open" data-leader-open-saved>'+
     'Open saved view: '+safe(savedView.division)+(savedView.grade!=='All'?' · '+safe(display(savedView.grade)):'')+
     ' <span aria-hidden="true">→</span></button>':'')+
@@ -154,7 +156,7 @@ export function renderLeaderWholeSchool({students,data,academic,records,sssRecor
     voiceOverview(elementary,records,'Elementary · Grades 3–5')+
     voiceOverview(secondary,records,'Secondary · Grades 6–12')+'</div></section>'+
   '<p class="leader-daily-disclaimer">Public GitHub demonstration only. No real learner, '+
-   'case or confidential survey records are included. Select a division to investigate evidence.</p></div>';
+   'case or confidential survey records are included. Choose a division for detailed evidence or browse the separate fictional support directory below.</p></div>';
 }
 
 export function leaderReviewQueue(students,data,academic,filter='all',expanded=false,isSecondary=true){
