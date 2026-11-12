@@ -5,7 +5,7 @@
  * Core Phonics and F&P reading are limited to Kindergarten–Grade 5.
  */
 import {academicModesFor,academicFor,latestAcademic,academicCoverage,facultyDemoReport} from './academic-journey-data.mjs';
-import {reportGradeBand} from './report-card-signals.mjs';
+import {reportGradeBand,mypBestFitMarker} from './report-card-signals.mjs';
 import {latestMapGrowth,MAP_SUBJECTS} from './map-growth.mjs';
 import {experienceEligible,summarizeExperience,experienceFor,EXPERIENCE_WINDOWS} from './experience-data.mjs';
 import {gradeNumber} from './data.mjs';
@@ -96,10 +96,11 @@ export function evidenceRosterColumn(student,ctx){
  const result=evidenceValue(student,ctx);
  const v=(ctx.mode==='engagement'||ctx.mode==='belonging')&&result.available?experienceFor(ctx.experience,student.id,ctx.mode,ctx.window||'F26')?.value:null;
  const report=ctx.mode==='report'?facultyDemoReport(academicFor(ctx.academic,student.id)):null;
+ const reportEntry=ctx.mode==='report'?report?.subjects?.find(x=>x.subject===ctx.subject):null;
  const band=ctx.mode==='report'?reportGradeBand(result.text,report?.scale)||'':
   Number.isFinite(v)?(v< -1?'band-low':v<0?'band-mid-low':v<1?'band-mid-high':'band-high'):'';
  return '<span class="class-evidence-result'+(result.available?'':' is-unavailable')+(band?' evidence-heat '+band:'')+'">'+
-  '<strong>'+esc(result.text)+'</strong><small>'+esc(result.detail)+'</small></span>';
+  '<strong>'+esc(result.text)+mypBestFitMarker(reportEntry)+'</strong><small>'+esc(result.detail)+'</small></span>';
 }
 function reportBreakdown(students,academic,subject){
  const groups=new Map();
@@ -122,7 +123,7 @@ function reportBreakdown(students,academic,subject){
   '</div></div>').join('');
 }
 const modeHelp={
- report:'Current-year synthetic test grades, not issued school reports. Every subject has a result. Previously issued historical reports remain available in learner profiles; programme scales are never combined.',
+ report:'Current-year synthetic test grades, not issued school reports. For Grades 6–10, * marks a Current Best Fit calculated from fewer than four assessed MYP criteria; missing criteria are not counted. Previously issued historical reports remain available in learner profiles; programme scales are never combined.',
  map:'Observed RIT change between comparable tests. Projection figures in this demonstration are illustrative, not official NWEA norms.',
  ixl:'Illustrative IXL Mathematics diagnostic levels, not SmartScores, percentages or report-card grades.',
  core:'Fictional 50-item classroom decoding checks; not an official CORE Phonics Survey total or benchmark.',
