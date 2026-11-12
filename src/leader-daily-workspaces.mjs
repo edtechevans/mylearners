@@ -3,7 +3,7 @@ import {attendanceSummary,gradeNumber,gradeDisplay,GRADES} from './data.mjs';
 import {academicFor,facultyDemoReport,academicModesFor} from './academic-journey-data.mjs';
 import {leaderMapSummary,leaderCheckSnapshot} from './leader-summary.mjs';
 import {studentSupportLeadershipSummary} from './leader-support-summary.mjs';
-import {supportStatusBadges,supportStatusDetails} from './learner-support-status-ui.mjs';
+import {supportStatusBadges,supportStatusDetails} from './learner-support-status-ui.mjs?v=20261112supporttips1';
 import {summarizeExperience,experienceChange,experienceEligible,EXPERIENCE_WINDOWS} from './experience-data.mjs';
 import {leaderVoiceReview,leaderMapRedReview} from './leader-review-signals.mjs';
 import {leaderExperienceScale} from './leader-experience-bands.mjs';
