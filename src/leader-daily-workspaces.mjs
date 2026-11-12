@@ -10,6 +10,7 @@ import {reportProgress,mapProgress,academicCheckinProgress} from './evidence-pro
 import {esc} from './v2-ui.mjs';
 import {renderMapRitProfile} from './map-rit-achievement.mjs';
 import {renderStudentPhoto} from './student-photo-preview.mjs?v=20261111photo1';
+import {mypBestFitMarker} from './report-card-signals.mjs';
 
 const safe=v=>esc(String(v??''));
 const n=v=>Number.isFinite(v)?v.toFixed(1):'—';
@@ -189,7 +190,7 @@ function concernsEvidence(x,isSecondary){
   if(low.length){
    pieces.push(low.slice(0,3).map(row=>
     safe(row.subject)+' <b class="leader-grade-flag '+(row.score<=2?'red':'orange')+'">'+
-    row.score+'</b>').join(' · ')+(low.length>3?' +'+(low.length-3)+' more':''));
+    row.score+mypBestFitMarker(row)+'</b>').join(' · ')+(low.length>3?' +'+(low.length-3)+' more':''));
   }
  }
  if(x.attendance)pieces.push('Attendance '+n(x.attendance.rate)+'%');
@@ -334,7 +335,7 @@ function miniSeries(points){
  if(!points?.length)return '<span class="leader-no-history">No earlier comparable window</span>';
  return '<div class="leader-mini-series">'+points.map((x,i)=>
   '<span class="'+(i===points.length-1?'current':'')+'"><small>'+safe(x.label)+'</small>'+
-   '<b>'+safe(x.value)+'</b></span>').join('')+'</div>';
+   '<b>'+safe(x.value)+(x.provisional?mypBestFitMarker({mypBestFit:true,provisional:true}):'')+'</b></span>').join('')+'</div>';
 }
 export function renderLeaderLearnerEvidence({student,data,academic,records,window='F26',journeyProfile='',returnLabel='division review'}){
  const a=academicFor(academic,student.id),report=facultyDemoReport(a);
@@ -349,7 +350,7 @@ export function renderLeaderLearnerEvidence({student,data,academic,records,windo
     safe((row.provisional?'Current Best Fit':'MYP Grade')+' · '+row.assessedCriteria+
      '/4 criteria · '+row.projectedCriteriaTotal+'/32')+'</small>':'';
   return '<article class="leader-profile-subject"><div><strong>'+safe(row.subject)+'</strong>'+
-   '<span class="leader-profile-grade '+band+'">'+safe(row.value)+'</span></div>'+
+   '<span class="leader-profile-grade '+band+'">'+safe(row.value)+mypBestFitMarker(row)+'</span></div>'+
    fitNote+miniSeries(reportProgress(a,row.subject).points)+'</article>';
  }).join('');
  const other=academicModesFor(student.grade).filter(mode=>['core','fp','ixl'].includes(mode))
