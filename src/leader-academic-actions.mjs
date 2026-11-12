@@ -6,7 +6,7 @@
 import {gradeNumber} from './data.mjs';
 import {MAP_RIT_SUBJECTS,mapRitDisplaySubject} from './map-rit-achievement.mjs';
 import {leaderMapBandReview,MAP_REVIEW_SELECTIONS} from './leader-review-signals.mjs?v=20261111mapbands1';
-import {leaderReportSignalSummary} from './report-card-signals.mjs';
+import {leaderReportSignalSummary,mypBestFitMarker} from './report-card-signals.mjs';
 import {renderStudentPhoto} from './student-photo-preview.mjs?v=20261111photo1';
 import {esc} from './v2-ui.mjs';
 
@@ -38,14 +38,14 @@ const rowIdentity=student=>'<div class="leader-academic-person">'+
  renderStudentPhoto(student,'leader')+
  '<div><strong>'+safe(student.name)+'</strong>'+
  '<small>'+safe(gradeText(student.grade))+' · '+safe(student.classId||'Homeroom not specified')+'</small></div></div>';
-const chip=(title,detail,kind)=>'<span class="leader-academic-evidence-chip '+kind+'"><b>'+
- safe(title)+'</b><span>'+safe(detail)+'</span></span>';
+const chip=(title,detail,kind,marker='')=>'<span class="leader-academic-evidence-chip '+kind+'"><b>'+
+ safe(title)+'</b><span>'+safe(detail)+marker+'</span></span>';
 const rowHtml=(entry,kind)=>{
  const subjectBadges=kind==='map'?
   entry.hits.map(x=>chip(mapRitDisplaySubject(x.subject),
    x.rit+' RIT · P'+x.percentile+' · '+(x.band==='low'?'Low':'Low Average'),
    x.band==='low'?'map map-low':'map map-low-average')):
-  entry.low.map(x=>chip(x.subject,String(x.value)+' / 7','subject'));
+  entry.low.map(x=>chip(x.subject,String(x.value)+' / 7','subject',mypBestFitMarker(x)));
  return '<li class="leader-academic-row">'+rowIdentity(entry.student)+
   '<div class="leader-academic-row-evidence">'+subjectBadges.join('')+'</div>'+
   '<button type="button" class="leader-academic-open" data-leader-student="'+
