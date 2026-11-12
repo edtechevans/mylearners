@@ -1,0 +1,96 @@
+/* AISG | Universal Screener prototype. Four fixed 0-100 percent display bands
+   reuse MYP colours; percentages must NEVER be interpreted as MYP grades. */
+:root{--us-red:#a6373f;--us-orange:#e4a15f;--us-sage:#a6bd88;--us-green:#246b4f}
+#app .us-band-low{--us-fill:var(--us-red);--us-ink:#fff}
+#app .us-band-mid-low{--us-fill:var(--us-orange);--us-ink:#172f38}
+#app .us-band-mid-high{--us-fill:var(--us-sage);--us-ink:#172f38}
+#app .us-band-high{--us-fill:var(--us-green);--us-ink:#fff}
+#app .us-tile{
+ display:flex;align-items:center;justify-content:center;min-width:0;width:100%;
+ min-height:43px;padding:6px 7px;border-radius:8px;border:1px solid transparent;
+ background:var(--us-fill,#edf1f3);color:var(--us-ink,#3e5d70);
+ font-variant-numeric:tabular-nums;text-align:center;white-space:nowrap;
+}
+#app .us-tile strong{color:inherit!important;font-size:16px!important;font-weight:850!important;line-height:1.2}
+#app .us-tile.us-compact{display:inline-flex;min-width:62px;width:auto;min-height:30px;padding:5px 10px;border-radius:7px}
+#app .us-tile.us-compact strong{font-size:13px!important}
+#app .us-tile.us-missing{background:#eef2f4;color:#496375;border:1px dashed #cbd9e1}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .universal-screener-open{
+ width:100%;margin:0;padding:0;background:transparent;border:0;cursor:pointer;
+}
+#app[data-workspace="faculty"] .roster-daily .universal-screener-open:hover .us-tile{
+ box-shadow:0 0 0 2px #18435a,0 4px 10px #183d5722;
+}
+#app[data-workspace="faculty"] .roster-daily .universal-screener-open:focus-visible{
+ outline:3px solid #216c95;outline-offset:2px;border-radius:8px;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall{
+ min-width:1220px;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall tbody td:nth-child(n+3):not(:last-child){
+ padding-inline:6px!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall col.roster-col-evidence{
+ min-width:0;
+}
+#app .us-profile-fact{display:flex;flex-direction:column;gap:5px;min-width:0}
+#app .us-profile-fact>span{font-size:11px;font-weight:800;color:#456478}
+#app .us-profile-fact>.us-tile{max-width:125px;min-height:37px}
+#app .us-profile-fact>small{font-size:10px;color:#597789;line-height:1.4}
+#app[data-workspace="leader"] .leader-profile-facts{grid-template-columns:repeat(4,minmax(0,1fr))}
+#app[data-workspace="leader"] .leader-profile-facts .us-tile{width:max-content;min-width:78px;max-width:100%;min-height:37px}
+#app[data-workspace="leader"] .leader-profile-facts .us-tile strong{font-size:19px!important}
+#app[data-workspace="leader"] .us-leader-panel{
+ margin:18px 0 24px;padding:20px 22px;border:1px solid #d7e4eb;border-radius:15px;
+ background:#fff;color:#183e57;box-shadow:0 4px 18px #103c5210;scroll-margin-top:115px;
+}
+#app .us-panel-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap}
+#app .us-panel-heading>div:first-child{flex:1;min-width:210px}
+#app .us-panel-heading h2{margin:4px 0;font-size:clamp(19px,1.9vw,23px);color:#143d59}
+#app .us-panel-heading p{font-size:12px;line-height:1.6;color:#526f80;max-width:74ch;margin:4px 0}
+#app .us-overline{font-size:10px;font-weight:850;letter-spacing:.09em;color:#9c2f40}
+#app .us-average{display:flex;flex-direction:column;gap:3px;align-items:flex-end;min-width:160px;
+ padding:11px 14px;background:#f1f6f9;border:1px solid #dbe8ee;border-radius:11px}
+#app .us-average span{font-size:10px;font-weight:800;color:#46667b}
+#app .us-average strong{font-size:28px;font-variant-numeric:tabular-nums;color:#143c56;line-height:1.1}
+#app .us-average small{font-size:10px;color:#587789}
+#app .us-filters{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:17px 0 9px}
+#app .us-band-filters{display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex:1}
+#app .us-band-filter{
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ min-height:39px;padding:8px 9px;border:1px solid #d6e2e9;border-radius:9px;
+ background:#fff;color:#244c62;cursor:pointer;font:750 11px/1.2 inherit;
+}
+#app .us-band-filter.is-active{border-color:#326e8d;box-shadow:0 0 0 2px #2e719922;background:#f1f7fb}
+#app .us-band-filter strong{font-size:12px;font-variant-numeric:tabular-nums;color:#163f56}
+#app .us-swatch{width:13px;height:13px;display:inline-block;border-radius:4px;background:var(--us-fill);flex:none}
+#app .us-all-mark{display:grid;place-items:center;width:13px;height:13px;font-style:normal;font-weight:900;color:#59798a}
+#app .us-grade-select{display:flex;flex-direction:column;gap:4px;color:#46657a;font-size:11px;font-weight:800;min-width:126px}
+#app .us-grade-select select{width:100%;min-height:38px;padding:8px;border:1px solid #c8d9e3;border-radius:8px;background:#fff;color:#204860;font:inherit}
+#app .us-band-filter:focus-visible,#app .us-grade-select select:focus-visible,
+#app .us-learner-link:focus-visible,#app .us-view-learner:focus-visible,#app .us-expand:focus-visible{
+ outline:3px solid #2d7aa5;outline-offset:2px;
+}
+#app .us-results-meta{padding:8px 1px;font-size:11px;color:#557185;font-weight:700}
+#app .us-results-scroll{overflow:auto;max-height:470px;border:1px solid #e0e9ee;border-radius:10px;overscroll-behavior:contain}
+#app .us-results-table{width:100%;min-width:530px;border-collapse:separate;border-spacing:0;text-align:left;font-size:12px}
+#app .us-results-table th,#app .us-results-table td{padding:9px 12px;border-bottom:1px solid #e8eff3;vertical-align:middle}
+#app .us-results-table thead th{position:sticky;top:0;background:#f1f6f9;color:#3c6075;
+ font-size:10px;font-weight:850;z-index:1}
+#app .us-results-table tbody tr:last-child th,#app .us-results-table tbody tr:last-child td{border-bottom:0}
+#app .us-results-table tbody tr:hover{background:#f7fafb}
+#app .us-learner-link{background:transparent;border:0;padding:4px 0;font:800 12px/1.35 inherit;color:#215574;text-align:left;cursor:pointer}
+#app .us-view-learner{padding:7px 10px;background:#f2f7fa;color:#225472;border:1px solid #d4e2eb;border-radius:7px;font:800 11px/1.3 inherit;cursor:pointer;white-space:nowrap}
+#app .us-expand{display:block;margin:10px auto;padding:9px 13px;color:#225672;background:#fff;
+ border:1px solid #b9d0df;border-radius:8px;font:800 11px/1.4 inherit;cursor:pointer}
+#app .us-disclaimer{font-size:10.5px;line-height:1.6;color:#587486;margin:13px 0 0}
+@media(max-width:1000px){#app[data-workspace="leader"] .leader-profile-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){
+ #app[data-workspace="leader"] .us-leader-panel{padding:14px 12px}
+ #app .us-average{align-items:flex-start;width:100%}
+ #app .us-band-filter{min-height:40px}
+ #app .us-filters{flex-direction:column;align-items:stretch}
+ #app .us-grade-select{width:100%}
+ #app[data-workspace="leader"] .leader-profile-facts{grid-template-columns:1fr}
+}
+@media print{#app .us-tile{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
