@@ -36,7 +36,7 @@ test('Every evidence band meets WCAG AA normal-text contrast on its wash',()=>{
  }
 });
 test('Sitewide correction loads after the former competing stylesheets',()=>{
- const pos=html.indexOf('evidence-legibility-sitewide.css?v=20261112legibility1');
+ const pos=html.indexOf('evidence-legibility-sitewide.css?v=20261112vivid1');
  assert.ok(pos>html.indexOf('leader-support-directory.css'));
  assert.match(css,/\.class-evidence-result\.evidence-heat strong:not\(\.evidence-visually-hidden\)/);
  assert.match(css,/class-evidence-result\.evidence-heat small/);
