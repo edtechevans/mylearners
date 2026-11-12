@@ -92,6 +92,22 @@ export function evidenceValue(student,{mode='report',academic,map,experience,mai
   mode==='core'?'Mock items · '+value.label:'Text level · '+value.label,available:true}:
   {text:'—',detail:'No recorded result',available:false};
 }
+/** The focused roster should show a scannable summary; complete source wording
+ * is retained verbatim for the accessible hover preview. */
+export function evidenceCellSummary(result,ctx,reportEntry){
+ if(!result.available)return result.detail;
+ if(ctx.mode==='report'){
+  if(reportEntry?.mypBestFit)
+   return (reportEntry.provisional?'Current Best Fit':'MYP Grade')+
+    ' · '+reportEntry.assessedCriteria+'/4 criteria';
+  return 'Current test grade · not issued';
+ }
+ if(ctx.mode==='engagement'||ctx.mode==='belonging'){
+  const period=EXPERIENCE_WINDOWS.find(item=>item.key===(ctx.window||'F26'));
+  return (period?.label||'Check-in')+' · student voice index';
+ }
+ return result.detail;
+}
 export function evidenceRosterColumn(student,ctx){
  const result=evidenceValue(student,ctx);
  const v=(ctx.mode==='engagement'||ctx.mode==='belonging')&&result.available?experienceFor(ctx.experience,student.id,ctx.mode,ctx.window||'F26')?.value:null;
@@ -99,8 +115,11 @@ export function evidenceRosterColumn(student,ctx){
  const reportEntry=ctx.mode==='report'?report?.subjects?.find(x=>x.subject===ctx.subject):null;
  const band=ctx.mode==='report'?reportGradeBand(result.text,report?.scale)||'':
   Number.isFinite(v)?(v< -1?'band-low':v<0?'band-mid-low':v<1?'band-mid-high':'band-high'):'';
- return '<span class="class-evidence-result'+(result.available?'':' is-unavailable')+(band?' evidence-heat '+band:'')+'">'+
-  '<strong>'+esc(result.text)+mypBestFitMarker(reportEntry)+'</strong><small>'+esc(result.detail)+'</small></span>';
+ const short=evidenceCellSummary(result,ctx,reportEntry);
+ return '<span class="class-evidence-result'+(result.available?'':' is-unavailable')+(band?' evidence-heat '+band:'')+
+  '" data-evidence-detail="'+esc(result.detail)+'" data-evidence-subject="'+esc(ctx.subject||'')+
+  '" aria-label="'+esc(result.text+'. '+result.detail)+'">'+
+  '<strong>'+esc(result.text)+mypBestFitMarker(reportEntry)+'</strong><small>'+esc(short)+'</small></span>';
 }
 function reportBreakdown(students,academic,subject){
  const groups=new Map();

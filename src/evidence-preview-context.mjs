@@ -279,8 +279,13 @@ export function resolveEvidencePreview(trigger,ctx){
   }
   const mode=trigger.dataset.previewMeasure||'report';
   const subject=trigger.dataset.evidenceSubject||ctx.state.academicSubject||'Mathematics';
-  if(mode==='report')
-   return compact(subject,person.name,reportProgress(academic,subject),'academic','—');
+  if(mode==='report'){
+   const original=tidy(trigger.dataset.evidenceDetail||'');
+   return makePreview({title:subject,subtitle:person.name,kind:'academic',
+    trend:reportProgress(academic,subject),
+    rows:original?[['Displayed result',t(trigger,'strong')||'—']]:[],
+    note:original});
+  }
   if(mode==='ixl'){
    const latest=latestAcademic(academic,'ixl');
    const rows=latest?[
