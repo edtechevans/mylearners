@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {GRADES,gradeNumber,generateDemoData} from '../src/data.mjs';
 import {applyFacultyDemo} from '../src/faculty-demo.mjs';
-import {createAcademicDemoRecords,academicFor,academicModesFor,academicCoverage,latestAcademic,
+import {createAcademicDemoRecords,academicFor,academicModesFor,academicCoverage,latestAcademic,facultyDemoReport,
  REPORT_PERIODS,ACADEMIC_CHECKINS,PRIMARY_DESCRIPTORS,READING_LEVELS} from '../src/academic-journey-data.mjs';
+import {mypBestFit} from '../src/myp-best-fit.mjs';
 import {renderAcademicProfile,renderClassAcademicPanel,classAcademicCell} from '../src/academic-journey-view.mjs';
 const DATA=applyFacultyDemo(generateDemoData());
 const records=createAcademicDemoRecords(DATA.students);
@@ -40,6 +41,52 @@ test('Grade eligibility is exactly IXL G1–10 and Core Phonics/F&P K–5',()=>{
   if(rec.fp.length)fps++;
  }
  assert.deepEqual([ixls,cores,fps],[800,480,480]);
+});
+test('MYP best fit projects only available criteria and returns whole-number grades',()=>{
+ const examples=[
+  [[6,5,6,null],23,5,3],
+  [[7,null,6,null],26,6,2],
+  [[null,5,null,null],20,5,1],
+  [[6,7,5,6],24,6,4],
+  [[0,null,null,null],0,null,1]
+ ];
+ for(const [criteria,total,grade,count] of examples){
+  const result=mypBestFit(criteria);
+  assert.equal(result.projectedTotal,total);
+  assert.equal(result.grade,grade);
+  assert.equal(result.criteriaCount,count);
+  assert.equal(Number.isInteger(result.projectedTotal),true);
+  if(result.grade!==null)assert.equal(Number.isInteger(result.grade),true);
+ }
+ for(const [score,expected] of [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,7]])
+  assert.equal(mypBestFit([score]).grade,expected);
+ assert.deepEqual(mypBestFit(['',null,undefined,'N/A']),{
+  grade:null,projectedTotal:null,criteriaCount:0,complete:false,provisional:false,scores:[]
+ });
+});
+test('Current G6–10 MYP demo results derive from 1–4 available criteria only',()=>{
+ for(const student of DATA.students){
+  const n=gradeNumber(student.grade);
+  const report=facultyDemoReport(academicFor(records,student.id));
+  if(n>=6&&n<=10){
+   assert.equal(report.framework,'IB MYP');
+   for(const item of report.subjects){
+    assert.equal(item.mypBestFit,true);
+    assert.equal(item.criteria.length,4);
+    const result=mypBestFit(item.criteria);
+    assert.ok(result.criteriaCount>=1&&result.criteriaCount<=4);
+    assert.equal(item.assessedCriteria,result.criteriaCount);
+    assert.equal(item.criteriaTotal,4);
+    assert.equal(item.projectedCriteriaTotal,result.projectedTotal);
+    assert.equal(item.provisional,result.criteriaCount<4);
+    assert.equal(item.value,result.grade===null?null:String(result.grade));
+    assert.ok(item.criteria.every(c=>c.score===null||
+     Number.isInteger(c.score)&&c.score>=0&&c.score<=8));
+   }
+  }else if(report){
+   for(const item of report.subjects)assert.equal(item.mypBestFit,undefined);
+  }
+ }
 });
 test('Every report year is completed, within enrolment, aligned to the correct prior grade',()=>{
  const years=['2025–26','2024–25','2023–24'];

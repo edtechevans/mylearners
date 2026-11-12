@@ -30,7 +30,7 @@ export function leaderAcademicReview(students,academic){
  const results=(students||[]).filter(s=>gradeNumber(s.grade)>=6).map(student=>{
   const report=facultyDemoReport(academicFor(academic,student.id));
   if(!report||report.scale!=='1–7')return null;
-  const outcomes=report.subjects.map(x=>({subject:x.subject,score:Number(x.value)}))
+  const outcomes=report.subjects.map(x=>({...x,score:Number(x.value)}))
    .filter(x=>Number.isInteger(x.score)&&x.score>=1&&x.score<=7);
   return {student,report,outcomes,
    at2:outcomes.filter(x=>x.score<=2),at3:outcomes.filter(x=>x.score<=3)};
@@ -291,7 +291,7 @@ export function renderLeaderDivisionDaily({division,grade,students,allStudents,d
    '<p class="leader-daily-note">'+safe(secondary?
     (students.some(s=>gradeNumber(s.grade)>=11)?
      'Grades 11–12 use DP subject evidence; MAP and IXL end at Grade 10. MYP and DP results are not combined into a grade average.':
-     'MAP applies to eligible Grades 6–10. Current subject results are not issued reports.'):
+     'MAP applies to eligible Grades 6–10. MYP Current Best Fit uses only criteria assessed so far; missing criteria are not counted. Current subject results are not issued reports.'):
     'Elementary report descriptors are not 1–7 grades. Literacy checks must be interpreted within grade and programme.')+
     '</p></section>'+
   '<nav class="leader-focus-nav" role="tablist" aria-label="Explore Leadership evidence">'+
@@ -344,9 +344,13 @@ export function renderLeaderLearnerEvidence({student,data,academic,records,windo
   const score=Number(row.value);
   const band=numeric&&Number.isInteger(score)&&score<=2?'red':
    numeric&&Number.isInteger(score)&&score===3?'orange':'';
+  const fitNote=row.mypBestFit?
+   '<small class="leader-best-fit-note" title="Missing criteria are not counted.">'+
+    safe((row.provisional?'Current Best Fit':'MYP Grade')+' · '+row.assessedCriteria+
+     '/4 criteria · '+row.projectedCriteriaTotal+'/32')+'</small>':'';
   return '<article class="leader-profile-subject"><div><strong>'+safe(row.subject)+'</strong>'+
    '<span class="leader-profile-grade '+band+'">'+safe(row.value)+'</span></div>'+
-   miniSeries(reportProgress(a,row.subject).points)+'</article>';
+   fitNote+miniSeries(reportProgress(a,row.subject).points)+'</article>';
  }).join('');
  const other=academicModesFor(student.grade).filter(mode=>['core','fp','ixl'].includes(mode))
   .map(mode=>'<div class="leader-profile-assessment"><strong>'+safe(

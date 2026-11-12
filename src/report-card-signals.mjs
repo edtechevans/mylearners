@@ -53,7 +53,7 @@ export function leaderReportSignalSummary(students,academic,maxGrade=3){
   const report=facultyDemoReport(academicFor(academic,student.id));
   if(!report?.testing||report.scale!=='1–7')continue;
   const outcomes=(report.subjects||[]).map(x=>({
-   subject:x.subject,value:numericReportGrade(x.value,report.scale)
+   ...x,value:numericReportGrade(x.value,report.scale)
   })).filter(x=>x.value!==null);
   if(!outcomes.length)continue;
   const low=outcomes.filter(x=>x.value<=threshold);

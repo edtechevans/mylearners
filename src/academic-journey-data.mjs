@@ -16,6 +16,7 @@
  * No real AISG students, accounts, survey records or assessment exports are used.
  */
 import {hash,rng,clamp,gradeNumber,GRADES} from './data.mjs';
+import {MYP_CRITERIA,mypBestFit} from './myp-best-fit.mjs';
 
 export const DEMO_REPORT_YEAR='2026–27';
 export const REPORT_PERIODS=Object.freeze([
@@ -93,16 +94,34 @@ function testNumericGrade(student,subject){
  const cutoffs=[2,6,16,34,59,82,100];
  return String(1+cutoffs.findIndex(limit=>draw<limit));
 }
+function createMypWorkingSubject(student,subject,framework){
+ const target=Number(testNumericGrade(student,subject));
+ const assessedCriteria=1+hash(student.id+'|'+subject+'|2026-27-myp-criteria-count')%4;
+ const start=hash(student.id+'|'+subject+'|2026-27-myp-criteria-start')%4;
+ const selected=new Set(Array.from({length:assessedCriteria},(_,i)=>MYP_CRITERIA[(start+i)%4]));
+ const criteria=MYP_CRITERIA.map(criterion=>({
+  criterion,score:selected.has(criterion)?target:null
+ }));
+ const bestFit=mypBestFit(criteria);
+ return {
+  subject,value:bestFit.grade===null?null:String(bestFit.grade),
+  scale:'1–7',framework,criteria,
+  mypBestFit:true,provisional:bestFit.provisional,
+  assessedCriteria:bestFit.criteriaCount,criteriaTotal:4,
+  projectedCriteriaTotal:bestFit.projectedTotal
+ };
+}
 function createWorkingReport(student){
- const grade=student.grade,framework=reportFrameworkFor(grade);
- const scale=gradeNumber(grade)<=5?'descriptors':'1–7';
+ const grade=student.grade,framework=reportFrameworkFor(grade),n=gradeNumber(grade);
+ const scale=n<=5?'descriptors':'1–7';
  return {
   year:DEMO_REPORT_YEAR,end:2027,grade,framework,scale,
   issued:false,testing:true,simulated:true,
-  subjects:reportSubjectsFor(grade).map(subject=>({
-   subject,value:scale==='1–7'?testNumericGrade(student,subject):
-    reportValue(student,subject,2027,grade),scale,framework
-  }))
+  subjects:reportSubjectsFor(grade).map(subject=>
+   n>=6&&n<=10?createMypWorkingSubject(student,subject,framework):({
+    subject,value:scale==='1–7'?testNumericGrade(student,subject):
+     reportValue(student,subject,2027,grade),scale,framework
+   }))
  };
 }
 /** The latest in-progress demonstration grade set; not a published report. */

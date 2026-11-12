@@ -10,8 +10,11 @@ const BANDS=Object.freeze([
 ]);
 const pill=(x,scale)=>{
  const band=reportGradeBand(x.value,scale)||'';
- return '<span class="leader-report-subject"><span>'+esc(x.subject)+'</span>'+
-  '<b class="report-grade-chip '+band+'">'+esc(x.value)+'</b></span>';
+ const detail=x.mypBestFit?
+  (x.provisional?'Current Best Fit':'MYP Grade')+' · '+x.assessedCriteria+
+   '/4 criteria · projected '+x.projectedCriteriaTotal+'/32':'';
+ return '<span class="leader-report-subject"'+(detail?' title="'+esc(detail)+'"':'')+'><span>'+
+  esc(x.subject)+'</span><b class="report-grade-chip '+band+'">'+esc(x.value)+'</b></span>';
 };
 const distribution=(outcomes,scale)=>{
  const counts=BANDS.map(b=>outcomes.filter(item=>reportGradeBand(item.value,scale)===b.css).length);

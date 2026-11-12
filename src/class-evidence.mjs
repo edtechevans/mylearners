@@ -80,7 +80,11 @@ export function evidenceValue(student,{mode='report',academic,map,experience,mai
  const report=mode==='report'?facultyDemoReport(academicFor(academic,student.id)):null;
  const reportEntry=report?.subjects.find(x=>x.subject===subject);
  if(mode==='report')return reportEntry?
-  {text:String(reportEntry.value),detail:report.year+' synthetic test report · not issued · '+report.grade,available:true}:
+  {text:String(reportEntry.value),detail:reportEntry.mypBestFit?
+   (reportEntry.provisional?'Current Best Fit':'MYP Grade')+' · '+reportEntry.assessedCriteria+
+    '/4 criteria · projected '+reportEntry.projectedCriteriaTotal+'/32 · '+report.year+
+    ' synthetic test report · not issued':
+   report.year+' synthetic test report · not issued · '+report.grade,available:true}:
   {text:'—',detail:'No test report subject result',available:false};
  const value=latestAcademic(academicFor(academic,student.id),mode,subject);
  return value?{text:String(value.value),detail:mode==='report'?'Last issued report · '+value.label:

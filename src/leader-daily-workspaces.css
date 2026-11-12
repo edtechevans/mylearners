@@ -354,6 +354,9 @@
 }
 #app[data-workspace="leader"] .leader-profile-grade.red{background:#a6373f;color:#fff}
 #app[data-workspace="leader"] .leader-profile-grade.orange{background:#e4a15f;color:#253d44}
+#app[data-workspace="leader"] .leader-best-fit-note{
+ display:block;margin:-3px 0 8px;color:#617a88;font-size:9px;line-height:1.35;font-weight:700;
+}
 #app[data-workspace="leader"] .leader-mini-series{
  display:flex;align-items:stretch;gap:6px;flex-wrap:wrap;
 }
