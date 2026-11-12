@@ -160,7 +160,10 @@ function cardDetails(target,ctx,kind){
 }
 function experienceQuestions(ctx,students,metric,window,scopeLabel,individual=false){
  const detail=buildExperienceQuestionPreview(ctx.experience,students,metric,window,{scopeLabel,individual});
- return detail?makePreview({title:detail.title,subtitle:scopeLabel,kind:'experience',experienceDetail:detail}):null;
+ const trend=individual&&students?.length===1?
+  experienceProgress(ctx.experience,students[0].id,metric,window):
+  groupExperienceProgress(ctx.experience,students,metric,window);
+ return detail?makePreview({title:detail.title,subtitle:scopeLabel,kind:'experience',trend,experienceDetail:detail}):null;
 }
 export function resolveEvidencePreview(trigger,ctx){
  if(!trigger?.dataset||!ctx?.data)return null;
