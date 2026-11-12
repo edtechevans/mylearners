@@ -124,11 +124,11 @@ export function strandCohortJourney({
  const keys=new Set(tests.flatMap(x=>x.tests.map(r=>r.key)));
  const windows=knownWindows.filter(w=>keys.has(w.key));
  const last=windows.at(-1)?.key||'';
- const suggested=windows.find(w=>w.key==='F22')?.key||windows.at(-2)?.key||windows[0]?.key||'';
  const finalEnd=keys.has(end)?end:last;
  const endIndex=windows.findIndex(w=>w.key===finalEnd);
- const finalStart=keys.has(start)&&windows.findIndex(w=>w.key===start)<endIndex?start:
-  suggested!==finalEnd?suggested:windows[0]?.key||'';
+ const priorWindows=windows.slice(0,Math.max(0,endIndex));
+ const finalStart=priorWindows.some(w=>w.key===start)?start:
+  priorWindows.some(w=>w.key==='F22')?'F22':priorWindows.at(-1)?.key||'';
  const endRecordByStudent=tests.map(x=>x.tests.find(r=>r.key===finalEnd)).filter(Boolean);
  const nameScores=new Map();
  for(const r of endRecordByStudent)for(const g of r.goals||[]){
@@ -160,7 +160,7 @@ export function strandCohortJourney({
  let paired=0,compared=0,crossStage=0,missingPair=0;
  const rows=[];
  for(const {student,tests:history} of tests){
-  const fromRecord=history.find(r=>r.key===finalStart);
+  const fromRecord=finalStart?history.find(r=>r.key===finalStart):null;
   const toRecord=history.find(r=>r.key===finalEnd);
   const from=fromRecord?strandGoalAt(fromRecord,selected):null;
   const to=toRecord?strandGoalAt(toRecord,selected):null;
