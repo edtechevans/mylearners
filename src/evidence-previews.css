@@ -176,3 +176,37 @@
  .evidence-preview-popup:has(.evidence-preview-questions){max-height:70vh}
  .evidence-preview-popup .evidence-preview-inner:has(.evidence-preview-questions){padding:12px}
 }
+
+
+/* Scrollable question-level previews: do not allow a longer three-question
+   breakdown to disappear off-screen or be mistaken for truncated content. */
+.evidence-preview-popup:has(.evidence-preview-questions){
+ max-height:min(650px,76dvh,calc(100dvh - 24px));
+ overflow-y:auto;
+ overscroll-behavior:contain;
+ scrollbar-gutter:stable;
+ scrollbar-width:thin;
+ scrollbar-color:#678ba2 #eaf1f5;
+}
+.evidence-preview-popup.is-question-scrollable{
+ border-bottom:3px solid #7899ad;
+}
+.evidence-preview-popup.is-question-scrollable:focus-visible{
+ outline:3px solid #1c6e96;outline-offset:2px;
+}
+.evidence-preview-popup.is-question-scrollable::-webkit-scrollbar{width:11px}
+.evidence-preview-popup.is-question-scrollable::-webkit-scrollbar-track{background:#eaf1f5;border-radius:9px}
+.evidence-preview-popup.is-question-scrollable::-webkit-scrollbar-thumb{
+ background:#678ba2;border-radius:9px;border:2px solid #eaf1f5;
+}
+.evidence-preview-scroll-hint{
+ margin:0!important;padding:8px 10px;border-radius:8px;
+ background:#edf5fa;color:#24536e!important;
+ border:1px solid #c8dce8;
+ font-size:11px!important;line-height:1.4!important;font-weight:800;
+}
+@media(max-width:480px){
+ .evidence-preview-popup:has(.evidence-preview-questions){
+  max-height:min(70dvh,calc(100dvh - 20px));
+ }
+}
