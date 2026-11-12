@@ -6,6 +6,7 @@ import {latestMapGrowth} from './map-growth.mjs';
 import {mapRitBand,mapRitChange,mapRitDisplaySubject} from './map-rit-achievement.mjs';
 import {academicFor,latestAcademic,facultyDemoReport} from './academic-journey-data.mjs';
 import {experienceFor,EXPERIENCE_WINDOWS} from './experience-data.mjs';
+import {buildExperienceQuestionPreview} from './experience-question-preview.mjs';
 import {reportProgress,issuedReportProgress,academicCheckinProgress,mapProgress,experienceProgress,groupExperienceProgress,maiaProgress} from './evidence-progress.mjs?v=20261111schemas1';
 import {MAIA_DEFAULT_DIMENSION} from './maia-demo.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
@@ -157,6 +158,10 @@ function cardDetails(target,ctx,kind){
   status,kind:ctx.role==='board'?'board':ctx.role==='sss'?'support':
    guideKey==='engagement'||guideKey==='belonging'?'experience':'academic'});
 }
+function experienceQuestions(ctx,students,metric,window,scopeLabel,individual=false){
+ const detail=buildExperienceQuestionPreview(ctx.experience,students,metric,window,{scopeLabel,individual});
+ return detail?makePreview({title:detail.title,subtitle:scopeLabel,kind:'experience',experienceDetail:detail}):null;
+}
 export function resolveEvidencePreview(trigger,ctx){
  if(!trigger?.dataset||!ctx?.data)return null;
  const kind=trigger.dataset.evidencePreview;
@@ -169,48 +174,70 @@ export function resolveEvidencePreview(trigger,ctx){
  }
  if(kind==='experience-summary'){
   if(ctx.role!=='faculty')return null;
-  const label=tidy(trigger.textContent).toLowerCase();
-  const metric=label.includes('belonging')?'belonging':label.includes('engagement')?'engagement':null;
-  if(!metric)return null;
-  const students=facultyGroup(ctx);
-  return compact(PREVIEW_GUIDE[metric].label,'My class',
-   groupExperienceProgress(ctx.experience,students,metric,'F26'),'experience');
+  const metric=tidy(trigger.textContent).toLowerCase().includes('belonging')?'belonging':'engagement';
+  return experienceQuestions(ctx,facultyGroup(ctx),metric,'F26','My class');
+ }
+ if(kind==='class-evidence-experience'){
+  if(ctx.role!=='faculty')return null;
+  return experienceQuestions(ctx,facultyGroup(ctx),trigger.dataset.previewMeasure,
+   ctx.state.classExperienceWindow||'F26','My class');
  }
  if(kind==='personal-experience'){
   if(!['student','faculty'].includes(ctx.role))return null;
   const person=learner(ctx.state.studentId,ctx);
-  const metric=trigger.dataset.previewMeasure;
-  if(!person||!['engagement','belonging'].includes(metric))return null;
-  return compact(PREVIEW_GUIDE[metric].label,person.name,
-   experienceProgress(ctx.experience,person.id,metric,ctx.state.window||'F26'),'experience');
+  return person?experienceQuestions(ctx,[person],trigger.dataset.previewMeasure,
+   ctx.state.window||'F26',person.name,true):null;
  }
  if(kind==='leader-index'){
-  const metric=trigger.dataset.previewMeasure;
-  if(ctx.role!=='leader'||!['engagement','belonging'].includes(metric))return null;
+  if(ctx.role!=='leader')return null;
   const scope=trigger.dataset.previewGroup||'Selected group';
-  return compact(PREVIEW_GUIDE[metric].label,scope,
-   groupExperienceProgress(ctx.experience,leaderGroup(ctx,scope),metric,ctx.state.window||'F26'),
-   'experience');
+  return experienceQuestions(ctx,leaderGroup(ctx,scope),trigger.dataset.previewMeasure,
+   ctx.state.window||'F26',scope);
  }
  if(kind==='leader-experience'){
   if(ctx.role!=='leader')return null;
-  const title=t(trigger,'.leader-measure-label').toLowerCase();
-  const metric=title.includes('belonging')?'belonging':'engagement';
+  const metric=t(trigger,'.leader-measure-label').toLowerCase().includes('belonging')?'belonging':'engagement';
   const action=trigger.querySelector?.('[data-action^="explain:"]')?.dataset.action||'';
   const scope=action.split(':')[1]||'leader';
   let students=leaderGroup(ctx);
   if(scope==='elementary'||scope==='secondary')
    students=students.filter(s=>s.division===(scope==='elementary'?'Elementary':'Secondary'));
-  return compact(PREVIEW_GUIDE[metric].label,
-   scope==='leader'?'Selected students':scope==='elementary'?'Elementary':'Secondary',
-   groupExperienceProgress(ctx.experience,students,metric,ctx.state.window||'F26'),'experience');
+  const name=scope==='elementary'?'Elementary':scope==='secondary'?'Secondary':'Selected learners';
+  return experienceQuestions(ctx,students,metric,ctx.state.window||'F26',name);
+ }
+ if(kind==='leader-school-voice'){
+  if(ctx.role!=='leader')return null;
+  const division=trigger.dataset.previewGroup;
+  if(!['Elementary','Secondary'].includes(division))return null;
+  const students=ctx.data.students.filter(s=>s.division===division);
+  return experienceQuestions(ctx,students,trigger.dataset.previewMeasure,'F26',division);
+ }
+ if(kind==='leader-profile-voice'||kind==='leader-followup-voice'){
+  if(ctx.role!=='leader')return null;
+  const id=kind==='leader-profile-voice'?ctx.state.leaderStudentId:trigger.dataset.previewLeaderStudent;
+  const person=id?ctx.data.userIndex.get(id):null;
+  return person?experienceQuestions(ctx,[person],trigger.dataset.previewMeasure,
+   ctx.state.window||'F26',person.name,true):null;
+ }
+ if(kind==='leader-trend'){
+  if(ctx.role!=='leader')return null;
+  const scope=trigger.dataset.previewGroup;
+  let students=leaderGroup(ctx);
+  if(scope==='Elementary'||scope==='Secondary')students=students.filter(s=>s.division===scope);
+  return experienceQuestions(ctx,students,trigger.dataset.previewMeasure,
+   trigger.dataset.previewWindow||'F26',scope||'Selected learners');
+ }
+ if(kind==='sss-experience'){
+  if(ctx.role!=='sss')return null;
+  const person=learner(ctx.state.sssStudentId,ctx);
+  return person?experienceQuestions(ctx,[person],trigger.dataset.previewMeasure,
+   'F26',person.name,true):null;
  }
  if(kind==='experience-cell'){
   const metric=trigger.dataset.previewMeasure;
   if(!person||!ctx.experience||!['engagement','belonging'].includes(metric))return null;
-  const window=trigger.dataset.previewWindow||ctx.state.classExperienceWindow||'F26';
-  return compact(PREVIEW_GUIDE[metric].label,person.name,
-   experienceProgress(ctx.experience,person.id,metric,window),'experience','—');
+  return experienceQuestions(ctx,[person],metric,
+   trigger.dataset.previewWindow||ctx.state.classExperienceWindow||'F26',person.name,true);
  }
  if(kind==='map-rit'){
   if(!person)return null;
