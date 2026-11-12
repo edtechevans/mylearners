@@ -1,5 +1,5 @@
 /** Secondary-only report-grade inquiry, using read-only fictional test data. */
-import {leaderReportSignalSummary,reportGradeBand} from './report-card-signals.mjs';
+import {leaderReportSignalSummary,reportGradeBand,mypBestFitMarker} from './report-card-signals.mjs';
 const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
  .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const BANDS=Object.freeze([
@@ -14,7 +14,7 @@ const pill=(x,scale)=>{
   (x.provisional?'Current Best Fit':'MYP Grade')+' · '+x.assessedCriteria+
    '/4 criteria · projected '+x.projectedCriteriaTotal+'/32':'';
  return '<span class="leader-report-subject"'+(detail?' title="'+esc(detail)+'"':'')+'><span>'+
-  esc(x.subject)+'</span><b class="report-grade-chip '+band+'">'+esc(x.value)+'</b></span>';
+  esc(x.subject)+'</span><b class="report-grade-chip '+band+'">'+esc(x.value)+mypBestFitMarker(x)+'</b></span>';
 };
 const distribution=(outcomes,scale)=>{
  const counts=BANDS.map(b=>outcomes.filter(item=>reportGradeBand(item.value,scale)===b.css).length);
