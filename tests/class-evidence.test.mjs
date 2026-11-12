@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {generateDemoData} from '../src/data.mjs';
 import {applyFacultyDemo} from '../src/faculty-demo.mjs';
-import {createAcademicDemoRecords} from '../src/academic-journey-data.mjs';
+import {createAcademicDemoRecords,academicFor,facultyDemoReport} from '../src/academic-journey-data.mjs';
 import {createExperienceRecords} from '../src/experience-data.mjs';
 import {createMaiaDemoRecords,maiaClassSummary,maiaFor,maiaEligible,MAIA_DIMENSIONS,renderMaiaFacultyProfile} from '../src/maia-demo.mjs';
 import {evidenceModesForGrade,normalizeEvidenceMode,evidenceValue,
@@ -191,6 +191,23 @@ test('a second report or MAP measure keeps its own subject selector',()=>{
  const none=renderClassEvidencePanel(learners,{...ctx,mode:'report',compare:'none'});
  assert.doesNotMatch(none,/class-evidence-selection has-comparison/);
  assert.doesNotMatch(none,/No combined score/);
+});
+test('focused G6–10 current subject grades mark partial MYP best fits only',()=>{
+ const learners=DATA.students.filter(s=>s.grade==='G7');
+ let partial=null,complete=null;
+ for(const student of learners){
+  const report=facultyDemoReport(academicFor(academic,student.id));
+  const partialItem=report?.subjects?.find(item=>item.provisional);
+  const completeItem=report?.subjects?.find(item=>item.mypBestFit&&!item.provisional);
+  if(!partial&&partialItem)partial={student,item:partialItem};
+  if(!complete&&completeItem)complete={student,item:completeItem};
+  if(partial&&complete)break;
+ }
+ assert.ok(partial&&complete);
+ const partialHtml=evidenceRosterColumn(partial.student,{...ctx,mode:'report',subject:partial.item.subject});
+ const completeHtml=evidenceRosterColumn(complete.student,{...ctx,mode:'report',subject:complete.item.subject});
+ assert.match(partialHtml,/myp-best-fit-marker/);
+ assert.doesNotMatch(completeHtml,/myp-best-fit-marker/);
 });
 test('teachers can choose real check-in windows without treating an index as a percentage',()=>{
  const learners=group('G7');
