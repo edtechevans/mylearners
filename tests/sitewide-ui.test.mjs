@@ -119,6 +119,7 @@ test('Leaders begin with an aggregated whole-school landing and explicit divisio
  click('[data-role]',{role:'leader'});
  assert.match(node.innerHTML,/Leadership Overview/);
  assert.match(node.innerHTML,/WHOLE SCHOOL · START HERE/);
+ assert.match(node.innerHTML,/data-leader-directory-jump/,'Leaders have a direct link to the support directory');
  assert.match(node.innerHTML,/data-select="division"/);
  assert.match(node.innerHTML,/data-leader-division="Elementary"/);
  assert.match(node.innerHTML,/data-leader-division="Secondary"/);
