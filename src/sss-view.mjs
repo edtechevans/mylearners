@@ -45,9 +45,6 @@ const literacyReport=record=>{
 const growth=map=>map?.status==='comparable'?(map.actual>0?'+':'')+map.actual+' RIT':'—';
 const serviceChips=record=>(record?.services||[]).map(s=>
  '<span class="sss-service">'+esc(s)+'</span>').join('');
-const supportChips=student=>demoTagsForStudent(student)
- .filter(t=>!t.restricted).map(t=>'<span class="sss-support-flag" title="'+esc(t.fullName)+
- ' — fictional">'+esc(t.label)+'</span>').join('');
 const actionBack='<button type="button" class="sss-back" data-sss-back>← Back to SSS learners</button>';
 
 function studentRow(student,record,academics){
@@ -208,8 +205,7 @@ export function renderSSSStudentProfile({
      '" data-experience-scope="sss" data-experience-student="'+esc(student.id)+
      '" data-experience-window="F26">How is this calculated?</button></div>';
    }).join('')+'</div></section>':'';
- const learningTags=demoTagsForStudent(student).filter(tag=>!tag.restricted);
- const restricted=demoTagsForStudent(student).filter(tag=>tag.restricted);
+ const learningTags=demoTagsForStudent(student).filter(tag=>tag.id==='eal'||tag.id==='ss');
  const strategies=supportStatusDetails(student)+'<section class="sss-profile-section"><div class="sss-section-head"><div>'+
   '<div class="eyebrow">COLLABORATIVE SUPPORT</div><h2>Classroom Approaches</h2>'+
   '<p>Shared teacher-facing examples; authorised plans remain in approved school systems.</p>'+
@@ -217,9 +213,7 @@ export function renderSSSStudentProfile({
   '<article><strong>Illustrative coordination focus</strong><p>'+esc(record.focus.strategy)+'</p></article>'+
   learningTags.map(tag=>'<article><strong>'+esc(tag.fullName)+'</strong>'+
    '<p>'+esc(tag.strategies[0])+'</p></article>').join('')+
-  '</div>'+(restricted.length?'<p class="sss-footnote">Other fictional guidance indicators: '+
-   restricted.map(t=>esc(t.label)).join(', ')+'. Any actual medical, safeguarding, behaviour or '+
-   'counselling plans must remain in their own permission-controlled systems.</p>':'')+
+  '</div>'+
   '<p class="sss-footnote">New entries remain only in this browser session. Do not enter real student information. '+
   'This is a fictional design demonstration.</p></section>';
  return '<div class="sss-view sss-student-view">'+
