@@ -7,6 +7,7 @@ import {mapRitBand,mapRitChange,mapRitDisplaySubject} from './map-rit-achievemen
 import {academicFor,latestAcademic,facultyDemoReport} from './academic-journey-data.mjs';
 import {experienceFor,EXPERIENCE_WINDOWS} from './experience-data.mjs';
 import {buildExperienceQuestionPreview} from './experience-question-preview.mjs';
+import {universalScreenerFor} from './universal-screener.mjs';
 import {reportProgress,issuedReportProgress,academicCheckinProgress,mapProgress,experienceProgress,groupExperienceProgress,maiaProgress} from './evidence-progress.mjs?v=20261111schemas1';
 import {MAIA_DEFAULT_DIMENSION} from './maia-demo.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
@@ -241,6 +242,17 @@ export function resolveEvidencePreview(trigger,ctx){
   if(!person||!ctx.experience||!['engagement','belonging'].includes(metric))return null;
   return experienceQuestions(ctx,[person],metric,
    trigger.dataset.previewWindow||ctx.state.classExperienceWindow||'F26',person.name,true);
+ }
+ if(kind==='universal-screener'){
+  const id=trigger.dataset.previewStudent;
+  const student=ctx.role==='leader'?leaderGroup(ctx).find(s=>s.id===id):learner(id,ctx);
+  if(!student)return null;
+  const result=universalScreenerFor(student);
+  return makePreview({title:'Universal Screener',subtitle:student.name+' · Demonstration',
+   rows:[['Percentage',result.percent+'%'],['Display band',result.label],
+    ['Scale','0–100% · one fictional result per learner']],
+   note:'Synthetic percentages generated for interface testing. Colours match the MYP palette for design consistency, not grades, validated screening cutoffs, diagnoses, or support decisions.',
+   kind:'academic'});
  }
  if(kind==='map-rit'){
   if(!person)return null;

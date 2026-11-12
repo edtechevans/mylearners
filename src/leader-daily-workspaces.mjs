@@ -11,6 +11,7 @@ import {reportProgress,mapProgress,academicCheckinProgress} from './evidence-pro
 import {esc} from './v2-ui.mjs';
 import {renderMapRitProfile} from './map-rit-achievement.mjs';
 import {renderStudentPhoto} from './student-photo-preview.mjs?v=20261111photo1';
+import {renderUniversalScreenerTile} from './universal-screener.mjs';
 import {mypBestFitMarker} from './report-card-signals.mjs';
 
 const safe=v=>esc(String(v??''));
@@ -202,7 +203,7 @@ function concernsEvidence(x,isSecondary){
 export function renderLeaderDivisionDaily({division,grade,students,allStudents,data,
  academic,records,sssRecords,entries,reviewFilter='all',expanded=false,savedView=null,
  voiceWindow='F26',academicPanels='',journeyPanel='',academicActions='',
- focusSection='follow-up',savedNotice=''}){
+ focusSection='follow-up',savedNotice='',screenerPanel=''}){
  const secondary=division==='Secondary',
   attendance=leaderAttendanceReview(students,data),
   academics=leaderAcademicReview(students,academic),
@@ -298,6 +299,7 @@ export function renderLeaderDivisionDaily({division,grade,students,allStudents,d
      'MAP applies to eligible Grades 6–10. MYP Current Best Fit uses only criteria assessed so far; missing criteria are not counted. Current subject results are not issued reports.'):
     'Elementary report descriptors are not 1–7 grades. Literacy checks must be interpreted within grade and programme.')+
     '</p></section>'+
+  screenerPanel+
   '<nav class="leader-focus-nav" role="tablist" aria-label="Explore Leadership evidence">'+
    focusTabs.map(([id,label])=>
     '<button type="button" role="tab" id="leader-focus-tab-'+id+'" data-leader-focus="'+id+
@@ -380,6 +382,9 @@ export function renderLeaderLearnerEvidence({student,data,academic,records,windo
     'A result or absence pattern is not a judgement about a learner.</p></div></div>'+
    '<div class="leader-profile-facts"><div><span>Homeroom</span><strong>'+safe(student.classId)+'</strong></div>'+
     '<div><span>Attendance</span><strong>'+n(att.rate)+'%</strong></div>'+
+    '<div class="us-profile-fact"><span>Universal Screener · demo</span>'+
+     renderUniversalScreenerTile(student,{compact:true})+
+     '<small>Synthetic 0–100% result</small></div>'+
     '<div><span>Current subject results</span><strong>'+safe(report?.year||'Unavailable')+'</strong>'+
      '<small>'+safe(numeric?'1–7 in progress · not issued':'Developmental descriptors · simulated')+'</small></div></div>'+
    supportStatusDetails(student)+'<section><div class="leader-daily-sectionhead"><div><span>SUBJECT RESULTS</span>'+
