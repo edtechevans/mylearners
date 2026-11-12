@@ -16,6 +16,8 @@ import {renderLeaderSupportSection} from './leader-support-view.mjs';
 import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvidence,leaderAdvisoryClasses} from './leader-daily-workspaces.mjs?v=20261111uxconsol1';
 import {leaderReportSignalSummary} from './report-card-signals.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
+import {matchesSupportStatus,SUPPORT_STATUS_FILTERS} from './learner-support-status.mjs';
+import {supportStatusBadges,supportStatusDetails,supportStatusFilterControl} from './learner-support-status-ui.mjs';
 import {createSSSDemoRecords} from './sss-demo-data.mjs';
 import {seedSupportDemo,loadDraftEntries,storeDraftEntries,createDraftEntry} from './support-workspace-data.mjs';
 import {renderFacultySupportPanel,renderSSSWorkspace,renderSupportForm} from './support-workspace-ui.mjs';
@@ -96,7 +98,7 @@ const initialHash=String(globalThis.location?.hash||'').replace(/^#\//,'').split
 const initialRole=ROLE_IDS.includes(initialHash)?initialHash:saved('my-role','faculty');
 const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  teacher:saved('my-teacher',DEFAULT_TEACHER_ID),
- division:'All',grade:'All',classId:'',studentId:'',query:'',facultyGradeFilter:'all',metric:'engagement',window:'F26',details:false,checkin:false,
+ division:'All',grade:'All',classId:'',studentId:'',query:'',facultyGradeFilter:'all',facultySupportFilter:'all',metric:'engagement',window:'F26',details:false,checkin:false,
  academicMode:'report',academicSubject:'Mathematics',academicReportYear:'',studentGrade:'G7',
  classEvidence:'report',classMapSubject:'Mathematics',classCompare:'none',classExperienceWindow:'F26',rosterView:EVERYDAY_VIEW,
  maiaDimension:'relationships',maiaWindow:'F26',
@@ -318,7 +320,8 @@ function roster(ss,options={}){
  const count3=numericEligible?ss.filter(s=>hasLowReportGrade(s,ACADEMIC_RECORDS,3)).length:0;
  const count2=numericEligible?ss.filter(s=>hasLowReportGrade(s,ACADEMIC_RECORDS,2)).length:0;
  const rows=ss.filter(s=>(!query||s.name.toLowerCase().includes(query))&&
-  (filterLevel===null||hasLowReportGrade(s,ACADEMIC_RECORDS,filterLevel)));
+  (filterLevel===null||hasLowReportGrade(s,ACADEMIC_RECORDS,filterLevel))&&
+  matchesSupportStatus(s,state.facultySupportFilter));
  const concernFilter=across&&numericEligible?
   '<div class="faculty-concern-filter" role="group" aria-label="Filter learners by subject results">'+
   '<span>Show learners</span>'+
@@ -378,8 +381,8 @@ function roster(ss,options={}){
     '<td>'+x.attendance+'</td><td>'+x.academics+'</td>'+(compare==='none'?'':'<td>'+x.compared+'</td>'))+
    (!everyday&&showMap?MAP_RIT_SUBJECTS.map(subject=>'<td>'+renderMapRitCell(DATA.map[x.student.id]||[],subject,x.student.id)+'</td>').join(''):'')+
    (!everyday&&showSEL?'<td>'+x.eng+'</td><td>'+x.bel+'</td>':'')+
-   '<td>'+(x.sss?'<span class="pill sss-faculty-indicator" title="Fictional SSS programme membership">SSS</span> ':'')+
-    x.tags.map(t=>pill(t.label)).join(' ')+'</td></tr>').join('')+'</tbody></table></div>';
+   '<td><div class="staff-roster-support">'+supportStatusBadges(x.student,{compact:true})+
+    '<span class="staff-roster-legacy">'+x.tags.filter(t=>!['eal','ss'].includes(t.id)).map(t=>pill(t.label)).join(' ')+'</span></div></td></tr>').join('')+'</tbody></table></div>';
  const mobile='<div class="roster-mobile">'+data.map(x=>
   '<div class="roster-item">'+renderStudentPhoto(x.student,'mobile')+
   '<button type="button" class="roster-item-main" data-student="'+safe(x.student.id)+
@@ -398,10 +401,11 @@ function roster(ss,options={}){
    return '<span>MAP '+safe(subject)+' RIT: '+(row?row.rit+' (P'+row.percentile+') · '+mapRitChangeLabel(change.delta):'—')+'</span>';
   }).join('')):'')+
   (!everyday&&experienceEligible(x.student)?'<span>Engagement '+x.eng+' · Belonging '+x.bel+'</span>':'')+
-  (x.sss?'<span>SSS programme · demonstration</span>':'')+
+  (supportStatusBadges(x.student,{compact:true})?'<span>'+supportStatusBadges(x.student,{compact:true})+'</span>':'')+
   '</span><span class="roster-arrow" aria-hidden="true">›</span></button></div>').join('')+'</div>';
  return '<section class="roster roster-daily" data-roster-layout="'+(everyday?'everyday':'focused')+'" aria-label="'+(across?'Search across assigned students':'My class roster')+'">'+
   '<div class="sectionhead"><div><h2>'+heading+'</h2><span class="tiny">'+context+'</span></div>'+concernFilter+
+  supportStatusFilterControl(state.facultySupportFilter)+
   (across?'<button type="button" class="roster-clear-search" data-clear-search>Clear search</button>':'')+'</div>'+
   (options.controls||'')+
   (everyday&&(hasNumericReports||hasAcademicBands||hasExperienceBands)?'<div class="faculty-evidence-legend" aria-label="Understanding evidence colours">'+
@@ -435,7 +439,7 @@ function learnerProfile(s,studentRole=false){
  const header='<div class="profile-head">'+renderStudentPhoto(s,'profile')+
   '<div><div class="eyebrow">'+(studentRole?'MY LEARNING PROFILE':'WHOLE LEARNER PROFILE')+'</div>'+
   '<h1>'+safe(s.name)+'</h1><p>'+safe(s.grade)+' · '+safe(s.classId)+' · '+safe(s.campus)+'</p>'+
-  (!studentRole&&SSS_RECORDS.has(s.id)?'<span class="sss-faculty-profile-tag">SSS · fictional cohort</span>':'')+'</div></div>';
+  (!studentRole?supportStatusBadges(s):'')+'</div></div>';
  const history=studentRole&&experienceEligible(s)?
   '<section class="card student-checkin-history"><h3>How My Check-ins Have Changed</h3><div class="trend">'+
   EXPERIENCE_WINDOWS.map(w=>{
@@ -502,7 +506,7 @@ function learnerProfile(s,studentRole=false){
    mg.status==='comparable'?'RIT points · latest comparable MAP tests':'Not yet comparable'):'')+
   (math?kpi('Latest Mathematics report',math.value,issued?'Issued '+safe(issued.year)+
    ' · Grade '+safe(issued.grade)+' · '+safe(issued.framework):''):'')+'</div>';
- const guidance='<section class="card academic-next-step"><h2>Classroom Guidance</h2>'+
+ const guidance=supportStatusDetails(s)+'<section class="card academic-next-step"><h2>Classroom Guidance</h2>'+
   (tags.length?tags.map(t=>'<div class="guide"><strong>'+safe(t.fullName)+'</strong><p>'+
    safe(t.strategies[0])+'</p></div>').join(' '):
   '<p class="muted">No additional classroom guidance tags in this fictional example.</p>')+
@@ -1730,6 +1734,12 @@ root.addEventListener('click',e=>{
  const link=e.target.closest('[data-student]');if(link){state.studentId=link.dataset.student;state.details=false;state.academicReportYear='';render();window.scrollTo(0,0)}
 });
 root.addEventListener('change',e=>{
+ const supportSelect=e.target.closest?.('[data-faculty-support-filter]');
+ if(supportSelect&&state.role==='faculty'){
+  const requested=supportSelect.value;
+  state.facultySupportFilter=SUPPORT_STATUS_FILTERS.some(([id])=>id===requested)?requested:'all';
+  render();root.querySelector('[data-faculty-support-filter]')?.focus?.({preventScroll:true});return;
+ }
  const strandProfileGoal=e.target.closest('[data-map-strand-profile-goal]');
  if(strandProfileGoal&&['leader','faculty','student'].includes(state.role)){
   state.strandProfileGoal=strandProfileGoal.value;render();
@@ -1884,11 +1894,11 @@ root.addEventListener('change',e=>{
  const el=e.target.closest('[data-select]');if(!el)return;const v=el.value;
  if(el.dataset.select==='teacher'){
   state.teacher=v;recallFaculty();state.facultyGradeFilter='all';
-  state.studentId='';state.query='';state.details=false;state.academicReportYear='';
+  state.studentId='';state.query='';state.facultySupportFilter='all';state.details=false;state.academicReportYear='';
   state.studentReportsOpen=false;state.studentWellbeingOpen=false;
  }
  if(el.dataset.select==='class'){
-  state.classId=v;state.studentId='';state.query='';state.details=false;state.facultyGradeFilter='all';
+  state.classId=v;state.studentId='';state.query='';state.details=false;state.facultyGradeFilter='all';state.facultySupportFilter='all';
   state.academicReportYear='';
   if(!academicModesFor(DATA.classIndex.get(v)?.grade).includes(state.academicMode))
    state.academicMode='report';
