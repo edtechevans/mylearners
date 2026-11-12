@@ -7,6 +7,7 @@ import {renderMapRitProfile} from './map-rit-achievement.mjs';
 import {experienceBand} from './faculty-bands.mjs?v=20261030wall2';
 import {GRADES,attendanceSummary,gradeNumber} from './data.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
+import {supportStatusBadges,supportStatusDetails} from './learner-support-status-ui.mjs';
 import {sssCohort,sssRecordFor} from './sss-demo-data.mjs';
 import {managerFor} from './sss-leadership-data.mjs';
 import {academicFor,latestAcademic} from './academic-journey-data.mjs';
@@ -61,7 +62,7 @@ function studentRow(student,record,academics){
   '<span class="sss-roster-name"><strong>'+esc(student.last+', '+student.first)+'</strong>'+
   '<small>'+esc(student.classId)+' · '+esc(student.campus)+' · '+esc(managerFor(student))+'</small></span>'+
   '<span class="sss-roster-service">'+serviceChips(record)+
-  '<span class="sss-roster-flags">'+supportChips(student)+'</span></span>'+
+  '<span class="sss-roster-flags">'+supportStatusBadges(student,{compact:true})+'</span></span>'+
   '<span class="sss-roster-result">'+evidence+'</span>'+
   '<span class="sss-roster-wida">'+wida+'</span>'+
   '<span class="sss-roster-review"><span>'+date(record.reviewDate)+'</span>'+
@@ -209,7 +210,7 @@ export function renderSSSStudentProfile({
    }).join('')+'</div></section>':'';
  const learningTags=demoTagsForStudent(student).filter(tag=>!tag.restricted);
  const restricted=demoTagsForStudent(student).filter(tag=>tag.restricted);
- const strategies='<section class="sss-profile-section"><div class="sss-section-head"><div>'+
+ const strategies=supportStatusDetails(student)+'<section class="sss-profile-section"><div class="sss-section-head"><div>'+
   '<div class="eyebrow">COLLABORATIVE SUPPORT</div><h2>Classroom Approaches</h2>'+
   '<p>Shared teacher-facing examples; authorised plans remain in approved school systems.</p>'+
   '</div></div><div class="sss-approach-grid">'+
@@ -226,7 +227,7 @@ export function renderSSSStudentProfile({
   '<div class="sss-profile-hero"><div><div class="eyebrow">SSS LEARNER · FICTIONAL DEMO</div>'+
   '<h2>'+esc(student.name)+'</h2><p>'+esc(gradeTitle(student.grade))+
   ' · '+esc(student.classId)+' · '+esc(student.campus)+'</p>'+
-  '<div class="sss-profile-tags">'+serviceChips(record)+supportChips(student)+'</div></div>'+
+  '<div class="sss-profile-tags">'+supportStatusBadges(student)+'</div></div>'+
   '<span class="sss-private-label">Demonstration only · no real support plan</span></div>'+
    tabNavigation+
    (panel==='summary'?summaryWorkspace:panel==='plans'?plansWorkspace:panel==='history'?supportWorkspace:'')+
