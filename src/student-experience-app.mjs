@@ -305,7 +305,7 @@ function roster(ss,options={}){
    quartile?.band||null;
   const band=gradeBand||inferredBand;
   const content=column.kind==='report'?
-   '<span class="class-evidence-result'+(gradeBand?' evidence-heat '+gradeBand:'')+
+   '<span class="class-evidence-result evidence-report-grade'+(gradeBand?' evidence-heat '+gradeBand:'')+
    (result.available?'':' is-unavailable')+'"><strong>'+safe(result.text)+mypBestFitMarker(entry)+'</strong></span>':
    '<span class="class-evidence-result'+(band?' evidence-heat '+band:'')+
    (result.available?'':' is-unavailable')+'"><strong class="evidence-visually-hidden">'+
