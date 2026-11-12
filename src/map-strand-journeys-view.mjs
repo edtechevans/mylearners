@@ -63,7 +63,7 @@ export function renderStudentStrandJourney({
 }
 export function renderCohortStrandJourney({
  students=[],map={},subject='Reading',goalName='',grade='All',
- start='auto',end='auto',expanded=false,mode='leader'
+ start='auto',end='auto',expanded=false,crossOnly=false,mode='leader'
 }={}){
  const m=strandCohortJourney({students,map,subject,goalName,grade,start,end});
  if(!m.windows.length)return '';
@@ -85,7 +85,8 @@ export function renderCohortStrandJourney({
   '<i style="width:'+(w.lowShare||0)+'%"></i></div>'+
   '<strong>'+(w.lowShare===null?'—':w.lowShare+'%')+'</strong>'+
   '<small>'+w.assessed+' goal results</small></div>').join('');
- const rows=expanded?m.rows:m.rows.slice(0,12);
+ const candidates=crossOnly?m.rows.filter(r=>r.isCross):m.rows;
+ const rows=expanded?candidates:candidates.slice(0,12);
  const td=(value,klass='')=>'<td'+(klass?' class="'+klass+'"':'')+'>'+value+'</td>';
  const content=rows.map(p=>'<tr><th scope="row"><strong>'+safe(p.student.name)+
   '</strong><small>'+safe(p.student.grade)+'</small></th>'+
@@ -116,12 +117,13 @@ export function renderCohortStrandJourney({
   '<div class="strand-journey-trend-heading"><h3>Low / Low Average share by testing window</h3>'+
   '<p>Each percentage has its own assessed denominator. It is a cohort snapshot, not individual student growth.</p></div>'+
   '<div class="strand-journey-window-list">'+bars+'</div>'+
-  '<div class="strand-journey-trend-heading"><h3>Matched student journeys</h3>'+
+  '<div class="strand-journey-trend-heading"><h3>Matched student journeys</h3>'+ 
   '<p>'+m.paired+' paired records · '+m.compared+' comparable · '+m.missingPair+
   ' without both named-goal results · '+m.statuses['version-break']+
-  ' with form / stage change</p></div>'+
+  ' with form / stage change</p></div>'+ 
+  '<div class="strand-journey-cross-filter"><button type="button" data-map-strand-journey-cross aria-pressed="'+crossOnly+'" class="'+(crossOnly?'active':'')+'">Elementary → Secondary transitions only · '+m.crossStage+'</button></div>'+ 
   (rows.length?result:'<p class="map-strand-empty">No students have goal-area results in both chosen Fall windows. Try another pair of windows.</p>')+
-  (m.rows.length>12?'<button type="button" class="strand-journey-expand" data-map-strand-journey-expand aria-expanded="'+
-   expanded+'">'+(expanded?'Show first 12':'Show all '+m.rows.length+' matched students')+'</button>':'')+
+  (candidates.length>12?'<button type="button" class="strand-journey-expand" data-map-strand-journey-expand aria-expanded="'+ 
+   expanded+'">'+(expanded?'Show first 12':'Show all '+candidates.length+' matched students')+'</button>':'')+
   '<p class="map-strand-foot">Only the same exact goal heading and compatible test forms can be treated as a comparable strand series. Mathematics across Elementary–Secondary stage changes remains non-comparable without an approved crosswalk. Grade transitions require grade-at-test data; the source AssessmentResults export alone may not provide it. Public demo: synthetic records only.</p></section>';
 }
