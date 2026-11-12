@@ -14,7 +14,7 @@ test('Fictional MAP records align with Course/Goal and achievement-quintile fiel
   for(const row of rows){
    assert.equal(mapCourseSubject(row.course),row.subject);
    assert.equal(row.achievementQuintile,mapRitBand(row.percentile).key);
-   assert.ok(row.goals.length>=3&&row.goals.length<=4);
+   assert.ok(row.goals.length>=3&&row.goals.length<=5);
    for(const goal of row.goals){
     assert.ok(goal.name&&Number.isInteger(goal.rit));
     assert.ok(['Low','LoAvg','Avg','HiAvg','High'].includes(goal.adjective));

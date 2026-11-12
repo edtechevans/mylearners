@@ -1,6 +1,8 @@
 import {generateDemoData,attendanceSummary,gradeNumber,GRADES} from './data.mjs?v=20261111journeys1';
 import {applyFacultyDemo,DEFAULT_TEACHER_ID} from './faculty-demo.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
+import {STRAND_SUBJECTS} from './map-strand-explorer.mjs';
+import {renderMapStrandExplorer,renderMapStrandProfile} from './map-strand-view.mjs';
 import {MAP_RIT_SUBJECTS,mapRitCurrent,mapRitChange,mapRitChangeLabel,renderMapRitCell,renderMapRitHeader,renderMapRitLegend,renderMapRitProfile,installMapRitHeaderTooltips} from './map-rit-achievement.mjs?v=20261111schemas1';
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs?v=20261111schemas1';
 import {renderLeaderVoiceReview} from './leader-review-signals.mjs?v=20261111mapbands1';
@@ -103,6 +105,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
   leaderAcademicFocus:'',leaderAcademicGrade:'',leaderAcademicSubject:'',leaderAcademicMultiple:false,leaderAcademicExpanded:false,leaderMapBand:'both',
   journeySubject:'Reading',journeyStart:'auto',journeyEnd:'F26',journeyStartingBand:'both',journeyEndingBand:'average-plus',journeyPathway:'auto',journeyExpanded:false,journeyProfileSubject:'Reading',
   journeyPreset:'rising',journeyAdvancedOpen:false,
+  strandSubject:'Reading',strandWindow:'F26',strandGrade:'All',strandBand:'both',strandGoal:'',strandExpanded:false,
  sssGrade:'All',sssQuery:'',sssStudentId:'',sssOpenGrades:['G3'],sssAcademicOpen:false,
   supportForm:null,supportFilter:'all',supportQuery:'',
   sssManager:'All',sssPanel:'summary',supportBarrier:'All',
@@ -468,7 +471,7 @@ function learnerProfile(s,studentRole=false){
    renderStudentOverview(s,ACADEMIC_RECORDS,{
     attendance:DATA.attendance[s.id],mathGrowth:mg,
     reflectionDraft:saved('reflection-'+s.id,'')})+
-   subjectGrades+renderMapRitProfile(DATA.map[s.id]||[])+renderMapJourneyProfile({student:s,records:DATA.map[s.id]||[],subject:state.journeyProfileSubject})+studentCheckinPreview+
+   subjectGrades+renderMapRitProfile(DATA.map[s.id]||[])+renderMapStrandProfile(DATA.map[s.id]||[],{studentRole:true})+renderMapJourneyProfile({student:s,records:DATA.map[s.id]||[],subject:state.journeyProfileSubject})+studentCheckinPreview+
    '<details class="student-detail-section" data-student-panel="reports" id="student-reports"'+
     (state.studentReportsOpen?' open':'')+'>'+
    '<summary><span class="student-panel-symbol" aria-hidden="true">▤</span>'+
@@ -499,6 +502,7 @@ function learnerProfile(s,studentRole=false){
   '<p class="muted">No additional classroom guidance tags in this fictional example.</p>')+
   '<p class="tiny">Detailed support plans and confidential records are not included in this public demo.</p></section>';
  return profileStart+header+profileKpis+subjectGrades+renderMapRitProfile(DATA.map[s.id]||[])+
+  renderMapStrandProfile(DATA.map[s.id]||[])+
   renderMapJourneyProfile({student:s,records:DATA.map[s.id]||[],subject:state.journeyProfileSubject})+
   academics+wellbeing+maiaFaculty+
    renderFacultySupportPanel(s,supportEntries(),SSS_RECORDS.get(s.id))+guidance;
@@ -555,6 +559,9 @@ function faculty(){
  return heading('My students','Find a learner, see essential information, or choose a class result.')+
   toolbar+summary+
   roster(searching?ownStudents():ss,{across:searching,controls:reportControls})+
+  renderMapStrandExplorer({students:searching?ownStudents():ss,map:DATA.map,mode:'faculty',
+   subject:state.strandSubject,window:state.strandWindow,grade:state.strandGrade,
+   band:state.strandBand,goalName:state.strandGoal,expanded:state.strandExpanded})+
   info();
 }
 
@@ -577,7 +584,8 @@ function leader(){
    records:RECORDS,window:state.window,
    returnLabel:leaderReturnContext?.label||'division review',
    journeyProfile:renderMapJourneyProfile({student:leaderPerson,records:DATA.map[leaderPerson.id]||[],
-    subject:state.journeyProfileSubject})})+info();
+    subject:state.journeyProfileSubject})})+
+  renderMapStrandProfile(DATA.map[leaderPerson.id]||[])+info();
  const secondaryOnly=group.length>0&&group.every(s=>s.division==='Secondary');
  const scopeLabel=selectedClass?.name||
   (state.grade!=='All'?
@@ -799,7 +807,10 @@ function leader(){
     pathway:state.journeyPathway==='auto'?(state.division==='Elementary'?'all':'cross'):state.journeyPathway,
     expanded:state.journeyExpanded,preset:state.journeyPreset,
     advancedOpen:state.journeyAdvancedOpen}),
-   academicPanels:learning+reportSection+deepAcademic,
+   academicPanels:renderMapStrandExplorer({students:group,map:DATA.map,mode:'leader',
+    subject:state.strandSubject,window:state.strandWindow,grade:state.strandGrade,
+    band:state.strandBand,goalName:state.strandGoal,expanded:state.strandExpanded})+
+    learning+reportSection+deepAcademic,
    academicActions:renderLeaderAcademicActions({students:group,map:DATA.map,academic:ACADEMIC_RECORDS,
     focus:state.leaderAcademicFocus,grade:state.leaderAcademicGrade,
     subject:state.leaderAcademicSubject,multiple:state.leaderAcademicMultiple,
@@ -1122,6 +1133,10 @@ root.addEventListener('keydown',e=>{
  if(e.key==='Escape'){hideBoardFloat();if(pinnedChartKey)unpinChartPoint()}
 });
 root.addEventListener('click',e=>{
+ if(e.target.closest('[data-map-strand-expand]')&&['leader','faculty'].includes(state.role)){
+  state.strandExpanded=!state.strandExpanded;render();
+  root.querySelector('[data-map-strand-expand]')?.focus?.({preventScroll:true});return;
+ }
  const journeyProfileSubject=e.target.closest('[data-map-journey-profile-subject]');
  if(journeyProfileSubject&&['leader','faculty','student'].includes(state.role)){
   const subject=journeyProfileSubject.dataset.mapJourneyProfileSubject;
@@ -1640,6 +1655,18 @@ root.addEventListener('click',e=>{
  const link=e.target.closest('[data-student]');if(link){state.studentId=link.dataset.student;state.details=false;state.academicReportYear='';render();window.scrollTo(0,0)}
 });
 root.addEventListener('change',e=>{
+ const strandSelect=e.target.closest('[data-map-strand-filter]');
+ if(strandSelect&&['leader','faculty'].includes(state.role)){
+  const filter=strandSelect.dataset.mapStrandFilter;
+  if(filter==='subject'&&STRAND_SUBJECTS.includes(strandSelect.value)){
+   state.strandSubject=strandSelect.value;state.strandGoal='';state.strandGrade='All';
+  }else if(filter==='window'){state.strandWindow=strandSelect.value;state.strandGoal='';
+  }else if(filter==='grade'){state.strandGrade=strandSelect.value;state.strandGoal='';
+  }else if(filter==='band'){state.strandBand=strandSelect.value;
+  }else if(filter==='goal'){state.strandGoal=strandSelect.value;}
+  state.strandExpanded=false;render();
+  root.querySelector('[data-map-strand-filter="'+filter+'"]')?.focus?.({preventScroll:true});return;
+ }
  const manager=e.target.closest('[data-sss-manager]');
  if(manager&&state.role==='sss'){
   state.sssManager=CASE_MANAGERS.includes(manager.value)?manager.value:'All';render();return;

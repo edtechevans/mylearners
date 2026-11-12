@@ -49,7 +49,9 @@ function attendanceFor(id){const r=rng(hash(`${id}-attendance`));const frag=(has
 export function attendanceSummary(events){const abs=events.filter(e=>e.status==='absent').length;const late=events.filter(e=>e.status==='late').length;const present=events.length-abs;return {total:events.length,present,absences:abs,lates:late,rate:events.length?Math.round(present*1000/events.length)/10:null}}
 // Generic learning-goal categories modeled after the exported MAP Course/Goal# fields.
 const MAP_GOAL_NAMES=Object.freeze({
- Reading:['Literary Text','Informational Text','Vocabulary'],
+ Reading:['Literary Text: Key Ideas and Details','Literary Text: Language, Craft, and Structure',
+  'Informational Text: Key Ideas and Details','Informational Text: Language, Craft, and Structure',
+  'Vocabulary: Acquisition and Use'],
  'Language Usage':[
   'Writing: Write, Revise Texts for Purpose and Audience',
   'Language: Understand, Edit for Grammar, Usage',
