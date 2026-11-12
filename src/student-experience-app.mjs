@@ -17,7 +17,8 @@ import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvi
 import {leaderReportSignalSummary} from './report-card-signals.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
 import {matchesSupportStatus,SUPPORT_STATUS_FILTERS} from './learner-support-status.mjs';
-import {supportStatusBadges,supportStatusDetails,supportStatusFilterControl} from './learner-support-status-ui.mjs';
+import {supportStatusBadges,legacySupportBadges,supportStatusDetails,supportStatusFilterControl} from './learner-support-status-ui.mjs?v=20261112supporttips1';
+import {installSupportTagTooltips} from './support-tag-tooltips.mjs?v=20261112supporttips1';
 import {createSSSDemoRecords} from './sss-demo-data.mjs';
 import {seedSupportDemo,loadDraftEntries,storeDraftEntries,createDraftEntry} from './support-workspace-data.mjs';
 import {renderFacultySupportPanel,renderSSSWorkspace,renderSupportForm} from './support-workspace-ui.mjs';
@@ -56,6 +57,7 @@ const SUPPORT_SEEDED=seedSupportDemo(DATA.students,SSS_RECORDS);
 let SUPPORT_DRAFTS=loadDraftEntries();
 const supportEntries=()=>[...SUPPORT_SEEDED.filter(x=>!SUPPORT_DRAFTS.some(d=>d.id===x.id)),...SUPPORT_DRAFTS];
 const root=document.getElementById('app');
+const supportTipController=installSupportTagTooltips(root);
 installMapRitHeaderTooltips(root);
 // Scripted jumps respect the same reduced-motion preference as CSS transitions.
 const scrollMotion=()=>globalThis.window?.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth';
@@ -382,7 +384,7 @@ function roster(ss,options={}){
    (!everyday&&showMap?MAP_RIT_SUBJECTS.map(subject=>'<td>'+renderMapRitCell(DATA.map[x.student.id]||[],subject,x.student.id)+'</td>').join(''):'')+
    (!everyday&&showSEL?'<td>'+x.eng+'</td><td>'+x.bel+'</td>':'')+
    '<td><div class="staff-roster-support">'+supportStatusBadges(x.student,{compact:true})+
-    '<span class="staff-roster-legacy">'+x.tags.filter(t=>!['eal','ss'].includes(t.id)).map(t=>pill(t.label)).join(' ')+'</span></div></td></tr>').join('')+'</tbody></table></div>';
+    '<span class="staff-roster-legacy">'+legacySupportBadges(x.tags)+'</span></div></td></tr>').join('')+'</tbody></table></div>';
  const mobile='<div class="roster-mobile">'+data.map(x=>
   '<div class="roster-item">'+renderStudentPhoto(x.student,'mobile')+
   '<button type="button" class="roster-item-main" data-student="'+safe(x.student.id)+
@@ -401,7 +403,7 @@ function roster(ss,options={}){
    return '<span>MAP '+safe(subject)+' RIT: '+(row?row.rit+' (P'+row.percentile+') · '+mapRitChangeLabel(change.delta):'—')+'</span>';
   }).join('')):'')+
   (!everyday&&experienceEligible(x.student)?'<span>Engagement '+x.eng+' · Belonging '+x.bel+'</span>':'')+
-  (supportStatusBadges(x.student,{compact:true})?'<span>'+supportStatusBadges(x.student,{compact:true})+'</span>':'')+
+  (supportStatusBadges(x.student,{compact:true,interactive:false})?'<span>'+supportStatusBadges(x.student,{compact:true,interactive:false})+'</span>':'')+
   '</span><span class="roster-arrow" aria-hidden="true">›</span></button></div>').join('')+'</div>';
  return '<section class="roster roster-daily" data-roster-layout="'+(everyday?'everyday':'focused')+'" aria-label="'+(across?'Search across assigned students':'My class roster')+'">'+
   '<div class="sectionhead"><div><h2>'+heading+'</h2><span class="tiny">'+context+'</span></div>'+concernFilter+
@@ -983,6 +985,7 @@ function facultyStudentCopy(markup){
    (_match,prefix,content,suffix)=>prefix+rewrite(content)+suffix);
 }
 function render(){
+ supportTipController.hide(true);
  pinnedChartKey=null;
  const content=state.role==='board'?renderBoard(state):state.role==='leader'?leader():
   state.role==='sss'?sss():state.role==='student'?student():faculty();
