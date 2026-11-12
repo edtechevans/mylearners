@@ -13,6 +13,10 @@ export function reportGradeBand(value,scale){
  const n=numericReportGrade(value,scale);
  return n===null?null:n<=3?'band-low':n===4?'band-mid-low':n<=6?'band-mid-high':'band-high';
 }
+export function mypBestFitMarker(item){
+ return item?.mypBestFit===true&&item?.provisional===true?
+  '<sup class="myp-best-fit-marker" title="Current Best Fit: fewer than 4 MYP criteria assessed" aria-label=" provisional best fit">*</sup>':'';
+}
 /** A learner enters a selected Faculty/Leader review filter when any numeric
  * current-year test subject is at or below the requested threshold (2 or 3).
  * Descriptors, absent results and historical issued reports never match.
