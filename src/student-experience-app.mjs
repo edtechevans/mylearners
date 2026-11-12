@@ -109,7 +109,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
   journeyPreset:'rising',journeyAdvancedOpen:false,
   strandSubject:'Reading',strandWindow:'F26',strandGrade:'All',strandBand:'both',strandGoal:'',strandExpanded:false,
   strandProfileSubject:'Reading',strandProfileGoal:'',strandProfileSeason:'fall',
-  strandJourneyStart:'auto',strandJourneyEnd:'auto',strandJourneyExpanded:false,
+  strandJourneyStart:'auto',strandJourneyEnd:'auto',strandJourneyExpanded:false,strandJourneyCrossOnly:false,
  sssGrade:'All',sssQuery:'',sssStudentId:'',sssOpenGrades:['G3'],sssAcademicOpen:false,
   supportForm:null,supportFilter:'all',supportQuery:'',
   sssManager:'All',sssPanel:'summary',supportBarrier:'All',
@@ -575,7 +575,7 @@ function faculty(){
   renderCohortStrandJourney({students:searching?ownStudents():ss,map:DATA.map,
    subject:state.strandSubject,goalName:state.strandGoal,grade:state.strandGrade,
    start:state.strandJourneyStart,end:state.strandJourneyEnd,
-   expanded:state.strandJourneyExpanded,mode:'faculty'})+
+   expanded:state.strandJourneyExpanded,crossOnly:state.strandJourneyCrossOnly,mode:'faculty'})+
   info();
 }
 
@@ -830,7 +830,7 @@ function leader(){
     renderCohortStrandJourney({students:group,map:DATA.map,mode:'leader',
      subject:state.strandSubject,goalName:state.strandGoal,grade:state.strandGrade,
      start:state.strandJourneyStart,end:state.strandJourneyEnd,
-     expanded:state.strandJourneyExpanded})+
+     expanded:state.strandJourneyExpanded,crossOnly:state.strandJourneyCrossOnly})+
     learning+reportSection+deepAcademic,
    academicActions:renderLeaderAcademicActions({students:group,map:DATA.map,academic:ACADEMIC_RECORDS,
     focus:state.leaderAcademicFocus,grade:state.leaderAcademicGrade,
@@ -1199,6 +1199,10 @@ root.addEventListener('click',e=>{
    root.querySelector('#map-strand-explorer')?.scrollIntoView?.({behavior:scrollMotion(),block:'start'});
    root.querySelector('[data-map-strand-filter="subject"]')?.focus?.({preventScroll:true});return;
   }
+ }
+ if(e.target.closest('[data-map-strand-journey-cross]')&&['leader','faculty'].includes(state.role)){
+  state.strandJourneyCrossOnly=!state.strandJourneyCrossOnly;state.strandJourneyExpanded=false;render();
+  root.querySelector('[data-map-strand-journey-cross]')?.focus?.({preventScroll:true});return;
  }
  if(e.target.closest('[data-map-strand-journey-expand]')&&['leader','faculty'].includes(state.role)){
   state.strandJourneyExpanded=!state.strandJourneyExpanded;render();
