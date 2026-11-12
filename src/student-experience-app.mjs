@@ -920,30 +920,6 @@ function experienceScope(trigger,action=''){
   students=(activeClass()?.studentIds||[]).map(id=>DATA.userIndex.get(id)).filter(Boolean);
   scopeLabel=activeClass()?.name||'Selected class';
  }else if(state.role==='leader'){
-  const directoryStudent=e.target.closest('[data-leader-directory-student]');
-  if(directoryStudent){
-   const id=directoryStudent.dataset.leaderDirectoryStudent;
-   const visible=leaderSupportDirectoryModel(leaderDirectoryScope(),leaderDirectoryFilters()).shown;
-   const chosen=visible.find(s=>s.id===id);
-   if(!chosen)return;
-   leaderReturnContext={studentId:chosen.id,containerId:'leader-support-directory',
-    label:'Support Student Directory',scrollY:Math.max(0,globalThis.window?.scrollY||0),
-    section:state.leaderSection,source:'directory'};
-   state.leaderStudentId=chosen.id;
-   render();globalThis.window?.scrollTo?.(0,0);return;
-  }
-  if(e.target.closest('[data-leader-directory-expand]')){
-   state.leaderDirectoryExpanded=!state.leaderDirectoryExpanded;render();
-   root.querySelector('#leader-support-directory')?.scrollIntoView?.({block:'start',behavior:scrollMotion()});
-   return;
-  }
-  if(e.target.closest('[data-leader-directory-reset]')){
-   state.leaderDirectoryDivision='All';state.leaderDirectoryGrade='All';
-   state.leaderDirectoryStatus='has-support';state.leaderDirectoryQuery='';
-   state.leaderDirectoryExpanded=false;render();
-   root.querySelector('[data-leader-directory-filter="status"]')?.focus?.({preventScroll:true});
-   return;
-  }
   const divisions=state.division==='All'?['Elementary','Secondary']:[state.division];
   students=DATA.students.filter(s=>divisions.includes(s.division)&&
    (state.grade==='All'||s.grade===state.grade)&&
@@ -1265,6 +1241,30 @@ root.addEventListener('click',e=>{
   return;
  }
  if(state.role==='leader'){
+  const directoryStudent=e.target.closest('[data-leader-directory-student]');
+  if(directoryStudent){
+   const id=directoryStudent.dataset.leaderDirectoryStudent;
+   const visible=leaderSupportDirectoryModel(leaderDirectoryScope(),leaderDirectoryFilters()).shown;
+   const chosen=visible.find(s=>s.id===id);
+   if(!chosen)return;
+   leaderReturnContext={studentId:chosen.id,containerId:'leader-support-directory',
+    label:'Support Student Directory',scrollY:Math.max(0,globalThis.window?.scrollY||0),
+    section:state.leaderSection,source:'directory'};
+   state.leaderStudentId=chosen.id;
+   render();globalThis.window?.scrollTo?.(0,0);return;
+  }
+  if(e.target.closest('[data-leader-directory-expand]')){
+   state.leaderDirectoryExpanded=!state.leaderDirectoryExpanded;render();
+   root.querySelector('#leader-support-directory')?.scrollIntoView?.({block:'start',behavior:scrollMotion()});
+   return;
+  }
+  if(e.target.closest('[data-leader-directory-reset]')){
+   state.leaderDirectoryDivision='All';state.leaderDirectoryGrade='All';
+   state.leaderDirectoryStatus='has-support';state.leaderDirectoryQuery='';
+   state.leaderDirectoryExpanded=false;render();
+   root.querySelector('[data-leader-directory-filter="status"]')?.focus?.({preventScroll:true});
+   return;
+  }
   const divisionChoice=e.target.closest('[data-leader-division]');
   if(divisionChoice){
    const next=divisionChoice.dataset.leaderDivision;
