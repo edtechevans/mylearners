@@ -77,7 +77,7 @@ export function renderClassAcademicPanel(students,records,mode='report',subject=
  return '<section class="academic-class-panel" aria-label="Class academic snapshots">'+
  '<div class="academic-class-heading"><div><span class="academic-eyebrow">SUBJECT RESULTS · CLASS VIEW</span>'+
  '<h2>Academic Snapshot</h2><p>Choose the evidence you need. Student-level detail stays one click away.</p></div>'+
- '<span class="academic-demo-mark">Fictional examples</span></div>'+
+ '<span class="academic-demo-mark">Academic snapshot</span></div>'+
  '<div class="academic-mode-tabs" role="group" aria-label="Select academic evidence displayed in roster">'+
  allowed.map(id=>'<button type="button" data-academic-mode="'+id+'" aria-pressed="'+(selectedMode===id)+
  '" class="'+(selectedMode===id?'active':'')+' academic-mode-'+id+'">'+esc(modeMeta(id).short)+'</button>').join('')+
@@ -114,7 +114,7 @@ function renderReportDistribution(students,records,subject){
  ' <b>'+count.get(key)+'</b></span>').join('')+'</div></div>';
 }
 function showProgressTimeline(items,kind){
- return '<div class="academic-journey-timeline" role="list" aria-label="Recent fictional check-ins">'+
+ return '<div class="academic-journey-timeline" role="list" aria-label="Recent check-ins">'+
  items.map((item,i)=>{
   const value=kind==='ixl'?item.level:kind==='core'?item.correct+'/50':'Level '+item.level;
   return '<div class="academic-journey-moment'+(i===items.length-1?' is-latest':'')+'" role="listitem">'+
@@ -128,11 +128,11 @@ function evidenceCard(record,kind,studentRole=false){
  const recent=items.at(-1),prev=items.at(-2);
  const definitions={
   ixl:{title:'IXL Mathematics',eyebrow:'MATHS DIAGNOSTIC · G1–10',value:String(recent.scoreLabel||recent.level),
-   unit:'overall math diagnostic score',help:'The IXL Overall math score is a diagnostic level (not a SmartScore, scale score, percentage or MAP RIT). Overall scale score, tier, percentile and learning-domain scores are separate fields. All values are fictional.'},
+   unit:'overall math diagnostic score',help:'The IXL Overall math score is a diagnostic level (not a SmartScore, scale score, percentage or MAP RIT). Overall scale score, tier, percentile and learning-domain scores are separate fields. Interpret values alongside their source and date.'},
   core:{title:'Core Phonics',eyebrow:'DECODING SKILLS · K–G5',value:recent.correct+' / '+recent.assessed,
-   unit:'items demonstrated',help:'A fictional 50-item classroom decoding check, shown to illustrate how Core Phonics evidence could appear. Not an official CORE Phonics Survey total or norm.'},
+   unit:'items demonstrated',help:'An illustrative 50-item classroom decoding check, shown to illustrate how Core Phonics evidence could appear. Not an official CORE Phonics Survey total or norm.'},
   fp:{title:'F&P Reading',eyebrow:'TEXT LEVEL · K–G5',value:recent.level,
-   unit:'text level',help:'A fictional Fountas & Pinnell reading text level (A–Z+). Letters describe text complexity and do not measure the whole reader or equal a grade.'}
+   unit:'text level',help:'An illustrative Fountas & Pinnell reading text level (A–Z+). Letters describe text complexity and do not measure the whole reader or equal a grade.'}
  };
  const meta=definitions[kind];
  const ixlDetails=kind==='ixl'?'<div class="ixl-diagnostic-facts">'+
@@ -175,7 +175,7 @@ export function renderAcademicProfile(student,records,studentRole=false,selected
  return '<section class="academic-profile" aria-label="Student academic report cards and skills evidence">'+
  '<header class="academic-profile-heading"><div><span class="academic-eyebrow">'+sectionLabel+'</span>'+
  '<h2>'+title+'</h2><p>Recent issued report cards, organised by school year and subject.</p></div>'+
- '<span class="academic-demo-mark">Fictional demonstration</span></header>'+
+ '<span class="academic-demo-mark">Issued reports</span></header>'+
  (reports.length?
   renderReportOptions(reports,year?.year)+
   '<div class="academic-report-meta"><strong>'+esc(year.year)+'</strong><span>'+esc(year.grade)+
@@ -192,6 +192,6 @@ export function renderAcademicProfile(student,records,studentRole=false,selected
  '<h2>'+evidenceHeading+'</h2><p>Separate measures that help us notice progress—not a combined score.</p></div>'+
  '<div class="academic-evidence-grid">'+available.map(kind=>evidenceCard(record,kind,studentRole)).join('')+'</div></section>':
  '<p class="academic-skill-none">IXL Mathematics diagnostic: Grades 1–10. Core Phonics and F&P reading levels: Kindergarten–Grade 5. No other measures are shown outside their eligible grades.</p>')+
- (missingIXL?'<p class="ixl-diagnostic-note">IXL: No completed diagnostic available in these fictional records. An incomplete or missing test is not a score of zero.</p>':'')+
+ (missingIXL?'<p class="ixl-diagnostic-note">IXL: No completed diagnostic available in the available assessment records. An incomplete or missing test is not a score of zero.</p>':'')+
  '</section>';
 }

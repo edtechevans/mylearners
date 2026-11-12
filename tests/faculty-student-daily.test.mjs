@@ -25,7 +25,7 @@ test('Student landing has three meaningful ideas, one reflection, no class compa
   assert.match(html,/data-action="save-reflection"/);
   assert.equal((html.match(/id="reflection"/g)||[]).length,1);
   assert.doesNotMatch(html,/comparison with classmates|rank within class|student percentile/i);
-  assert.match(html,/Fictional learning example/);
+  assert.match(html,/My learning snapshot/);
   assert.doesNotMatch(html,/2026–27 · G\d|Current report card 2026/i);
  }
 });
@@ -38,7 +38,7 @@ test('Age-responsive copy and valid assessment evidence are displayed',()=>{
  }
  for(const grade of ['G3','G4','G5'])assert.match(overview(grade),/student-stage-primary/);
  for(const grade of ['G6','G7','G11','G12'])assert.match(overview(grade),/student-stage-secondary/);
- assert.match(overview('K'),/fictional 50-item decoding check/i);
+ assert.match(overview('K'),/50-item decoding check/i);
  assert.match(overview('G7'),/IXL diagnostic level/i);
  assert.doesNotMatch(overview('G12'),/IXL Mathematics diagnostic/);
  assert.doesNotMatch(overview('G12'),/MAP Mathematics growth/);

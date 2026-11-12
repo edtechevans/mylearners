@@ -30,7 +30,7 @@ function recentCheckin(record,growth){
    const delta=previous?latest.correct-previous.correct:null;
    return {title:'Reading skills check-in',
     value:delta!==null?(delta>0?'+':'')+delta+' items':latest.correct+'/50',
-    detail:delta!==null?'Change in a fictional 50-item decoding check':'Latest fictional 50-item decoding check',
+    detail:delta!==null?'Change in a 50-item decoding check':'Latest 50-item decoding check',
     date:latest.date};
   }
   if(kind==='fp')
@@ -60,7 +60,7 @@ export function renderStudentOverview(student,records,{attendance,mathGrowth,ref
  return '<section class="student-landing student-stage-'+style+'" aria-label="My learning today">'+
   '<div class="student-landing-intro"><div><span class="student-overline">MY LEARNING TODAY</span>'+
   '<h2>Learning today</h2><p>'+esc(intro)+'</p></div>'+
-  '<span class="student-demo-label">Fictional learning example</span></div>'+
+  '<span class="student-demo-label">My learning snapshot</span></div>'+
   '<div class="student-landing-grid">'+
   '<article class="student-today-tile student-today-celebrate">'+
   '<span class="student-today-kicker"><span class="student-symbol" aria-hidden="true">✦</span>'+esc(labels[0])+'</span>'+

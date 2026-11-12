@@ -1,0 +1,45 @@
+/* Profile-first subject evidence: AISG navy typography and shared 1-7 grade bands. */
+#app .sg-section{margin:20px 0 24px;padding:clamp(15px,2vw,24px);border-radius:18px;background:#fff;border:1px solid #d9e5ec;box-shadow:0 5px 24px #1739500b;color:#193e55}
+#app .sg-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:17px}
+#app .sg-eyebrow{display:block;color:#7f3444;font-size:10px;letter-spacing:.11em;font-weight:850}
+#app .sg-heading h2{font-size:clamp(19px,1.9vw,26px);line-height:1.22;letter-spacing:-.035em;color:#143c59;margin:3px 0 4px;font-weight:850}
+#app .sg-heading p{margin:0;font-size:12px;color:#647d8b;line-height:1.5}
+#app .sg-band-legend{display:flex;align-items:center;flex-wrap:wrap;gap:5px}
+#app .sg-legend-title{font-size:9px;letter-spacing:.075em;color:#607687;font-weight:800;margin-right:5px}
+#app .sg-legend{border-radius:7px;padding:6px 9px;font-size:12px;font-weight:850;min-width:31px;text-align:center;font-variant-numeric:tabular-nums}
+#app .sg-legend.band-low{background:#a6373f;color:#fff}
+#app .sg-legend.band-mid-low{background:#e4a15f;color:#172f38}
+#app .sg-legend.band-mid-high{background:#a6bd88;color:#172f38}
+#app .sg-legend.band-high{background:#246b4f;color:#fff}
+#app .sg-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+#app .sg-card{--sg-accent:#607e93;--sg-tint:#f3f7fa;--sg-stroke:#dae5ed;min-width:0;border:1px solid var(--sg-stroke);border-top:4px solid var(--sg-accent);border-radius:14px;background:linear-gradient(145deg,var(--sg-tint),#fff 90%);padding:15px 16px 13px;box-shadow:0 3px 9px #193e5207}
+#app .sg-card.band-low{--sg-accent:#a6373f;--sg-tint:#fdf1f2;--sg-stroke:#efd6d9}
+#app .sg-card.band-mid-low{--sg-accent:#e4a15f;--sg-tint:#fff5e9;--sg-stroke:#f1deca}
+#app .sg-card.band-mid-high{--sg-accent:#a6bd88;--sg-tint:#f3f7ed;--sg-stroke:#dfe8d3}
+#app .sg-card.band-high{--sg-accent:#246b4f;--sg-tint:#edf7f0;--sg-stroke:#d2e5d7}
+#app .sg-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;min-height:77px}
+#app .sg-card h3{font-size:15px;line-height:1.3;letter-spacing:-.012em;color:#153e5b;font-weight:850;margin:3px 0;overflow-wrap:anywhere}
+#app .sg-grade-box{display:flex;flex:0 0 auto;flex-direction:column;align-items:center;justify-content:center;min-width:76px;min-height:73px;padding:8px 9px;border-radius:11px;background:var(--sg-accent);color:#fff;text-align:center}
+#app .sg-card.band-mid-low .sg-grade-box,#app .sg-card.band-mid-high .sg-grade-box,#app .sg-card.sg-neutral .sg-grade-box{color:#17394a}
+#app .sg-grade-box strong{font-size:clamp(23px,2.6vw,34px);font-weight:900;line-height:1.02;letter-spacing:-.04em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+#app .sg-grade-box small{max-width:84px;margin-top:5px;font-size:9px;font-weight:750;line-height:1.18;letter-spacing:.015em}
+#app .sg-asterisk{font-size:.52em;vertical-align:super;margin-left:1px;line-height:0;font-weight:900}
+#app .sg-criteria{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:14px}
+#app .sg-criterion{display:flex;flex-direction:column;align-items:center;gap:4px;border-radius:8px;padding:6px 3px;background:#fff;border:1px solid #e3ebf0;font-variant-numeric:tabular-nums}
+#app .sg-criterion span{color:#59758a;font-weight:850;font-size:11px}
+#app .sg-criterion strong{color:#1e4e6b;font-size:17px;line-height:1.1}
+#app .sg-criterion.is-missing{background:#f3f5f6}
+#app .sg-criterion.is-missing strong{color:#9aabb5}
+#app .sg-coverage{display:flex;align-items:center;gap:8px;margin:11px 0 0;color:#607887;font-size:10px;font-weight:700}
+#app .sg-coverage-bar{display:flex;align-items:center;gap:3px;flex:1 1 auto;min-width:0}
+#app .sg-coverage-bar i{height:5px;border-radius:3px;flex:1;background:#e2e9ee}
+#app .sg-coverage-bar i.is-assessed{background:var(--sg-accent)}
+#app .sg-current-context{margin:12px 0 7px;color:#5a7384;font-size:11px}
+#app .sg-comparison{display:flex;align-items:center;flex-wrap:wrap;gap:5px;padding-top:11px;margin-top:12px;border-top:1px solid #dde7ec;color:#5a7281;font-size:11px;line-height:1.4}
+#app .sg-comparison strong{font-size:12px;color:#153b56;font-weight:850}
+#app .sg-comparison-empty{font-style:italic}
+#app .sg-note{font-size:11.5px;color:#586f7f;line-height:1.65;margin:16px 0 0}
+#app .sg-note strong{color:#21465e}
+@media(max-width:1060px){#app .sg-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){#app .sg-grid{grid-template-columns:minmax(0,1fr)}#app .sg-card{padding:14px}#app .sg-band-legend{width:100%}#app .sg-grade-box{min-width:75px}}
+@media print{#app .sg-card,#app .sg-grade-box,#app .sg-legend{-webkit-print-color-adjust:exact;print-color-adjust:exact}}

@@ -21,19 +21,20 @@ import {renderSSSOverview,renderSSSStudentProfile} from './sss-view.mjs?v=202611
 import {renderStudentPhoto,installStudentPhotoPreview} from './student-photo-preview.mjs?v=20261111photofix2';
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs?v=20261030repair1';
 import {experienceDialogContent} from './experience-explain-modal.mjs?v=20261030wall3';
-import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261111checkin4';
-import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261111schemas1';
+import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261112previewcopy1';
+import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261112previewcopy1';
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,READING_LEVELS,facultyDemoReport} from './academic-journey-data.mjs?v=20261111schemas1';
 import {quartileBand,formatIndex,experienceBand} from './faculty-bands.mjs?v=20261030wall2';
 import {leaderExperienceChange,leaderExperienceScale,leaderExperienceLegend,leaderExperienceBandLabel} from './leader-experience-bands.mjs';
 import {facultyRosterEvidenceColumns,reportGradeBand,hasLowReportGrade,mypBestFitMarker} from './report-card-signals.mjs?v=20261112mypstar1';
 import {renderLeaderReportFollowup} from './leader-report-followup.mjs?v=20261110daily1';
-import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261111schemas1';
+import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261112subjects1';
+import {renderSubjectGradeTiles} from './subject-grade-tiles.mjs?v=20261112subjects1';
 import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261111mapui3';
 import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261110thresholds1';
 import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile} from './maia-demo.mjs';
-import {renderStudentOverview} from './student-daily-overview.mjs?v=20261111schemas1';
+import {renderStudentOverview} from './student-daily-overview.mjs?v=20261112subjects1';
 import {renderBoard} from './board-map-view.mjs?v=20261029dpaxis1';
 import {renderTrendPointDetails} from './board-map-overview.mjs?v=20261029dpaxis1';
 import {renderDPPointDetails} from './board-dp-view.mjs?v=20261031dp-default1';
@@ -155,7 +156,7 @@ function metricCard(ss,id,window='F26',scope='main'){
   '<span>'+safe(comparison)+'</span></div>'+
   (sum.value===null?'':btn('explain:'+scope+':'+id,'How is this calculated?','quiet'))+'</article>';
 }
-function info(){return '<div class="notice"><strong>Demonstration only.</strong> Learners, report cards, IXL Mathematics levels, Core Phonics checks, F&P text levels, assessment history, survey-style check-ins and class assignments are all fictional. No actual AISG learner results or confidential climate-survey responses are used. Experience indices are exploratory descriptions, not validated scores or labels.</div>'}
+function info(){return '<div class="notice"><strong>Demonstration preview.</strong> Learners, class assignments, academic records and check-ins are sample data; no live AISG student records or confidential survey responses are included. Experience indices describe learning experiences, not validated learner labels.</div>'}
 const ROLE_DISPLAY=Object.freeze({faculty:'Faculty',student:'Student',sss:'SSS',leader:'Leaders',board:'Board'});
 const ROLE_DESCRIPTION=Object.freeze({
  faculty:'Faculty dashboard',
@@ -461,12 +462,13 @@ function learnerProfile(s,studentRole=false){
    '<p class="student-checkin-preview-note">These colours describe my experience, not my ability or a school grade. More details are below.</p>'+
   '</section>':'';
  const academics=renderAcademicProfile(s,ACADEMIC_RECORDS,studentRole,state.academicReportYear);
+ const subjectGrades=renderSubjectGradeTiles(s,ACADEMIC_RECORDS,studentRole);
  if(studentRole){
   return profileStart+header+
    renderStudentOverview(s,ACADEMIC_RECORDS,{
     attendance:DATA.attendance[s.id],mathGrowth:mg,
     reflectionDraft:saved('reflection-'+s.id,'')})+
-   renderMapRitProfile(DATA.map[s.id]||[])+renderMapJourneyProfile({student:s,records:DATA.map[s.id]||[],subject:state.journeyProfileSubject})+studentCheckinPreview+
+   subjectGrades+renderMapRitProfile(DATA.map[s.id]||[])+renderMapJourneyProfile({student:s,records:DATA.map[s.id]||[],subject:state.journeyProfileSubject})+studentCheckinPreview+
    '<details class="student-detail-section" data-student-panel="reports" id="student-reports"'+
     (state.studentReportsOpen?' open':'')+'>'+
    '<summary><span class="student-panel-symbol" aria-hidden="true">▤</span>'+
@@ -496,7 +498,7 @@ function learnerProfile(s,studentRole=false){
    safe(t.strategies[0])+'</p></div>').join(' '):
   '<p class="muted">No additional classroom guidance tags in this fictional example.</p>')+
   '<p class="tiny">Detailed support plans and confidential records are not included in this public demo.</p></section>';
- return profileStart+header+profileKpis+renderMapRitProfile(DATA.map[s.id]||[])+
+ return profileStart+header+profileKpis+subjectGrades+renderMapRitProfile(DATA.map[s.id]||[])+
   renderMapJourneyProfile({student:s,records:DATA.map[s.id]||[],subject:state.journeyProfileSubject})+
   academics+wellbeing+maiaFaculty+
    renderFacultySupportPanel(s,supportEntries(),SSS_RECORDS.get(s.id))+guidance;
@@ -929,15 +931,30 @@ const resetMapJourney=()=>{
  state.journeyPathway='auto';state.journeyExpanded=false;
  state.journeyPreset='rising';state.journeyAdvancedOpen=false;
 };
+/** Keep learner-facing language clear without modifying data, routes or CSS classes.
+ * The public demo disclosure stays in the footer and accessibility metadata.
+ */
+function facultyStudentCopy(markup){
+ const rewrite=s=>s.replace(/\bfictional\b/gi,'example')
+  .replace(/\bsynthetic\b/gi,'illustrative')
+  .replace(/\bmade[ -]up\b/gi,'example')
+  .replace(/\bfake\b/gi,'demo');
+ return markup.replace(/>([^<>]*)</g,(_match,content)=>'>'+rewrite(content)+'<')
+  .replace(/(\b(?:aria-label|alt|title)=")([^"]*)(")/g,
+   (_match,prefix,content,suffix)=>prefix+rewrite(content)+suffix);
+}
 function render(){
  pinnedChartKey=null;
  const content=state.role==='board'?renderBoard(state):state.role==='leader'?leader():
   state.role==='sss'?sss():state.role==='student'?student():faculty();
  document.body.classList.toggle('board-drawer-open',state.role==='board'&&state.boardView==='explore'&&!!state.boardMapDetailsOpen);
  if(root.dataset)root.dataset.workspace=state.role;
- root.innerHTML=header()+'<main class="container" id="main" tabindex="-1">'+content+'</main><footer>'+
+ root.innerHTML=header()+'<main class="container" id="main" tabindex="-1">'+
+ ((state.role==='faculty'||state.role==='student')?facultyStudentCopy(content):content)+'</main><footer>'+
  (state.role==='board'?'AISG Board · Aggregated MAP, IB Diploma and Climate & Wellbeing outcomes · No individual responses published':
- 'My Learners demonstration · Learners, assessments and student check-ins fictional')+
+ ((state.role==='faculty'||state.role==='student')?
+ 'AISG My Learners · Demonstration preview · No live student records':
+ 'My Learners demonstration · Learners, assessments and student check-ins fictional'))+
  '</footer>'+(state.supportForm?renderSupportForm(state.supportForm,DATA.userIndex.get(state.supportForm.studentId),SUPPORT_DRAFTS):'');
  if(state.role==='board'&&state.boardView==='explore'&&state.boardMapDetailsOpen){
   root.querySelector('.board-drawer-close')?.focus({preventScroll:true});

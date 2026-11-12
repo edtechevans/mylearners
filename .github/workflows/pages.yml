@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: 22
       - name: Verify fictional data model and transparent indicators
-        run: node --test tests/design-system-refinement.test.mjs tests/aisg-brand-duotone.test.mjs tests/daily-ux.test.mjs tests/sitewide-palette.test.mjs tests/faculty-bands.test.mjs tests/class-evidence.test.mjs tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs tests/student-experience.test.mjs tests/academic-journey.test.mjs tests/faculty-student-daily.test.mjs tests/leader-summary.test.mjs tests/leader-daily-workspaces.test.mjs tests/sss-demo.test.mjs tests/sitewide-ui.test.mjs tests/board-map.test.mjs tests/board-overview.test.mjs tests/board-dp.test.mjs tests/board-comparison-tiles.test.mjs
+        run: node --test tests/design-system-refinement.test.mjs tests/aisg-brand-duotone.test.mjs tests/daily-ux.test.mjs tests/sitewide-palette.test.mjs tests/faculty-bands.test.mjs tests/class-evidence.test.mjs tests/data.test.mjs tests/faculty-map-growth.test.mjs tests/learner-tags.test.mjs tests/student-experience.test.mjs tests/academic-journey.test.mjs tests/subject-grade-tiles.test.mjs tests/faculty-student-daily.test.mjs tests/leader-summary.test.mjs tests/leader-daily-workspaces.test.mjs tests/sss-demo.test.mjs tests/sitewide-ui.test.mjs tests/board-map.test.mjs tests/board-overview.test.mjs tests/board-dp.test.mjs tests/board-comparison-tiles.test.mjs
       - name: Validate entry point and Javascript syntax
         run: |
           node --check src/class-evidence.mjs
@@ -35,6 +35,7 @@ jobs:
           node --check src/experience-data.mjs
           node --check src/academic-journey-data.mjs
           node --check src/academic-journey-view.mjs
+          node --check src/subject-grade-tiles.mjs
           node --check src/student-daily-overview.mjs
           node --check src/board-map-data.mjs
           node --check src/board-map-history.mjs
@@ -45,6 +46,7 @@ jobs:
           node --check src/board-dp-data.mjs
           node --check src/board-dp-view.mjs
           grep -q 'student-experience-app.mjs' index.html
+          grep -q 'subject-grade-tiles.css' index.html
       - name: Browser rendering and role toggle smoke test
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/mylearners-http.log 2>&1 &

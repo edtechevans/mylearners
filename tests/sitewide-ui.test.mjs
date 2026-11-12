@@ -85,7 +85,7 @@ test('sitewide polish keeps accessible system fallback and scope of data-safe vi
  assert.match(css,/\.board-view \.board-nav-tabs/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
  assert.match(html,/sitewide-polish\.css/);
- assert.match(js,/return profileStart\+header\+profileKpis\+renderMapRitProfile\(DATA\.map\[s\.id\]\|\|\[\]\)\+/);
+ assert.match(js,/return profileStart\+header\+profileKpis\+subjectGrades\+renderMapRitProfile\(DATA\.map\[s\.id\]\|\|\[\]\)\+/);
  assert.match(js,/renderMapJourneyProfile\(\{student:s,records:DATA\.map\[s\.id\]\|\|\[\],subject:state\.journeyProfileSubject\}\)/);
  assert.match(js,/academics\+wellbeing\+maiaFaculty\+/);
   assert.match(js,/renderFacultySupportPanel\(s,supportEntries\(\),SSS_RECORDS\.get\(s\.id\)\)\+guidance/);
@@ -202,10 +202,16 @@ test('Faculty summary shows two colour-only scales and Faculty learner profiles 
  click('[data-student]',{student:id});
  assert.equal((node.innerHTML.match(/class="metric experience-metric-card/g)||[]).length,2);
  assert.equal((node.innerHTML.match(/class="leader-experience-scale/g)||[]).length,2);
+ assert.match(node.innerHTML,/Subject grades & progress/);
+ assert.ok(node.innerHTML.indexOf('Subject grades & progress')<node.innerHTML.indexOf('map-rit-profile'));
+ assert.doesNotMatch(node.innerHTML.replace(/<[^>]+>/g,' '),/\bfictional\b|\bsynthetic\b|\bmade[ -]up\b|\bfake\b/i);
 });
 test('Student landing and expanded personal check-in cards share the scale without replacing learning tiles',()=>{
  click('[data-role]',{role:'student'});
  assert.match(node.innerHTML,/student-landing-grid/);
+ assert.match(node.innerHTML,/My subjects & progress/);
+ assert.ok(node.innerHTML.indexOf('My subjects & progress')<node.innerHTML.indexOf('map-rit-profile'));
+ assert.doesNotMatch(node.innerHTML.replace(/<[^>]+>/g,' '),/\bfictional\b|\bsynthetic\b|\bmade[ -]up\b|\bfake\b/i);
  assert.match(node.innerHTML,/student-checkin-preview-grid/);
  assert.equal((node.innerHTML.match(/class="student-checkin-preview-tile/g)||[]).length,2);
  assert.equal((node.innerHTML.match(/class="metric experience-metric-card/g)||[]).length,2);

@@ -1,5 +1,5 @@
 /** Role-scoped evidence preview descriptions. Read-only, no persistence or analysis.
- * Produces short factual summaries from the same fictional records already in the app.
+ * Produces short factual summaries from the same example records already in the app.
  */
 import {attendanceSummary,gradeNumber} from './data.mjs';
 import {latestMapGrowth} from './map-growth.mjs';
@@ -68,8 +68,8 @@ function studentPreview(student,ctx,specialist=false){
   ['Last issued Mathematics',math?math.value+' · '+issued.year:'No issued result']
  ];
  if(map?.status==='comparable')rows.push(['MAP Mathematics growth',(map.actual>=0?'+':'')+map.actual+' RIT']);
- const note=specialist?'Fictional SSS programme membership. This preview contains no confidential case notes.':
-  'Fictional student evidence. Select the learner to view sources, full dates and details.';
+ const note=specialist?'Demonstration SSS programme membership. This preview contains no confidential case notes.':
+  'Demonstration student evidence. Select the learner to view sources, full dates and details.';
  return makePreview({title:student.name,subtitle:student.grade+' · Quick evidence preview',rows,note,kind:specialist?'support':'academic'});
 }
 function facultyMetric(trigger,ctx){
@@ -290,7 +290,7 @@ export function resolveEvidencePreview(trigger,ctx){
  if(kind==='tag'){
   const tag=tidy(trigger.dataset.previewTag||trigger.textContent);
   const safeTitle=tag||'Support indicator';
-  return makePreview({title:safeTitle,subtitle:'Fictional classroom indicator',
+  return makePreview({title:safeTitle,subtitle:'Demonstration classroom indicator',
     note:'This is a demonstration-only category marker, not a diagnosis or safeguarding label. Detailed support information is restricted to authorised personnel.',
     kind:'support'});
  }
@@ -306,7 +306,7 @@ export function resolveEvidencePreview(trigger,ctx){
  if(kind==='method'){
   const id=trigger.dataset.experienceExplain||'';
   const key=id||(/belonging/i.test(trigger.textContent)?'belonging':'engagement');
-  return simpleGuide(key,'Fictional student check-in','');
+  return simpleGuide(key,'Demonstration student check-in','');
  }
  if(kind==='missing'){
   return makePreview({title:'No result available',subtitle:'Missing is not zero',
@@ -337,12 +337,12 @@ export function resolveEvidencePreview(trigger,ctx){
  }
  if(kind==='monitor-stat'){
   return makePreview({title:tidy(trigger.querySelector('small')?.textContent)||'Monitoring measure',
-   subtitle:'Fictional intervention series',rows:[['Displayed',t(trigger,'strong')]],
-   note:'The displayed opportunity count is part of a fictional weekly monitoring example. The chart uses its own scale and target.',
+   subtitle:'Demonstration intervention series',rows:[['Displayed',t(trigger,'strong')]],
+   note:'The displayed opportunity count is part of a example weekly monitoring example. The chart uses its own scale and target.',
    kind:'support'});
  }
  if(kind==='attendance-scope'){
-  return simpleGuide('attendance','Fictional attendance',tidy(trigger.textContent));
+  return simpleGuide('attendance','Demonstration attendance',tidy(trigger.textContent));
  }
  if(kind==='student-tile'||kind==='academic-card'||kind==='sss-evidence'||kind==='support-summary'||
     kind==='leader-stat'||kind==='leader-check'||kind==='leader-support'||kind==='leader-monitor'||

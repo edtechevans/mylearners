@@ -6,19 +6,19 @@ const clean=v=>String(v??'').replace(/\s+/g,' ').trim();
 const esc=v=>clean(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 export const PREVIEW_GUIDE=Object.freeze({
  report:{label:'Issued school report',description:'A subject result from an issued report, not a current-year grade. Interpret only within the named programme and reporting scale.',source:'Previously issued school report'},
- map:{label:'MAP growth',description:'Observed RIT-point change between valid, comparable assessments. It is not a percentile or an achievement grade.',source:'Fictional MAP assessments'},
- ixl:{label:'IXL Mathematics',description:'A diagnostic level, not an IXL SmartScore, a percentage or a report-card grade.',source:'Fictional IXL diagnostic'},
- core:{label:'Core Phonics',description:'An illustrative decoding check. The displayed items are not an official CORE Phonics Survey total.',source:'Fictional classroom check'},
- fp:{label:'F&P reading',description:'A reading text-complexity level, not a grade, percentage or complete measure of a reader.',source:'Fictional reading check'},
- engagement:{label:'Engagement',description:'Three student check-in responses are scored −2, −1, +1 or +2 and averaged. This exploratory index is not a percentage or achievement measure.',source:'Fictional student check-in'},
- belonging:{label:'Belonging',description:'Three student check-in responses are scored −2, −1, +1 or +2 and averaged. This exploratory index is not a validated measure or learner label.',source:'Fictional student check-in'},
- attendance:{label:'Attendance',description:'Attendance for the specified recording window. A percentage must be understood with its date window and eligible attendance opportunities.',source:'Fictional attendance register'},
- flourishing:{label:'Maia flourishing example',description:'Illustrative PERMA dimension on a 0–10 display scale. Not an official Maia scoring specification and never combined with Engagement or Belonging.',source:'Fictional Maia-style example'},
- wida:{label:'WIDA screening',description:'The English proficiency level is on a 1.0–6.0 scale, separate from grades and academic scores. Use the source screening context.',source:'Fictional language screening'},
- sss:{label:'Student Support Services',description:'A programme membership marker, not a diagnosis, medical record or safeguarding status. Further details require explicit authorisation.',source:'Fictional support roster'},
+ map:{label:'MAP growth',description:'Observed RIT-point change between valid, comparable assessments. It is not a percentile or an achievement grade.',source:'Demonstration MAP assessments'},
+ ixl:{label:'IXL Mathematics',description:'A diagnostic level, not an IXL SmartScore, a percentage or a report-card grade.',source:'Demonstration IXL diagnostic'},
+ core:{label:'Core Phonics',description:'An illustrative decoding check. The displayed items are not an official CORE Phonics Survey total.',source:'Demonstration classroom check'},
+ fp:{label:'F&P reading',description:'A reading text-complexity level, not a grade, percentage or complete measure of a reader.',source:'Demonstration reading check'},
+ engagement:{label:'Engagement',description:'Three student check-in responses are scored −2, −1, +1 or +2 and averaged. This exploratory index is not a percentage or achievement measure.',source:'Demonstration student check-in'},
+ belonging:{label:'Belonging',description:'Three student check-in responses are scored −2, −1, +1 or +2 and averaged. This exploratory index is not a validated measure or learner label.',source:'Demonstration student check-in'},
+ attendance:{label:'Attendance',description:'Attendance for the specified recording window. A percentage must be understood with its date window and eligible attendance opportunities.',source:'Demonstration attendance register'},
+ flourishing:{label:'Maia flourishing example',description:'Illustrative PERMA dimension on a 0–10 display scale. Not an official Maia scoring specification and never combined with Engagement or Belonging.',source:'Demonstration Maia-style example'},
+ wida:{label:'WIDA screening',description:'The English proficiency level is on a 1.0–6.0 scale, separate from grades and academic scores. Use the source screening context.',source:'Demonstration language screening'},
+ sss:{label:'Student Support Services',description:'A programme membership marker, not a diagnosis, medical record or safeguarding status. Further details require explicit authorisation.',source:'Demonstration support roster'},
  coverage:{label:'Data coverage',description:'Available records divided by the eligible population for the selected measure. Missing information is never counted as a score of zero.',source:'Displayed evidence population'},
- mapgrowth:{label:'MAP growth summary',description:'Percentage of learners with comparable MAP tests meeting the illustrative growth target, not a percentile or official NWEA projection.',source:'Fictional MAP growth'},
- review:{label:'Support review',description:'A scheduled review date or recorded follow-up status; not evidence of an intervention effect.',source:'Fictional support record'},
+ mapgrowth:{label:'MAP growth summary',description:'Percentage of learners with comparable MAP tests meeting the illustrative growth target, not a percentile or official NWEA projection.',source:'Demonstration MAP growth'},
+ review:{label:'Support review',description:'A scheduled review date or recorded follow-up status; not evidence of an intervention effect.',source:'Demonstration support record'},
  ibdp:{label:'IB Diploma result',description:'A graduating-cohort outcome. A Diploma average uses the 0–45 point scale; a pass rate uses the eligible full-Diploma candidate denominator.',source:'Aggregated school examination statistics'}
 });
 export function makePreview({title='',subtitle='',rows=[],note='',status='',kind='neutral',trend=null}={}){
