@@ -23,7 +23,7 @@ export const PREVIEW_GUIDE=Object.freeze({
 });
 export function makePreview({title='',subtitle='',rows=[],note='',status='',kind='neutral',trend=null}={}){
  const points=Array.isArray(trend?.points)?trend.points.filter(x=>x&&x.label&&x.value!==undefined&&x.value!==null)
-  .slice(-3).map(x=>({label:clean(x.label),value:clean(x.value)})):[];
+  .slice(-3).map(x=>({label:clean(x.label),value:clean(x.value),provisional:x.provisional===true})):[];
  const change=trend?.change&&points.length>=2?{
   value:clean(trend.change.value),from:clean(trend.change.from)}:null;
  return {title:clean(title),subtitle:clean(subtitle),
@@ -41,7 +41,9 @@ export function previewMarkup(p){
   '<div class="evidence-preview-progress" aria-label="Results over time">'+
   '<div class="evidence-preview-periods" role="list">'+p.trend.points.map((point,i)=>
    '<div class="evidence-preview-period'+(i===p.trend.points.length-1?' is-current':'')+
-   '" role="listitem"><small>'+esc(point.label)+'</small><strong>'+esc(point.value)+'</strong></div>'
+   '" role="listitem"><small>'+esc(point.label)+'</small><strong>'+esc(point.value)+
+   (point.provisional?'<sup class="myp-best-fit-marker" title="Current Best Fit: fewer than 4 MYP criteria assessed" aria-label=" provisional best fit">*</sup>':'')+
+   '</strong></div>'
   ).join('')+'</div>'+
   (p.trend.change?'<div class="evidence-preview-change"><strong>'+esc(p.trend.change.value)+
    '</strong><span>vs '+esc(p.trend.change.from)+'</span></div>':'')+'</div>':'')+
