@@ -12,7 +12,7 @@ test('every visible support badge has meaningful accessible hover text',()=>{
  for(const student of data.students){
   const model=supportStatusForStudent(student);
   const badges=supportStatusBadges(student);
-  const visible=(badges.match(/class="support-status-badge/g)||[]).length;
+  const visible=(badges.match(/class="support-status-badge has-context/g)||[]).length;
   assert.equal(visible,model.badges.length);
   assert.equal((badges.match(/data-support-tip-description=/g)||[]).length,visible);
   assert.equal((badges.match(/tabindex="0"/g)||[]).length,visible);
