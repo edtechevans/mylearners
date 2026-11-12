@@ -26,7 +26,8 @@ function tableKey(table,i){
  const context=table.closest('.roster-daily')?'faculty-roster':
   table.closest('.leader-detail')?'leader-evidence':
   table.closest('.board-view')?'board-evidence':role()+'-table';
- const heads=[...table.querySelectorAll('thead th')].map(label).join('|');
+ const heads=[...table.querySelectorAll('thead th')].map(th=>
+  clean(th.dataset.sourceHeading||label(th))).join('|');
  if(table.matches('table.faculty-data-wall')){
   // Same teacher + same subjects share a layout, even across multiple classes.
   const teacher=root.querySelector('[data-select="teacher"]')?.value||'demo';
@@ -126,6 +127,8 @@ function decorate(table,index){
  if(table.closest('.ux-table-shell')||!table.querySelector('thead th')||!table.querySelector('tbody tr'))return;
  const {headers}=textRows(table);
  if(!headers.length||headers.length>20)return;
+ const fullHeaders=[...table.querySelectorAll('thead th')].map((th,i)=>
+  clean(th.dataset.fullHeading||headers[i]));
  const isFacultyColumns=table.matches('table.faculty-data-wall');
  const key=tableKey(table,index),s=stateFor(key,headers.length,isFacultyColumns);
  const originalWidths=[...table.querySelectorAll('colgroup col')].map(col=>col.style.width);
@@ -144,7 +147,7 @@ function decorate(table,index){
  panel.className='ux-data-tools';
  const safe=(v)=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
  const choices=(saved[key]&&typeof saved[key]==='object')?Object.keys(saved[key]):[];
- const fields=headers.map((h,i)=>'<label class="ux-column-filter">'+safe(h)+
+ const fields=headers.map((h,i)=>'<label class="ux-column-filter">'+safe(fullHeaders[i])+
    '<input data-ux-field="'+i+'" value="'+safe(s.fields[i]||'')+'" placeholder="Filter…"></label>').join('');
  const columns=isFacultyColumns?
   '<p class="ux-column-guide">Drag a subject header to move it. Drag its right edge to resize. Or use the arrows and width choices below.</p>'+
@@ -188,14 +191,16 @@ function decorate(table,index){
  shell.appendChild(caption);shell.appendChild(empty);
  [...table.querySelectorAll('thead th')].forEach((th,i)=>{
   if(th.querySelector('[data-ux-sort]'))return;
-  const content=th.innerHTML;
-  th.innerHTML='<button type="button" class="ux-sort-button" data-ux-sort="'+i+'" aria-sort="none" aria-label="Sort by '+safe(headers[i])+'">'+content+'</button>';
+  const content=th.innerHTML,fullName=fullHeaders[i];
+  th.innerHTML='<button type="button" class="ux-sort-button" data-ux-sort="'+i+
+   '" aria-sort="none" title="'+safe(fullName)+'" aria-label="Sort by '+safe(fullName)+'">'+
+   content+'</button>';
   if(isFacultyColumns&&i>0&&i<headers.length-1){
    th.insertAdjacentHTML('beforeend',
     '<button type="button" class="ux-column-grip" draggable="true" data-ux-drag="'+i+
-    '" title="Drag to reorder '+safe(headers[i])+'" aria-label="Drag to reorder '+safe(headers[i])+'"></button>'+
+    '" title="Drag to reorder '+safe(fullHeaders[i])+'" aria-label="Drag to reorder '+safe(fullHeaders[i])+'"></button>'+
     '<span class="ux-column-resize" role="separator" tabindex="0" aria-orientation="vertical"'+
-    ' data-ux-resize="'+i+'" aria-label="Resize '+safe(headers[i])+': drag or use arrow keys"></span>');
+    ' data-ux-resize="'+i+'" aria-label="Resize '+safe(fullHeaders[i])+': drag or use arrow keys"></span>');
   }
  });
  if(isFacultyColumns)arrangeFacultyColumns(table,s);
@@ -209,7 +214,7 @@ function decorate(table,index){
    const movable=i>0&&i<headers.length-1;
    const at=mid.indexOf(i);
    const size=widthPreset(s.widths[i]);
-   const choice=movable?'<select data-ux-column-width="'+i+'" aria-label="Width of '+safe(headers[i])+'">'+
+   const choice=movable?'<select data-ux-column-width="'+i+'" aria-label="Width of '+safe(fullHeaders[i])+'">'+
     '<option value="default"'+(size==='default'?' selected':'')+'>Default</option>'+
     Object.entries(COLUMN_WIDTHS).map(([name,n])=>
      '<option value="'+name+'"'+(size===name?' selected':'')+'>'+name[0].toUpperCase()+name.slice(1)+' ('+n+'px)</option>').join('')+
@@ -217,11 +222,11 @@ function decorate(table,index){
    return '<div class="ux-column-config" data-ux-column-row="'+i+'">'+
     '<label class="ux-column-row"><input type="checkbox" data-ux-column="'+i+'"'+
      (!s.hidden.includes(i)?' checked':'')+(i===0?' disabled':'')+
-     '><span>'+safe(headers[i])+'</span></label>'+
+     '><span>'+safe(fullHeaders[i])+'</span></label>'+
     (movable?'<div class="ux-column-move"><button type="button" data-ux-move-left="'+i+'"'+
-     (at===0?' disabled':'')+' aria-label="Move '+safe(headers[i])+' left">←</button>'+
+     (at===0?' disabled':'')+' aria-label="Move '+safe(fullHeaders[i])+' left">←</button>'+
      '<button type="button" data-ux-move-right="'+i+'"'+
-     (at===mid.length-1?' disabled':'')+' aria-label="Move '+safe(headers[i])+' right">→</button>'+
+     (at===mid.length-1?' disabled':'')+' aria-label="Move '+safe(fullHeaders[i])+' right">→</button>'+
      choice+'</div>':'<span class="ux-column-fixed">'+(i===0?'Fixed first':'Fixed last')+'</span>')+
     '</div>';
   }).join('');
@@ -428,7 +433,7 @@ function decorate(table,index){
    if(!['faculty','board'].includes(role()))return;
    const cols=(isFacultyColumns?s.columnOrder:headers.map((_,i)=>i)).filter(i=>!s.hidden.includes(i));
    const body=[...table.querySelectorAll('tbody tr')].filter(tr=>!tr.hidden);
-   const csv=exportCsv(cols.map(i=>headers[i]),body.map(tr=>cols.map(i=>label(sourceCell(tr,i)))));
+   const csv=exportCsv(cols.map(i=>fullHeaders[i]),body.map(tr=>cols.map(i=>label(sourceCell(tr,i)))));
    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
    const url=URL.createObjectURL(blob);
    const a=document.createElement('a');a.href=url;a.download='my-learners-'+role()+'-visible-demo.csv';
