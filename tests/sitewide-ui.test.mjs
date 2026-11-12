@@ -40,6 +40,28 @@ function click(selector,dataset={}){
   return query===selector?{dataset}:null;
  }}});
 }
+test('Faculty starts with student grades, attendance and MAP columns before the strand snapshot',()=>{
+ click('[data-role]',{role:'faculty'});
+ const markup=node.innerHTML;
+ const roster=markup.indexOf('class="roster roster-daily"');
+ const metrics=markup.indexOf('class="quick-summary faculty-daily-summary"');
+ const strands=markup.indexOf('id="faculty-strand-quick"');
+ assert.ok(roster>=0,'student roster appears on the Faculty page');
+ assert.ok(metrics>roster,'class summary tiles follow the student roster');
+ if(strands>=0)assert.ok(strands>roster,'MAP strand quick-check follows the student roster');
+ assert.match(markup,/Support information/);
+ assert.match(markup,/Attendance/);
+ const code=readFileSync(new URL('../src/student-experience-app.mjs',import.meta.url),'utf8');
+ const start=code.indexOf(" return heading('My students'");
+ const end=code.indexOf(" function leader()",start);
+ assert.ok(start>=0&&end>start);
+ const facultyCode=code.slice(start,end);
+ const rosterSource=facultyCode.indexOf('roster(searching?ownStudents():ss,');
+ const strandSource=facultyCode.indexOf('renderFacultyStrandQuickCheck(');
+ assert.ok(rosterSource>=0&&strandSource>rosterSource,
+  'Faculty source composes student roster ahead of MAP strand tile');
+});
+
 test('all five views use a labelled semantic navigation with a single active dashboard',()=>{
  assert.match(node.innerHTML,/<nav class="roles" aria-label="Dashboard views">/);
  assert.match(node.innerHTML,/data-skip-main/);
