@@ -55,6 +55,9 @@
 #app .report-grade-chip.band-mid-low{background:#e4a15f;color:#142e37}
 #app .report-grade-chip.band-mid-high{background:#a6bd88;color:#142e37}
 #app .report-grade-chip.band-high{background:#246b4f;color:#fff}
+.myp-best-fit-marker{
+ font-size:.62em;line-height:0;vertical-align:super;margin-left:1px;font-weight:850;
+}
 #app .leader-report-all{margin-top:7px}
 #app .leader-report-all summary{cursor:pointer;color:#245e7b;font-size:11px;font-weight:700}
 #app .leader-report-all .leader-report-subjects{margin-top:8px}
