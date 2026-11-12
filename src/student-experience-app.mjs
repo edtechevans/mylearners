@@ -632,6 +632,9 @@ function leader(){
   'Begin whole school, choose Elementary or Secondary, then drill down by grade.')+
   renderLeaderWholeSchool({students:DATA.students,data:DATA,academic:ACADEMIC_RECORDS,
    records:RECORDS,sssRecords:SSS_RECORDS,entries:supportEntries(),savedView:savedLeaderView()})+
+  renderLeaderUniversalScreener({students:group,scopeLabel:'Whole school',
+   bandFilter:state.leaderScreenerBand,gradeFilter:state.leaderScreenerGrade,
+   expanded:state.leaderScreenerExpanded})+
   renderLeaderSupportDirectory({students:group,filters:leaderDirectoryFilters(),showDivision:true})+info();
  const classes=leaderAdvisoryClasses(DATA.classes,state.division,state.grade);
  const selectedClass=classes.find(c=>c.id===state.classId);
@@ -847,6 +850,9 @@ function leader(){
    allStudents:DATA.students,data:DATA,academic:ACADEMIC_RECORDS,records:RECORDS,
    sssRecords:SSS_RECORDS,entries:supportEntries(),reviewFilter:state.leaderReviewFilter,
    expanded:state.leaderReviewExpanded,savedView:savedLeaderView(),voiceWindow:state.window,
+   screenerPanel:renderLeaderUniversalScreener({students:group,scopeLabel,
+    bandFilter:state.leaderScreenerBand,gradeFilter:state.leaderScreenerGrade,
+    expanded:state.leaderScreenerExpanded}),
    focusSection:state.leaderSection,savedNotice:state.leaderSaveNotice,
    journeyPanel:renderMapJourneyCohort({students:group,map:DATA.map,
     subject:state.journeySubject,
@@ -1444,6 +1450,27 @@ root.addEventListener('click',e=>{
   if(e.target.closest('[data-leader-review-expand]')){
    state.leaderReviewExpanded=!state.leaderReviewExpanded;render();return;
   }
+  const usBand=e.target.closest('[data-leader-screener-band]');
+  if(usBand){
+   state.leaderScreenerBand=usBand.dataset.leaderScreenerBand;
+   state.leaderScreenerExpanded=false;render();
+   root.querySelector('[data-leader-screener-band="'+state.leaderScreenerBand+'"]')?.focus?.({preventScroll:true});
+   return;
+  }
+  if(e.target.closest('[data-leader-screener-expand]')){
+   state.leaderScreenerExpanded=!state.leaderScreenerExpanded;render();
+   root.querySelector('[data-leader-screener-expand]')?.focus?.({preventScroll:true});return;
+  }
+  const usStudent=e.target.closest('[data-leader-screener-student]');
+  if(usStudent){
+   const chosen=DATA.userIndex.get(usStudent.dataset.leaderScreenerStudent);
+   if(!chosen||!leaderDirectoryScope().some(s=>s.id===chosen.id))return;
+   leaderReturnContext={studentId:chosen.id,containerId:'leader-universal-screener',
+    label:'Universal Screener',scrollY:Math.max(0,globalThis.window?.scrollY||0),
+    section:state.leaderSection};
+   if(state.division==='All'){state.division=chosen.division;state.grade='All';state.classId=''}
+   state.leaderStudentId=chosen.id;render();globalThis.window?.scrollTo?.(0,0);return;
+  }
   const learner=e.target.closest('[data-leader-student]');
   if(learner){
    const chosen=DATA.userIndex.get(learner.dataset.leaderStudent);
@@ -1933,6 +1960,9 @@ root.addEventListener('change',e=>{
   return;
  }
  if(state.role==='leader'){
+  const usGrade=e.target.closest('[data-leader-screener-grade]');
+  if(usGrade){state.leaderScreenerGrade=usGrade.value;state.leaderScreenerExpanded=false;render();
+   root.querySelector('[data-leader-screener-grade]')?.focus?.({preventScroll:true});return}
   const journeyChange=e.target.closest('[data-map-journey-subject],[data-map-journey-starting-window],'+
    '[data-map-journey-comparison-window],[data-map-journey-starting-band],[data-map-journey-current-band]');
   if(journeyChange){
