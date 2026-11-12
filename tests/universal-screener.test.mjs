@@ -55,13 +55,13 @@ test('Inclusive, disjoint percentage boundaries match the four MYP colour bands'
    new RegExp('us-band-'+band.key));
  }
 });
-test('Faculty class tile exists at every grade and 116px adjustment keeps narrow layout',()=>{
+test('Faculty class tile exists at every grade with compact, word-safe evidence tracks',()=>{
  for(const grade of ['PK3','PK4','K',...Array.from({length:12},(_,i)=>'G'+(i+1))]){
   const cols=everydayEvidenceForGrade(grade);
   assert.equal(cols.filter(c=>c.kind==='screener').length,1,grade);
   assert.equal(cols[1].id,'screener',grade);
  }
- assert.match(app,/evidenceColWidth='116px'/);
+ assert.match(app,/facultyHeaderWidth\(column\)/);
  assert.match(app,/class="evidence-cell-open universal-screener-open"/);
  assert.match(app,/renderUniversalScreenerTile\(student\)/);
  assert.match(app,/Universal Screener · demo/);

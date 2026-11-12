@@ -43,6 +43,7 @@ import {renderLeaderReportFollowup} from './leader-report-followup.mjs?v=2026111
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261112subjects1';
 import {renderSubjectGradeTiles} from './subject-grade-tiles.mjs?v=20261112subjects1';
 import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261111mapui3';
+import {facultyHeaderInfo,facultyHeaderWidth,facultyRosterTableWidth} from './faculty-roster-headings.mjs';
 import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261112legibility1';
 import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile} from './maia-demo.mjs';
 import {renderStudentOverview} from './student-daily-overview.mjs?v=20261112subjects1';
@@ -244,7 +245,19 @@ function roster(ss,options={}){
  // not repeated in every Faculty roster heading.
  const facultyExperienceHeading=(kind,label)=>kind==='engagement'?'Engagement':
   kind==='belonging'?'Belonging':label;
- const everydayHeading=column=>facultyExperienceHeading(column.kind,column.label);
+ const everydayHeading=column=>facultyHeaderInfo(column).display;
+ const everydayHeader=(column)=>{
+  if(column.kind==='mapRit')return renderMapRitHeader(column.subject);
+  const info=facultyHeaderInfo(column);
+  // Preserve the source subject for saved arrangements; display a shorter
+  // teacher-friendly name without changing any underlying report evidence.
+  const source=facultyExperienceHeading(column.kind,column.label);
+  return '<th scope="col" class="faculty-roster-heading'+
+   (info.abbreviated?' faculty-subject-abbr':'')+'" title="'+safe(info.full)+
+   '" data-full-heading="'+safe(info.full)+'" data-source-heading="'+safe(source)+'">'+
+   '<span class="faculty-heading-text'+(info.abbreviated?' is-compact':'')+
+   (info.singleWord?' is-single-word':'')+'">'+safe(info.display)+'</span></th>';
+ };
  const gradeCohort=DATA.students.filter(s=>s.grade===grade);
  const gradeReferences=new Map();
  const evidenceNumeric=(s,column)=>{
@@ -392,15 +405,20 @@ function roster(ss,options={}){
  const context=(across?rows.length+' of '+ss.length+' assigned students across all classes':
   rows.length+' of '+ss.length+' learners in '+safe(activeClass()?.name||'this class'))+
   ' · 2026–27 synthetic test data · not issued';
- const evidenceColWidth='116px';
- const colgroup=everyday?'<colgroup><col class="roster-col-learner"><col class="roster-col-attendance">'+
+ // Honour the visual width of each word instead of forcing arbitrary line
+ // breaks. The table scrolls within its own shell if a class has many subjects.
+ const rosterMinWidth=facultyRosterTableWidth(everydayColumns);
+ const colgroup=everyday?'<colgroup><col class="roster-col-learner" style="width:210px">'+
+  '<col class="roster-col-attendance" style="width:122px">'+
   everydayColumns.slice(1).map(column=>'<col class="roster-col-evidence'+
-   (column.kind==='ufli'?' roster-col-ufli':'')+'" style="width:'+
-   (column.kind==='ufli'?'106px':evidenceColWidth)+'">').join('')+
-  '<col class="roster-col-support"></colgroup>':'';
- const table='<div class="tablewrap roster-desktop"><table'+(everyday?' class="faculty-data-wall"':'')+'>'+colgroup+'<thead><tr><th>Learner</th>'+
+   (column.kind==='ufli'?' roster-col-ufli':'')+
+   '" style="width:'+facultyHeaderWidth(column)+'px">').join('')+
+  '<col class="roster-col-support" style="width:172px"></colgroup>':'';
+ const table='<div class="tablewrap roster-desktop"><table'+
+  (everyday?' class="faculty-data-wall" style="--faculty-roster-table-width:'+rosterMinWidth+'px"':'')+
+  '>'+colgroup+'<thead><tr><th>Learner</th>'+
   (across?'<th>Class</th>':'')+
-  (everyday?everydayColumns.map(column=>column.kind==='mapRit'?renderMapRitHeader(column.subject):'<th>'+safe(everydayHeading(column))+'</th>').join(''):
+  (everyday?everydayColumns.map(everydayHeader).join(''):
    '<th>Attendance</th><th>'+safe(modeLabel)+'</th>'+(compare==='none'?'':'<th>'+safe(compareLabel)+'</th>'))+
   (!everyday&&showMap?MAP_RIT_SUBJECTS.map(renderMapRitHeader).join(''):'')+
   (!everyday&&showSEL?'<th>Engagement</th><th>Belonging</th>':'')+
