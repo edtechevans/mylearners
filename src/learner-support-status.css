@@ -69,3 +69,71 @@
  .support-status-badge{font-size:10px}
 }
 @media(prefers-reduced-motion:reduce){.support-status-badge{transition:none}}
+
+/* Rich support-label explanations float above scrollable roster tables, never
+ * inside clipped table cells. Mouse, keyboard and touch share the same panel. */
+.support-status-badge.has-context{
+ cursor:help;
+ transition:box-shadow .14s ease, transform .14s ease;
+}
+.support-status-badge.has-context:hover,
+.support-status-badge.has-context:focus-visible{
+ box-shadow:0 0 0 2px rgba(23,71,109,.17);
+}
+.support-status-badge.has-context:focus-visible{
+ outline:2px solid #205f8f;
+ outline-offset:2px;
+}
+.support-status-badge.group-legacy{background:#f0f3f7;border-color:#d3dee8;color:#324d67}
+.support-status-badge.legacy-iep{background:#eee8f6;border-color:#dac9e9;color:#5c4480}
+.support-status-badge.legacy-medical{background:#fff2e2;border-color:#edd8bd;color:#855827}
+.support-status-badge.legacy-behavioural{background:#edf1f5;border-color:#d1dbe4;color:#42576b}
+.staff-roster-legacy .support-status-badge{font-size:10px;min-height:23px;padding:3px 6px}
+.support-tag-tooltip{
+ position:fixed;
+ z-index:20000;
+ box-sizing:border-box;
+ max-width:min(330px,calc(100vw - 24px));
+ width:max-content;
+ min-width:min(235px,calc(100vw - 24px));
+ max-height:min(45vh,300px);
+ overflow:auto;
+ pointer-events:none;
+ border:1px solid #ccdce7;
+ border-top:3px solid #a52136;
+ border-radius:12px;
+ background:#fff;
+ color:#183b57;
+ box-shadow:0 13px 32px rgba(12,39,64,.22);
+ padding:13px 15px 12px;
+ white-space:normal;
+ text-align:left;
+ font:400 12px/1.5 'DM Sans',Arial,sans-serif;
+}
+.support-tag-tooltip[hidden]{display:none!important}
+.support-tag-tooltip-heading{
+ display:block;
+ font-size:13px;
+ line-height:1.4;
+ font-weight:800;
+ margin:0 0 5px;
+ color:#183b57;
+}
+.support-tag-tooltip-description{
+ margin:0 0 9px;
+ font-size:12px;
+ line-height:1.58;
+ color:#365169;
+ overflow-wrap:anywhere;
+}
+.support-tag-tooltip-note{
+ display:block;
+ padding-top:8px;
+ border-top:1px solid #e6edf3;
+ font-size:10px;
+ line-height:1.5;
+ color:#627b8c;
+}
+@media(prefers-reduced-motion:reduce){
+ .support-status-badge.has-context{transition:none}
+}
