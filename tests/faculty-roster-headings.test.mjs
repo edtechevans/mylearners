@@ -76,8 +76,8 @@ test('Sort buttons and mouse/keyboard tooltip reveal original full name, preserv
  assert.match(app,/data-full-heading/);
  assert.match(app,/data-source-heading/);
  assert.match(app,/title="'\+safe\(info.full\)/);
- assert.match(ux,/data\.sourceHeading\|\|label\(th\)/);
- assert.match(ux,/data\.fullHeading\|\|headers\[i\]/);
+ assert.match(ux,/dataset\.sourceHeading\|\|label\(th\)/);
+ assert.match(ux,/dataset\.fullHeading\|\|headers\[i\]/);
  assert.match(ux,/title="'\+safe\(fullName\)/);
  assert.match(ux,/aria-label="Sort by '\+safe\(fullName\)/);
  assert.match(ux,/exportCsv\(cols\.map\(i=>fullHeaders\[i\]\)/);
