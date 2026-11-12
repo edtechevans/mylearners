@@ -17,7 +17,8 @@ import {renderLeaderWholeSchool,renderLeaderDivisionDaily,renderLeaderLearnerEvi
 import {leaderReportSignalSummary} from './report-card-signals.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
 import {matchesSupportStatus,SUPPORT_STATUS_FILTERS} from './learner-support-status.mjs';
-import {supportStatusBadges,legacySupportBadges,supportStatusDetails,supportStatusFilterControl} from './learner-support-status-ui.mjs?v=20261112supporttips1';
+import {supportStatusBadges,supportStatusDetails,supportStatusFilterControl} from './learner-support-status-ui.mjs?v=20261112supporttips1';
+import {renderLeaderSupportDirectory,leaderSupportDirectoryModel,LEADER_DIRECTORY_INITIAL} from './leader-support-directory.mjs?v=20261112leaderdir1';
 import {installSupportTagTooltips} from './support-tag-tooltips.mjs?v=20261112supporttips1';
 import {createSSSDemoRecords} from './sss-demo-data.mjs';
 import {seedSupportDemo,loadDraftEntries,storeDraftEntries,createDraftEntry} from './support-workspace-data.mjs';
@@ -107,6 +108,8 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
   leaderSupportOpen:false,leaderReportQuery:'',leaderReportMultiple:false,leaderReportExpanded:false,leaderReportThreshold:3,leaderReportOpen:false,
   leaderStudentId:'',leaderReviewFilter:'all',leaderReviewExpanded:false,
+  leaderDirectoryDivision:'All',leaderDirectoryGrade:'All',leaderDirectoryStatus:'has-support',
+  leaderDirectoryQuery:'',leaderDirectoryExpanded:false,
   leaderSection:'follow-up',leaderSaveNotice:'',
   leaderAcademicFocus:'',leaderAcademicGrade:'',leaderAcademicSubject:'',leaderAcademicMultiple:false,leaderAcademicExpanded:false,leaderMapBand:'both',
   journeySubject:'Reading',journeyStart:'auto',journeyEnd:'F26',journeyStartingBand:'both',journeyEndingBand:'average-plus',journeyPathway:'auto',journeyExpanded:false,journeyProfileSubject:'Reading',
@@ -133,6 +136,10 @@ const teacher=()=>DATA.teachers.find(t=>t.id===state.teacher)||DATA.teachers.fin
 const ownClasses=()=>DATA.classes.filter(c=>teacher().classIds.includes(c.id));
 const ownStudents=()=>DATA.students.filter(s=>teacher().classIds.includes(s.classId));
 const activeClass=()=>ownClasses().find(c=>c.id===state.classId)||ownClasses()[0];
+const leaderDirectoryFilters=()=>({division:state.leaderDirectoryDivision,grade:state.leaderDirectoryGrade,
+ status:state.leaderDirectoryStatus,query:state.leaderDirectoryQuery,expanded:state.leaderDirectoryExpanded});
+const leaderDirectoryScope=()=>DATA.students.filter(s=>(state.division==='All'||s.division===state.division)&&
+ (state.grade==='All'||s.grade===state.grade)&&(!state.classId||s.classId===state.classId));
 const previewController=installEvidencePreviewController(root,trigger=>resolveEvidencePreview(trigger,{
  role:state.role,state,data:DATA,academic:ACADEMIC_RECORDS,experience:RECORDS,maia:MAIA_RECORDS,sssRecords:SSS_RECORDS,
  allowedStudentIds:ownStudents().map(s=>s.id),
@@ -384,7 +391,7 @@ function roster(ss,options={}){
    (!everyday&&showMap?MAP_RIT_SUBJECTS.map(subject=>'<td>'+renderMapRitCell(DATA.map[x.student.id]||[],subject,x.student.id)+'</td>').join(''):'')+
    (!everyday&&showSEL?'<td>'+x.eng+'</td><td>'+x.bel+'</td>':'')+
    '<td><div class="staff-roster-support">'+supportStatusBadges(x.student,{compact:true})+
-    '<span class="staff-roster-legacy">'+legacySupportBadges(x.tags)+'</span></div></td></tr>').join('')+'</tbody></table></div>';
+    '</div></td></tr>').join('')+'</tbody></table></div>';
  const mobile='<div class="roster-mobile">'+data.map(x=>
   '<div class="roster-item">'+renderStudentPhoto(x.student,'mobile')+
   '<button type="button" class="roster-item-main" data-student="'+safe(x.student.id)+
@@ -508,8 +515,9 @@ function learnerProfile(s,studentRole=false){
    mg.status==='comparable'?'RIT points · latest comparable MAP tests':'Not yet comparable'):'')+
   (math?kpi('Latest Mathematics report',math.value,issued?'Issued '+safe(issued.year)+
    ' · Grade '+safe(issued.grade)+' · '+safe(issued.framework):''):'')+'</div>';
+ const visibleGuidance=tags.filter(t=>t.id==='eal'||t.id==='ss');
  const guidance=supportStatusDetails(s)+'<section class="card academic-next-step"><h2>Classroom Guidance</h2>'+
-  (tags.length?tags.map(t=>'<div class="guide"><strong>'+safe(t.fullName)+'</strong><p>'+
+  (visibleGuidance.length?visibleGuidance.map(t=>'<div class="guide"><strong>'+safe(t.fullName)+'</strong><p>'+
    safe(t.strategies[0])+'</p></div>').join(' '):
   '<p class="muted">No additional classroom guidance tags in this fictional example.</p>')+
   '<p class="tiny">Detailed support plans and confidential records are not included in this public demo.</p></section>';
@@ -589,16 +597,9 @@ function faculty(){
 }
 
 function leader(){
- if(state.division==='All')return heading('Leadership Overview',
-  'Begin whole school, choose Elementary or Secondary, then drill down by grade.')+
-  renderLeaderWholeSchool({students:DATA.students,data:DATA,academic:ACADEMIC_RECORDS,
-   records:RECORDS,sssRecords:SSS_RECORDS,entries:supportEntries(),savedView:savedLeaderView()})+info();
  const grades=GRADES;
  const divisions=state.division==='All'?['Elementary','Secondary']:[state.division];
- const group=DATA.students.filter(s=>divisions.includes(s.division)&&
-  (state.grade==='All'||s.grade===state.grade)&&(!state.classId||s.classId===state.classId));
- const classes=leaderAdvisoryClasses(DATA.classes,state.division,state.grade);
- const selectedClass=classes.find(c=>c.id===state.classId);
+ const group=leaderDirectoryScope();
  const leaderPerson=group.find(s=>s.id===state.leaderStudentId);
  if(state.leaderSection==='journeys'&&!group.some(s=>gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10))
   state.leaderSection='follow-up';
@@ -612,6 +613,14 @@ function leader(){
   renderStudentStrandJourney({student:leaderPerson,records:DATA.map[leaderPerson.id]||[],
    subject:state.strandProfileSubject,goalName:state.strandProfileGoal,
    season:state.strandProfileSeason})+info();
+
+ if(state.division==='All')return heading('Leadership Overview',
+  'Begin whole school, choose Elementary or Secondary, then drill down by grade.')+
+  renderLeaderWholeSchool({students:DATA.students,data:DATA,academic:ACADEMIC_RECORDS,
+   records:RECORDS,sssRecords:SSS_RECORDS,entries:supportEntries(),savedView:savedLeaderView()})+
+  renderLeaderSupportDirectory({students:group,filters:leaderDirectoryFilters(),showDivision:true})+info();
+ const classes=leaderAdvisoryClasses(DATA.classes,state.division,state.grade);
+ const selectedClass=classes.find(c=>c.id===state.classId);
  const secondaryOnly=group.length>0&&group.every(s=>s.division==='Secondary');
  const scopeLabel=selectedClass?.name||
   (state.grade!=='All'?
@@ -847,7 +856,8 @@ function leader(){
     expanded:state.leaderAcademicExpanded,mapBand:state.leaderMapBand})})+
   leaderPane('experience',experienceSection+deepPatterns)+
   leaderPane('support',renderLeaderSupportSection({students:group,sssRecords:SSS_RECORDS,
-   entries:supportEntries(),open:state.leaderSupportOpen}))+'</div>'+info();
+   entries:supportEntries(),open:state.leaderSupportOpen})+
+   renderLeaderSupportDirectory({students:group,filters:leaderDirectoryFilters(),showDivision:false}))+'</div>'+info();
 }
 function sss(){
  const banner=heading('Student Support Services',
@@ -910,6 +920,30 @@ function experienceScope(trigger,action=''){
   students=(activeClass()?.studentIds||[]).map(id=>DATA.userIndex.get(id)).filter(Boolean);
   scopeLabel=activeClass()?.name||'Selected class';
  }else if(state.role==='leader'){
+  const directoryStudent=e.target.closest('[data-leader-directory-student]');
+  if(directoryStudent){
+   const id=directoryStudent.dataset.leaderDirectoryStudent;
+   const visible=leaderSupportDirectoryModel(leaderDirectoryScope(),leaderDirectoryFilters()).shown;
+   const chosen=visible.find(s=>s.id===id);
+   if(!chosen)return;
+   leaderReturnContext={studentId:chosen.id,containerId:'leader-support-directory',
+    label:'Support Student Directory',scrollY:Math.max(0,globalThis.window?.scrollY||0),
+    section:state.leaderSection,source:'directory'};
+   state.leaderStudentId=chosen.id;
+   render();globalThis.window?.scrollTo?.(0,0);return;
+  }
+  if(e.target.closest('[data-leader-directory-expand]')){
+   state.leaderDirectoryExpanded=!state.leaderDirectoryExpanded;render();
+   root.querySelector('#leader-support-directory')?.scrollIntoView?.({block:'start',behavior:scrollMotion()});
+   return;
+  }
+  if(e.target.closest('[data-leader-directory-reset]')){
+   state.leaderDirectoryDivision='All';state.leaderDirectoryGrade='All';
+   state.leaderDirectoryStatus='has-support';state.leaderDirectoryQuery='';
+   state.leaderDirectoryExpanded=false;render();
+   root.querySelector('[data-leader-directory-filter="status"]')?.focus?.({preventScroll:true});
+   return;
+  }
   const divisions=state.division==='All'?['Elementary','Secondary']:[state.division];
   students=DATA.students.filter(s=>divisions.includes(s.division)&&
    (state.grade==='All'||s.grade===state.grade)&&
@@ -1417,7 +1451,8 @@ root.addEventListener('click',e=>{
    state.leaderStudentId='';render();
    const restore=()=>{
     const scope=origin?.containerId?root.querySelector('#'+origin.containerId):root;
-    const action=scope?.querySelector?.('[data-leader-student="'+origin?.studentId+'"]');
+    const action=scope?.querySelector?.('[data-leader-student="'+origin?.studentId+'"]')||
+     scope?.querySelector?.('[data-leader-directory-student="'+origin?.studentId+'"]');
     action?.focus?.({preventScroll:true});
     globalThis.window?.scrollTo?.(0,origin?.scrollY||0);
     if(!action)root.querySelector('[data-leader-focus="'+(origin?.section||state.leaderSection)+'"]')
@@ -1740,6 +1775,23 @@ root.addEventListener('click',e=>{
  const link=e.target.closest('[data-student]');if(link){state.studentId=link.dataset.student;state.details=false;state.academicReportYear='';render();window.scrollTo(0,0)}
 });
 root.addEventListener('change',e=>{
+ const directoryChoice=e.target.closest?.('[data-leader-directory-filter]');
+ if(directoryChoice&&state.role==='leader'){
+  const field=directoryChoice.dataset.leaderDirectoryFilter;
+  const value=directoryChoice.value;
+  if(field==='division'){
+   state.leaderDirectoryDivision=['All','Elementary','Secondary'].includes(value)?value:'All';
+   state.leaderDirectoryGrade='All';
+  }else if(field==='grade'){
+   const available=leaderSupportDirectoryModel(leaderDirectoryScope(),{
+    ...leaderDirectoryFilters(),grade:'All'}).grades;
+   state.leaderDirectoryGrade=value==='All'||available.includes(value)?value:'All';
+  }else if(field==='status'){
+   state.leaderDirectoryStatus=SUPPORT_STATUS_FILTERS.some(([id])=>id===value)?value:'has-support';
+  }else return;
+  state.leaderDirectoryExpanded=false;render();
+  root.querySelector('[data-leader-directory-filter="'+field+'"]')?.focus?.({preventScroll:true});return;
+ }
  const supportSelect=e.target.closest?.('[data-faculty-support-filter]');
  if(supportSelect&&state.role==='faculty'){
   const requested=supportSelect.value;
@@ -2000,6 +2052,14 @@ root.addEventListener('toggle',e=>{
  if(panel.dataset.studentPanel==='wellbeing')state.studentWellbeingOpen=panel.open;
 },true);
 root.addEventListener('input',e=>{
+ if(e.target.matches?.('[data-leader-directory-search]')&&state.role==='leader'){
+  const p=e.target.selectionStart;
+  state.leaderDirectoryQuery=e.target.value;
+  state.leaderDirectoryExpanded=false;render();
+  const field=root.querySelector('[data-leader-directory-search]');
+  field?.focus?.({preventScroll:true});
+  if(Number.isInteger(p))field?.setSelectionRange?.(p,p);return;
+ }
  if(e.target.matches?.('[data-leader-report-query]')&&state.role==='leader'){
   const p=e.target.selectionStart;state.leaderReportQuery=e.target.value;state.leaderReportExpanded=false;render();
   const field=root.querySelector('[data-leader-report-query]');field?.focus({preventScroll:true});if(Number.isInteger(p))field?.setSelectionRange(p,p);return;
