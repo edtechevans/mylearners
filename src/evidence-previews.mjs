@@ -295,6 +295,21 @@ export function installEvidencePreviewController(root,resolve){
   anchor=target;
   const el=ensure();if(!el)return;
   el.innerHTML=previewMarkup(item);
+  el.scrollTop=0;
+  const hasOverflow=!!item.experienceDetail&&el.scrollHeight>el.clientHeight+4;
+  el.classList?.toggle('is-question-scrollable',hasOverflow);
+  el.setAttribute?.('role',hasOverflow?'region':'tooltip');
+  if(hasOverflow){
+   el.setAttribute?.('tabindex','0');
+   el.setAttribute?.('aria-label',item.title+' question responses. Scroll for all questions.');
+   const hint=document.createElement('p');
+   hint.className='evidence-preview-scroll-hint';
+   hint.textContent='Scroll inside this panel for all questions · F2 for keyboard';
+   el.querySelector?.('.evidence-preview-questions')?.prepend?.(hint);
+  }else{
+   el.removeAttribute?.('tabindex');
+   el.removeAttribute?.('aria-label');
+  }
   target.setAttribute?.('aria-describedby',el.id);
   position();
  };
@@ -322,6 +337,15 @@ export function installEvidencePreviewController(root,resolve){
  });
  root.addEventListener('focusin',e=>{const trigger=parent(e);if(trigger)scheduleShow(trigger,true)});
  root.addEventListener('focusout',e=>{if(parent(e)&&!pinned)scheduleHide()});
+ // A question-level region may overflow at standard zoom. F2 lets keyboard
+ // users focus and scroll it without triggering the anchor's focusout timer.
+ root.addEventListener('keydown',e=>{
+  if(e.key!=='F2'||!popup?.classList?.contains?.('is-question-scrollable'))return;
+  if(!anchor||!(anchor===e.target||anchor.contains?.(e.target)))return;
+  e.preventDefault?.();
+  pinned=true;
+  popup.focus?.();
+ });
  root.addEventListener('click',e=>{
   const trigger=parent(e);
   if(!trigger)return;
@@ -347,6 +371,12 @@ export function installEvidencePreviewController(root,resolve){
   if(e.key==='Escape'&&popup){dismiss()}
  });
  window.addEventListener?.('resize',position);
- window.addEventListener?.('scroll',()=>{if(popup&&!pinned)dismiss();else position()},true);
+ window.addEventListener?.('scroll',e=>{
+  if(!popup)return;
+  // Scroll events from this popup reach window in capture phase. Closing the
+  // popup there made question 3 impossible to reach.
+  if(e?.target===popup||popup.contains?.(e?.target))return;
+  if(!pinned)dismiss();else position();
+ },true);
  return {dismiss,refresh:position};
 }
