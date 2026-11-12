@@ -1,0 +1,44 @@
+/* K-5 UFLI Foundations: categorical lesson sequence colours, NOT risk or grade bands.
+   Loaded after sitewide grade colours. */
+#app .ufli-stage-letters{--ufli-fill:#1e6885;--ufli-ink:#fff}
+#app .ufli-stage-patterns{--ufli-fill:#6b4a98;--ufli-ink:#fff}
+#app .ufli-stage-vowels{--ufli-fill:#e7af61;--ufli-ink:#182f3d}
+#app .ufli-stage-affixes{--ufli-fill:#227158;--ufli-ink:#fff}
+#app .ufli-lesson-tile{display:inline-flex;align-items:center;justify-content:center;
+ box-sizing:border-box;width:100%;min-width:0;min-height:43px;padding:8px 9px;
+ border-radius:8px;background:var(--ufli-fill);color:var(--ufli-ink);font-variant-numeric:tabular-nums}
+#app .ufli-lesson-tile strong{font-weight:850;font-size:16px;line-height:1.25;
+ letter-spacing:.018em;color:inherit!important}
+#app .ufli-lesson-tile.ufli-compact{min-width:70px;max-width:112px;width:max-content}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .ufli-lesson-open{
+ display:block;width:100%;min-width:0;padding:0;margin:0;border:0;border-radius:8px;
+ background:transparent;cursor:pointer}
+#app[data-workspace="faculty"] .roster-daily .ufli-lesson-open:hover .ufli-lesson-tile{
+ box-shadow:0 0 0 2px #173e62,0 3px 10px #173e6226}
+#app[data-workspace="faculty"] .roster-daily .ufli-lesson-open:focus-visible{
+ outline:3px solid #246fa0;outline-offset:3px}
+#app .ufli-roster-legend{display:grid;gap:9px;margin:11px 0 13px;padding:11px 14px;
+ border:1px solid #d9e4eb;border-radius:12px;background:#f7fafc}
+#app .ufli-legend-heading{display:flex;justify-content:space-between;align-items:baseline;gap:7px;flex-wrap:wrap}
+#app .ufli-legend-heading strong{font-size:12px;color:#173b56;font-weight:850}
+#app .ufli-legend-heading span{font-size:10.5px;color:#557084;font-weight:650}
+#app .ufli-legend-bands{display:flex;align-items:stretch;gap:7px;flex-wrap:wrap}
+#app .ufli-legend-chip{display:flex;gap:7px;align-items:center;padding:7px 9px;
+ border:1px solid transparent;border-radius:8px;background:var(--ufli-fill);color:var(--ufli-ink);
+ font-size:10.5px;line-height:1.3}
+#app .ufli-legend-chip b{font-size:11px;white-space:nowrap;color:inherit}
+#app .ufli-legend-chip span{font-weight:650;color:inherit}
+#app .ufli-roster-legend small{font-size:10px;line-height:1.5;color:#506d80}
+#app .ufli-roster-legend a{color:#1d597e;font-weight:750;text-decoration:underline}
+#app .ufli-profile-fact .ufli-lesson-tile{max-width:125px;width:max-content}
+#app .ufli-profile-fact small{color:#536e7e;font-size:10.5px;line-height:1.4}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .evidence-cell-open.ufli-lesson-open{
+ height:auto;min-height:43px}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall col.roster-col-ufli{
+ min-width:0}
+@media(max-width:720px){
+ #app .ufli-roster-legend{padding:10px}
+ #app .ufli-legend-chip{flex:1 1 130px;min-width:0}
+}
+@media print{#app .ufli-lesson-tile,#app .ufli-legend-chip{
+ -webkit-print-color-adjust:exact;print-color-adjust:exact}}
