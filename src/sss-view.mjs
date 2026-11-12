@@ -7,7 +7,7 @@ import {renderMapRitProfile} from './map-rit-achievement.mjs';
 import {experienceBand} from './faculty-bands.mjs?v=20261030wall2';
 import {GRADES,attendanceSummary,gradeNumber} from './data.mjs';
 import {demoTagsForStudent} from './learner-tags.mjs';
-import {supportStatusBadges,supportStatusDetails} from './learner-support-status-ui.mjs';
+import {supportStatusBadges,supportStatusDetails} from './learner-support-status-ui.mjs?v=20261112supporttips1';
 import {sssCohort,sssRecordFor} from './sss-demo-data.mjs';
 import {managerFor} from './sss-leadership-data.mjs';
 import {academicFor,latestAcademic} from './academic-journey-data.mjs';
@@ -62,7 +62,7 @@ function studentRow(student,record,academics){
   '<span class="sss-roster-name"><strong>'+esc(student.last+', '+student.first)+'</strong>'+
   '<small>'+esc(student.classId)+' · '+esc(student.campus)+' · '+esc(managerFor(student))+'</small></span>'+
   '<span class="sss-roster-service">'+serviceChips(record)+
-  '<span class="sss-roster-flags">'+supportStatusBadges(student,{compact:true})+'</span></span>'+
+  '<span class="sss-roster-flags">'+supportStatusBadges(student,{compact:true,interactive:false})+'</span></span>'+
   '<span class="sss-roster-result">'+evidence+'</span>'+
   '<span class="sss-roster-wida">'+wida+'</span>'+
   '<span class="sss-roster-review"><span>'+date(record.reviewDate)+'</span>'+
