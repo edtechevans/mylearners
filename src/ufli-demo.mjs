@@ -41,7 +41,8 @@ export function ufliLessonPhase(lesson){
 }
 export function ufliLessonFor(student){
  if(!student||typeof student.id!=='string'||!student.id)return null;
- const g=gradeNumber(student.grade||'');
+ if(!/^(K|G[1-5])$/.test(String(student.grade||'')))return null;
+ const g=gradeNumber(student.grade);
  if(!Number.isFinite(g)||g<0||g>5)return null;
  // Stable per fictional student ID and intentionally independent of grade
  // to avoid inventing normative or placement assumptions.
