@@ -53,7 +53,7 @@ test('Faculty starts with student grades, attendance and MAP columns before the 
  assert.match(markup,/Attendance/);
  const code=readFileSync(new URL('../src/student-experience-app.mjs',import.meta.url),'utf8');
  const start=code.indexOf(" return heading('My students'");
- const end=code.indexOf(" function leader()",start);
+ const end=code.indexOf("function leader()",start);
  assert.ok(start>=0&&end>start);
  const facultyCode=code.slice(start,end);
  const rosterSource=facultyCode.indexOf('roster(searching?ownStudents():ss,');
