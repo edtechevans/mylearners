@@ -16,19 +16,20 @@ const css=read('src/faculty-roster-headings.css');
 const ux=read('src/daily-ux.mjs');
 const html=read('index.html');
 
-test('Six Faculty subject headings are shortened with exact full hover wording',()=>{
+test('Faculty headings include accurate DP Arts/Elective terminology',()=>{
  const expected=[
   ['Language & Literature','L&L','Language & Literature'],
   ['Language Acquisition','LA','Language Acquisition'],
   ['Mathematics','Math','Mathematics'],
   ['Individuals & Societies','I&S','Individuals & Societies'],
   ['Physical & Health Education','PHE','Physical & Health Education'],
-  ['Arts','VPA','Visual & Performing Arts']
+  ['Arts','VPA','Visual & Performing Arts'],
+  ['Arts / Elective','VPA / Elective','Visual & Performing Arts / Elective']
  ];
  assert.equal(Object.keys(FACULTY_SUBJECT_SHORT_NAMES).length,expected.length);
  for(const [subject,short,full] of expected){
   const info=facultyHeaderInfo({kind:'report',subject,label:subject});
-  assert.deepEqual(info,{display:short,full,original:subject,abbreviated:true,singleWord:true});
+  assert.deepEqual(info,{display:short,full,original:subject,abbreviated:true,singleWord:!/\s/.test(short)});
   assert.ok(facultyHeaderWidth({kind:'report',subject,label:subject})>=100);
  }
 });
@@ -49,6 +50,13 @@ test('Full report data labels remain unchanged in MYP roster, including Design',
  const design=columns.find(c=>c.subject==='Design');
  assert.ok(design);
  assert.equal(facultyHeaderInfo(design).display,'Design');
+ const dpStudent=demo.students.find(s=>s.grade==='G12');
+ const dpColumns=facultyRosterEvidenceColumns(demo.students.filter(s=>s.classId===dpStudent.classId),records,everydayEvidenceForGrade('G12'));
+ const arts=dpColumns.find(c=>c.subject==='Arts / Elective');
+ assert.ok(arts);
+ assert.equal(facultyHeaderInfo(arts).display,'VPA / Elective');
+ assert.equal(facultyHeaderInfo(arts).full,'Visual & Performing Arts / Elective');
+ assert.ok(facultyHeaderWidth(arts)>=160);
  assert.equal(facultyHeaderInfo({kind:'engagement',label:'Engagement · check-in'}).display,'Engagement');
  assert.equal(facultyHeaderInfo({kind:'belonging',label:'Belonging · check-in'}).display,'Belonging');
 });
