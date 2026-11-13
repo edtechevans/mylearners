@@ -2,9 +2,11 @@
 #app thead th[data-column-guide-ready="yes"]{cursor:help}
 #app thead th[data-column-guide-ready="yes"]:not(.ux-table-shell th){position:relative}
 #app thead th[data-column-guide-ready="yes"]:not(.map-rit-th)::after{
- content:"ⓘ";position:absolute;right:5px;bottom:5px;
- font:700 11px/1 Arial,sans-serif;color:#527e96;
- opacity:.68;pointer-events:none;z-index:3;
+ content:"i";position:absolute;right:6px;bottom:5px;
+ width:12px;height:12px;box-sizing:border-box;
+ border:1px solid #7fa1b5;border-radius:50%;
+ text-align:center;font:800 9px/11px Arial,sans-serif;color:#527e96;
+ opacity:.62;pointer-events:none;z-index:3;
 }
 #app thead th[data-column-guide-ready="yes"]:is(:hover,:focus-within)::after{
  opacity:1;color:#145f89;
