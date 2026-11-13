@@ -209,8 +209,8 @@ test('Faculty review controls switch All, orange 3-or-below and red 2-or-below',
  assert.match(node.innerHTML,/All students <b>20<\/b>/);
  assert.match(node.innerHTML,/data-faculty-low-filter="3" aria-pressed="false"/);
  assert.match(node.innerHTML,/data-faculty-low-filter="2" aria-pressed="false"/);
- const count3=Number(node.innerHTML.match(/3 or below <b>(\d+)<\/b>/)?.[1]);
- const count2=Number(node.innerHTML.match(/2 or below <b>(\d+)<\/b>/)?.[1]);
+ const count3=Number(node.innerHTML.match(/3 or below\*? <b>(\d+)<\/b>/)?.[1]);
+ const count2=Number(node.innerHTML.match(/2 or below\*? <b>(\d+)<\/b>/)?.[1]);
  assert.ok(count2>0&&count2<=count3&&count3<=20);
  const before=(node.innerHTML.match(/<button class="student-link"/g)||[]).length;
  click('[data-faculty-low-filter]',{facultyLowFilter:'3'});

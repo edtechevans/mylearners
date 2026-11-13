@@ -1,0 +1,193 @@
+/* Faculty workflow refinement: faster route to students, grounded source
+   context, keyboard-first table and one easily reachable horizontal scroller.
+   Loaded AFTER existing Faculty styles. No assessment colours are altered. */
+#app[data-workspace="faculty"] .heading{
+ padding-block:7px!important;margin-bottom:5px!important;
+}
+#app[data-workspace="faculty"] .heading h1{margin:2px 0 3px!important}
+#app[data-workspace="faculty"] .ux-source-strip{
+ margin:2px 0 6px!important;padding:5px 10px!important;
+ font-size:11px;min-height:0;line-height:1.35!important;
+}
+#app[data-workspace="faculty"] .faculty-daily-toolbar{
+ margin:3px 0 5px!important;gap:8px!important;padding:8px 10px!important;
+}
+#app[data-workspace="faculty"] .faculty-daily-toolbar input[data-query]{
+ min-height:36px!important;padding:6px 10px!important;
+}
+#app[data-workspace="faculty"] .roster-daily{
+ margin-top:6px!important;padding:12px 14px 12px!important;
+}
+#app[data-workspace="faculty"] .roster-daily>.sectionhead{
+ margin-bottom:7px!important;gap:8px;
+}
+#app[data-workspace="faculty"] .roster-daily>.sectionhead h2{
+ font-size:clamp(19px,1.7vw,23px)!important;margin-bottom:1px;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .class-evidence-panel{
+ margin:0 0 5px!important;padding:8px 11px!important;
+ border-radius:10px!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .class-evidence-heading{
+ margin-bottom:2px!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .class-evidence-heading h3{
+ font-size:13px!important;margin:0!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .class-evidence-heading p,
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .class-evidence-heading-tag{
+ display:none!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .class-roster-view-switch{
+ margin:3px 0 4px!important;padding:2px!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .class-roster-view-switch button{
+ min-height:31px!important;padding:5px 10px!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .faculty-evidence-legend{
+ gap:5px 9px!important;margin:3px 0 4px!important;
+ padding:5px 9px!important;min-height:0;
+ font-size:11px;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .faculty-legend-caption{
+ display:none!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .faculty-legend-chip{
+ padding:3px 7px!important;min-height:21px!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .map-rit-inline-legend{
+ margin:3px 0 5px!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .map-rit-inline-legend>summary{
+ padding:5px 9px!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] details.ufli-roster-legend{
+ display:block!important;margin:3px 0 4px!important;
+ padding:0!important;border-radius:9px!important;background:#f7fafc;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .ufli-roster-legend>summary{
+ display:flex;align-items:center;flex-wrap:wrap;gap:8px;cursor:pointer;
+ list-style:none;padding:6px 10px;color:#214b65;font-size:11px;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .ufli-roster-legend>summary::-webkit-details-marker{display:none}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .ufli-roster-legend>summary::after{
+ content:"Details ▾";margin-left:auto;font-weight:800;color:#245c7b;font-size:10px;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .ufli-roster-legend[open]>summary::after{content:"Hide ▴"}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .ufli-legend-content{
+ padding:3px 10px 10px;display:grid;gap:7px;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .ufli-legend-mini{
+ display:inline-flex;gap:3px;align-items:center;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .ufli-legend-mini i{
+ display:inline-block;width:12px;height:12px;border-radius:3px;
+ background:var(--ufli-fill);
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .ufli-roster-legend .ufli-legend-bands{
+ margin:0;
+}
+/* One compact row contains essential context; the expanded cards contain
+   source, purpose, snapshot and interpretation for each demo measure. */
+#app[data-workspace="faculty"] .roster-daily .faculty-data-context{
+ margin:3px 0 4px;padding:0;border:1px solid #dce8ee;
+ border-radius:9px;background:#f7fafc;
+}
+#app[data-workspace="faculty"] .faculty-data-context>summary{
+ display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+ list-style:none;cursor:pointer;padding:7px 10px;
+ line-height:1.35;color:#254e69;font-size:11px;
+}
+#app[data-workspace="faculty"] .faculty-data-context>summary::-webkit-details-marker{display:none}
+#app[data-workspace="faculty"] .faculty-data-context>summary strong{font-size:11px;color:#153e58}
+#app[data-workspace="faculty"] .faculty-context-inline{font-weight:650;color:#365d73}
+#app[data-workspace="faculty"] .faculty-context-expand{
+ color:#205c7e;font-weight:800;margin-left:auto;white-space:nowrap;
+}
+#app[data-workspace="faculty"] .faculty-context-expand::after{content:" ▾"}
+#app[data-workspace="faculty"] .faculty-data-context[open] .faculty-context-expand::after{content:" ▴"}
+#app[data-workspace="faculty"] .faculty-context-cards{
+ padding:9px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+ gap:10px;border-top:1px solid #e0e9ef;
+}
+#app[data-workspace="faculty"] .faculty-context-cards section{
+ border:1px solid #dce7ee;border-radius:9px;background:#fff;padding:11px 12px;
+}
+#app[data-workspace="faculty"] .faculty-context-cards h4{
+ font-size:12px;color:#173d59;margin:0 0 8px;
+}
+#app[data-workspace="faculty"] .faculty-context-cards dl{margin:0;display:grid;gap:7px}
+#app[data-workspace="faculty"] .faculty-context-cards dl>div{
+ display:grid;grid-template-columns:82px minmax(0,1fr);gap:8px;
+ font-size:11px;line-height:1.45;
+}
+#app[data-workspace="faculty"] .faculty-context-cards dt{font-weight:800;color:#4b6b7e}
+#app[data-workspace="faculty"] .faculty-context-cards dd{margin:0;color:#36566b}
+#app[data-workspace="faculty"] .faculty-context-cards a{
+ color:#15618c;text-decoration:underline;text-underline-offset:2px;
+}
+#app[data-workspace="faculty"] .roster-daily .faculty-provisional-note{
+ display:block;flex:1 1 100%;margin-top:1px;
+ color:#556e7e;font-size:10.5px;line-height:1.35;
+}
+#app[data-workspace="faculty"] .roster-daily .faculty-concern-filter{
+ gap:5px 7px!important;margin:3px 0!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .tablewrap{
+ margin-top:3px!important;
+}
+/* Navigation stays ABOVE the table while the table itself scrolls. */
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .faculty-scroll-hint{
+ position:sticky;top:4px;z-index:15;
+ display:flex;gap:7px;align-items:center;justify-content:flex-end;
+ margin:4px 0 3px!important;padding:6px 8px!important;
+ background:rgba(247,250,252,.97);border:1px solid #d8e5ed;
+ border-radius:10px;min-height:35px;
+ backdrop-filter:blur(5px);
+}
+#app[data-workspace="faculty"] .faculty-scroll-hint .faculty-jump-select{
+ min-width:145px;max-width:min(230px,42vw);height:32px;
+ border:1px solid #bfd2df;border-radius:8px;
+ background:#fff;color:#204c69;font-size:11px;
+ padding:5px 9px;
+}
+#app[data-workspace="faculty"] .faculty-scroll-hint .faculty-jump-label{
+ font-size:11px;font-weight:750;color:#47687e;
+}
+#app[data-workspace="faculty"] .faculty-scroll-hint .faculty-scroll-hint-label{
+ margin-left:auto;
+}
+#app[data-workspace="faculty"] .faculty-scroll-hint .faculty-grid-help{
+ margin:0;font-size:11px;font-weight:750;color:#225a7a;
+}
+#app[data-workspace="faculty"] .faculty-scroll-hint .faculty-grid-help>summary{
+ cursor:pointer;list-style:none;white-space:nowrap;
+}
+#app[data-workspace="faculty"] .faculty-scroll-hint .faculty-grid-help>summary::-webkit-details-marker{display:none}
+#app[data-workspace="faculty"] .faculty-scroll-hint .faculty-grid-help[open]{
+ position:relative;
+}
+#app[data-workspace="faculty"] .faculty-scroll-hint .faculty-grid-help p{
+ position:absolute;right:0;top:100%;z-index:30;width:260px;
+ box-sizing:border-box;padding:10px 12px;background:#fff;border:1px solid #c7dae6;
+ border-radius:8px;box-shadow:0 7px 19px #16415b22;
+ color:#395d75;font-size:11px;line-height:1.55;font-weight:500;
+}
+#app[data-workspace="faculty"] .faculty-scroll-hint :is(select,button,summary):focus-visible,
+#app[data-workspace="faculty"] .faculty-data-context>summary:focus-visible,
+#app[data-workspace="faculty"] .ufli-roster-legend>summary:focus-visible{
+ outline:3px solid #2179a3;outline-offset:2px;
+}
+@media(max-width:950px){
+ #app[data-workspace="faculty"] .faculty-scroll-hint .faculty-scroll-hint-label{display:none}
+ #app[data-workspace="faculty"] .faculty-context-inline{flex:1 1 100%;order:2}
+ #app[data-workspace="faculty"] .faculty-context-expand{margin-left:auto}
+}
+@media(max-width:760px){
+ #app[data-workspace="faculty"] .roster-daily{padding:10px 10px 12px!important}
+ #app[data-workspace="faculty"] .roster-daily .faculty-scroll-hint{display:none!important}
+ #app[data-workspace="faculty"] .faculty-data-context>summary{padding:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ #app[data-workspace="faculty"] .faculty-scroll-hint{scroll-behavior:auto!important}
+}

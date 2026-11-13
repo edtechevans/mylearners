@@ -4,7 +4,8 @@
  */
 import {safeText,compareEvidenceSource,exportCsv,parsePreferences,filteredRecords} from './daily-ux-core.mjs?v=20261031v1';
 import {normaliseColumnOrder,moveColumn,normaliseColumnWidths,clampColumnWidth,COLUMN_WIDTHS,widthPreset} from './faculty-column-layout.mjs';
-import {facultyGroupTransitions,facultyVisibleTableWidth} from './faculty-roster-headings.mjs';
+import {facultyGroupTransitions,facultyVisibleTableWidth} from './faculty-roster-headings.mjs?v=20261113workflow1';
+import {installFacultyGridNavigation} from './faculty-roster-keyboard.mjs';
 const root=document.getElementById('app');
 const states=new Map();
 const clean=x=>String(x??'').replace(/\s+/g,' ').trim();
@@ -228,17 +229,36 @@ function decorate(table,index){
  // The cue lives OUTSIDE the scroller, so it remains reachable when a
  // teacher has navigated horizontally to the last evidence columns.
  const scrollContainer=isFacultyColumns?table.closest('.tablewrap.roster-desktop'):null;
+ const gridNavigation=isFacultyColumns?installFacultyGridNavigation(table):null;
  let scrollHint=null;
+ function updateLearnerJump(){
+  const jump=scrollHint?.querySelector('.faculty-jump-select');
+  if(!jump||!gridNavigation)return;
+  const previous=jump.value;
+  const learners=gridNavigation.visibleLearners();
+  jump.replaceChildren();
+  const placeholder=document.createElement('option');
+  placeholder.value='';placeholder.textContent='Jump to learner…';
+  jump.appendChild(placeholder);
+  for(const learner of learners){
+   const item=document.createElement('option');
+   item.value=learner.id;item.textContent=learner.name;jump.appendChild(item);
+  }
+  jump.value=learners.some(x=>x.id===previous)?previous:'';
+ }
  function updateScrollCue(){
   if(!scrollContainer||!scrollHint)return;
   const max=Math.max(0,scrollContainer.scrollWidth-scrollContainer.clientWidth);
   const x=scrollContainer.scrollLeft;
-  scrollHint.hidden=max<=8;
+  scrollHint.hidden=false;
+  const arrows=scrollHint.querySelector('.faculty-scroll-arrows');
+  if(arrows)arrows.hidden=max<=8;
+  const label=scrollHint.querySelector('.faculty-scroll-hint-label');
+  if(label)label.hidden=max<=8;
   const left=scrollHint.querySelector('[data-faculty-scroll="left"]');
   const right=scrollHint.querySelector('[data-faculty-scroll="right"]');
   if(left)left.disabled=x<=3;
   if(right)right.disabled=x>=max-3;
-  const label=scrollHint.querySelector('.faculty-scroll-hint-label');
   if(label)label.textContent=x<=3?'More evidence to the right':
    x>=max-3?'More evidence to the left':'Explore additional columns';
  }
@@ -246,11 +266,20 @@ function decorate(table,index){
   scrollHint=document.createElement('div');
   scrollHint.className='faculty-scroll-hint';
   scrollHint.hidden=true;
-  scrollHint.setAttribute('aria-label','Horizontal class evidence navigation');
-  scrollHint.innerHTML='<span class="faculty-scroll-hint-label">More evidence to the right</span>'+
-   '<button type="button" data-faculty-scroll="left" aria-label="Scroll evidence columns left">←</button>'+
-   '<button type="button" data-faculty-scroll="right" aria-label="Scroll evidence columns right">→</button>';
-  scrollContainer.insertAdjacentElement('afterend',scrollHint);
+  scrollHint.setAttribute('aria-label','Learner and horizontal class evidence navigation');
+  scrollHint.innerHTML='<label class="faculty-jump-label" for="faculty-learner-jump">Jump to</label>'+
+   '<select id="faculty-learner-jump" class="faculty-jump-select" aria-label="Jump to a learner in this class">'+
+   '<option value="">Jump to learner…</option></select>'+
+   '<details class="faculty-grid-help"><summary>Keyboard tips</summary>'+
+   '<p>Tab into the learner grid. Use arrow keys to move between visible learner evidence cells, Home/End for a row and Ctrl+Home/End for the first/last learner. Press Enter to open a learner.</p></details>'+
+   '<span id="faculty-roster-grid-help" class="sr-only">Learner grid: Tab enters; arrow keys move through results; Home and End navigate a row; Ctrl+Home and Ctrl+End jump to the beginning and end. Enter opens the selected result.</span>'+
+   '<span class="faculty-scroll-hint-label">More evidence to the right</span>'+
+   '<span class="faculty-scroll-arrows"><button type="button" data-faculty-scroll="left" aria-label="Scroll evidence columns left">←</button>'+
+   '<button type="button" data-faculty-scroll="right" aria-label="Scroll evidence columns right">→</button></span>';
+  scrollContainer.insertAdjacentElement('beforebegin',scrollHint);
+  scrollHint.querySelector('.faculty-jump-select')?.addEventListener('change',event=>{
+   if(event.target.value)gridNavigation?.focusLearner(event.target.value);
+  });
   scrollContainer.addEventListener('scroll',updateScrollCue,{passive:true});
   scrollHint.addEventListener('click',event=>{
    const button=event.target.closest('button[data-faculty-scroll]');
@@ -293,7 +322,12 @@ function decorate(table,index){
  }
  const render=()=>{
   apply(table,s);
-  if(isFacultyColumns){refreshFacultyPresentation(table,s);updateScrollCue()}
+  if(isFacultyColumns){
+   refreshFacultyPresentation(table,s);
+   gridNavigation?.refresh();
+   updateLearnerJump();
+   updateScrollCue();
+  }
  };
  function syncColumnList(){
   if(!isFacultyColumns)return;

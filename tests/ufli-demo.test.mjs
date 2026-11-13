@@ -68,7 +68,8 @@ test('Every K-5 Faculty class gets the UFLI column; no PK or secondary columns',
  assert.match(app,/column.kind==='ufli'/);
  assert.match(app,/ufliLessonFor\(student\)\?\.lesson/);
  assert.match(app,/data-evidence-preview="ufli"/);
- assert.match(app,/renderUfliLegend\(\)/);
+ assert.match(app,/renderFacultyMeasureContext\(everydayColumns,DATA.asOf\)/);
+ assert.match(get('src/faculty-evidence-context.mjs'),/renderUfliLegend\(\)/);
  assert.match(app,/renderUfliLessonTile\(s,\{compact:true\}\)/);
  assert.match(app,/roster-col-ufli/);
  assert.match(html,/ufli-demo\.css\?v=20261113ufli1/);
@@ -95,9 +96,11 @@ test('Role-scoped hover reveals exact lesson topic with synthetic-data caution',
  assert.equal(preview.title,'UFLI Foundations · '+lesson.code);
  assert.deepEqual(preview.rows.map(x=>x[1]),[
   lesson.lesson+' of 128',lesson.phase.label,
-  lesson.group.label+' · '+lesson.group.start+'–'+lesson.group.end
+  lesson.group.label+' · '+lesson.group.start+'–'+lesson.group.end,
+  'UFLI Foundations K–2 sequence; placement fictional',
+  '2026–27 demo snapshot, not a test date'
  ]);
- assert.match(preview.note,/not a proficiency-level/);
+ assert.match(preview.note,/not a reading proficiency level/);
  assert.equal(resolveEvidencePreview(
   {dataset:{evidencePreview:'ufli',previewStudent:student.id}},
   {...ctx,allowedStudentIds:[]}),null);

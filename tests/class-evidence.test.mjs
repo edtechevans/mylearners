@@ -235,8 +235,8 @@ test('2 and 3 or below filters render together in the visible class toolbar with
  assert.match(html,/<\/div><div class="faculty-concern-filter"/);
  assert.match(html,/Filter students/);
  assert.match(html,/All students <b>20<\/b>/);
- assert.match(html,/3 or below <b>9<\/b>/);
- assert.match(html,/2 or below <b>4<\/b>/);
+ assert.match(html,/3 or below\* <b>9<\/b>/);
+ assert.match(html,/2 or below\* <b>4<\/b>/);
  assert.match(html,/data-faculty-low-filter="3" aria-pressed="false"/);
  assert.match(html,/data-faculty-low-filter="2" aria-pressed="false"/);
  const selected=renderClassEvidencePanel(students,{
@@ -244,7 +244,7 @@ test('2 and 3 or below filters render together in the visible class toolbar with
  });
  assert.match(selected,/data-faculty-low-filter="2" aria-pressed="true"/);
  assert.match(selected,/data-faculty-low-filter="3" aria-pressed="false"/);
- assert.match(selected,/aria-label="Show 4 students with at least one subject result of 2 or below"/);
+ assert.match(selected,/aria-label="Show 4 students with at least one current test grade of 2 or below, including provisional MYP best-fit grades"/);
  const third=renderClassEvidencePanel(students,{
   ...ctx,rosterView:'everyday',lowGradeFilter:{total:20,count3:9,count2:4,active:'3'}
  });

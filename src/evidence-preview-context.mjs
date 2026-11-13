@@ -252,8 +252,10 @@ export function resolveEvidencePreview(trigger,ctx){
    subtitle:person.name+' · Synthetic 2026–27 placement',kind:'academic',
    rows:[['Official lesson number',placement.lesson+' of 128'],
     ['Sequence focus',placement.phase.label],
-    ['Colour grouping',placement.group.label+' · '+placement.group.start+'–'+placement.group.end]],
-   note:'UFLI Foundations specifies a lesson sequence, not a proficiency-level or grade scale. This random, stable example is not an actual assessment, instructional recommendation, or mastery judgment. The official document covers K–2; Grades 3–5 are demonstration intervention examples.'});
+    ['Colour grouping',placement.group.label+' · '+placement.group.start+'–'+placement.group.end],
+    ['Source','UFLI Foundations K–2 sequence; placement fictional'],
+    ['Date','2026–27 demo snapshot, not a test date']],
+   note:'Purpose: visualise a possible phonics learning pathway. A lesson is not a reading proficiency level, mastery judgment or instructional recommendation. Grades 3–5 are demonstration intervention examples only.'});
  }
  if(kind==='universal-screener'){
   const id=trigger.dataset.previewStudent;
@@ -262,8 +264,10 @@ export function resolveEvidencePreview(trigger,ctx){
   const result=universalScreenerFor(student);
   return makePreview({title:'Universal Screener',subtitle:student.name+' · Demonstration',
    rows:[['Percentage',result.percent+'%'],['Display band',result.label],
-    ['Scale','0–100% · one fictional result per learner']],
-   note:'Synthetic percentages generated for interface testing. Colours match the MYP palette for design consistency, not grades, validated screening cutoffs, diagnoses, or support decisions.',
+    ['Source','Synthetic demo generator; no administered screener'],
+    ['Date','2026–27 example snapshot'],
+    ['Purpose','Test a percentage field and colour bands']],
+   note:'No real assessment was administered. These 0–100% demo percentages and the four bands are not validated screening cutoffs, MYP grades, risk categories, diagnoses or intervention decisions.',
    kind:'academic'});
  }
  if(kind==='map-rit'){

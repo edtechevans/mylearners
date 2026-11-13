@@ -242,6 +242,7 @@ export function renderClassEvidencePanel(students,{
   const total=Math.max(0,Number(lowGradeFilter.total)||0);
   const count3=Math.max(0,Number(lowGradeFilter.count3??lowGradeFilter.count)||0);
   const count2=Math.max(0,Math.min(count3,Number(lowGradeFilter.count2)||0));
+  const mayIncludeProvisional=students.some(s=>{const n=gradeNumber(s.grade);return n>=6&&n<=10});
   const active=lowGradeFilter.active===2||lowGradeFilter.active==='2'?'2':
    lowGradeFilter.active===3||lowGradeFilter.active==='3'||lowGradeFilter.active===true?'3':'all';
   return '<div class="faculty-concern-filter" role="group" aria-label="Filter students by subject results">'+
@@ -249,11 +250,16 @@ export function renderClassEvidencePanel(students,{
    '<button type="button" data-faculty-low-filter="all" aria-pressed="'+(active==='all')+
    '" aria-label="Show all '+total+' students">All students <b>'+total+'</b></button>'+
    '<button type="button" data-faculty-low-filter="3" aria-pressed="'+(active==='3')+
-   '" aria-label="Show '+count3+' students with at least one subject result of 3 or below">'+
-   '<span class="faculty-filter-dot" aria-hidden="true"></span>3 or below <b>'+count3+'</b></button>'+
+   '" aria-label="Show '+count3+' students with at least one current test grade of 3 or below'+
+   (mayIncludeProvisional?', including provisional MYP best-fit grades':'')+'">'+
+   '<span class="faculty-filter-dot" aria-hidden="true"></span>3 or below'+
+   (mayIncludeProvisional?'*':'')+' <b>'+count3+'</b></button>'+
    '<button type="button" data-faculty-low-filter="2" aria-pressed="'+(active==='2')+
-   '" aria-label="Show '+count2+' students with at least one subject result of 2 or below">'+
-   '<span class="faculty-filter-dot" aria-hidden="true"></span>2 or below <b>'+count2+'</b></button>'+
+   '" aria-label="Show '+count2+' students with at least one current test grade of 2 or below'+
+   (mayIncludeProvisional?', including provisional MYP best-fit grades':'')+'">'+
+   '<span class="faculty-filter-dot" aria-hidden="true"></span>2 or below'+
+   (mayIncludeProvisional?'*':'')+' <b>'+count2+'</b></button>'+
+   (mayIncludeProvisional?'<small class="faculty-provisional-note">*Includes provisional MYP best-fit grades when fewer than four criteria are assessed. All results are synthetic, not issued.</small>':'')+
    '</div>';
  })():'';
  return '<section class="class-evidence-panel" aria-label="Select learning and wellbeing evidence for the class roster">'+
