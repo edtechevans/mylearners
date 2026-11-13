@@ -57,7 +57,7 @@ import {renderDPSubjectPointDetails} from './board-dp-subjects.mjs';
 import {DP_RECORDS} from './board-dp-data.mjs?v=20261031dp-world1';
 import {boardWindowFor,BOARD_DATA} from './board-map-data.mjs';
 import {parseBoardHash} from './board-map-links.mjs?v=20261031dp-default1';
-import {EXPLORER_DEFAULTS,EXPLORER_PAGE_SIZE,leaderExplorerModel,renderLeaderStudentExplorer,leaderExplorerExportRows} from './leader-student-explorer.mjs?v=20261113explorer2';
+import {EXPLORER_DEFAULTS,leaderExplorerModel,renderLeaderStudentExplorer,leaderExplorerExportRows} from './leader-student-explorer.mjs?v=20261113subjects1';
 import {exportCsv,visibleDashboardCsv} from './dashboard-export.mjs?v=20261113export1';
 const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(DATA.students),
  ACADEMIC_RECORDS=createAcademicDemoRecords(DATA.students),
@@ -669,7 +669,10 @@ function leader(){
  const grades=GRADES;
  const divisions=state.division==='All'?['Elementary','Secondary']:[state.division];
  const group=leaderDirectoryScope();
- const leaderPerson=group.find(s=>s.id===state.leaderStudentId);
+ const leaderPerson=state.leaderStudentId?(state.leaderExplorerOpen?
+  leaderExplorerModel({data:DATA,academic:ACADEMIC_RECORDS,experience:RECORDS,filters:explorerFilters()})
+   .rows.find(row=>row.student.id===state.leaderStudentId)?.student||null:
+  group.find(s=>s.id===state.leaderStudentId)||null):null;
  if(state.leaderSection==='journeys'&&!group.some(s=>gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10))
   state.leaderSection='follow-up';
  if(leaderPerson)return heading('Leadership Overview','Read-only evidence for leadership review.')+
@@ -1272,7 +1275,6 @@ root.addEventListener('click',e=>{
    if(sort){const f=explorerFilters();f.direction=f.sort===sort.dataset.explorerSort&&f.direction==='asc'?'desc':'asc';f.sort=sort.dataset.explorerSort;render();return}
    if(e.target.closest('[data-explorer-direction]')){const f=explorerFilters();f.direction=f.direction==='asc'?'desc':'asc';render();return}
    if(e.target.closest('[data-explorer-reset]')){state.leaderExplorerFilters={...EXPLORER_DEFAULTS};render();return}
-   if(e.target.closest('[data-explorer-more]')){explorerFilters().limit+=EXPLORER_PAGE_SIZE;render();return}
   }
  }
  const strandProfileSubject=e.target.closest('[data-map-strand-profile-subject]');
@@ -1579,7 +1581,8 @@ root.addEventListener('click',e=>{
    state.leaderStudentId='';render();
    const restore=()=>{
     const scope=origin?.containerId?root.querySelector('#'+origin.containerId):root;
-    const action=scope?.querySelector?.('[data-leader-student="'+origin?.studentId+'"]')||
+    const action=scope?.querySelector?.('[data-explorer-student="'+origin?.studentId+'"]')||
+     scope?.querySelector?.('[data-leader-student="'+origin?.studentId+'"]')||
      scope?.querySelector?.('[data-leader-directory-student="'+origin?.studentId+'"]');
     action?.focus?.({preventScroll:true});
     globalThis.window?.scrollTo?.(0,origin?.scrollY||0);
@@ -1906,9 +1909,9 @@ root.addEventListener('change',e=>{
  const ex=e.target.closest?.('[data-explorer-filter]');
  if(ex&&state.role==='leader'&&state.leaderExplorerOpen){
   const field=ex.dataset.explorerFilter;if(!Object.hasOwn(EXPLORER_DEFAULTS,field))return;
-  const f=explorerFilters();f[field]=ex.value;f.limit=EXPLORER_PAGE_SIZE;
-  if(field==='division'){f.grade='All';f.classId='';f.teacher='all';f.strand=''}
-  if(field==='grade'){f.classId='';f.teacher='all';f.strand=''}
+  const f=explorerFilters();f[field]=ex.value;
+  if(field==='division'){f.grade='All';f.classId='';f.teacher='all';f.subject='all';f.strand=''}
+  if(field==='grade'){f.classId='';f.teacher='all';f.subject='all';f.strand=''}
   if(field==='teacher'||field==='classId'||field==='mapTest')f.strand='';
   render();root.querySelector('[data-explorer-filter="'+field+'"]')?.focus?.({preventScroll:true});return;
  }
@@ -2193,7 +2196,7 @@ root.addEventListener('toggle',e=>{
 },true);
 root.addEventListener('input',e=>{
  if(e.target.matches?.('[data-explorer-search]')&&state.role==='leader'&&state.leaderExplorerOpen){
-  const pos=e.target.selectionStart;explorerFilters().query=e.target.value;explorerFilters().limit=EXPLORER_PAGE_SIZE;render();
+  const pos=e.target.selectionStart;explorerFilters().query=e.target.value;render();
   const field=root.querySelector('[data-explorer-search]');field?.focus?.({preventScroll:true});if(Number.isInteger(pos))field?.setSelectionRange?.(pos,pos);return;
  }
  if(e.target.matches?.('[data-leader-directory-search]')&&state.role==='leader'){
