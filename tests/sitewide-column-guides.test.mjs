@@ -55,12 +55,21 @@ test('Engagement and Belonging get correct −2 to +2 bands, not report-card gra
  }
 });
 test('Other sources have useful help without invented colour thresholds',()=>{
- for(const title of ['Attendance','IXL Math','Core Phonics','F&P Reading','Maia Flourishing',
-  'WIDA','Support information','Learner','Class','Data coverage','Reporting window']){
+ for(const title of ['Attendance','WIDA','Support information','Learner','Class','Data coverage','Reporting window']){
   const g=classifyColumnGuide({label:title});
   assert.ok(g.title&&g.description&&g.subtitle,title);
   assert.equal(g.rows.length,0,title);
  }
+ for(const label of ['Core Phonics','F&P Reading','Maia Flourishing']){
+  const g=classifyColumnGuide({label});
+  assert.deepEqual(g.rows.map(x=>x.label),['Q1','Q2','Q3','Q4']);
+  assert.match(g.note,/same-grade/i);
+ }
+ const ixl=classifyColumnGuide({label:'IXL Math'});
+ assert.deepEqual(ixl.rows.map(x=>x.label),[
+  'Above grade','On grade','Below grade','Far below grade','Not completed']);
+ assert.deepEqual(ixl.rows.slice(0,4).map(x=>x.colour),[
+  '#216b58','#b6c9a4','#f0a95b','#9f3945']);
  const fallback=classifyColumnGuide({label:'Custom subject field'});
  assert.match(fallback.note,/no universal colour threshold/i);
 });

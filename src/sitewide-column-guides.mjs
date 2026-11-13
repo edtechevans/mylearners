@@ -23,7 +23,20 @@ const experienceRows=[
  {label:'0 to below +1',range:'Above zero',colour:gradeColours[2]},
  {label:'+1 to +2',range:'Upper index',colour:gradeColours[3]}
 ];
-const mapRows=MAP_RIT_BANDS.toReversed().map(b=>({
+const cohortRows=[
+ {label:'Q1',range:'Lower same-grade quarter',colour:gradeColours[0]},
+ {label:'Q2',range:'Second same-grade quarter',colour:gradeColours[1]},
+ {label:'Q3',range:'Third same-grade quarter',colour:gradeColours[2]},
+ {label:'Q4',range:'Upper same-grade quarter',colour:gradeColours[3]}
+];
+const ixlRows=[
+ {label:'Above grade',range:'Diagnostic tier',colour:'#216b58'},
+ {label:'On grade',range:'Diagnostic tier',colour:'#b6c9a4'},
+ {label:'Below grade',range:'Diagnostic tier',colour:'#f0a95b'},
+ {label:'Far below grade',range:'Diagnostic tier',colour:'#9f3945'},
+ {label:'Not completed',range:'No diagnostic result',colour:'#eef2f4'}
+];
+const mapRows=MAP_RIT_BANDS.slice().reverse().map(b=>({
  label:b.label,range:b.from+'–'+b.to+' percentile',
  colour:({low:'#8b1d25','low-average':'#f39a20',average:'#f7c817',
  'high-average':'#098348',high:'#435ca5'})[b.key]
@@ -65,20 +78,20 @@ export function classifyColumnGuide({label='',source='',family='',stage='',role=
    [],'Check the window and number of opportunities. Missing attendance records are not scored as absences.');
  if(/ixl/.test(name))
   return spec('IXL Mathematics','Diagnostic level',
-   'The value indicates an IXL diagnostic level. The colour and secondary text describe its grade-level tier: Above grade, On grade, Below grade or Far below grade.',
-   [],'This is not an IXL SmartScore, a report-card grade or a standard percentage. Incomplete diagnostics display as missing.');
+   'The value indicates an IXL diagnostic level. The colour and secondary text describe its grade-level tier.',
+   ixlRows,'This is not an IXL SmartScore, a report-card grade or a standard percentage. Incomplete diagnostics display as missing.');
  if(/core phonics|phonics|decod/.test(name))
   return spec('Core Phonics','Decoding evidence',
    'A reading and phonics check indicates progress on assessed decoding skills. A count depends on the assessment instrument and items administered.',
-   [],'Interpret the count in the context of the instrument; this is not a universal grade or reading level.');
+   cohortRows,'The colours represent relative standing among displayed same-grade records, not validated phonics benchmarks or reading levels.');
  if(/f&p|fountas|pinnell/.test(name))
   return spec('F&P Reading','Text level',
    'Letters indicate levels in a text-complexity sequence, not numerical percentages or school grades.',
-   [],'Use alongside comprehension, fluency and other reading evidence; a text level is not a measure of the whole reader.');
+   cohortRows,'The colours compare the displayed same-grade cohort, not official reading benchmarks. Use comprehension, fluency and other evidence.');
  if(/maia|flourishing|perma/.test(name))
   return spec('Flourishing','PERMA dimension',
    'This display uses an illustrative 0–10 dimension scale for relationships or other aspects of flourishing.',
-   [],'Do not combine it numerically with Engagement/Belonging or treat it as a diagnosis.');
+   cohortRows,'Colours describe relative same-grade display groups. Never combine numerically with Engagement/Belonging or treat as a diagnosis.');
  if(/\bwida\b/.test(name))
   return spec('WIDA','English-language proficiency',
    'WIDA proficiency uses a 1.0–6.0 scale. It is separate from academic grades and subject assessments.',
@@ -170,7 +183,7 @@ export function installSitewideColumnGuides(root){
   const family=th.dataset.facultyFamily||'';
   const stage=th.closest('[data-faculty-stage]')?.dataset.facultyStage||'';
   const role=root.dataset?.workspace||'faculty';
-  p.innerHTML=renderColumnGuide(classifyColumnGuide({label,source:th.dataset.sourceHeading||th.dataset.fullHeading||'',family,stage,role}));
+  p.innerHTML=renderColumnGuide(classifyColumnGuide({label,source:th.dataset.fullHeading||th.dataset.sourceHeading||'',family,stage,role}));
   p.hidden=false;
   const rect=th.getBoundingClientRect(),box=p.getBoundingClientRect();
   const ww=window.innerWidth||1024,hh=window.innerHeight||768;
