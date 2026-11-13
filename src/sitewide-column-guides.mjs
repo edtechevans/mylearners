@@ -130,7 +130,8 @@ export function renderColumnGuide(guide){
 }
 /** Called once; delegates to dynamically rendered tables across five roles. */
 export function installSitewideColumnGuides(root){
- if(!root||typeof root.addEventListener!=='function'||typeof document==='undefined'||
+ if(!root||typeof root.addEventListener!=='function'||typeof root.querySelectorAll!=='function'||
+  typeof document==='undefined'||
   !document.body?.appendChild||typeof document.createElement!=='function')return null;
  let active=null,popup=null;
  const getHeader=target=>target?.closest?.('th');
