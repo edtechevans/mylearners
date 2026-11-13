@@ -76,3 +76,83 @@
  #app .heading .sitewide-export-action{position:static}
  #app .heading-meta{padding-right:0}
 }
+
+
+/* All subjects stay in the schoolwide roster. Match the Faculty grade palette and
+   58px tile rhythm rather than reducing results to a single subject summary. */
+#app .leader-student-explorer .explorer-table{
+ border-spacing:0 3px;
+}
+#app .leader-student-explorer .explorer-table thead th[data-explorer-group="report"]{
+ box-shadow:inset 0 2px 0 #c7d6df;
+}
+#app .leader-student-explorer .explorer-table thead th{
+ height:64px;line-height:1.35;text-align:center;
+}
+#app .leader-student-explorer .explorer-table td{
+ height:70px;padding:6px 6px;
+}
+#app .leader-student-explorer .explorer-table td[data-explorer-col="report"],
+#app .leader-student-explorer .explorer-table th[data-explorer-group="report"]{
+ min-width:116px;width:116px;
+}
+#app .leader-student-explorer .explorer-table .explorer-grade{
+ display:flex;width:100%;min-width:0;min-height:58px;height:58px;
+ align-items:center;justify-content:center;padding:8px;
+ border-radius:9px;font-weight:800;line-height:1.15;
+ box-sizing:border-box;font-variant-numeric:tabular-nums;
+}
+#app .leader-student-explorer .explorer-grade>strong{
+ font-size:20px;font-weight:850;letter-spacing:-.025em;
+ color:inherit;text-align:center;white-space:normal;
+}
+#app .leader-student-explorer .explorer-grade.explorer-descriptor{
+ background:#eef3f7;color:#31536c;border:1px solid #dbe7ef;
+}
+#app .leader-student-explorer .explorer-grade.explorer-descriptor>strong{
+ font-size:11px;letter-spacing:0;overflow-wrap:normal;word-break:normal;
+}
+#app .leader-student-explorer .explorer-grade.evidence-heat.band-low{
+ background:#a6373f;color:#fff;
+}
+#app .leader-student-explorer .explorer-grade.evidence-heat.band-mid-low{
+ background:#e4a15f;color:#142b32;
+}
+#app .leader-student-explorer .explorer-grade.evidence-heat.band-mid-high{
+ background:#a6bd88;color:#142b32;
+}
+#app .leader-student-explorer .explorer-grade.evidence-heat.band-high{
+ background:#246b4f;color:#fff;
+}
+#app .leader-student-explorer .explorer-grade.evidence-heat.band-low strong,
+#app .leader-student-explorer .explorer-grade.evidence-heat.band-high strong{color:#fff}
+#app .leader-student-explorer .explorer-grade.evidence-heat.band-mid-low strong,
+#app .leader-student-explorer .explorer-grade.evidence-heat.band-mid-high strong{color:#142b32}
+#app .leader-student-explorer .explorer-grade .myp-best-fit-marker{
+ vertical-align:super;font-size:11px;line-height:0;position:relative;
+}
+#app .leader-student-explorer .explorer-table thead th[data-source-heading] .explorer-sort{
+ display:inline-flex;gap:4px;align-items:center;justify-content:center;
+ font-size:12px;white-space:normal;line-height:1.25;text-align:center;
+}
+#app .leader-student-explorer .explorer-table thead th[data-source-heading] .explorer-sort span{padding-left:0}
+#app .leader-student-explorer .explorer-table tbody tr:hover td,
+#app .leader-student-explorer .explorer-table tbody tr:focus-within td{background:#f3f8fb}
+#app .leader-student-explorer .explorer-table tbody tr:hover th:first-child,
+#app .leader-student-explorer .explorer-table tbody tr:focus-within th:first-child{background:#f3f8fb}
+#app .leader-student-explorer .explorer-scroll-tools{
+ display:flex;justify-content:flex-end;align-items:center;
+ gap:8px;margin:4px 0 6px;font-size:11px;font-weight:700;color:#5a788b
+}
+#app .leader-student-explorer .explorer-scroll-tools div{display:flex;gap:5px}
+#app .leader-student-explorer .explorer-scroll-tools button{
+ border:1px solid #cbdbe5;background:#fff;color:#255a78;border-radius:8px;
+ min-width:30px;min-height:27px;font-size:17px;padding:2px 8px;cursor:pointer;
+}
+#app .leader-student-explorer .explorer-scroll-tools button:hover{
+ background:#edf5fa;border-color:#97b7cb;
+}
+@media(max-width:640px){
+ #app .leader-student-explorer .explorer-table .explorer-grade{min-height:50px;height:50px}
+ #app .leader-student-explorer .explorer-scroll-tools{justify-content:flex-start}
+}
