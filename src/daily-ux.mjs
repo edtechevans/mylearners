@@ -577,7 +577,7 @@ function sourceStrip(){
   r==='leader'?'All individual learner records, support cohorts and experience indices in this view are fictional; dates and eligibility vary by assessment.':
   r==='sss'?'Fictional learner support demonstration only. Specialist records are not securely shared or connected to an authoritative source.':
   'Student preview: no live records. Historical issued grades are not current-year results.';
- strip.innerHTML='<strong>Evidence context</strong><span>Demonstration · 8 Oct 2026</span>'+
+ strip.innerHTML='<strong>Evidence context</strong><span>As of 8 Oct 2026</span>'+
  '<details><summary>What am I viewing?</summary><p>'+info+
  ' Missing results are not zeros. Use the source, date and scale noted beside each measure.</p></details>';
  heading.insertAdjacentElement('afterend',strip);

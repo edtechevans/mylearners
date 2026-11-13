@@ -1,5 +1,6 @@
 /* A shared source-specific legend on every learning-data table header. */
-#app thead th[data-column-guide-ready="yes"]{position:relative;cursor:help}
+#app thead th[data-column-guide-ready="yes"]{cursor:help}
+#app thead th[data-column-guide-ready="yes"]:not(.ux-table-shell th){position:relative}
 #app thead th[data-column-guide-ready="yes"] .column-guide-indicator{
  position:absolute;right:5px;bottom:5px;font:700 11px/1 Arial,sans-serif;
  color:#527e96;opacity:.68;pointer-events:none;z-index:3;
