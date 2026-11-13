@@ -7,7 +7,7 @@ import {createAcademicDemoRecords} from '../src/academic-journey-data.mjs';
 import {createExperienceRecords} from '../src/experience-data.mjs';
 import {createMaiaDemoRecords} from '../src/maia-demo.mjs';
 import {mapRitBand} from '../src/map-rit-achievement.mjs';
-import {EXPLORER_DEFAULTS,EXPLORER_PAGE_SIZE,leaderExplorerModel,renderLeaderStudentExplorer,leaderExplorerExportRows} from '../src/leader-student-explorer.mjs';
+import {EXPLORER_DEFAULTS,explorerColumns,leaderExplorerModel,renderLeaderStudentExplorer,leaderExplorerExportRows} from '../src/leader-student-explorer.mjs';
 import {csvContent} from '../src/dashboard-export.mjs';
 
 const data=applyFacultyDemo(generateDemoData());
@@ -15,11 +15,15 @@ const academic=createAcademicDemoRecords(data.students);
 const experience=createExperienceRecords(data.students);
 const maia=createMaiaDemoRecords(data.students);
 const model=filters=>leaderExplorerModel({data,academic,experience,filters});
-test('Explorer starts with cross-school unique students, paged while CSV contains all matches',()=>{
+test('Explorer starts with every school learner, A-Z by displayed name, without pagination',()=>{
  const result=model(EXPLORER_DEFAULTS);
  assert.equal(result.total,data.students.length);
  assert.equal(result.rows.length,result.total);
- assert.equal(result.shown.length,EXPLORER_PAGE_SIZE);
+ assert.equal(result.shown.length,result.total);
+ assert.equal(result.total,new Set(result.rows.map(row=>row.student.id)).size);
+ for(let i=1;i<result.rows.length;i++)
+  assert.ok(result.rows[i-1].student.name.localeCompare(result.rows[i].student.name,undefined,{numeric:true})<=0,
+   'every learner should appear in alphabetical display-name order');
  const csv=leaderExplorerExportRows({data,academic,experience,filters:EXPLORER_DEFAULTS});
  assert.equal(csv.count,result.total);
  assert.equal(csv.rows.length,result.total);
@@ -77,6 +81,55 @@ test('Rendered Explorer has controls, MAP percentile tiles, exact grade-aware co
  assert.match(html,/map-rit-(low|low-average|average|high-average|high)/);
  assert.match(html,/data-explorer-sort=/);
  assert.doesNotMatch(html,/>IEP<|>Medical<|>Behavioural</);
+});
+test('Schoolwide subject columns reflect every programme; G7 matches all eight MYP Faculty subjects',()=>{
+ const school=explorerColumns({grade:'All',division:'All',data});
+ const all=school.filter(c=>c.kind==='report').map(c=>c.subject);
+ for(const grade of ['PK3','K','G4','G7','G12']){
+  const expected=explorerColumns({grade,division:'All',data}).filter(c=>c.kind==='report');
+  assert.ok(expected.length>0,grade+' should have subject grade columns');
+  assert.ok(expected.every(c=>all.includes(c.subject)),grade+' subjects remain in the schoolwide view');
+ }
+ const seven=explorerColumns({grade:'G7',division:'Secondary',data})
+  .filter(c=>c.kind==='report').map(c=>c.subject);
+ assert.deepEqual(seven,['Language & Literature','Mathematics','Sciences','Individuals & Societies',
+  'Language Acquisition','Design','Arts','Physical & Health Education']);
+ const html=renderLeaderStudentExplorer({data,academic,experience,maia,filters:{grade:'G7'}});
+ for(const heading of ['L&amp;L','Math','Sciences','I&amp;S','LA','Design','VPA','PHE']){
+  assert.ok(html.includes(heading),heading+' should appear as a Faculty-style subject heading');
+ }
+ assert.match(html,/explorer-grade evidence-heat band-(low|mid-low|mid-high|high)/);
+ assert.match(html,/myp-best-fit-marker/);
+});
+test('Filtering removes nonmatching learners without dropping their other subject grade columns',()=>{
+ const base=renderLeaderStudentExplorer({data,academic,experience,maia,filters:{grade:'G7'}});
+ const narrow=model({grade:'G7',subject:'Mathematics',eal:'active'});
+ assert.ok(narrow.total>0);
+ assert.ok(narrow.rows.every(r=>r.student.grade==='G7'&&['e1','e2','i3','i4','a5'].includes(r.support?.eal)));
+ const narrowed=renderLeaderStudentExplorer({data,academic,experience,maia,
+  filters:{grade:'G7',subject:'Mathematics',eal:'active'}});
+ for(const subject of ['Language & Literature','Sciences','Individuals & Societies','Design','Mathematics']){
+  const key='data-source-heading="'+subject.replaceAll('&','&amp;')+'"';
+  assert.ok(base.includes(key));
+  assert.ok(narrowed.includes(key));
+ }
+ assert.equal((narrowed.match(/<tr><th scope="row">/g)||[]).length,narrow.total);
+});
+test('Subject-grade sorting and CSV export preserve every grade in the corresponding column',()=>{
+ const sorted=model({grade:'G7',sort:'report:Mathematics'}).rows;
+ const grades=sorted.map(row=>Number(row.report.subjects.find(item=>item.subject==='Mathematics').value));
+ assert.deepEqual(grades,[...grades].sort((a,b)=>a-b));
+ const selected={division:'Secondary',grade:'G7',eal:'active'};
+ const source=model(selected);
+ const csv=leaderExplorerExportRows({data,academic,experience,filters:selected});
+ const mathIndex=csv.headers.indexOf('Subject grade · Mathematics');
+ const sciencesIndex=csv.headers.indexOf('Subject grade · Sciences');
+ assert.ok(mathIndex>=0&&sciencesIndex>=0);
+ assert.equal(csv.rows.length,source.total);
+ source.rows.forEach((row,i)=>{
+  assert.equal(csv.rows[i][mathIndex],row.report.subjects.find(item=>item.subject==='Mathematics')?.value);
+  assert.equal(csv.rows[i][sciencesIndex],row.report.subjects.find(item=>item.subject==='Sciences')?.value);
+ });
 });
 test('App wires Explorer and colour-only headline indices without surfacing raw index numbers',()=>{
  const code=readFileSync(new URL('../src/student-experience-app.mjs',import.meta.url),'utf8');
