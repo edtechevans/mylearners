@@ -233,6 +233,24 @@ const interactionInPage=async()=>{
  return {original,reduced,hidden,order,active,restored,before,after:scroller.scrollLeft,
   downFocus,jumpFocus};
 };
+const sitewideAuditInPage=()=>{
+ const role=document.querySelector('#app')?.dataset.workspace||'unknown';
+ const visible=[...document.querySelectorAll('#app thead th')].filter(th=>
+  th.getBoundingClientRect().width>0&&!th.hasAttribute('data-ux-column-hidden'));
+ const target=visible.find(th=>!th.hasAttribute('data-map-rit-subject'));
+ let guide=null;
+ if(target){
+  target.dispatchEvent(new MouseEvent('mouseover',{bubbles:true}));
+  const panel=document.querySelector('#sitewide-column-guide');
+  guide={visible:!!panel&&!panel.hidden,text:panel?.innerText||''};
+ }
+ return {
+  role,columns:visible.length,guided:visible.filter(th=>th.dataset.columnGuideReady==='yes').length,
+  guide,footer:!!document.querySelector('footer .sitewide-footer-data'),
+  jargon:/\b(fictional|synthetic|demonstration|demo)\b/i.test(
+   document.querySelector('#app main.container')?.innerText||'')
+ };
+};
 await mkdir(OUT,{recursive:true});
 try{
  await send('Page.enable');await send('Runtime.enable');
@@ -261,6 +279,22 @@ try{
  check(actions.after>actions.before+40,'Scroll control did not move the table');
  report.push({type:'interaction',...actions});
  await screenshot('myp-interactions');
+ let foundWithTables=0;
+ for(const role of ['faculty','student','sss','leader','board']){
+  await evaluate('document.querySelector(\'[data-role="'+role+'"]\')?.click()');
+  await sleep(140);
+  const found=await evaluate('('+sitewideAuditInPage.toString()+')()');
+  check(found.role===role,'Workspace toggle failed for '+role);
+  check(found.footer&&!found.jargon,'Prototype copy/provenance error in '+role);
+  check(found.guided===found.columns,role+': column guide coverage '+found.guided+'/'+found.columns);
+  if(found.columns){
+   foundWithTables++;
+   check(found.guide?.visible&&found.guide.text.length>40,role+': header guide not interactive');
+  }
+  report.push({type:'workspace',...found});
+  console.log('PASS '+role+' workspace headers '+found.guided+'/'+found.columns);
+ }
+ check(foundWithTables>=2,'Sitewide audit did not encounter enough real data tables');
  await writeFile(OUT+'/faculty-consistency-report.json',JSON.stringify(report,null,2));
  console.log('PASS Faculty consistency: seven class levels at 100% and 125%-equivalent; interactions');
 }catch(error){
