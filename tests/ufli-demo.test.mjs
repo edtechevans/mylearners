@@ -95,9 +95,11 @@ test('Role-scoped hover reveals exact lesson topic with synthetic-data caution',
  assert.equal(preview.title,'UFLI Foundations · '+lesson.code);
  assert.deepEqual(preview.rows.map(x=>x[1]),[
   lesson.lesson+' of 128',lesson.phase.label,
-  lesson.group.label+' · '+lesson.group.start+'–'+lesson.group.end
+  lesson.group.label+' · '+lesson.group.start+'–'+lesson.group.end,
+  'UFLI Foundations K–2 sequence; placement fictional',
+  '2026–27 demo snapshot, not a test date'
  ]);
- assert.match(preview.note,/not a proficiency-level/);
+ assert.match(preview.note,/not a reading proficiency level/);
  assert.equal(resolveEvidencePreview(
   {dataset:{evidencePreview:'ufli',previewStudent:student.id}},
   {...ctx,allowedStudentIds:[]}),null);
