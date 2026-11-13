@@ -19,8 +19,8 @@ import {renderStudentPhoto} from './student-photo-preview.mjs';
 import {esc} from './v2-ui.mjs';
 
 export const EXPLORER_DEFAULTS=Object.freeze({
- division:'All',grade:'All',classId:'',teacher:'all',subject:'all',
- eal:'all',learning:'all',mapTest:'Mathematics',strand:'',band:'all',
+ division:'All',grade:'All',classId:'',teacher:'all',subject:'all',gradeFilter:'all',
+ eal:'all',learning:'all',mapTest:'all',strand:'',band:'all',
  strandBand:'all',query:'',sort:'name',direction:'asc'
 });
 export const EXPLORER_PAGE_SIZE=80;
@@ -40,7 +40,30 @@ const validSort=(value,subjects)=>['name','grade','class','teacher','attendance'
  (String(value||'').startsWith('report:')&&subjects.includes(String(value).slice(7)));
 const activeBand=(value,band)=>band==='both'?['low','low-average'].includes(value):band==='all'||value===band;
 const reportFor=(academic,id)=>facultyDemoReport(academicFor(academic,id));
-const gradeLabel=(g)=>g==='K'?'Kindergarten':g;
+const gradeLabel=g=>g==='K'?'Kindergarten':g;
+const shortMapSubject=subject=>subject==='Mathematics'?'Math':subject==='Language Usage'?'Language':subject;
+const shortDescriptor=value=>({Emerging:'Emerg.',Developing:'Dev.',Applying:'Apply',Extending:'Extend'})[value]||value;
+const currentGoals=(records,mapTest,goalName,descriptor)=>{
+ const tests=mapTest==='all'?MAP_RIT_SUBJECTS:[mapTest];
+ return tests.flatMap(subject=>{
+  const test=records[subject];
+  return (test?.goals||[]).filter(goal=>
+   (!goalName||goal.name===goalName)&&Number.isFinite(goal.rit)&&
+   (descriptor==='all'||activeBand(strandBand(goal),descriptor))
+  ).map(goal=>({subject,goal,band:strandBand(goal)}));
+ });
+};
+const achievementMatches=(records,mapTest,band)=>{
+ const tests=mapTest==='all'?MAP_RIT_SUBJECTS:[mapTest];
+ return tests.map(subject=>({subject,record:records[subject],
+  band:mapRitBand(records[subject]?.percentile)})).filter(entry=>
+   !!entry.record&&!!entry.band&&activeBand(entry.band.key,band));
+};
+export function explorerActiveFilters(filters={}){
+ const f=cleanFilter(filters);
+ return Object.keys(EXPLORER_DEFAULTS).filter(key=>!['query','sort','direction'].includes(key)&&
+  f[key]!==EXPLORER_DEFAULTS[key]);
+}
 
 export function leaderExplorerModel({data,academic,experience,filters={}}){
  const f=cleanFilter(filters);
@@ -75,18 +98,36 @@ export function leaderExplorerModel({data,academic,experience,filters={}}){
    report?.subjects.find(x=>x.subject==='Mathematics'||x.subject==='Early Mathematics')||report?.subjects[0];
   const map=Object.fromEntries(MAP_RIT_SUBJECTS.map(subject=>[subject,mapRitCurrent(data.map[student.id]||[],subject)]));
   const focus=mapTest==='all'?null:map[mapTest];
-  const goal=goalName?focus?.goals?.find(g=>g.name===goalName)||null:null;
+  const goalHits=currentGoals(map,mapTest,goalName,f.strandBand);
+  const allGoalHits=currentGoals(map,mapTest,goalName,'all');
+  const goal=goalHits[0]?.goal||allGoalHits[0]?.goal||null;
+  const bandHits=achievementMatches(map,mapTest,f.band);
+  const allBandHits=achievementMatches(map,mapTest,'all');
   const support=supportStatusForStudent(student);
   const attendance=attendanceSummary(data.attendance[student.id]||[]).rate;
   const e=experienceFor(experience,student.id,'engagement')?.value??null;
   const b=experienceFor(experience,student.id,'belonging')?.value??null;
-  return {student,teacher,report,reportItem,map,focus,goal,support,attendance,
-   engagementBand:experienceBand(e),belongingBand:experienceBand(b)};
+  return {student,teacher,report,reportItem,map,focus,goal,goalHits,allGoalHits,bandHits,allBandHits,
+   support,attendance,engagementBand:experienceBand(e),belongingBand:experienceBand(b)};
  });
  const rows=mapped.filter(row=>{
   if(query&&![row.student.name,row.student.id,row.student.grade,row.student.classId,row.teacher?.name]
    .some(v=>String(v||'').toLocaleLowerCase().includes(query)))return false;
   if(f.subject!=='all'&&!row.reportItem)return false;
+  if(f.gradeFilter!=='all'){
+   const subjects=f.subject==='all'?row.report?.subjects||[]:row.reportItem?[row.reportItem]:[];
+   const match=subjects.some(item=>{
+    if(f.gradeFilter==='missing')return item.value==null||String(item.value).trim()==='';
+    if(row.report?.scale==='1–7'){
+     const n=Number(item.value);
+     return Number.isInteger(n)&&n>=1&&n<=7&&
+      (f.gradeFilter==='numeric-2'&&n<=2||f.gradeFilter==='numeric-3'&&n<=3);
+    }
+    return f.gradeFilter==='emerging'&&item.value==='Emerging'||
+     f.gradeFilter==='developing'&&item.value==='Developing';
+   });
+   if(!match)return false;
+  }
   const eal=row.support?.eal||'not-needed';
   if(f.eal==='active'&&!isActiveEal(eal))return false;
   if(f.eal==='monitor'&&!isMonitoredEal(eal))return false;
@@ -94,10 +135,8 @@ export function leaderExplorerModel({data,academic,experience,filters={}}){
   if(f.eal==='none'&&eal!=='not-needed')return false;
   if(f.learning==='yes'&&!row.support?.hasLearning)return false;
   if(f.learning==='no'&&row.support?.hasLearning)return false;
-  if(goalName&&!row.goal)return false;
-  if(f.strandBand!=='all'&&(!row.goal||!activeBand(strandBand(row.goal),f.strandBand)))return false;
-  if(f.band!=='all'&&!((mapTest==='all'?MAP_RIT_SUBJECTS.map(test=>row.map[test]):[row.focus])
-   .some(test=>activeBand(mapRitBand(test?.percentile)?.key,f.band))))return false;
+  if((goalName||f.strandBand!=='all')&&!row.goalHits.length)return false;
+  if(f.band!=='all'&&!row.bandHits.length)return false;
   return true;
  });
  const sort=validSort(f.sort,availableSubjects)?f.sort:'name',direction=f.direction==='desc'?-1:1;
@@ -113,9 +152,9 @@ export function leaderExplorerModel({data,academic,experience,filters={}}){
    return item?.value==null?null:row.report?.scale==='1–7'?Number(item.value):item.value;
   }
   if(key.startsWith('map:'))return row.map[key.slice(4)]?.rit??null;
-  if(key==='mapBand')return bandOrder(mapRitBand(row.focus?.percentile)?.key);
-  if(key==='strandRit')return row.goal?.rit??null;
-  if(key==='strandBand')return bandOrder(strandBand(row.goal));
+  if(key==='mapBand')return row.bandHits.length?Math.min(...row.bandHits.map(h=>bandOrder(h.band.key))):null;
+  if(key==='strandRit')return row.goalHits[0]?.goal.rit??null;
+  if(key==='strandBand')return row.goalHits[0]?bandOrder(row.goalHits[0].band):null;
   return row.student.name;
  };
  rows.sort((a,b)=>{
