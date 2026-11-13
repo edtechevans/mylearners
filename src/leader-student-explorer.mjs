@@ -399,7 +399,11 @@ export function renderLeaderStudentExplorer({data,academic,experience,maia,filte
 }
 export function leaderExplorerExportRows({data,academic,experience,filters={}}){
  const model=leaderExplorerModel({data,academic,experience,filters});
- const subjectCols=explorerColumns({grade:model.grade,division:model.division,data}).filter(c=>c.kind==='report');
+ const subjectCols=model.grade==='All'?
+  [...new Set(GRADES.filter(g=>data.students.some(student=>
+   student.grade===g&&(model.division==='All'||student.division===model.division)))
+   .flatMap(reportSubjectsFor))].map(subject=>({subject})):
+  explorerColumns({grade:model.grade,division:model.division,data}).filter(c=>c.kind==='report');
  const cols=['Student','Demo ID','Division','Grade','Class','Teacher','Subject','Subject result','Attendance %',
   ...subjectCols.map(c=>'Subject grade · '+c.subject),
   ...MAP_RIT_SUBJECTS.flatMap(test=>['MAP '+test+' RIT','MAP '+test+' percentile','MAP '+test+' band']),
