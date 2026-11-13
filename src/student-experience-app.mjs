@@ -57,7 +57,7 @@ import {renderDPSubjectPointDetails} from './board-dp-subjects.mjs';
 import {DP_RECORDS} from './board-dp-data.mjs?v=20261031dp-world1';
 import {boardWindowFor,BOARD_DATA} from './board-map-data.mjs';
 import {parseBoardHash} from './board-map-links.mjs?v=20261031dp-default1';
-import {EXPLORER_DEFAULTS,leaderExplorerModel,renderLeaderStudentExplorer,leaderExplorerExportRows} from './leader-student-explorer.mjs?v=20261113leaders2';
+import {EXPLORER_DEFAULTS,leaderExplorerModel,renderLeaderStudentExplorer,leaderExplorerExportRows} from './leader-student-explorer.mjs?v=20261113leaders3';
 import {exportCsv,visibleDashboardCsv} from './dashboard-export.mjs?v=20261113export1';
 const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(DATA.students),
  ACADEMIC_RECORDS=createAcademicDemoRecords(DATA.students),
