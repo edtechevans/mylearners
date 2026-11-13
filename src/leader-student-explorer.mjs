@@ -37,7 +37,7 @@ const isMonitoredEal=x=>x==='monitor-y1'||x==='monitor-y2';
 const cleanFilter=(filters={})=>({...EXPLORER_DEFAULTS,...filters});
 const validSort=(value,subjects)=>['name','grade','class','teacher','attendance','subject',
  'map:Reading','map:Mathematics','map:Language Usage','mapBand','strandRit','strandBand'].includes(value)||
- (value.startsWith('report:')&&subjects.includes(value.slice(7)));
+ (String(value||'').startsWith('report:')&&subjects.includes(String(value).slice(7)));
 const activeBand=(value,band)=>band==='both'?['low','low-average'].includes(value):band==='all'||value===band;
 const reportFor=(academic,id)=>facultyDemoReport(academicFor(academic,id));
 const gradeLabel=(g)=>g==='K'?'Kindergarten':g;
@@ -247,11 +247,16 @@ export function renderLeaderStudentExplorer({data,academic,experience,maia,filte
    select('Sort students','sort',headerChoices,model.sort)+
    '<button type="button" class="explorer-secondary" data-explorer-direction aria-label="Reverse sort order">'+(model.direction===1?'Ascending ↑':'Descending ↓')+'</button></div>'+
   renderMapRitLegend()+
+  '<div class="explorer-scroll-tools" aria-label="Subject column navigation"><span>Scroll subject columns</span><div>'+
+   '<button type="button" data-explorer-scroll="-1" aria-label="Scroll subject columns left">←</button>'+
+   '<button type="button" data-explorer-scroll="1" aria-label="Scroll subject columns right">→</button>'+
+   '</div></div>'+
   '<div class="tablewrap explorer-scroll" tabindex="0" aria-label="Scrollable Student Explorer roster"><table class="faculty-data-wall explorer-table">'+
   '<thead><tr><th scope="col">'+sortButton('name','Learner')+'</th>'+
   '<th scope="col">'+sortButton('grade','Grade')+'</th><th scope="col">'+sortButton('class','Class')+'</th>'+
   '<th scope="col">'+sortButton('teacher','Teacher')+'</th>'+
-  columns.map(c=>'<th scope="col"'+(c.kind==='mapRit'?' data-map-rit-subject="'+s(c.subject)+'"':'')+
+  columns.map(c=>'<th scope="col"'+(c.kind==='report'?' data-explorer-group="report"':'')+
+   (c.kind==='mapRit'?' data-map-rit-subject="'+s(c.subject)+'"':'')+
    (c.kind==='report'?' title="'+s(c.subject)+'" data-source-heading="'+s(c.subject)+'"':'')+'>'+
     sortButton(c.kind==='mapRit'?'map:'+c.subject:c.kind==='attendance'?'attendance':
     c.kind==='report'?'report:'+c.subject:c.kind,labelFor(c))+'</th>').join('')+
