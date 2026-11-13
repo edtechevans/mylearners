@@ -26,7 +26,7 @@ test('All Faculty grades have concise but genuinely informative demo measure met
   const columns=facultyRosterEvidenceColumns(sample,records,everydayEvidenceForGrade(grade));
   const markup=renderFacultyMeasureContext(columns,'2026-10-08');
   assert.match(markup,/class="faculty-data-context"/,grade);
-  assert.match(markup,/Screener: simulated %, not a risk score/,grade);
+  assert.match(markup,/Screener: % bands, not a risk score/,grade);
   assert.match(markup,/Source, date &amp; meaning/,grade);
   assert.match(markup,/2026-10-08 \(demo snapshot\)/,grade);
   assert.match(markup,/<dt>Source<\/dt>/,grade);

@@ -162,7 +162,7 @@ async function audit(grade,width,label){
  check(r.jumpOptions>=2,grade+': no direct learner jump');
  check(r.gridActions>=3&&r.gridTabStops===1,
   grade+': expected exactly one tabbable data-cell action; found '+r.gridTabStops+' / '+r.gridActions);
- check(r.contextSummary.includes('Screener: simulated %')&&r.contextSource,
+ check(r.contextSummary.includes('Screener: % bands')&&r.contextSource,
   grade+': demo screening source context missing. Summary='+JSON.stringify(r.contextSummary)+', source='+r.contextSource);
  if(grade==='K'||grade==='G2'||grade==='G5')
   check(r.ufliCollapsed,grade+': UFLI legend should begin collapsed');
