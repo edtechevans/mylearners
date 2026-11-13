@@ -43,12 +43,12 @@ const gradeLabel=(g)=>g==='K'?'Kindergarten':g;
 export function leaderExplorerModel({data,academic,experience,filters={}}){
  const f=cleanFilter(filters);
  const division=['All','Elementary','Secondary'].includes(f.division)?f.division:'All';
- const grade=GRADES.includes(f.grade)?f.grade:'All';
+ const grade=GRADES.includes(f.grade)&&(division==='All'||(gradeNumber(f.grade)<=5?'Elementary':'Secondary')===division)?f.grade:'All';
  const classes=data.classes.filter(c=>(division==='All'||c.division===division)&&
   (grade==='All'||c.grade===grade));
  const teachers=data.teachers.filter(t=>classes.some(c=>t.classIds.includes(c.id)))
   .sort((a,b)=>a.name.localeCompare(b.name));
- const availableGrades=GRADES.filter(g=>classes.some(c=>c.grade===g));
+ const availableGrades=GRADES.filter(g=>data.classes.some(c=>c.grade===g&&(division==='All'||c.division===division)));
  const mapTest=MAP_RIT_SUBJECTS.includes(f.mapTest)?f.mapTest:'all';
  const availableSubjects=[...new Set(classes.flatMap(c=>c.studentIds)
   .map(id=>reportFor(academic,id)).filter(Boolean).flatMap(r=>r.subjects.map(x=>x.subject)))].sort();
@@ -210,7 +210,7 @@ export function renderLeaderStudentExplorer({data,academic,experience,maia,filte
   '<strong class="explorer-count">'+model.total+' <small>matching learners</small></strong></div>'+
   '<div class="explorer-filter-grid">'+
   select('Division','division',[['All','Whole school'],['Elementary','Elementary'],['Secondary','Secondary']],f.division)+
-  select('Grade','grade',[['All','All grades'],...model.grades.map(g=>[g,gradeLabel(g)])],f.grade)+
+  select('Grade','grade',[['All','All grades'],...model.grades.map(g=>[g,gradeLabel(g)])],model.grade)+
   select('Class / homeroom','classId',[['','All classes'],...classes.map(c=>[c.id,c.name])],f.classId)+
   select('Teacher','teacher',teacherChoices,f.teacher)+
   select('Subject','subject',[['all','All subjects'],...model.subjects.map(x=>[x,x])],f.subject)+
