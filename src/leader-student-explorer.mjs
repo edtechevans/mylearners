@@ -315,51 +315,86 @@ export function renderLeaderStudentExplorer({data,academic,experience,maia,filte
   ...columns.filter(c=>c.kind==='report').map(c=>['report:'+c.subject,c.subject]),
   ...MAP_RIT_SUBJECTS.map(test=>['map:'+test,'MAP '+test+' RIT']),
   ['mapBand','MAP achievement band'],['strandRit','Strand RIT'],['strandBand','Strand descriptor']];
+ const activeNames=active.map(key=>{
+  if(key==='division')return f.division;
+  if(key==='grade')return f.grade;
+  if(key==='subject')return 'Subject: '+f.subject;
+  if(key==='gradeFilter')return 'Grade threshold: '+f.gradeFilter;
+  if(key==='mapTest')return 'MAP '+f.mapTest;
+  if(key==='band')return 'MAP band: '+f.band;
+  if(key==='strandBand')return 'Strand band: '+f.strandBand;
+  if(key==='strand')return 'MAP strand: '+f.strand;
+  if(key==='eal')return 'EAL: '+f.eal;
+  if(key==='learning')return 'Learning Support: '+f.learning;
+  if(key==='teacher')return 'Teacher: '+(model.teachers.find(t=>t.id===f.teacher)?.name||f.teacher);
+  if(key==='classId')return 'Class: '+f.classId;
+  return key;
+ });
+ const gradeChoices=[['All','All grades'],...model.grades.map(g=>[g,gradeLabel(g)])];
  return '<section id="leader-student-explorer" class="leader-student-explorer roster-daily" aria-label="Leaders Student Explorer">'+
-  '<div class="explorer-head"><div><div class="eyebrow">LEARNERS AT A GLANCE</div><h2>Student Explorer</h2>'+
-  '<p>Every learner, A–Z. Each filter narrows the same roster, keeping subject grades visible alongside assessment evidence.</p></div>'+
-  '<strong class="explorer-count">'+model.total+' <small>matching learners</small></strong></div>'+
-  '<div class="explorer-filter-grid">'+
-  select('Division','division',[['All','Whole school'],['Elementary','Elementary'],['Secondary','Secondary']],f.division)+
-  select('Grade','grade',[['All','All grades'],...model.grades.map(g=>[g,gradeLabel(g)])],model.grade)+
-  select('Class / homeroom','classId',[['','All classes'],...classes.map(c=>[c.id,c.name])],f.classId)+
-  select('Teacher','teacher',teacherChoices,f.teacher)+
-  select('Subject','subject',[['all','All subjects'],...model.subjects.map(x=>[x,x])],f.subject)+
-  select('EAL','eal',[['all','All EAL statuses'],['active','Active EAL'],['monitor','EAL monitoring'],['exited','Exited'],['none','No EAL']],f.eal)+
-  select('Learning Support','learning',[['all','All learners'],['yes','With support'],['no','No support flag']],f.learning)+
-  select('MAP test','mapTest',mapChoices,f.mapTest)+
-  select('MAP strand','strand',[['','All strands'],...model.goalNames.map(name=>[name,name])],model.goalName)+
-  select('MAP percentile band','band',bandChoices,f.band)+
-  select('Strand descriptor','strandBand',[['all','Any strand band'],['both','Low + Low Average'],
-   ...MAP_RIT_BANDS.map(b=>[b.key,b.label])],f.strandBand)+
-  '<label class="explorer-field explorer-search"><span>Find student</span><input type="search" data-explorer-search value="'+s(f.query)+'" placeholder="Name, ID or class…" aria-label="Find student"></label>'+
+  '<div class="explorer-toolbar" aria-label="Student Explorer search and filters">'+
+   '<label class="explorer-field explorer-search"><span>Find student</span>'+
+    '<input type="search" data-explorer-search value="'+s(f.query)+'" placeholder="Search name, ID or class" aria-label="Find student"></label>'+
+   select('Division','division',[['All','Whole school'],['Elementary','Elementary'],['Secondary','Secondary']],f.division)+
+   select('Grade','grade',gradeChoices,model.grade)+
+   '<button type="button" class="explorer-secondary explorer-filters-toggle" data-explorer-toggle-filters aria-expanded="'+
+     (filtersOpen?'true':'false')+'" aria-controls="explorer-advanced-filters">Filters'+
+     (active.length?' ('+active.length+')':'')+' <span aria-hidden="true">'+(filtersOpen?'▴':'▾')+'</span></button>'+
+   '<strong class="explorer-count" aria-live="polite">'+model.total+' <small>learners</small></strong>'+
   '</div>'+
-  '<div class="explorer-actions"><p>Showing all '+model.total+' matching learners · '+
-   (model.grade==='All'?'Subject columns span the school’s programmes; unavailable results are blank.':'Subject columns follow this grade’s Faculty view.')+
-   '</p><div><button type="button" class="explorer-secondary" data-explorer-reset>Reset filters</button>'+
-   '<button type="button" class="explorer-primary" data-export-dashboard>Export filtered CSV</button></div></div>'+
-  '<div class="explorer-table-actions"><span>Sort:</span>'+
-   select('Sort students','sort',headerChoices,model.sort)+
-   '<button type="button" class="explorer-secondary" data-explorer-direction aria-label="Reverse sort order">'+(model.direction===1?'Ascending ↑':'Descending ↓')+'</button></div>'+
-  renderMapRitLegend()+
-  '<div class="explorer-scroll-tools" aria-label="Subject column navigation"><span>Scroll subject columns</span><div>'+
-   '<button type="button" data-explorer-scroll="-1" aria-label="Scroll subject columns left">←</button>'+
-   '<button type="button" data-explorer-scroll="1" aria-label="Scroll subject columns right">→</button>'+
+  '<div class="explorer-advanced-filter-grid" id="explorer-advanced-filters"'+(filtersOpen?'':' hidden')+'>'+
+   select('Class / homeroom','classId',[['','All classes'],...classes.map(c=>[c.id,c.name])],f.classId)+
+   select('Teacher / advisor','teacher',teacherChoices,f.teacher)+
+   select('Subject','subject',[['all','Any subject'],...model.subjects.map(subject=>[subject,subject])],f.subject)+
+   select('Subject grade / descriptor','gradeFilter',[['all','All results'],
+     ['numeric-2','Numeric grade 2 or below (MYP / DP)'],
+     ['numeric-3','Numeric grade 3 or below (MYP / DP)'],
+     ['emerging','Emerging (Elementary)'],['developing','Developing (Elementary)'],
+     ['missing','Missing subject result']],f.gradeFilter)+
+   select('EAL','eal',[['all','All EAL statuses'],['active','Active EAL'],
+     ['monitor','EAL monitoring'],['exited','Exited'],['none','No EAL']],f.eal)+
+   select('Learning Support','learning',[['all','All learners'],['yes','With support'],['no','No support flag']],f.learning)+
+   select('MAP test','mapTest',mapChoices,f.mapTest)+
+   select('MAP strand','strand',[['','Any strand'],...model.goalNames.map(name=>[name,name])],model.goalName)+
+   select('MAP percentile band','band',bandChoices,f.band)+
+   select('MAP strand descriptor','strandBand',[['all','Any strand band'],['both','Low + Low Average'],
+    ...MAP_RIT_BANDS.map(b=>[b.key,b.label])],f.strandBand)+
+   '<p class="explorer-filter-help">A strand descriptor without a named strand searches <strong>any matching goal</strong> in the selected MAP test. When all tests are selected, any MAP subject can match. Numeric grades apply only to MYP/DP; developmental descriptors apply only to Elementary.</p>'+
+  '</div>'+
+  (activeNames.length?'<div class="explorer-active-filters" aria-label="Active filters">'+
+    activeNames.map(name=>'<span>'+s(name)+'</span>').join('')+
+    '<button type="button" data-explorer-reset>Clear filters</button></div>':'')+
+  '<div class="explorer-actions">'+
+   '<div class="explorer-action-sort">'+
+    select('Sort by','sort',headerChoices,model.sort)+
+    '<button type="button" class="explorer-secondary" data-explorer-direction aria-label="Reverse sorting">'+
+      (model.direction===1?'Ascending ↑':'Descending ↓')+'</button></div>'+
+   '<div class="explorer-action-right">'+
+    '<span class="explorer-roster-context">'+(model.grade==='All'?
+       'All learners · subjects shown per student':'Grade-specific Faculty subject columns')+'</span>'+
+    (active.length?'<button type="button" class="explorer-secondary" data-explorer-reset>Reset</button>':'')+
+    '<button type="button" class="explorer-primary" data-export-dashboard>Export CSV</button>'+
+    '<button type="button" class="explorer-scroll-arrow" data-explorer-scroll="-1" aria-label="Scroll table left">←</button>'+
+    '<button type="button" class="explorer-scroll-arrow" data-explorer-scroll="1" aria-label="Scroll table right">→</button>'+
    '</div></div>'+
-  '<div class="tablewrap explorer-scroll" tabindex="0" aria-label="Scrollable Student Explorer roster"><table class="faculty-data-wall explorer-table">'+
-  '<thead><tr><th scope="col">'+sortButton('name','Learner')+'</th>'+
-  '<th scope="col">'+sortButton('grade','Grade')+'</th><th scope="col">'+sortButton('class','Class')+'</th>'+
-  '<th scope="col">'+sortButton('teacher','Teacher')+'</th>'+
-  columns.map(c=>'<th scope="col"'+(c.kind==='report'?' data-explorer-group="report"':'')+
-   (c.kind==='mapRit'?' data-map-rit-subject="'+s(c.subject)+'"':'')+
-   (c.kind==='report'?' title="'+s(c.subject)+'" data-source-heading="'+s(c.subject)+'"':'')+'>'+
-    sortButton(c.kind==='mapRit'?'map:'+c.subject:c.kind==='attendance'?'attendance':
-    c.kind==='report'?'report:'+c.subject:c.kind,labelFor(c))+'</th>').join('')+
-  '<th scope="col">'+sortButton('mapBand','MAP band')+'</th>'+
-  '<th scope="col">'+sortButton('strandRit','Strand')+'</th><th scope="col">Support information</th></tr></thead>'+
-  '<tbody>'+rows+'</tbody></table></div>'+
-  (!rows?'<p class="explorer-empty-state">No learners match these filters. Change or reset a filter to see students.</p>':'')+
-  '<p class="explorer-note">Subject grade colours match Faculty (1–3 red, 4 orange, 5–6 light green, 7 dark green); asterisks indicate provisional MYP best fits. Elementary descriptive results retain their wording. MAP RIT colours follow the achievement percentile of the selected grade and testing window. Strand labels use the MAP-provided goal descriptor, not a calculated strand percentile. Missing assessments stay blank. Subject results and teacher assignments in this preview are examples; only approved, permission-controlled sources should be connected in production.</p>'+
+  '<div class="tablewrap explorer-scroll" tabindex="0" aria-label="Scrollable Student Explorer roster">'+
+    '<table class="faculty-data-wall explorer-table" aria-label="Filtered learners and evidence">'+
+      '<thead><tr><th scope="col">'+sortButton('name','Learner')+'</th>'+
+       '<th scope="col">'+sortButton('grade','Grade')+'</th>'+
+       '<th scope="col">'+sortButton('class','Class')+'</th>'+
+       '<th scope="col">'+sortButton('teacher','Advisor')+'</th>'+
+       columns.map(c=>'<th scope="col"'+(c.kind==='report'?' data-explorer-group="report"':'')+
+         (c.kind==='mapRit'?' data-map-rit-subject="'+s(c.subject)+'"':'')+
+         (c.kind==='report'?' title="'+s(c.subject)+'" data-source-heading="'+s(c.subject)+'"':'')+'>'+
+         sortButton(c.kind==='mapRit'?'map:'+c.subject:c.kind==='attendance'?'attendance':
+          c.kind==='report'?'report:'+c.subject:c.kind,labelFor(c))+'</th>').join('')+
+       (showMapBand?'<th scope="col">'+sortButton('mapBand','MAP band match')+'</th>':'')+
+       (showStrand?'<th scope="col">'+sortButton('strandRit','Matching MAP strand')+'</th>':'')+
+       '<th scope="col">Support information</th></tr></thead>'+
+      '<tbody>'+rows+'</tbody></table></div>'+
+  (!rows?'<p class="explorer-empty-state">No learners match these filters. Try broadening a band, strand, or support criterion.</p>':'')+
+  '<div class="explorer-footer"><span>All '+model.total+' matching learners are included in this view and CSV export. Open a name for the learner profile; use ↑ / ↓ on a selected name to move between learners.</span>'+
+   renderMapRitLegend()+'</div>'+
   '</section>';
 }
 export function leaderExplorerExportRows({data,academic,experience,filters={}}){
