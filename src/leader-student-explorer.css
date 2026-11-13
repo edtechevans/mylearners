@@ -64,3 +64,15 @@
 #app .leader-profile-assessment[class*="map-rit-"] strong,
 #app .leader-profile-assessment[class*="map-rit-"] small{color:inherit}
 #app .leader-profile-assessment[class*="map-rit-"] svg{color:inherit}
+
+/* Export sits beside existing heading metadata without pushing Faculty students lower. */
+#app .heading{position:relative}
+#app .heading .sitewide-export-action{
+ position:absolute;right:0;top:0;min-height:27px;padding:4px 8px;
+ line-height:1.2;white-space:nowrap;font-size:11px
+}
+#app .heading-meta{padding-right:94px}
+@media(max-width:600px){
+ #app .heading .sitewide-export-action{position:static}
+ #app .heading-meta{padding-right:0}
+}
