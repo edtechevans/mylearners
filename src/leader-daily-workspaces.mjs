@@ -6,10 +6,10 @@ import {studentSupportLeadershipSummary} from './leader-support-summary.mjs';
 import {supportStatusBadges,supportStatusDetails} from './learner-support-status-ui.mjs?v=20261112supporttips1';
 import {summarizeExperience,experienceChange,experienceEligible,EXPERIENCE_WINDOWS} from './experience-data.mjs';
 import {leaderVoiceReview,leaderMapRedReview} from './leader-review-signals.mjs';
-import {leaderExperienceScale} from './leader-experience-bands.mjs';
+import {leaderExperienceScale,leaderExperienceBandLabel} from './leader-experience-bands.mjs';
 import {reportProgress,mapProgress,academicCheckinProgress} from './evidence-progress.mjs';
 import {esc} from './v2-ui.mjs';
-import {renderMapRitProfile} from './map-rit-achievement.mjs';
+import {renderMapRitProfile,mapRitCurrent,mapRitBand} from './map-rit-achievement.mjs';
 import {renderStudentPhoto} from './student-photo-preview.mjs?v=20261111photo1';
 import {renderUniversalScreenerTile} from './universal-screener.mjs';
 import {mypBestFitMarker} from './report-card-signals.mjs';
@@ -364,12 +364,12 @@ export function renderLeaderLearnerEvidence({student,data,academic,records,windo
    miniSeries(academicCheckinProgress(a,mode).points)+'</div>').join('');
  const map=gradeNumber(student.grade)>=3&&gradeNumber(student.grade)<=10?
   ['Mathematics','Reading'].map(subject=>
-   '<div class="leader-profile-assessment"><strong>MAP '+safe(subject)+'</strong>'+
+   '<div class="leader-profile-assessment '+(mapRitBand(mapRitCurrent(data.map[student.id]||[],subject)?.percentile)?'map-rit-'+mapRitBand(mapRitCurrent(data.map[student.id]||[],subject)?.percentile).key:'map-rit-unclassified')+'"><strong>MAP '+safe(subject)+'</strong>'+
     miniSeries(mapProgress(data.map[student.id]||[],subject).points)+'</div>').join(''):'';
  const voice=experienceEligible(student)?['engagement','belonging'].map(metric=>{
   const score=summarizeExperience(records,[student],metric,window).value;
   return '<article class="leader-profile-voice"><strong>'+safe(metric==='engagement'?'Engagement':'Belonging')+
-   '</strong><b>'+(Number.isFinite(score)?score.toFixed(2):'—')+'</b>'+
+   '</strong><span class="leader-voice-colour" role="img" aria-label="'+safe(metric+': '+(leaderExperienceBandLabel(score)?.label||'No recorded band'))+'"></span>'+
    leaderExperienceScale(score,metric)+'</article>';
  }).join(''):'';
  return '<div class="leader-daily leader-learner-profile">'+
