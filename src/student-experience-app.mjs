@@ -57,6 +57,8 @@ import {renderDPSubjectPointDetails} from './board-dp-subjects.mjs';
 import {DP_RECORDS} from './board-dp-data.mjs?v=20261031dp-world1';
 import {boardWindowFor,BOARD_DATA} from './board-map-data.mjs';
 import {parseBoardHash} from './board-map-links.mjs?v=20261031dp-default1';
+import {EXPLORER_DEFAULTS,EXPLORER_PAGE_SIZE,leaderExplorerModel,renderLeaderStudentExplorer,leaderExplorerExportRows} from './leader-student-explorer.mjs?v=20261113explorer2';
+import {exportCsv,visibleDashboardCsv} from './dashboard-export.mjs?v=20261113export1';
 const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(DATA.students),
  ACADEMIC_RECORDS=createAcademicDemoRecords(DATA.students),
  MAIA_RECORDS=createMaiaDemoRecords(DATA.students),
@@ -117,6 +119,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
   leaderSupportOpen:false,leaderReportQuery:'',leaderReportMultiple:false,leaderReportExpanded:false,leaderReportThreshold:3,leaderReportOpen:false,
   leaderStudentId:'',leaderReviewFilter:'all',leaderReviewExpanded:false,
+  leaderExplorerOpen:false,leaderExplorerFilters:{...EXPLORER_DEFAULTS},
   leaderDirectoryDivision:'All',leaderDirectoryGrade:'All',leaderDirectoryStatus:'has-support',
   leaderDirectoryQuery:'',leaderDirectoryExpanded:false,
   leaderScreenerBand:'all',leaderScreenerGrade:'All',leaderScreenerExpanded:false,
@@ -176,7 +179,7 @@ function metricCard(ss,id,window='F26',scope='main'){
  return '<article class="metric experience-metric-card'+(band?' index-'+band:'')+'">'+
   '<div class="metric-top"><span class="eyebrow">'+safe(label)+' index</span>'+
   '<span class="tiny">Fictional '+safe(source)+' check-in</span></div>'+
-  '<div class="metric-value">'+(Number.isFinite(sum.value)?sum.value.toFixed(2):'—')+'</div>'+
+  '<div class="metric-value metric-colour-only" role="img" aria-label="'+safe(label+': '+(interval?.label||'No recorded index band'))+'"></div>'+
   (interval?'<span class="experience-metric-interval">'+safe(interval.label)+' index band</span>':'')+
   leaderExperienceScale(sum.value,label)+
   '<p>'+safe(EXPERIENCE_METRICS[id].description)+'</p>'+
@@ -206,7 +209,7 @@ function header(){
 function heading(title,desc){
  const asOf=new Date(DATA.asOf+'T12:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
  return '<div class="heading"><div><div class="eyebrow">AISG · 2026–27</div><h1>'+safe(title)+'</h1><p>'+safe(desc)+'</p></div>'+
- '<div class="heading-meta"><span class="demo" title="Preview environment: sample learner records">PREVIEW</span><span class="asof">As of '+safe(asOf)+'</span></div></div>';
+ '<div class="heading-meta"><button type="button" class="sitewide-export-action" data-export-dashboard>Export CSV</button><span class="demo" title="Preview environment: sample learner records">PREVIEW</span><span class="asof">As of '+safe(asOf)+'</span></div></div>';
 }
 function selector(id,options,selected){return '<select data-select="'+id+'" aria-label="'+safe(id)+'">'+options.map(x=>opt(x[0],x[1],selected)).join('')+'</select>'}
 function scoreExplanation(id,ss,student){
@@ -535,7 +538,7 @@ function learnerProfile(s,studentRole=false){
     const label=EXPERIENCE_METRICS[id].label;
     return '<article class="student-checkin-preview-tile'+(band?' index-'+band:'')+'">'+
      '<h3>'+safe(label)+'</h3>'+
-     '<strong class="student-checkin-preview-value">'+(Number.isFinite(value)?value.toFixed(2):'—')+'</strong>'+
+     '<span class="student-checkin-preview-band" role="img" aria-label="'+safe(label+': '+(band||'not available')+' index band')+'"></span>'+
      leaderExperienceScale(value,label)+
      '<p>'+(entry?'Based on my check-in answers':'No check-in this period')+'</p></article>';
    }).join('')+'</div>'+
@@ -575,9 +578,6 @@ function learnerProfile(s,studentRole=false){
   (n>=0&&n<=5?'<div class="kpi ufli-profile-fact"><span>UFLI Foundations · demo lesson</span>'+
    renderUfliLessonTile(s,{compact:true})+'<small>'+safe(ufliLessonFor(s).phase.label)+
    ' · Fictional instructional placement</small></div>':'')+
-  (mapApplicable?kpi('MAP Mathematics growth',mg.status==='comparable'?
-   (mg.actual>=0?'+':'')+mg.actual:'—',
-   mg.status==='comparable'?'RIT points · latest comparable MAP tests':'Not yet comparable'):'')+
   (math?kpi('Latest Mathematics report',math.value,issued?'Issued '+safe(issued.year)+
    ' · Grade '+safe(issued.grade)+' · '+safe(issued.framework):''):'')+'</div>';
  const visibleGuidance=tags.filter(t=>t.id==='eal'||t.id==='ss');
@@ -661,6 +661,10 @@ function faculty(){
   info();
 }
 
+const explorerFilters=()=>state.leaderExplorerFilters;
+const leaderViewNav=()=>'<nav class="leader-explorer-nav" aria-label="Leadership views">'+
+ '<button type="button" data-leader-view="overview" aria-pressed="'+(!state.leaderExplorerOpen)+'">Overview</button>'+
+ '<button type="button" data-leader-view="explorer" aria-pressed="'+state.leaderExplorerOpen+'">Student Explorer</button></nav>';
 function leader(){
  const grades=GRADES;
  const divisions=state.division==='All'?['Elementary','Secondary']:[state.division];
@@ -679,9 +683,13 @@ function leader(){
    subject:state.strandProfileSubject,goalName:state.strandProfileGoal,
    season:state.strandProfileSeason})+info();
 
+ if(state.leaderExplorerOpen)return heading('Student Explorer',
+  'Filter, sort and explore learners with Faculty-style evidence columns.')+
+  leaderViewNav()+renderLeaderStudentExplorer({data:DATA,academic:ACADEMIC_RECORDS,
+   experience:RECORDS,maia:MAIA_RECORDS,filters:explorerFilters()})+info();
  if(state.division==='All')return heading('Leadership Overview',
   'Begin whole school, choose Elementary or Secondary, then drill down by grade.')+
-  renderLeaderWholeSchool({students:DATA.students,data:DATA,academic:ACADEMIC_RECORDS,
+  leaderViewNav()+renderLeaderWholeSchool({students:DATA.students,data:DATA,academic:ACADEMIC_RECORDS,
    records:RECORDS,sssRecords:SSS_RECORDS,entries:supportEntries(),savedView:savedLeaderView()})+
   renderLeaderUniversalScreener({students:group,scopeLabel:'Whole school',
    bandFilter:state.leaderScreenerBand,gradeFilter:state.leaderScreenerGrade,
@@ -729,8 +737,7 @@ function leader(){
    const comparison=leaderExperienceChange(change.delta,change.previousLabel);
    return '<article class="leader-experience-card'+(band?' index-'+band:'')+'">'+
     '<span class="leader-measure-label">'+safe(metricLabel)+'</span>'+
-    '<div class="leader-experience-value">'+
-    (Number.isFinite(summary.value)?summary.value.toFixed(2):'—')+'</div>'+
+    '<div class="leader-experience-value leader-colour-only" role="img" aria-label="'+safe(metricLabel+': '+(interval?.label||'No available index band'))+'"></div>'+
     (interval?'<span class="leader-experience-interval">'+safe(interval.label)+' index band</span>':'')+
     leaderExperienceScale(summary.value,metricLabel)+
     '<p class="leader-experience-change">'+safe(comparison)+'</p>'+
@@ -891,7 +898,7 @@ function leader(){
   (state.leaderSection===id?'':' hidden')+'>'+content+'</section>';
  return heading('Leadership Overview',
   'Review learners first, then investigate longitudinal, academic and experience evidence.')+
-  '<div class="leader-view leader-daily">'+
+  leaderViewNav()+'<div class="leader-view leader-daily">'+
   '<div class="toolbar leader-controls leader-scope-controls">'+
   '<label>Division '+selector('division',[['All','Whole school'],['Elementary','Elementary'],['Secondary','Secondary']],state.division)+'</label>'+
   '<label>Grade '+selector('grade',[['All','All grades'],...grades.filter(g=>
