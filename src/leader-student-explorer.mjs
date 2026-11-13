@@ -15,7 +15,7 @@ import {experienceFor} from './experience-data.mjs';
 import {experienceBand} from './faculty-bands.mjs';
 import {renderUniversalScreenerTile} from './universal-screener.mjs';
 import {renderUfliLessonTile} from './ufli-demo.mjs';
-import {renderStudentPhoto} from './student-photo-preview.mjs';
+import {portrait} from './portraits.mjs';
 import {esc} from './v2-ui.mjs';
 
 export const EXPLORER_DEFAULTS=Object.freeze({
@@ -298,7 +298,9 @@ export function renderLeaderStudentExplorer({data,academic,experience,maia,filte
    evidenceCell(row,c,{data,academic,experience,maia})+'</td>').join('');
   const bandMarkup=showMapBand?'<td data-explorer-col="mapBand">'+bandMatchesCell(row,f)+'</td>':'';
   const strandMarkup=showStrand?'<td data-explorer-col="strand">'+strandMatchesCell(row)+'</td>':'';
-  return '<tr><th scope="row"><span class="faculty-learner-entry">'+renderStudentPhoto(row.student)+
+  return '<tr><th scope="row"><span class="faculty-learner-entry">'+
+   '<img class="explorer-avatar" loading="lazy" decoding="async" src="'+
+    s(portrait(row.student.portraitSeed||row.student.id||row.student.name))+'" alt="">'+
    '<button type="button" tabindex="'+(index===0?'0':'-1')+'" class="student-link" data-explorer-student="'+s(row.student.id)+'">'+s(row.student.name)+'</button></span></th>'+
    '<td>'+s(row.student.grade)+'</td><td>'+s(row.student.classId)+'</td>'+
    '<td class="explorer-teacher">'+s(row.teacher?.name||'—')+'</td>'+cells+
