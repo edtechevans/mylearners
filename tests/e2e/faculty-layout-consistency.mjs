@@ -113,6 +113,12 @@ const auditInPage=()=>{
   headerHeights:heads.map(th=>+th.getBoundingClientRect().height.toFixed(1)),
   singles,groupStarts:heads.filter(th=>th.hasAttribute('data-faculty-group-start')).length,
   familyTags:heads.every(th=>!!th.dataset.facultyFamily),
+  guidedHeaders:heads.filter(th=>th.dataset.columnGuideReady==='yes').length,
+  plainHeaderNames:heads.every(th=>!th.textContent.includes('ⓘ')),
+  previewBadge:document.querySelector('.heading-meta .demo')?.textContent.trim()||'',
+  aboutSource:!!document.querySelector('footer .sitewide-footer-data summary'),
+  repeatedPrototypeCopy:/\b(fictional|synthetic|demonstration|demo)\b/i.test(
+    document.querySelector('main.container')?.innerText||''),
   noWordBreak:heads.every(th=>{const s=getComputedStyle(th);return s.wordBreak==='normal'&&s.overflowWrap==='normal'}),
   cssLoaded:[...document.querySelectorAll('link[rel=stylesheet]')].some(
    link=>link.href.includes('faculty-ui-consistency.css')&&!!link.sheet)
@@ -124,11 +130,24 @@ async function audit(grade,width,label){
  await evaluate('window.scrollTo(0,0)');
  await sleep(55);
  const r=await evaluate('('+auditInPage.toString()+')()');
+ const guide=await evaluate('('+guidanceInPage.toString()+')()');
  check(!r?.error,grade+': '+r?.error);
+ check(guide.screener?.visible&&guide.screener.bands===4,grade+': screener header guidance missing');
+ if(grade==='K'||grade==='G2'||grade==='G5')
+  check(guide.lesson?.visible&&guide.lesson.bands===4,grade+': UFLI header guidance missing');
+ if(grade==='G7'||grade==='G10')
+  check(guide.experience?.visible&&guide.experience.bands===4,grade+': experience header guidance missing');
+ if(grade==='G12')
+  check(guide.report?.visible&&guide.report.bands===4,grade+': subject grade header guidance missing');
  check(r.cssLoaded,grade+': new CSS missing');
  check(r.cols>=5&&r.rows>=1,grade+': roster missing evidence rows');
  check(r.overflow<=5,grade+': body overflows by '+r.overflow+'px');
  check(r.familyTags&&r.groupStarts>=2,grade+': missing dynamic evidence groups');
+ check(r.guidedHeaders===r.cols&&r.plainHeaderNames,
+  grade+': each column needs CSS-only guidance without changing text');
+ check(r.previewBadge==='PREVIEW'&&r.aboutSource,
+  grade+': shared provenance controls missing');
+ check(!r.repeatedPrototypeCopy,grade+': repeated prototype wording remains visible');
  check(r.tileHeights.length>=3,grade+': missing styled tiles');
  check(Math.max(...r.tileHeights)-Math.min(...r.tileHeights)<=1.5,
   grade+': tile heights differ '+JSON.stringify(r.tileHeights));
@@ -150,9 +169,30 @@ async function audit(grade,width,label){
  if(width===1440&&['PK3','K','G2'].includes(grade))
   check(r.firstLearnerY<=660,grade+': first learner still too far down ('+r.firstLearnerY+'px)');
  await screenshot(grade.toLowerCase()+'-'+label);
- report.push({grade,viewport:width,selected,...r});
+ report.push({grade,viewport:width,selected,...r,guidance:guide});
  console.log('PASS '+grade+' '+label+' '+r.cols+' cols / '+r.tileHeights.length+' tiles / width '+r.tableWidth);
 }
+const guidanceInPage=()=>{
+ const ths=[...document.querySelectorAll('.faculty-data-wall thead th')];
+ const screener=ths.find(th=>th.dataset.facultyFamily==='screener');
+ const experience=ths.find(th=>th.dataset.facultyFamily==='experience');
+ const report=ths.find(th=>th.dataset.facultyFamily==='report');
+ const lessons=ths.find(th=>th.dataset.facultyFamily==='lesson');
+ const sample=th=>{
+  if(!th)return null;
+  th.dispatchEvent(new MouseEvent('mouseover',{bubbles:true,composed:true}));
+  const popup=document.getElementById('sitewide-column-guide');
+  const result={visible:!!popup&&!popup.hidden,
+   bands:popup?.querySelectorAll('.column-guide-band').length||0,
+   title:popup?.querySelector('.column-guide-title strong')?.textContent.trim()||'',
+   note:popup?.textContent||'',nativeTitle:!!th.getAttribute('title'),
+   headingText:th.textContent.trim()};
+  th.dispatchEvent(new MouseEvent('mouseout',{bubbles:true,relatedTarget:document.body}));
+  return result;
+ };
+ return {screener:sample(screener),report:sample(report),
+  lesson:sample(lessons),experience:sample(experience)};
+};
 const interactionInPage=async()=>{
  const table=document.querySelector('table.faculty-data-wall');
  const width=()=>Number.parseFloat(getComputedStyle(table).getPropertyValue('--faculty-roster-table-width'));
