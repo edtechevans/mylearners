@@ -1,0 +1,226 @@
+/* Faculty UI consistency | every class, PK–12 | November 2026.
+ * A finishing layer, not a new visual language.  Source-specific colours and
+ * teacher-saved column arrangements remain intact. Loaded LAST.
+ */
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"]{
+ --faculty-cell-height:58px;
+ --faculty-cell-radius:9px;
+ --faculty-row-pad:6px;
+ --faculty-separator:#dce7ec;
+ --faculty-active-wash:#f0f7fa;
+}
+/* Keep measured tracks and user overrides authoritative. Hidden columns no
+ * longer retain the old 1200–1420px minimum after a saved layout is applied. */
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall{
+ table-layout:fixed!important;
+ width:var(--faculty-roster-table-width,1200px)!important;
+ min-width:var(--faculty-roster-table-width,1200px)!important;
+ max-width:none!important;
+ border-spacing:0 3px;
+}
+/* Uniform row geometry across report grades, MAP, IXL, UFLI, screeners, and
+ * student experience. A card's colour continues to come from its OWN source. */
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall tbody td{
+ box-sizing:border-box;
+ padding:var(--faculty-row-pad) 6px!important;
+ vertical-align:middle!important;
+ height:calc(var(--faculty-cell-height) + 2 * var(--faculty-row-pad) + 1px);
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall tbody td:nth-child(n+3):not(:last-child){
+ padding-inline:6px!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .evidence-cell-layout,
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .evidence-cell-open{
+ display:flex!important;align-items:stretch!important;justify-content:center!important;
+ width:100%!important;min-width:0!important;
+ height:var(--faculty-cell-height)!important;
+ padding:0!important;margin:0!important;
+ box-sizing:border-box!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .evidence-cell-open{
+ flex-direction:column!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall :is(
+ .class-evidence-result,.map-rit-tile,.map-rit-missing,.ixl-diagnostic-tile,.us-tile,.ufli-lesson-tile
+){
+ width:100%!important;
+ height:var(--faculty-cell-height)!important;
+ min-height:var(--faculty-cell-height)!important;
+ max-height:var(--faculty-cell-height)!important;
+ border-radius:var(--faculty-cell-radius)!important;
+ box-sizing:border-box!important;
+ margin:0!important;
+ flex:1 1 auto;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall :is(
+ .class-evidence-result,.map-rit-missing,.ixl-diagnostic-tile,.us-tile,.ufli-lesson-tile
+){
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ flex-direction:column!important;gap:2px!important;
+ text-align:center!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .map-rit-tile{
+ display:flex!important;flex-direction:column!important;
+ align-items:center!important;justify-content:center!important;gap:3px!important;
+ padding:7px 5px!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall :is(
+ .class-evidence-result,.map-rit-tile,.map-rit-missing,.ixl-diagnostic-tile,.us-tile,.ufli-lesson-tile
+) :is(strong,small){
+ font-variant-numeric:tabular-nums;max-width:100%;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .ixl-diagnostic-tile small{
+ line-height:1.2!important;
+ text-align:center!important;
+ white-space:normal!important;
+ overflow-wrap:normal!important;
+ word-break:normal!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .class-evidence-result:not(.evidence-heat){
+ border-radius:var(--faculty-cell-radius)!important;
+}
+/* Header alignment: all measures share one baseline, including MAP's small
+ * overline. Keep long single-word headings intact at Chrome 100%. */
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall thead tr{
+ height:70px!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall thead th{
+ box-sizing:border-box!important;
+ height:70px!important;
+ padding:7px 22px 7px 8px!important;
+ vertical-align:middle!important;
+ background:#eef3f6;
+ overflow-wrap:normal!important;
+ word-break:normal!important;
+ hyphens:none!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall thead th .ux-sort-button{
+ box-sizing:border-box!important;
+ min-height:48px!important;
+ display:flex!important;flex-direction:column!important;
+ align-items:center!important;justify-content:center!important;
+ width:100%!important;max-width:100%!important;
+ padding:4px 7px 4px 0!important;
+ margin:0!important;
+ line-height:1.25!important;
+ font-size:12px!important;
+ text-align:center!important;
+ white-space:normal!important;
+ overflow-wrap:normal!important;
+ word-break:normal!important;
+ hyphens:none!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall thead th .ux-sort-button::after{
+ top:50%!important;bottom:auto!important;right:-12px!important;
+ transform:translateY(-50%)!important;
+ line-height:1!important;
+}
+/* Subtle academic/source grouping; actual boundaries move with the teachers'
+ * saved column order and automatically update when a column is hidden. */
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall thead th[data-faculty-family="report"]{box-shadow:inset 0 2px 0 #c7d6df}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall thead th[data-faculty-family="assessment"]{box-shadow:inset 0 2px 0 #c2dbe6}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall thead th[data-faculty-family="screener"]{box-shadow:inset 0 2px 0 #cbdac5}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall thead th[data-faculty-family="lesson"]{box-shadow:inset 0 2px 0 #d6c9e6}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall thead th[data-faculty-family="experience"]{box-shadow:inset 0 2px 0 #d7e0c3}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall :is(th,td)[data-faculty-group-start]{
+ border-inline-start:2px solid var(--faculty-separator)!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall thead th[data-faculty-group-start]{
+ padding-inline-start:10px!important;
+}
+/* The six-dot drag grips are discoverable when needed but do not dominate
+ * a calm initial reading of the columns. Focus and touch remain clear. */
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .ux-column-grip{
+ top:4px!important;right:9px!important;
+ min-width:17px;min-height:20px;padding:1px!important;
+ opacity:.18!important;
+ background:#f8fafbcc!important;
+ color:#46728c!important;
+ border-radius:5px!important;
+ transition:opacity .16s ease,background-color .16s ease!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall thead th:hover .ux-column-grip,
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .ux-column-grip:focus-visible,
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .ux-column-grip:active{
+ opacity:1!important;background:#dfecf4!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .ux-column-resize{
+ width:9px!important;
+}
+@media(hover:none),(pointer:coarse){
+ #app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall .ux-column-grip{
+  opacity:.62!important;
+ }
+}
+/* Linked learner-row and evidence-column focus: just a pale wash UNDER the
+ * existing bright assessment chips, never a change to their band colours. */
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall tbody tr:is(:hover,:focus-within)>td{
+ background:#f5f9fb!important;
+ transition:background-color .15s ease;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall tbody tr:is(:hover,:focus-within)>td:first-child{
+ background:#f5f9fb!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall :is(thead th,tbody td)[data-faculty-active-column]{
+ background:#eaf4f8!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall tbody tr:is(:hover,:focus-within)>td[data-faculty-active-column]{
+ background:#e5f0f5!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall :is(
+ .evidence-cell-open,.map-rit-tile,.student-link,.universal-screener-open,.ufli-lesson-open
+):focus-visible{
+ outline:3px solid #246e9b!important;
+ outline-offset:2px!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall :is(
+ .evidence-cell-open,.map-rit-tile,.student-link,.universal-screener-open,.ufli-lesson-open
+){
+ transition:box-shadow .16s ease,transform .16s ease!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall :is(
+ .evidence-cell-open,.map-rit-tile,.universal-screener-open,.ufli-lesson-open
+):hover{
+ transform:translateY(-1px);
+}
+/* Accessible, unobtrusive controls OUTSIDE the horizontal scroller. */
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .faculty-scroll-hint[hidden]{display:none!important}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .faculty-scroll-hint{
+ display:flex;justify-content:flex-end;align-items:center;gap:8px;
+ min-height:30px;padding:5px 2px 1px;margin:1px 0 4px;
+ color:#5a788b;font-size:11px;font-weight:700;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .faculty-scroll-hint span{
+ line-height:1.4;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .faculty-scroll-hint button{
+ min-width:30px;min-height:27px;border-radius:8px;padding:2px 8px;
+ border:1px solid #cbdbe5;background:#fff;color:#255a78;
+ font:inherit;font-size:17px;line-height:1;cursor:pointer;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .faculty-scroll-hint button:disabled{
+ opacity:.36;cursor:default;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .faculty-scroll-hint button:not(:disabled):hover{
+ background:#edf5fa;border-color:#97b7cb;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .faculty-scroll-hint button:focus-visible{
+ outline:3px solid #246e9b;outline-offset:2px;
+}
+/* Focused evidence table retains its layout but inherits the same subtle
+ * row cue, tile radius and border semantics; other roles are unaffected. */
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="focused"] .class-evidence-result{
+ border-radius:9px!important;
+}
+#app[data-workspace="faculty"] .roster-daily[data-roster-layout="focused"] tbody tr:is(:hover,:focus-within){
+ background:#f5f9fb;
+}
+@media(max-width:760px){
+ #app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] .faculty-scroll-hint{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall :is(
+ .evidence-cell-open,.map-rit-tile,.student-link,.universal-screener-open,.ufli-lesson-open,.ux-column-grip
+ ){transition:none!important;transform:none!important}
+ #app[data-workspace="faculty"] .roster-daily[data-roster-layout="everyday"] table.faculty-data-wall tbody tr>td{transition:none!important}
+}

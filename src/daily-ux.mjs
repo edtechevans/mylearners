@@ -4,6 +4,7 @@
  */
 import {safeText,compareEvidenceSource,exportCsv,parsePreferences,filteredRecords} from './daily-ux-core.mjs?v=20261031v1';
 import {normaliseColumnOrder,moveColumn,normaliseColumnWidths,clampColumnWidth,COLUMN_WIDTHS,widthPreset} from './faculty-column-layout.mjs';
+import {facultyGroupTransitions,facultyVisibleTableWidth} from './faculty-roster-headings.mjs';
 const root=document.getElementById('app');
 const states=new Map();
 const clean=x=>String(x??'').replace(/\s+/g,' ').trim();
@@ -82,6 +83,26 @@ function arrangeFacultyColumns(table,s){
   for(const index of order){const el=byId.get(index);if(el)parent.appendChild(el)}
  }
  for(const [index,width] of Object.entries(s.widths||{}))updateColumnWidth(table,Number(index),width);
+}
+/** Recalculate subtle boundaries and width from the currently VISIBLE,
+ * reordered evidence columns. All IDs remain the original source indices. */
+function refreshFacultyPresentation(table,state){
+ const headers=[...table.querySelectorAll('thead th')];
+ const families=[];
+ for(const [position,header] of headers.entries())
+  families[sourceIndex(header,position)]=header.dataset.facultyFamily||'other';
+ const starts=new Set(facultyGroupTransitions(families,state.columnOrder,state.hidden));
+ for(const cell of table.querySelectorAll('thead th,tbody td')){
+  const index=Number(cell.dataset.uxOrigin);
+  cell.toggleAttribute('data-faculty-group-start',starts.has(index));
+ }
+ const widths=[];
+ for(const [position,col] of [...table.querySelectorAll('colgroup col')].entries()){
+  const index=sourceIndex(col,position);
+  widths[index]=Number.parseFloat(col.style.width)||124;
+ }
+ table.style.setProperty('--faculty-roster-table-width',
+  facultyVisibleTableWidth(widths,state.hidden)+'px');
 }
 function apply(table,s){
  const {rows,headers}=textRows(table);
@@ -204,7 +225,76 @@ function decorate(table,index){
   }
  });
  if(isFacultyColumns)arrangeFacultyColumns(table,s);
- const render=()=>apply(table,s);
+ // The cue lives OUTSIDE the scroller, so it remains reachable when a
+ // teacher has navigated horizontally to the last evidence columns.
+ const scrollContainer=isFacultyColumns?table.closest('.tablewrap.roster-desktop'):null;
+ let scrollHint=null;
+ function updateScrollCue(){
+  if(!scrollContainer||!scrollHint)return;
+  const max=Math.max(0,scrollContainer.scrollWidth-scrollContainer.clientWidth);
+  const x=scrollContainer.scrollLeft;
+  scrollHint.hidden=max<=8;
+  const left=scrollHint.querySelector('[data-faculty-scroll="left"]');
+  const right=scrollHint.querySelector('[data-faculty-scroll="right"]');
+  if(left)left.disabled=x<=3;
+  if(right)right.disabled=x>=max-3;
+  const label=scrollHint.querySelector('.faculty-scroll-hint-label');
+  if(label)label.textContent=x<=3?'More evidence to the right':
+   x>=max-3?'More evidence to the left':'Explore additional columns';
+ }
+ if(scrollContainer){
+  scrollHint=document.createElement('div');
+  scrollHint.className='faculty-scroll-hint';
+  scrollHint.hidden=true;
+  scrollHint.setAttribute('aria-label','Horizontal class evidence navigation');
+  scrollHint.innerHTML='<span class="faculty-scroll-hint-label">More evidence to the right</span>'+
+   '<button type="button" data-faculty-scroll="left" aria-label="Scroll evidence columns left">←</button>'+
+   '<button type="button" data-faculty-scroll="right" aria-label="Scroll evidence columns right">→</button>';
+  scrollContainer.insertAdjacentElement('afterend',scrollHint);
+  scrollContainer.addEventListener('scroll',updateScrollCue,{passive:true});
+  scrollHint.addEventListener('click',event=>{
+   const button=event.target.closest('button[data-faculty-scroll]');
+   if(!button||button.disabled)return;
+   const direction=button.dataset.facultyScroll==='left'?-1:1;
+   const amount=direction*Math.max(240,Math.round(scrollContainer.clientWidth*.7));
+   const reduced=globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+   if(typeof scrollContainer.scrollBy==='function')
+    scrollContainer.scrollBy({left:amount,behavior:reduced?'auto':'smooth'});
+   else scrollContainer.scrollLeft+=amount;
+  });
+  if(typeof ResizeObserver==='function'){
+   const observer=new ResizeObserver(updateScrollCue);
+   observer.observe(scrollContainer);observer.observe(table);
+  }
+  // Shared hover/focus context, even after teacher-driven column reordering.
+  let activeOrigin=null;
+  const highlight=origin=>{
+   if(origin===activeOrigin)return;
+   for(const cell of table.querySelectorAll('[data-faculty-active-column]'))
+    cell.removeAttribute('data-faculty-active-column');
+   activeOrigin=origin;
+   if(origin===null||origin===undefined)return;
+   for(const cell of table.querySelectorAll(
+    'thead th[data-ux-origin="'+origin+'"],tbody td[data-ux-origin="'+origin+'"]'))
+    cell.setAttribute('data-faculty-active-column','');
+  };
+  table.addEventListener('pointerover',event=>{
+   const cell=event.target.closest?.('thead th[data-ux-origin],tbody td[data-ux-origin]');
+   if(cell&&table.contains(cell))highlight(cell.dataset.uxOrigin);
+  });
+  table.addEventListener('pointerleave',()=>highlight(null));
+  table.addEventListener('focusin',event=>{
+   const cell=event.target.closest?.('thead th[data-ux-origin],tbody td[data-ux-origin]');
+   if(cell)highlight(cell.dataset.uxOrigin);
+  });
+  table.addEventListener('focusout',event=>{
+   if(!table.contains(event.relatedTarget))highlight(null);
+  });
+ }
+ const render=()=>{
+  apply(table,s);
+  if(isFacultyColumns){refreshFacultyPresentation(table,s);updateScrollCue()}
+ };
  function syncColumnList(){
   if(!isFacultyColumns)return;
   const list=panel.querySelector('[data-ux-column-list]');
