@@ -180,7 +180,7 @@ function metricCard(ss,id,window='F26',scope='main'){
   '<div class="metric-top"><span class="eyebrow">'+safe(label)+' index</span>'+
   '<span class="tiny">Fictional '+safe(source)+' check-in</span></div>'+
   '<div class="metric-value metric-colour-only" role="img" aria-label="'+safe(label+': '+(interval?.label||'No recorded index band'))+'"></div>'+
-  (interval?'<span class="experience-metric-interval">'+safe(interval.label)+' index band</span>':'')+
+  (interval?'<span class="experience-metric-interval">'+safe(interval.colour)+' indicator</span>':'')+
   leaderExperienceScale(sum.value,label)+
   '<p>'+safe(EXPERIENCE_METRICS[id].description)+'</p>'+
   '<div class="metric-foot"><span>'+sum.n+' of '+sum.eligible+' responses</span>'+
@@ -738,7 +738,7 @@ function leader(){
    return '<article class="leader-experience-card'+(band?' index-'+band:'')+'">'+
     '<span class="leader-measure-label">'+safe(metricLabel)+'</span>'+
     '<div class="leader-experience-value leader-colour-only" role="img" aria-label="'+safe(metricLabel+': '+(interval?.label||'No available index band'))+'"></div>'+
-    (interval?'<span class="leader-experience-interval">'+safe(interval.label)+' index band</span>':'')+
+    (interval?'<span class="leader-experience-interval">'+safe(interval.colour)+' indicator</span>':'')+
     leaderExperienceScale(summary.value,metricLabel)+
     '<p class="leader-experience-change">'+safe(comparison)+'</p>'+
     '<p class="leader-experience-count">'+summary.n+' of '+summary.eligible+
