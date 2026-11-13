@@ -55,3 +55,12 @@
 @media(max-width:950px){#app .explorer-filter-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:640px){#app .explorer-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#app .explorer-search{grid-column:span 2}#app .explorer-count{font-size:18px}#app .explorer-head h2{font-size:20px}#app .explorer-head{align-items:flex-start}}
 @media print{#app .explorer-filter-grid,#app .explorer-actions,#app .explorer-table-actions,#app .leader-explorer-nav{display:none!important}}
+
+/* Exact indices stay in accessible descriptions and explanatory popups, not the headline. */
+#app .metric-colour-only,#app .leader-colour-only,#app .student-checkin-preview-band,#app .leader-voice-colour{display:none}
+#app .leader-profile-assessment.map-rit-low,#app .leader-profile-assessment.map-rit-low-average,
+#app .leader-profile-assessment.map-rit-average,#app .leader-profile-assessment.map-rit-high-average,
+#app .leader-profile-assessment.map-rit-high{border-color:transparent}
+#app .leader-profile-assessment[class*="map-rit-"] strong,
+#app .leader-profile-assessment[class*="map-rit-"] small{color:inherit}
+#app .leader-profile-assessment[class*="map-rit-"] svg{color:inherit}
