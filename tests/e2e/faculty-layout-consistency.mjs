@@ -87,11 +87,25 @@ const auditInPage=()=>{
  const tracks=[...table.querySelectorAll('colgroup col')].filter(col=>
   !col.hasAttribute('data-ux-column-hidden')).map(col=>Number.parseFloat(col.style.width)||0);
  const cue=document.querySelector('.roster-daily .faculty-scroll-hint');
+ const jump=cue?.querySelector('.faculty-jump-select');
+ const context=document.querySelector('.roster-daily .faculty-data-context');
+ const tabActions=[...table.querySelectorAll(
+  'tbody button.student-link,tbody button.evidence-cell-open,tbody button.map-rit-tile'
+ )].filter(btn=>btn.getBoundingClientRect().height>0);
  return {
   cols:heads.length,rows:table.querySelectorAll('tbody tr').length,
   overflow:document.documentElement.scrollWidth-innerWidth,
   scrollerClient:scroller.clientWidth,scrollerWidth:scroller.scrollWidth,
   cueVisible:!!cue&&!cue.hidden,
+  cueAbove:!!cue&&cue.getBoundingClientRect().bottom<=scroller.getBoundingClientRect().top+2,
+  cueSticky:!!cue&&getComputedStyle(cue).position==='sticky',
+  firstLearnerY:row?Math.round(row.getBoundingClientRect().top):null,
+  jumpOptions:jump?.options.length||0,
+  gridActions:tabActions.length,
+  gridTabStops:tabActions.filter(btn=>btn.tabIndex===0).length,
+  contextSummary:context?.querySelector('summary')?.textContent.trim()||'',
+  contextSource:context?.textContent.includes('Source')||false,
+  ufliCollapsed:!!document.querySelector('details.ufli-roster-legend:not([open])'),
   tableWidth:Math.round(table.getBoundingClientRect().width),
   declaredWidth:parseFloat(getComputedStyle(table).getPropertyValue('--faculty-roster-table-width')),
   trackSum:Math.round(tracks.reduce((a,b)=>a+b,0)),
@@ -107,6 +121,8 @@ const auditInPage=()=>{
 async function audit(grade,width,label){
  await send('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:false});
  const selected=await selectClass(grade);
+ await evaluate('window.scrollTo(0,0)');
+ await sleep(55);
  const r=await evaluate('('+auditInPage.toString()+')()');
  check(!r?.error,grade+': '+r?.error);
  check(r.cssLoaded,grade+': new CSS missing');
@@ -123,6 +139,16 @@ async function audit(grade,width,label){
   grade+': broken word in a heading '+JSON.stringify(r.singles));
  check(Math.abs(r.tableWidth-r.trackSum)<=8,grade+': unused table width '+r.tableWidth+' vs '+r.trackSum);
  check(r.scrollerWidth<=r.scrollerClient+8||r.cueVisible,grade+': horizontal scroll cue missing');
+ check(r.cueAbove&&r.cueSticky,grade+': navigation is not sticky above the table');
+ check(r.jumpOptions>=2,grade+': no direct learner jump');
+ check(r.gridActions>=3&&r.gridTabStops===1,
+  grade+': expected exactly one tabbable data-cell action; found '+r.gridTabStops+' / '+r.gridActions);
+ check(r.contextSummary.includes('Screener: fictional %')&&r.contextSource,
+  grade+': demo screening source context missing');
+ if(grade==='K'||grade==='G2'||grade==='G5')
+  check(r.ufliCollapsed,grade+': UFLI legend should begin collapsed');
+ if(width===1440&&['PK3','K','G2'].includes(grade))
+  check(r.firstLearnerY<=660,grade+': first learner still too far down ('+r.firstLearnerY+'px)');
  await screenshot(grade.toLowerCase()+'-'+label);
  report.push({grade,viewport:width,selected,...r});
  console.log('PASS '+grade+' '+label+' '+r.cols+' cols / '+r.tileHeights.length+' tiles / width '+r.tableWidth);
@@ -131,6 +157,18 @@ const interactionInPage=async()=>{
  const table=document.querySelector('table.faculty-data-wall');
  const width=()=>Number.parseFloat(getComputedStyle(table).getPropertyValue('--faculty-roster-table-width'));
  const original=width(),controls=document.querySelector('.ux-faculty-table-controls');
+ const links=[...table.querySelectorAll('tbody tr button.student-link')]
+  .filter(el=>getComputedStyle(el.closest('tr')).display!=='none');
+ const first=links[0],second=links[1],last=links.at(-1);
+ if(!first||!second||!last)return {error:'No learner links for keyboard test'};
+ first.focus();
+ first.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true,cancelable:true}));
+ const downFocus=document.activeElement===second;
+ const jump=document.querySelector('.faculty-jump-select');
+ if(!jump)return {error:'Quick learner select missing'};
+ jump.value=last.dataset.student;
+ jump.dispatchEvent(new Event('change',{bubbles:true}));
+ const jumpFocus=document.activeElement===last;
  const box=controls?.querySelector('[data-ux-column="2"]');
  if(!box)return {error:'Column control unavailable'};
  box.checked=false;box.dispatchEvent(new Event('change',{bubbles:true}));
@@ -152,7 +190,8 @@ const interactionInPage=async()=>{
  const before=scroller.scrollLeft;
  cue?.querySelector('[data-faculty-scroll="right"]')?.click();
  await new Promise(resolve=>setTimeout(resolve,450));
- return {original,reduced,hidden,order,active,restored,before,after:scroller.scrollLeft};
+ return {original,reduced,hidden,order,active,restored,before,after:scroller.scrollLeft,
+  downFocus,jumpFocus};
 };
 await mkdir(OUT,{recursive:true});
 try{
@@ -174,6 +213,8 @@ try{
  const actions=await evaluate('('+interactionInPage.toString()+')()');
  check(!actions.error,actions.error||'Interaction audit failed');
  check(actions.hidden&&actions.reduced<actions.original-40,'Hidden column did not reduce table width');
+ check(actions.downFocus,'ArrowDown did not move to the next learner');
+ check(actions.jumpFocus,'Jump-to-learner did not focus the selected learner');
  check(actions.order[1]!=='1','Reorder did not move the first evidence column');
  check(actions.active>=1,'Hover did not identify a column');
  check(Math.abs(actions.restored-actions.original)<=3,'Restore default changed total width');
