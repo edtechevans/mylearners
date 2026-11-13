@@ -8,7 +8,8 @@ export const FACULTY_SUBJECT_SHORT_NAMES=Object.freeze({
  'Mathematics':Object.freeze({short:'Math',full:'Mathematics'}),
  'Individuals & Societies':Object.freeze({short:'I&S',full:'Individuals & Societies'}),
  'Physical & Health Education':Object.freeze({short:'PHE',full:'Physical & Health Education'}),
- 'Arts':Object.freeze({short:'VPA',full:'Visual & Performing Arts'})
+ 'Arts':Object.freeze({short:'VPA',full:'Visual & Performing Arts'}),
+ 'Arts / Elective':Object.freeze({short:'VPA / Elective',full:'Visual & Performing Arts / Elective'})
 });
 export function facultyHeaderInfo(column){
  const original=String(column?.label||column?.subject||'');
@@ -28,6 +29,7 @@ export function facultyHeaderInfo(column){
 export function facultyHeaderWidth(column){
  const info=facultyHeaderInfo(column);
  if(column?.kind==='attendance')return 122;
+ if(info.short==='VPA / Elective'||info.display==='VPA / Elective')return 160;
  if(info.abbreviated)return 110;
  if(column?.kind==='engagement'||column?.kind==='belonging')return 146;
  if(column?.kind==='screener')return 140;

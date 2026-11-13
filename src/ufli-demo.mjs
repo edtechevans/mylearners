@@ -59,13 +59,15 @@ export function renderUfliLessonTile(student,{compact=false}={}){
   placement.code+'</strong></span>';
 }
 export function renderUfliLegend(){
- return '<aside class="ufli-roster-legend" aria-label="UFLI lesson colour group legend">'+
-  '<div class="ufli-legend-heading"><strong>UFLI Foundations · lesson groups</strong>'+
-  '<span>Random demo placements · K–5 only · not achievement bands</span></div>'+
-  '<div class="ufli-legend-bands">'+UFLI_GROUPS.map(group=>
+ return '<details class="ufli-roster-legend" aria-label="UFLI lesson colour group legend">'+
+  '<summary><strong>UFLI Foundations · lesson groups</strong>'+
+  '<span class="ufli-legend-mini" aria-hidden="true">'+UFLI_GROUPS.map(group=>
+   '<i class="ufli-stage-'+group.id+'"></i>').join('')+'</span>'+
+  '<span>Random demo placements · K–5 · not achievement bands</span></summary>'+
+  '<div class="ufli-legend-content"><div class="ufli-legend-bands">'+UFLI_GROUPS.map(group=>
    '<span class="ufli-legend-chip ufli-stage-'+group.id+'"><b>'+
    group.start+'–'+group.end+'</b><span>'+esc(group.label)+'</span></span>').join('')+'</div>'+
   '<small>Colours group nearby lessons in the official sequence; they do not indicate reading proficiency. '+
   'The published scope describes K–2 instruction; Grades 3–5 here illustrate potential intervention placements. '+
-  '<a href="'+UFLI_SOURCE_URL+'" target="_blank" rel="noopener noreferrer">View UFLI scope & sequence</a>.</small></aside>';
+  '<a href="'+UFLI_SOURCE_URL+'" target="_blank" rel="noopener noreferrer">View UFLI scope & sequence</a>.</small></div></details>';
 }

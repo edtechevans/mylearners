@@ -9,7 +9,8 @@ import {MAP_RIT_SUBJECTS,mapRitCurrent,mapRitChange,mapRitChangeLabel,renderMapR
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs?v=20261111schemas1';
 import {renderLeaderVoiceReview} from './leader-review-signals.mjs?v=20261111mapbands1';
 import {universalScreenerFor,renderUniversalScreenerTile} from './universal-screener.mjs';
-import {ufliLessonFor,renderUfliLessonTile,renderUfliLegend} from './ufli-demo.mjs';
+import {ufliLessonFor,renderUfliLessonTile,renderUfliLegend} from './ufli-demo.mjs?v=20261113workflow1';
+import {renderFacultyMeasureContext} from './faculty-evidence-context.mjs';
 import {renderLeaderUniversalScreener} from './universal-screener-leader.mjs';
 import {renderLeaderAcademicActions,LEADER_ACADEMIC_FOCUS} from './leader-academic-actions.mjs?v=20261111journeys1';
 import {renderMapJourneyCohort,renderMapJourneyProfile} from './map-journeys-view.mjs?v=20261111uxconsol1';
@@ -33,7 +34,7 @@ import {renderStudentPhoto,installStudentPhotoPreview} from './student-photo-pre
 import {createExperienceRecords,experienceFor,summarizeExperience,experienceChange,experienceQuestionSummary,EXPERIENCE_WINDOWS,EXPERIENCE_METRICS,METRIC_IDS,experienceEligible} from './experience-data.mjs?v=20261030repair1';
 import {experienceDialogContent} from './experience-explain-modal.mjs?v=20261030wall3';
 import {decorateEvidencePreviews,installEvidencePreviewController} from './evidence-previews.mjs?v=20261112scroll1';
-import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261112legibility1';
+import {resolveEvidencePreview} from './evidence-preview-context.mjs?v=20261113workflow1';
 import {esc} from './v2-ui.mjs';
 import {createAcademicDemoRecords,academicFor,academicModesFor,latestAcademic,READING_LEVELS,facultyDemoReport} from './academic-journey-data.mjs?v=20261111schemas1';
 import {quartileBand,formatIndex,experienceBand} from './faculty-bands.mjs?v=20261030wall2';
@@ -43,8 +44,8 @@ import {renderLeaderReportFollowup} from './leader-report-followup.mjs?v=2026111
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261112subjects1';
 import {renderSubjectGradeTiles} from './subject-grade-tiles.mjs?v=20261112subjects1';
 import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261111mapui3';
-import {facultyHeaderInfo,facultyHeaderWidth,facultyRosterTableWidth,facultyEvidenceFamily} from './faculty-roster-headings.mjs';
-import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261112legibility1';
+import {facultyHeaderInfo,facultyHeaderWidth,facultyRosterTableWidth,facultyEvidenceFamily} from './faculty-roster-headings.mjs?v=20261113workflow1';
+import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261113workflow1';
 import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile} from './maia-demo.mjs';
 import {renderStudentOverview} from './student-daily-overview.mjs?v=20261112subjects1';
 import {renderBoard} from './board-map-view.mjs?v=20261029dpaxis1';
@@ -363,6 +364,7 @@ function roster(ss,options={}){
   compare,evidenceLabel(compare,{...evidenceCtx,subject}));
  const query=state.query.trim().toLowerCase();
  const numericEligible=ss.some(s=>facultyDemoReport(academicFor(ACADEMIC_RECORDS,s.id))?.scale==='1–7');
+ const mayIncludeProvisional=ss.some(s=>{const n=gradeNumber(s.grade);return n>=6&&n<=10});
  const filterLevel=numericEligible?(state.facultyGradeFilter==='2'?2:state.facultyGradeFilter==='3'?3:null):null;
  const count3=numericEligible?ss.filter(s=>hasLowReportGrade(s,ACADEMIC_RECORDS,3)).length:0;
  const count2=numericEligible?ss.filter(s=>hasLowReportGrade(s,ACADEMIC_RECORDS,2)).length:0;
@@ -375,9 +377,15 @@ function roster(ss,options={}){
   '<button type="button" data-faculty-low-filter="all" aria-pressed="'+(filterLevel===null)+
   '" class="'+(filterLevel===null?'active':'')+'">All learners</button>'+
   '<button type="button" data-faculty-low-filter="3" aria-pressed="'+(filterLevel===3)+
-  '" class="'+(filterLevel===3?'active':'')+'">3 or below <b>'+count3+'</b></button>'+
+  '" class="'+(filterLevel===3?'active':'')+'" title="Current 2026–27 test grades'+
+   (mayIncludeProvisional?', including provisional MYP best-fit results':'')+
+   '">3 or below'+(mayIncludeProvisional?'*':'')+' <b>'+count3+'</b></button>'+
   '<button type="button" data-faculty-low-filter="2" aria-pressed="'+(filterLevel===2)+
-  '" class="'+(filterLevel===2?'active':'')+'">2 or below <b>'+count2+'</b></button></div>':'';
+  '" class="'+(filterLevel===2?'active':'')+'" title="Current 2026–27 test grades'+
+   (mayIncludeProvisional?', including provisional MYP best-fit results':'')+
+   '">2 or below'+(mayIncludeProvisional?'*':'')+' <b>'+count2+'</b></button>'+
+  (mayIncludeProvisional?'<small class="faculty-provisional-note">*Includes provisional MYP best-fit grades when fewer than four criteria are assessed. All values are demo test data, not issued grades.</small>':'')+
+  '</div>':'';
 
  const showMap=across&&rows.some(s=>gradeNumber(s.grade)>=3&&gradeNumber(s.grade)<=10);
  const showSEL=across&&rows.some(s=>experienceEligible(s));
@@ -458,7 +466,8 @@ function roster(ss,options={}){
   (!everyday&&experienceEligible(x.student)?'<span>Engagement '+x.eng+' · Belonging '+x.bel+'</span>':'')+
   (supportStatusBadges(x.student,{compact:true,interactive:false})?'<span>'+supportStatusBadges(x.student,{compact:true,interactive:false})+'</span>':'')+
   '</span><span class="roster-arrow" aria-hidden="true">›</span></button></div>').join('')+'</div>';
- return '<section class="roster roster-daily" data-roster-layout="'+(everyday?'everyday':'focused')+'" aria-label="'+(across?'Search across assigned students':'My class roster')+'">'+
+ return '<section class="roster roster-daily" data-roster-layout="'+(everyday?'everyday':'focused')+
+  '" data-faculty-stage="'+(gradeNumber(grade)<=2?'early':'upper')+'" aria-label="'+(across?'Search across assigned students':'My class roster')+'">'+
   '<div class="sectionhead"><div><h2>'+heading+'</h2><span class="tiny">'+context+'</span></div>'+concernFilter+
   supportStatusFilterControl(state.facultySupportFilter)+
   (across?'<button type="button" class="roster-clear-search" data-clear-search>Clear search</button>':'')+'</div>'+
@@ -474,6 +483,7 @@ function roster(ss,options={}){
   '<details><summary>Interpret colours</summary><p>Numeric report TEST grades: 1–3 red, 4 orange, 5–6 light green, 7 dark green. Elementary developmental descriptors are not converted to grades. IXL uses source-style diagnostic tiers with incomplete results shown as missing; MAP RIT uses five separate achievement percentile quintiles; other assessments use fictional same-grade comparisons; experience uses fixed −2 to +2 bands. Grey means missing. A colour is not a learner label.</p></details></div>':'')+
   (everyday&&everydayColumns.some(c=>c.kind==='mapRit')?renderMapRitLegend():'')+
   (everyday&&everydayColumns.some(c=>c.kind==='ufli')?renderUfliLegend():'')+
+  (everyday?renderFacultyMeasureContext(everydayColumns,DATA.asOf):'')+
   table+mobile+
   (rows.length?'':'<p class="empty-message">'+(filterLevel!==null?'No learners have a subject result of '+filterLevel+' or below in this selection.':'No matching students in your assigned classes. Try a different name.')+'</p>')+
   '<details class="faculty-inquiry-prompt"><summary>From evidence to action</summary>'+
