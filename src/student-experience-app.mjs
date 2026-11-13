@@ -43,7 +43,7 @@ import {renderLeaderReportFollowup} from './leader-report-followup.mjs?v=2026111
 import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.mjs?v=20261112subjects1';
 import {renderSubjectGradeTiles} from './subject-grade-tiles.mjs?v=20261112subjects1';
 import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261111mapui3';
-import {facultyHeaderInfo,facultyHeaderWidth,facultyRosterTableWidth} from './faculty-roster-headings.mjs';
+import {facultyHeaderInfo,facultyHeaderWidth,facultyRosterTableWidth,facultyEvidenceFamily} from './faculty-roster-headings.mjs';
 import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261112legibility1';
 import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile} from './maia-demo.mjs';
 import {renderStudentOverview} from './student-daily-overview.mjs?v=20261112subjects1';
@@ -247,12 +247,14 @@ function roster(ss,options={}){
   kind==='belonging'?'Belonging':label;
  const everydayHeading=column=>facultyHeaderInfo(column).display;
  const everydayHeader=(column)=>{
-  if(column.kind==='mapRit')return renderMapRitHeader(column.subject);
+  if(column.kind==='mapRit')return renderMapRitHeader(column.subject).replace('<th ',
+   '<th data-faculty-family="'+facultyEvidenceFamily(column)+'" ');
   const info=facultyHeaderInfo(column);
   // Preserve the source subject for saved arrangements; display a shorter
   // teacher-friendly name without changing any underlying report evidence.
   const source=facultyExperienceHeading(column.kind,column.label);
-  return '<th scope="col" class="faculty-roster-heading'+
+  return '<th scope="col" data-faculty-family="'+facultyEvidenceFamily(column)+
+   '" class="faculty-roster-heading'+
    (info.abbreviated?' faculty-subject-abbr':'')+'" title="'+safe(info.full)+
    '" data-full-heading="'+safe(info.full)+'" data-source-heading="'+safe(source)+'">'+
    '<span class="faculty-heading-text'+(info.abbreviated?' is-compact':'')+
@@ -416,24 +418,25 @@ function roster(ss,options={}){
   '<col class="roster-col-support" style="width:172px"></colgroup>':'';
  const table='<div class="tablewrap roster-desktop"><table'+
   (everyday?' class="faculty-data-wall" style="--faculty-roster-table-width:'+rosterMinWidth+'px"':'')+
-  '>'+colgroup+'<thead><tr><th>Learner</th>'+
+  '>'+colgroup+'<thead><tr><th'+(everyday?' data-faculty-family="identity"':'')+'>Learner</th>'+
   (across?'<th>Class</th>':'')+
   (everyday?everydayColumns.map(everydayHeader).join(''):
    '<th>Attendance</th><th>'+safe(modeLabel)+'</th>'+(compare==='none'?'':'<th>'+safe(compareLabel)+'</th>'))+
   (!everyday&&showMap?MAP_RIT_SUBJECTS.map(renderMapRitHeader).join(''):'')+
   (!everyday&&showSEL?'<th>Engagement</th><th>Belonging</th>':'')+
-  '<th>Support information</th></tr></thead><tbody>'+
-  data.map(x=>'<tr><td><span class="faculty-learner-entry">'+
+  '<th'+(everyday?' data-faculty-family="support"':'')+'>Support information</th></tr></thead><tbody>'+
+  data.map(x=>'<tr><td'+(everyday?' data-faculty-family="identity"':'')+'><span class="faculty-learner-entry">'+
    renderStudentPhoto(x.student)+
    '<button class="student-link" data-student="'+safe(x.student.id)+
    '">'+safe(x.student.name)+'</button></span></td>'+
    (across?'<td><span class="roster-class-label">'+safe(x.student.classId)+'</span></td>':'')+
-   (everyday?x.everydayCells.map((cell,i)=>'<td data-ux-sort-value="'+
+   (everyday?x.everydayCells.map((cell,i)=>'<td data-faculty-family="'+
+    facultyEvidenceFamily(everydayColumns[i])+'" data-ux-sort-value="'+
     (Number.isFinite(x.everydaySortValues[i])?String(x.everydaySortValues[i]):'')+'">'+cell+'</td>').join(''):
     '<td>'+x.attendance+'</td><td>'+x.academics+'</td>'+(compare==='none'?'':'<td>'+x.compared+'</td>'))+
    (!everyday&&showMap?MAP_RIT_SUBJECTS.map(subject=>'<td>'+renderMapRitCell(DATA.map[x.student.id]||[],subject,x.student.id)+'</td>').join(''):'')+
    (!everyday&&showSEL?'<td>'+x.eng+'</td><td>'+x.bel+'</td>':'')+
-   '<td><div class="staff-roster-support">'+supportStatusBadges(x.student,{compact:true})+
+   '<td'+(everyday?' data-faculty-family="support"':'')+'><div class="staff-roster-support">'+supportStatusBadges(x.student,{compact:true})+
     '</div></td></tr>').join('')+'</tbody></table></div>';
  const mobile='<div class="roster-mobile">'+data.map(x=>
   '<div class="roster-item">'+renderStudentPhoto(x.student,'mobile')+
