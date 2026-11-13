@@ -1,17 +1,18 @@
 /* A shared source-specific legend on every learning-data table header. */
 #app thead th[data-column-guide-ready="yes"]{cursor:help}
 #app thead th[data-column-guide-ready="yes"]:not(.ux-table-shell th){position:relative}
-#app thead th[data-column-guide-ready="yes"] .column-guide-indicator{
- position:absolute;right:5px;bottom:5px;font:700 11px/1 Arial,sans-serif;
- color:#527e96;opacity:.68;pointer-events:none;z-index:3;
+#app thead th[data-column-guide-ready="yes"]:not(.map-rit-th)::after{
+ content:"ⓘ";position:absolute;right:5px;bottom:5px;
+ font:700 11px/1 Arial,sans-serif;color:#527e96;
+ opacity:.68;pointer-events:none;z-index:3;
 }
-#app thead th[data-column-guide-ready="yes"]:is(:hover,:focus-within) .column-guide-indicator{
+#app thead th[data-column-guide-ready="yes"]:is(:hover,:focus-within)::after{
  opacity:1;color:#145f89;
 }
 #app .roster-daily th.faculty-subject-abbr[data-column-guide-ready="yes"]:is(:hover,:focus-within)::before{
  display:none!important;content:none!important;
 }
-#app thead th.map-rit-th .column-guide-indicator{display:none!important}
+
 .sitewide-column-guide[hidden]{display:none!important}
 .sitewide-column-guide{
  position:fixed;z-index:1000000;
@@ -51,4 +52,4 @@
  .sitewide-column-guide .column-guide-band{grid-template-columns:13px minmax(60px,1fr)}
  .sitewide-column-guide .column-guide-band span{grid-column:2;text-align:left}
 }
-@media print{.sitewide-column-guide,#app thead th .column-guide-indicator{display:none!important}}
+@media print{.sitewide-column-guide,#app thead th[data-column-guide-ready="yes"]::after{display:none!important}}

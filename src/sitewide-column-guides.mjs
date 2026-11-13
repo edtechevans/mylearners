@@ -153,14 +153,9 @@ export function installSitewideColumnGuides(root){
  function decorate(){
   for(const th of root.querySelectorAll('thead th')){
    if(!visible(th))continue;
-   if(th.dataset.columnGuideReady==='yes')continue;
-   th.dataset.columnGuideReady='yes';
-   // No extra tab stop: the header’s existing sort button provides keyboard focus.
-   if(!th.hasAttribute('data-map-rit-subject')){
-    const icon=document.createElement('span');
-    icon.className='column-guide-indicator';icon.setAttribute('aria-hidden','true');
-    icon.textContent='ⓘ';th.appendChild(icon);
-   }
+   // CSS-drawn marker adds NO text to the table heading: saved layout keys,
+   // screen-reader labels and sortable text remain byte-for-byte unchanged.
+   if(th.dataset.columnGuideReady!=='yes')th.dataset.columnGuideReady='yes';
    th.removeAttribute('title');
    th.querySelector('[data-ux-sort]')?.removeAttribute('title');
   }
