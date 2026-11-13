@@ -183,16 +183,69 @@ function reportCell(row,subject){
   '" title="'+s(subject+' · '+item.value+' · '+row.report.year+(item.provisional?' · provisional best fit':'')+' example report')+'">'+
   '<strong>'+s(item.value)+mypBestFitMarker(item)+'</strong></span>';
 }
+const COMPACT_SUBJECT_LABELS=Object.freeze({
+ 'Early Literacy':'Literacy','Early Mathematics':'Math','Inquiry & Play':'Inquiry',
+ 'Creative Arts':'Arts','Physical Development':'PE',
+ 'English Language Arts':'ELA','Mathematics':'Math','Science':'Science',
+ 'Social Studies':'Social','Arts':'Arts','Physical Education':'PE',
+ 'Language & Literature':'L&L','Sciences':'Science',
+ 'Individuals & Societies':'I&S','Language Acquisition':'LA',
+ 'Physical & Health Education':'PHE','Arts / Elective':'Arts',
+ 'Design':'Design'
+});
+function schoolSubjectsCell(row){
+ if(!row.report?.subjects.length)return '<span class="explorer-empty">No subject evidence</span>';
+ return '<div class="explorer-subject-chip-list" aria-label="Subject grades for '+s(row.student.name)+'">'+
+  row.report.subjects.map(item=>{
+   const band=reportGradeBand(item.value,row.report.scale);
+   const value=shortDescriptor(String(item.value??'—'));
+   const label=COMPACT_SUBJECT_LABELS[item.subject]||item.subject;
+   return '<span class="explorer-subject-chip '+(band?'evidence-heat '+s(band):'explorer-descriptor')+
+     '" title="'+s(item.subject+' · '+String(item.value??'Not assessed')+(item.provisional?' · provisional best fit':''))+'">'+
+    '<span>'+s(label)+'</span><strong>'+s(value)+mypBestFitMarker(item)+'</strong></span>';
+  }).join('')+'</div>';
+}
+function schoolMapCell(row){
+ const tests=row.allBandHits;
+ if(!tests.length)return '<span class="explorer-empty">No current MAP assessment</span>';
+ return '<div class="explorer-map-chip-list">'+tests.map(hit=>
+  '<span class="explorer-map-chip map-rit-'+s(hit.band.key)+'" title="'+
+   s('MAP '+hit.subject+' · '+hit.record.rit+' RIT · P'+hit.record.percentile+' · '+hit.band.label)+'">'+
+   '<strong>'+s(shortMapSubject(hit.subject))+' '+s(hit.record.rit)+'</strong>'+
+   '<small>'+s(hit.band.label)+'</small></span>').join('')+'</div>';
+}
+function bandMatchesCell(row,filters){
+ const hits=filters.band==='all'?row.allBandHits:row.bandHits;
+ if(!hits.length)return '<span class="explorer-empty">No matching test</span>';
+ return '<div class="explorer-match-chips">'+hits.map(hit=>
+  '<span class="explorer-band map-rit-'+s(hit.band.key)+'" title="'+
+  s(hit.subject+': P'+hit.record.percentile+', '+hit.band.label)+'">'+
+  s(shortMapSubject(hit.subject)+' · '+hit.band.label)+'</span>').join('')+'</div>';
+}
+function strandMatchesCell(row){
+ if(!row.goalHits.length)return '<span class="explorer-empty">No matching strand</span>';
+ return '<div class="explorer-match-chips">'+row.goalHits.slice(0,2).map(hit=>
+  '<span class="explorer-strand-rit" title="'+s(hit.subject+' · '+hit.goal.name+' · '+hit.goal.rit+
+    ' RIT · '+strandBandLabel(hit.band))+'">'+
+   '<strong>'+s(shortMapSubject(hit.subject))+'</strong> '+
+   s(hit.goal.name)+' · '+s(hit.goal.rit)+' <small>'+s(strandBandLabel(hit.band))+'</small></span>'
+ ).join('')+
+ (row.goalHits.length>2?'<span class="explorer-hit-count" title="'+s(row.goalHits.slice(2).map(hit=>
+   hit.subject+': '+hit.goal.name+' ('+strandBandLabel(hit.band)+')').join('; '))+'">+'+
+   (row.goalHits.length-2)+' more</span>':'')+'</div>';
+}
 function evidenceCell(row,column,ctx){
  const student=row.student,kind=column.kind;
  if(kind==='attendance')return '<strong class="explorer-attendance">'+(row.attendance==null?'—':s(row.attendance)+'%')+'</strong>';
  if(kind==='report')return reportCell(row,column.subject);
+ if(kind==='schoolSubjects')return schoolSubjectsCell(row);
+ if(kind==='mapSummary')return schoolMapCell(row);
  if(kind==='mapRit')return renderMapRitCell(ctx.data.map[student.id]||[],column.subject,student.id)
-  .replaceAll('data-student=','data-explorer-student=');
+  .replaceAll('data-student=','data-explorer-student=').replaceAll('<button ', '<button tabindex="-1" ');
  if(kind==='engagement')return evidenceBand(row.engagementBand,'Engagement');
  if(kind==='belonging')return evidenceBand(row.belongingBand,'Belonging');
- if(kind==='screener')return renderUniversalScreenerTile(student);
- if(kind==='ufli')return renderUfliLessonTile(student);
+ if(kind==='screener')return renderUniversalScreenerTile(student).replaceAll('<button ', '<button tabindex="-1" ');
+ if(kind==='ufli')return renderUfliLessonTile(student).replaceAll('<button ', '<button tabindex="-1" ');
  if(kind==='ixl'){
   const result=latestAcademic(academicFor(ctx.academic,student.id),'ixl');
   const status=result?.tier==='Above grade'?'above':result?.tier==='On grade'?'on':
@@ -215,12 +268,14 @@ export function explorerColumns({grade='All',division='All',data}){
  const subjectColumns=reportSubjects.map(subject=>({
   kind:'report',id:'report:'+subject,label:subject,subject
  }));
- const base=grade==='All'?
-  [{kind:'attendance',id:'attendance',label:'Attendance'},
-   ...MAP_RIT_SUBJECTS.map(subject=>({kind:'mapRit',id:'map-'+subject,subject,label:'MAP '+subject+' RIT'})),
-   {kind:'engagement',id:'engagement',label:'Engagement'},
-   {kind:'belonging',id:'belonging',label:'Belonging'}]:
-  everydayEvidenceForGrade(grade);
+ if(grade==='All')return [
+  {kind:'attendance',id:'attendance',label:'Attendance'},
+  {kind:'schoolSubjects',id:'subjects-compact',label:'Subject grades'},
+  {kind:'mapSummary',id:'map-compact',label:'MAP RIT / band'},
+  {kind:'engagement',id:'engagement',label:'Engagement'},
+  {kind:'belonging',id:'belonging',label:'Belonging'}
+ ];
+ const base=everydayEvidenceForGrade(grade);
  return [base.find(c=>c.kind==='attendance'),...subjectColumns,
   ...base.filter(c=>c.kind!=='attendance'&&c.kind!=='report')];
 }
@@ -229,24 +284,25 @@ function labelFor(column){
  if(column.kind==='report')return facultyHeaderInfo(column).display;
  return column.label;
 }
-export function renderLeaderStudentExplorer({data,academic,experience,maia,filters={}}){
+export function renderLeaderStudentExplorer({data,academic,experience,maia,filters={},filtersOpen=false}){
  const f=cleanFilter(filters),model=leaderExplorerModel({data,academic,experience,filters:f});
  const columns=explorerColumns({grade:model.grade,division:model.division,data});
+ const active=explorerActiveFilters(f);
+ const showMapBand=f.band!=='all'||(f.mapTest!=='all'&&model.grade!=='All');
+ const showStrand=f.strandBand!=='all'||!!model.goalName;
  const sortButton=(key,label)=>'<button type="button" class="explorer-sort" data-explorer-sort="'+s(key)+
   '" aria-label="Sort by '+s(label)+'" aria-pressed="'+(model.sort===key)+'">'+s(label)+
   '<span aria-hidden="true">'+(model.sort===key?(model.direction===1?' ↑':' ↓'):' ↕')+'</span></button>';
- const rows=model.shown.map(row=>{
+ const rows=model.shown.map((row,index)=>{
   const cells=columns.map(c=>'<td data-explorer-col="'+s(c.kind)+'">'+
    evidenceCell(row,c,{data,academic,experience,maia})+'</td>').join('');
-  const focus=row.focus,band=mapRitBand(focus?.percentile),goalBand=strandBand(row.goal);
+  const bandMarkup=showMapBand?'<td data-explorer-col="mapBand">'+bandMatchesCell(row,f)+'</td>':'';
+  const strandMarkup=showStrand?'<td data-explorer-col="strand">'+strandMatchesCell(row)+'</td>':'';
   return '<tr><th scope="row"><span class="faculty-learner-entry">'+renderStudentPhoto(row.student)+
-   '<button type="button" class="student-link" data-explorer-student="'+s(row.student.id)+'">'+s(row.student.name)+'</button></span></th>'+
+   '<button type="button" tabindex="'+(index===0?'0':'-1')+'" class="student-link" data-explorer-student="'+s(row.student.id)+'">'+s(row.student.name)+'</button></span></th>'+
    '<td>'+s(row.student.grade)+'</td><td>'+s(row.student.classId)+'</td>'+
    '<td class="explorer-teacher">'+s(row.teacher?.name||'—')+'</td>'+cells+
-   '<td><span class="explorer-band '+(band?'map-rit-'+band.key:'is-missing')+'">'+s(band?.label||'—')+'</span></td>'+
-   '<td>'+(model.mapTest==='all'?'<span class="explorer-empty">Select a MAP test</span>':
-    row.goal?'<span class="explorer-strand-rit"><strong>'+s(row.goal.rit)+'</strong> RIT <small>'+s(strandBandLabel(goalBand))+'</small></span>':
-    '<span class="explorer-empty">'+(model.goalName?'—':'Choose a strand')+'</span>')+'</td>'+
+   bandMarkup+strandMarkup+
    '<td><div class="staff-roster-support">'+supportStatusBadges(row.student,{compact:true})+'</div></td></tr>';
  }).join('');
  const classes=model.classes;
