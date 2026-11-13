@@ -119,7 +119,7 @@ const state={role:ROLE_IDS.includes(initialRole)?initialRole:'faculty',
  studentReportsOpen:false,studentWellbeingOpen:false,leaderAcademicOpen:false,leaderPatternsOpen:false,
   leaderSupportOpen:false,leaderReportQuery:'',leaderReportMultiple:false,leaderReportExpanded:false,leaderReportThreshold:3,leaderReportOpen:false,
   leaderStudentId:'',leaderReviewFilter:'all',leaderReviewExpanded:false,
-  leaderExplorerOpen:false,leaderExplorerFilters:{...EXPLORER_DEFAULTS},
+  leaderExplorerOpen:false,leaderExplorerFiltersOpen:false,leaderExplorerFilters:{...EXPLORER_DEFAULTS},
   leaderDirectoryDivision:'All',leaderDirectoryGrade:'All',leaderDirectoryStatus:'has-support',
   leaderDirectoryQuery:'',leaderDirectoryExpanded:false,
   leaderScreenerBand:'all',leaderScreenerGrade:'All',leaderScreenerExpanded:false,
@@ -689,7 +689,8 @@ function leader(){
  if(state.leaderExplorerOpen)return heading('Student Explorer',
   'Filter, sort and explore learners with Faculty-style evidence columns.')+
   leaderViewNav()+renderLeaderStudentExplorer({data:DATA,academic:ACADEMIC_RECORDS,
-   experience:RECORDS,maia:MAIA_RECORDS,filters:explorerFilters()})+info();
+   experience:RECORDS,maia:MAIA_RECORDS,filters:explorerFilters(),
+   filtersOpen:state.leaderExplorerFiltersOpen})+info();
  if(state.division==='All')return heading('Leadership Overview',
   'Begin whole school, choose Elementary or Secondary, then drill down by grade.')+
   leaderViewNav()+renderLeaderWholeSchool({students:DATA.students,data:DATA,academic:ACADEMIC_RECORDS,
@@ -1223,6 +1224,19 @@ root.addEventListener('focusout',e=>{
  if(e.target.closest?.('[data-board-point],[data-board-dp-point],[data-board-dp-world-point],[data-board-dp-subject-point]'))hideBoardFloat();
 });
 root.addEventListener('keydown',e=>{
+ if(state.role==='leader'&&state.leaderExplorerOpen&&e.target.matches?.('#leader-student-explorer .student-link[data-explorer-student]')&&
+    ['ArrowDown','ArrowUp','Home','End'].includes(e.key)){
+  const cells=[...root.querySelectorAll('#leader-student-explorer tbody .student-link[data-explorer-student]')];
+  const current=cells.indexOf(e.target);
+  if(current>=0){
+   e.preventDefault();
+   const next=e.key==='Home'?0:e.key==='End'?cells.length-1:
+    Math.max(0,Math.min(cells.length-1,current+(e.key==='ArrowDown'?1:-1)));
+   e.target.tabIndex=-1;cells[next].tabIndex=0;cells[next].focus({preventScroll:true});
+   cells[next].scrollIntoView?.({block:'nearest',inline:'nearest'});return;
+  }
+ }
+
  const leaderTab=e.target.closest?.('[data-leader-focus]');
  if(leaderTab&&state.role==='leader'&&['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){
   const tabs=[...root.querySelectorAll('.leader-focus-nav [data-leader-focus]')];
@@ -1267,6 +1281,10 @@ root.addEventListener('click',e=>{
   const nav=e.target.closest('[data-leader-view]');
   if(nav){state.leaderExplorerOpen=nav.dataset.leaderView==='explorer';state.leaderStudentId='';render();globalThis.window?.scrollTo?.(0,0);return}
   if(state.leaderExplorerOpen){
+   if(e.target.closest('[data-explorer-toggle-filters]')){
+    state.leaderExplorerFiltersOpen=!state.leaderExplorerFiltersOpen;render();
+    root.querySelector('[data-explorer-toggle-filters]')?.focus?.({preventScroll:true});return;
+   }
    const ex=e.target.closest('[data-explorer-student]');
    if(ex){const found=leaderExplorerModel({data:DATA,academic:ACADEMIC_RECORDS,experience:RECORDS,filters:explorerFilters()}).rows.find(r=>r.student.id===ex.dataset.explorerStudent);
     if(found){leaderReturnContext={studentId:found.student.id,containerId:'leader-student-explorer',label:'Student Explorer',scrollY:Math.max(0,globalThis.window?.scrollY||0),source:'explorer'};
@@ -1277,7 +1295,7 @@ root.addEventListener('click',e=>{
    const sort=e.target.closest('[data-explorer-sort]');
    if(sort){const f=explorerFilters();f.direction=f.sort===sort.dataset.explorerSort&&f.direction==='asc'?'desc':'asc';f.sort=sort.dataset.explorerSort;render();return}
    if(e.target.closest('[data-explorer-direction]')){const f=explorerFilters();f.direction=f.direction==='asc'?'desc':'asc';render();return}
-   if(e.target.closest('[data-explorer-reset]')){state.leaderExplorerFilters={...EXPLORER_DEFAULTS};render();return}
+   if(e.target.closest('[data-explorer-reset]')){state.leaderExplorerFilters={...EXPLORER_DEFAULTS};state.leaderExplorerFiltersOpen=false;render();return}
   }
  }
  const strandProfileSubject=e.target.closest('[data-map-strand-profile-subject]');
@@ -1916,6 +1934,7 @@ root.addEventListener('change',e=>{
   if(field==='division'){f.grade='All';f.classId='';f.teacher='all';f.subject='all';f.strand=''}
   if(field==='grade'){f.classId='';f.teacher='all';f.subject='all';f.strand=''}
   if(field==='teacher'||field==='classId'||field==='mapTest')f.strand='';
+  if(field==='subject')f.gradeFilter='all';
   render();root.querySelector('[data-explorer-filter="'+field+'"]')?.focus?.({preventScroll:true});return;
  }
  const directoryChoice=e.target.closest?.('[data-leader-directory-filter]');
