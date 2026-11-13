@@ -144,7 +144,7 @@ async function audit(grade,width,label){
  check(r.gridActions>=3&&r.gridTabStops===1,
   grade+': expected exactly one tabbable data-cell action; found '+r.gridTabStops+' / '+r.gridActions);
  check(r.contextSummary.includes('Screener: fictional %')&&r.contextSource,
-  grade+': demo screening source context missing');
+  grade+': demo screening source context missing. Summary='+JSON.stringify(r.contextSummary)+', source='+r.contextSource);
  if(grade==='K'||grade==='G2'||grade==='G5')
   check(r.ufliCollapsed,grade+': UFLI legend should begin collapsed');
  if(width===1440&&['PK3','K','G2'].includes(grade))
