@@ -92,6 +92,6 @@ test('Sort buttons and mouse/keyboard tooltip reveal original full name, preserv
  assert.match(css,/th\.faculty-subject-abbr:hover::before/);
  assert.match(css,/th\.faculty-subject-abbr:focus-within::before/);
  assert.match(html,/faculty-roster-headings\.css\?v=20261113headings1/);
- assert.match(html,/student-experience-app\.mjs\?v=20261113guides1/);
+ assert.match(html,/student-experience-app\\.mjs\\?v=20261113explorer2/);
  assert.match(html,/daily-ux\.mjs\?v=20261113copy1/);
 });
