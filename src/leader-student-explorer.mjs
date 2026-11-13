@@ -303,7 +303,7 @@ export function renderLeaderStudentExplorer({data,academic,experience,maia,filte
    '<td>'+s(row.student.grade)+'</td><td>'+s(row.student.classId)+'</td>'+
    '<td class="explorer-teacher">'+s(row.teacher?.name||'—')+'</td>'+cells+
    bandMarkup+strandMarkup+
-   '<td><div class="staff-roster-support">'+supportStatusBadges(row.student,{compact:true})+'</div></td></tr>';
+   '<td><div class="staff-roster-support">'+supportStatusBadges(row.student,{compact:true,interactive:false})+'</div></td></tr>';
  }).join('');
  const classes=model.classes;
  const teacherChoices=[['all','All teachers'],...model.teachers.map(t=>[t.id,t.name])];
@@ -372,7 +372,7 @@ export function renderLeaderStudentExplorer({data,academic,experience,maia,filte
    '<div class="explorer-action-right">'+
     '<span class="explorer-roster-context">'+(model.grade==='All'?
        'All learners · subjects shown per student':'Grade-specific Faculty subject columns')+'</span>'+
-    (active.length?'<button type="button" class="explorer-secondary" data-explorer-reset>Reset</button>':'')+
+    '<button type="button" class="explorer-secondary" data-explorer-reset>Reset</button>'+
     '<button type="button" class="explorer-primary" data-export-dashboard>Export CSV</button>'+
     '<button type="button" class="explorer-scroll-arrow" data-explorer-scroll="-1" aria-label="Scroll table left">←</button>'+
     '<button type="button" class="explorer-scroll-arrow" data-explorer-scroll="1" aria-label="Scroll table right">→</button>'+
