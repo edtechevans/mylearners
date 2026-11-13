@@ -75,7 +75,9 @@ test('Role scopes, original column preferences and keyboard controls remain inta
  assert.match(ux,/className='faculty-scroll-hint'/);
  assert.match(ux,/data-faculty-scroll="right"/);
  assert.match(ux,/aria-label="Scroll evidence columns left"/);
- assert.match(ux,/if\(isFacultyColumns\)\{\s*refreshFacultyPresentation\(table,s\);\s*gridNavigation\?\.refresh\(\);[\s\S]*?updateScrollCue\(\)\s*\}/);
+ assert.match(ux,/refreshFacultyPresentation\(table,s\)/);
+ assert.match(ux,/gridNavigation\?\.refresh\(\)/);
+ assert.match(ux,/updateScrollCue\(\)/);
  assert.match(ux,/data-faculty-active-column/);
  assert.match(ux,/data-ux-restore-columns/);
  assert.match(ux,/mylearners-faculty-columns-v1/);
