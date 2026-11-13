@@ -1271,6 +1271,9 @@ root.addEventListener('click',e=>{
    if(ex){const found=leaderExplorerModel({data:DATA,academic:ACADEMIC_RECORDS,experience:RECORDS,filters:explorerFilters()}).rows.find(r=>r.student.id===ex.dataset.explorerStudent);
     if(found){leaderReturnContext={studentId:found.student.id,containerId:'leader-student-explorer',label:'Student Explorer',scrollY:Math.max(0,globalThis.window?.scrollY||0),source:'explorer'};
      state.leaderStudentId=found.student.id;render();globalThis.window?.scrollTo?.(0,0)}return;}
+   const horizontal=e.target.closest('[data-explorer-scroll]');
+   if(horizontal){const scroller=root.querySelector('#leader-student-explorer .explorer-scroll');
+    scroller?.scrollBy?.({left:(horizontal.dataset.explorerScroll==='-1'?-1:1)*520,behavior:scrollMotion()});return;}
    const sort=e.target.closest('[data-explorer-sort]');
    if(sort){const f=explorerFilters();f.direction=f.sort===sort.dataset.explorerSort&&f.direction==='asc'?'desc':'asc';f.sort=sort.dataset.explorerSort;render();return}
    if(e.target.closest('[data-explorer-direction]')){const f=explorerFilters();f.direction=f.direction==='asc'?'desc':'asc';render();return}
