@@ -81,7 +81,7 @@ test('Role scopes, original column preferences and keyboard controls remain inta
  assert.match(ux,/data-faculty-active-column/);
  assert.match(ux,/data-ux-restore-columns/);
  assert.match(ux,/mylearners-faculty-columns-v1/);
- assert.match(index,/daily-ux\.mjs\?v=20261113workflow1/);
- assert.match(index,/student-experience-app\.mjs\?v=20261113workflow1/);
+ assert.match(index,/daily-ux\.mjs\?v=20261113copy1/);
+ assert.match(index,/student-experience-app\.mjs\?v=20261113guides1/);
  assert.doesNotMatch(app,/['"]https?:\/\/[^'"]+\/api\/[^'"]+/);
 });

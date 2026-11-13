@@ -99,8 +99,8 @@ test('Roving data-cell keyboard navigation is installed, scoped and preserves na
 });
 test('Compact styling affects Faculty only and keeps original score palettes',()=>{
  assert.match(html,/faculty-workflow-polish\.css\?v=20261113workflow1/);
- assert.match(html,/student-experience-app\.mjs\?v=20261113workflow1/);
- assert.match(html,/daily-ux\.mjs\?v=20261113workflow1/);
+ assert.match(html,/student-experience-app\.mjs\?v=20261113guides1/);
+ assert.match(html,/daily-ux\.mjs\?v=20261113copy1/);
  assert.ok(html.indexOf('faculty-workflow-polish.css')>html.indexOf('faculty-ui-consistency.css'));
  assert.match(style,/#app\[data-workspace="faculty"\]/);
  assert.match(style,/class-evidence-panel/);
