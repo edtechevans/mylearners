@@ -25,7 +25,7 @@ export function renderFacultyMeasureContext(columns=[],snapshot=''){
   '<div><dt>Interpretation</dt><dd>Lesson numbers 1–128 indicate position in a teaching sequence, not mastery or reading level. Grades 3–5 are intervention-display examples only</dd></div></dl></section>':'';
  return '<details class="faculty-data-context"><summary>'+
   '<strong>Evidence context</strong><span class="faculty-context-inline">'+
-  (screener?'Screener: simulated %, not a risk score':'')+
+  (screener?'Screener: % bands, not a risk score':'')+
   (screener&&ufli?' · ':'')+
   (ufli?'UFLI: demo lesson, not reading proficiency':'')+
   '</span><span class="faculty-context-expand">Source, date &amp; meaning</span></summary>'+

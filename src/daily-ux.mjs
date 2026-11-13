@@ -573,10 +573,10 @@ function sourceStrip(){
  const strip=document.createElement('section');
  strip.className='ux-source-strip';
  strip.setAttribute('aria-label','Evidence source and reporting context');
- const info=r==='faculty'?'Faculty preview: school-year labels are shown for issued reports; MAP, IXL and check-ins have distinct scales.':
-  r==='leader'?'All individual learner records, support cohorts and experience indices in this view are fictional; dates and eligibility vary by assessment.':
-  r==='sss'?'Fictional learner support demonstration only. Specialist records are not securely shared or connected to an authoritative source.':
-  'Student preview: no live records. Historical issued grades are not current-year results.';
+ const info=r==='faculty'?'School-year labels identify report windows; MAP, IXL and check-ins have distinct scales.':
+  r==='leader'?'Dates, denominators and eligibility vary by assessment. Check the source before comparing groups.':
+  r==='sss'?'Student support records include service indicators and follow-up information. View authorised details for source context.':
+  'Historical issued results and current progress are shown separately.';
  strip.innerHTML='<strong>Evidence context</strong><span>As of 8 Oct 2026</span>'+
  '<details><summary>What am I viewing?</summary><p>'+info+
  ' Missing results are not zeros. Use the source, date and scale noted beside each measure.</p></details>';

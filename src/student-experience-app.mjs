@@ -627,8 +627,8 @@ function faculty(){
   '<label class="search-label">Find any assigned student'+
    '<input data-query placeholder="Search across all my classes..." value="'+safe(state.query)+
    '" aria-label="Search for a student across all assigned classes"></label>'+
-  '<details class="faculty-demo-options"><summary>Demo controls</summary>'+
-   '<label class="faculty-demo-picker">Faculty demo '+
+  '<details class="faculty-demo-options"><summary>View options</summary>'+
+   '<label class="faculty-demo-picker">Faculty perspective '+
    selector('teacher',DATA.teachers.map(t=>[t.id,t.name]),state.teacher)+'</label></details></div>';
  const summary=searching?'':'<div class="quick-summary faculty-daily-summary">'+
   quickStat('My Class',ss.length,'Learners in '+safe(activeClass()?.name||'this class'))+
