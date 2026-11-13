@@ -38,6 +38,33 @@ jobs:
           trap 'kill "$server" "$chrome" 2>/dev/null || true' EXIT
           export CHROME_DEBUG_URL=http://127.0.0.1:9239
           node tests/e2e/faculty-layout-consistency.mjs
+      - name: Run Leaders Student Explorer usability and MAP correctness checks
+        shell: bash
+        timeout-minutes: 8
+        run: |
+          set -euo pipefail
+          node --check tests/e2e/student-explorer-release-qa.mjs
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/explorer-qa-http.log 2>&1 &
+          server=$!
+          browser="$(command -v google-chrome || command -v chromium)"
+          "$browser" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu \
+            --remote-allow-origins='*' --remote-debugging-port=9248 \
+            --user-data-dir=/tmp/my-learners-explorer-release about:blank \
+            >/tmp/explorer-qa-chrome.log 2>&1 &
+          chrome=$!
+          trap 'kill "$server" "$chrome" 2>/dev/null || true' EXIT
+          export CHROME_DEBUG_URL=http://127.0.0.1:9248
+          node tests/e2e/student-explorer-release-qa.mjs
+      - name: Upload Leaders Student Explorer screenshots and test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: leaders-explorer-release-qa
+          path: |
+            qa-artifacts/student-explorer-leader-audit.json
+            qa-artifacts/leader-audit-*.png
+          retention-days: 14
+          if-no-files-found: warn
       - name: Upload Faculty class screenshots and consistency report
         if: always()
         uses: actions/upload-artifact@v4
