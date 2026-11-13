@@ -1256,6 +1256,25 @@ root.addEventListener('keydown',e=>{
  if(e.key==='Escape'){hideBoardFloat();if(pinnedChartKey)unpinChartPoint()}
 });
 root.addEventListener('click',e=>{
+ const download=e.target.closest('[data-export-dashboard]');
+ if(download){const table=state.role==='leader'&&state.leaderExplorerOpen&&!state.leaderStudentId?
+  leaderExplorerExportRows({data:DATA,academic:ACADEMIC_RECORDS,experience:RECORDS,filters:explorerFilters()}):null;
+  exportCsv('my-learners-'+state.role+(table?'-student-explorer':'')+'.csv',table?[table.headers,...table.rows]:visibleDashboardCsv(root,ROLE_DISPLAY[state.role]));return;}
+ if(state.role==='leader'){
+  const nav=e.target.closest('[data-leader-view]');
+  if(nav){state.leaderExplorerOpen=nav.dataset.leaderView==='explorer';state.leaderStudentId='';render();globalThis.window?.scrollTo?.(0,0);return}
+  if(state.leaderExplorerOpen){
+   const ex=e.target.closest('[data-explorer-student]');
+   if(ex){const found=leaderExplorerModel({data:DATA,academic:ACADEMIC_RECORDS,experience:RECORDS,filters:explorerFilters()}).rows.find(r=>r.student.id===ex.dataset.explorerStudent);
+    if(found){leaderReturnContext={studentId:found.student.id,containerId:'leader-student-explorer',label:'Student Explorer',scrollY:Math.max(0,globalThis.window?.scrollY||0),source:'explorer'};
+     state.leaderStudentId=found.student.id;render();globalThis.window?.scrollTo?.(0,0)}return;}
+   const sort=e.target.closest('[data-explorer-sort]');
+   if(sort){const f=explorerFilters();f.direction=f.sort===sort.dataset.explorerSort&&f.direction==='asc'?'desc':'asc';f.sort=sort.dataset.explorerSort;render();return}
+   if(e.target.closest('[data-explorer-direction]')){const f=explorerFilters();f.direction=f.direction==='asc'?'desc':'asc';render();return}
+   if(e.target.closest('[data-explorer-reset]')){state.leaderExplorerFilters={...EXPLORER_DEFAULTS};render();return}
+   if(e.target.closest('[data-explorer-more]')){explorerFilters().limit+=EXPLORER_PAGE_SIZE;render();return}
+  }
+ }
  const strandProfileSubject=e.target.closest('[data-map-strand-profile-subject]');
  if(strandProfileSubject&&['faculty','student','leader'].includes(state.role)){
   const subject=strandProfileSubject.dataset.mapStrandProfileSubject;
@@ -1884,6 +1903,15 @@ root.addEventListener('click',e=>{
  const link=e.target.closest('[data-student]');if(link){state.studentId=link.dataset.student;state.details=false;state.academicReportYear='';render();window.scrollTo(0,0)}
 });
 root.addEventListener('change',e=>{
+ const ex=e.target.closest?.('[data-explorer-filter]');
+ if(ex&&state.role==='leader'&&state.leaderExplorerOpen){
+  const field=ex.dataset.explorerFilter;if(!Object.hasOwn(EXPLORER_DEFAULTS,field))return;
+  const f=explorerFilters();f[field]=ex.value;f.limit=EXPLORER_PAGE_SIZE;
+  if(field==='division'){f.grade='All';f.classId='';f.teacher='all';f.strand=''}
+  if(field==='grade'){f.classId='';f.teacher='all';f.strand=''}
+  if(field==='teacher'||field==='classId'||field==='mapTest')f.strand='';
+  render();root.querySelector('[data-explorer-filter="'+field+'"]')?.focus?.({preventScroll:true});return;
+ }
  const directoryChoice=e.target.closest?.('[data-leader-directory-filter]');
  if(directoryChoice&&state.role==='leader'){
   const field=directoryChoice.dataset.leaderDirectoryFilter;
@@ -2164,6 +2192,10 @@ root.addEventListener('toggle',e=>{
  if(panel.dataset.studentPanel==='wellbeing')state.studentWellbeingOpen=panel.open;
 },true);
 root.addEventListener('input',e=>{
+ if(e.target.matches?.('[data-explorer-search]')&&state.role==='leader'&&state.leaderExplorerOpen){
+  const pos=e.target.selectionStart;explorerFilters().query=e.target.value;explorerFilters().limit=EXPLORER_PAGE_SIZE;render();
+  const field=root.querySelector('[data-explorer-search]');field?.focus?.({preventScroll:true});if(Number.isInteger(pos))field?.setSelectionRange?.(pos,pos);return;
+ }
  if(e.target.matches?.('[data-leader-directory-search]')&&state.role==='leader'){
   const p=e.target.selectionStart;
   state.leaderDirectoryQuery=e.target.value;
