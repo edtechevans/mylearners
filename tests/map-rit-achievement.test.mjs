@@ -51,7 +51,7 @@ test('Headers and learner profiles explain five bands and four periods',()=>{
  const profile=renderMapRitProfile(data.map[student.id]);
  for(const subject of MAP_RIT_SUBJECTS)assert.ok(profile.includes('MAP '+(subject==='Mathematics'?'Math':subject)));
  for(const w of MAP_RIT_WINDOWS)assert.ok(profile.includes(w.label));
- assert.match(profile,/FICTIONAL MAP DATA/);
+ assert.match(profile,/MAP RESULTS/);
  assert.equal(renderMapRitProfile(data.map[data.students.find(s=>s.grade==='G1').id]),'');
 });
 

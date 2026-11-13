@@ -87,14 +87,14 @@ export function renderMapRitTooltip(subject){
  '<small>Achievement interpretation</small></div>'+
  '<p>The large number is the RIT score. The signed number underneath (e.g. +7 RIT) is the change since the most recent earlier valid test in the same subject. It is not a projected growth figure. Colour represents the achievement percentile band for that grade and term.</p>'+
  '<div class="map-rit-band-list">'+bandRows()+'</div>'+
- '<p class="map-rit-tooltip-note">NWEA-style quintiles; all displayed scores and percentiles are fictional, not calculated from official NWEA norms.</p>';
+ '<p class="map-rit-tooltip-note">These are display quintiles for achievement percentiles, not official NWEA norm lookups.</p>';
 }
 export function renderMapRitLegend(){
  return '<details class="map-rit-inline-legend"><summary><span class="map-rit-legend-dots" aria-hidden="true">'+
  bandsHighFirst.map(b=>'<i class="map-rit-'+b.key+'"></i>').join('')+
  '</span>MAP RIT colours · percentile guide</summary><div class="map-rit-inline-legend-body">'+
  '<p><strong>Large number = current RIT.</strong> The number beneath shows the RIT-point change from the most recent earlier valid test. The five background colours use achievement percentiles, not RIT cutoffs or growth. No previous test means no change can be calculated.</p>'+
- '<div class="map-rit-band-list">'+bandRows()+'</div><small>All MAP results in this demonstration are fictional.</small></div></details>';
+ '<div class="map-rit-band-list">'+bandRows()+'</div><small>Colours describe achievement percentile groups; RIT growth uses a separate scale.</small></div></details>';
 }
 function historyScore(record,delta){
  if(!record)return '<span class="map-rit-history-empty">—</span>';
@@ -142,7 +142,7 @@ export function renderMapRitProfile(records){
  return '<section class="map-rit-profile" aria-label="MAP achievement RIT and score history">'+
  '<div class="map-rit-profile-heading"><div><span>MAP GROWTH ASSESSMENT</span>'+
  '<h2>RIT achievement across subjects</h2><p>Fall 2026 RIT scores and change since each subject’s previous valid test.</p></div>'+
- '<span class="map-rit-fictional">FICTIONAL MAP DATA</span></div>'+
+ '<span class="map-rit-fictional">MAP RESULTS</span></div>'+
  '<div class="map-rit-profile-grid">'+current.map(({subject,record})=>{
   const band=mapRitBand(record?.percentile);
   const change=mapRitChange(records,subject);

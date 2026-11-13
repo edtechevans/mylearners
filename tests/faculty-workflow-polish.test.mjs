@@ -26,7 +26,7 @@ test('All Faculty grades have concise but genuinely informative demo measure met
   const columns=facultyRosterEvidenceColumns(sample,records,everydayEvidenceForGrade(grade));
   const markup=renderFacultyMeasureContext(columns,'2026-10-08');
   assert.match(markup,/class="faculty-data-context"/,grade);
-  assert.match(markup,/Screener: simulated %, not a risk score/,grade);
+  assert.match(markup,/Screener: % bands, not a risk score/,grade);
   assert.match(markup,/Source, date &amp; meaning/,grade);
   assert.match(markup,/2026-10-08 \(demo snapshot\)/,grade);
   assert.match(markup,/<dt>Source<\/dt>/,grade);
@@ -99,8 +99,8 @@ test('Roving data-cell keyboard navigation is installed, scoped and preserves na
 });
 test('Compact styling affects Faculty only and keeps original score palettes',()=>{
  assert.match(html,/faculty-workflow-polish\.css\?v=20261113workflow1/);
- assert.match(html,/student-experience-app\.mjs\?v=20261113workflow1/);
- assert.match(html,/daily-ux\.mjs\?v=20261113workflow1/);
+ assert.match(html,/student-experience-app\.mjs\?v=20261113guides1/);
+ assert.match(html,/daily-ux\.mjs\?v=20261113copy1/);
  assert.ok(html.indexOf('faculty-workflow-polish.css')>html.indexOf('faculty-ui-consistency.css'));
  assert.match(style,/#app\[data-workspace="faculty"\]/);
  assert.match(style,/class-evidence-panel/);

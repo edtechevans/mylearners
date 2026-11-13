@@ -68,7 +68,7 @@ test('all five views use a labelled semantic navigation with a single active das
  assert.match(node.innerHTML,/<main class="container" id="main" tabindex="-1">/);
  for(const role of ['faculty','student','sss','leader','board'])
   assert.match(node.innerHTML,new RegExp('data-role="'+role+'"'));
- assert.match(node.innerHTML,/data-role="sss" aria-pressed="false" aria-label="Open Student Support Services \(SSS\) demonstration dashboard"/);
+ assert.match(node.innerHTML,/data-role="sss" aria-pressed="false" aria-label="Open Student Support Services \(SSS\) dashboard"/);
  assert.match(node.innerHTML,/data-role="leader" aria-pressed="false" aria-label="Open Leaders dashboard"/);
  assert.equal((node.innerHTML.match(/data-role="[^"]+" aria-pressed="true"/g)||[]).length,1);
 });
@@ -128,7 +128,9 @@ test('Leaders begin with an aggregated whole-school landing and explicit divisio
   'The two divisions each retain separate Engagement and Belonging indices');
  assert.doesNotMatch(node.innerHTML,/leader-report-followup/);
  assert.doesNotMatch(node.innerHTML,/data-leader-student=/,'No individual learner on whole-school screen');
- assert.match(node.innerHTML,/DEMONSTRATION/);
+ assert.match(node.innerHTML,/class="sitewide-product-footer"/);
+ assert.match(node.innerHTML,/About this view/);
+ assert.doesNotMatch(node.innerHTML,/>DEMONSTRATION</);
 });
 test('Leaders can open a supported learner from whole-school directory and return',()=>{
  click('[data-role]',{role:'leader'});

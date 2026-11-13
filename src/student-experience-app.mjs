@@ -10,6 +10,8 @@ import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReport
 import {renderLeaderVoiceReview} from './leader-review-signals.mjs?v=20261111mapbands1';
 import {universalScreenerFor,renderUniversalScreenerTile} from './universal-screener.mjs';
 import {ufliLessonFor,renderUfliLessonTile} from './ufli-demo.mjs?v=20261113workflow1';
+import {installSitewideColumnGuides} from './sitewide-column-guides.mjs';
+import {polishPresentationMarkup,installPresentationCopy} from './sitewide-ui-copy.mjs';
 import {renderFacultyMeasureContext} from './faculty-evidence-context.mjs';
 import {renderLeaderUniversalScreener} from './universal-screener-leader.mjs';
 import {renderLeaderAcademicActions,LEADER_ACADEMIC_FOCUS} from './leader-academic-actions.mjs?v=20261111journeys1';
@@ -65,6 +67,8 @@ const supportEntries=()=>[...SUPPORT_SEEDED.filter(x=>!SUPPORT_DRAFTS.some(d=>d.
 const root=document.getElementById('app');
 const supportTipController=installSupportTagTooltips(root);
 installMapRitHeaderTooltips(root);
+installSitewideColumnGuides(root);
+installPresentationCopy(root);
 // Scripted jumps respect the same reduced-motion preference as CSS transitions.
 const scrollMotion=()=>globalThis.window?.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches?'auto':'smooth';
 const saved=(k,d)=>{try{return sessionStorage.getItem(k)||d}catch{return d}};
@@ -202,7 +206,7 @@ function header(){
 function heading(title,desc){
  const asOf=new Date(DATA.asOf+'T12:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
  return '<div class="heading"><div><div class="eyebrow">AISG · 2026–27</div><h1>'+safe(title)+'</h1><p>'+safe(desc)+'</p></div>'+
- '<div class="heading-meta"><span class="demo">FICTIONAL DATA</span><span class="asof">Demo snapshot: '+safe(asOf)+'</span></div></div>';
+ '<div class="heading-meta"><span class="demo" title="Preview environment: sample learner records">PREVIEW</span><span class="asof">As of '+safe(asOf)+'</span></div></div>';
 }
 function selector(id,options,selected){return '<select data-select="'+id+'" aria-label="'+safe(id)+'">'+options.map(x=>opt(x[0],x[1],selected)).join('')+'</select>'}
 function scoreExplanation(id,ss,student){
@@ -467,7 +471,7 @@ function roster(ss,options={}){
   (supportStatusBadges(x.student,{compact:true,interactive:false})?'<span>'+supportStatusBadges(x.student,{compact:true,interactive:false})+'</span>':'')+
   '</span><span class="roster-arrow" aria-hidden="true">›</span></button></div>').join('')+'</div>';
  return '<section class="roster roster-daily" data-roster-layout="'+(everyday?'everyday':'focused')+
-  '" data-faculty-stage="'+(gradeNumber(grade)<=2?'early':'upper')+'" aria-label="'+(across?'Search across assigned students':'My class roster')+'">'+
+  '" data-faculty-stage="'+(gradeNumber(grade)<=5?'elementary':'secondary')+'" aria-label="'+(across?'Search across assigned students':'My class roster')+'">'+
   '<div class="sectionhead"><div><h2>'+heading+'</h2><span class="tiny">'+context+'</span></div>'+concernFilter+
   supportStatusFilterControl(state.facultySupportFilter)+
   (across?'<button type="button" class="roster-clear-search" data-clear-search>Clear search</button>':'')+'</div>'+
@@ -623,8 +627,8 @@ function faculty(){
   '<label class="search-label">Find any assigned student'+
    '<input data-query placeholder="Search across all my classes..." value="'+safe(state.query)+
    '" aria-label="Search for a student across all assigned classes"></label>'+
-  '<details class="faculty-demo-options"><summary>Demo controls</summary>'+
-   '<label class="faculty-demo-picker">Faculty demo '+
+  '<details class="faculty-demo-options"><summary>View options</summary>'+
+   '<label class="faculty-demo-picker">Faculty perspective '+
    selector('teacher',DATA.teachers.map(t=>[t.id,t.name]),state.teacher)+'</label></details></div>';
  const summary=searching?'':'<div class="quick-summary faculty-daily-summary">'+
   quickStat('My Class',ss.length,'Learners in '+safe(activeClass()?.name||'this class'))+
@@ -1068,13 +1072,17 @@ function render(){
   state.role==='sss'?sss():state.role==='student'?student():faculty();
  document.body.classList.toggle('board-drawer-open',state.role==='board'&&state.boardView==='explore'&&!!state.boardMapDetailsOpen);
  if(root.dataset)root.dataset.workspace=state.role;
- root.innerHTML=header()+'<main class="container" id="main" tabindex="-1">'+
- ((state.role==='faculty'||state.role==='student')?facultyStudentCopy(content):content)+'</main><footer>'+
- (state.role==='board'?'AISG Board · Aggregated MAP, IB Diploma and Climate & Wellbeing outcomes · No individual responses published':
- ((state.role==='faculty'||state.role==='student')?
- 'AISG My Learners · Demonstration preview · No live student records':
- 'My Learners demonstration · Learners, assessments and student check-ins fictional'))+
- '</footer>'+(state.supportForm?renderSupportForm(state.supportForm,DATA.userIndex.get(state.supportForm.studentId),SUPPORT_DRAFTS):'');
+ const view=polishPresentationMarkup(content);
+ const dataDisclosure='<details class="sitewide-footer-data" data-preserve-source-copy>'+
+  '<summary>About this view</summary>'+
+  '<p>This preview environment uses sample learner profiles, classes and assessments for interface evaluation. '+
+  'There are no live student records. Historical Board aggregate figures retain their stated evidence sources. '+
+  'Do not enter confidential student information in this public site.</p></details>';
+ root.innerHTML=polishPresentationMarkup(header())+
+  '<main class="container" id="main" tabindex="-1">'+view+'</main>'+
+  '<footer class="sitewide-product-footer"><span class="sitewide-footer-identity">AISG My Learners · Learning Intelligence</span>'+
+  dataDisclosure+'</footer>'+
+  (state.supportForm?polishPresentationMarkup(renderSupportForm(state.supportForm,DATA.userIndex.get(state.supportForm.studentId),SUPPORT_DRAFTS)):'');
  if(state.role==='board'&&state.boardView==='explore'&&state.boardMapDetailsOpen){
   root.querySelector('.board-drawer-close')?.focus({preventScroll:true});
  }

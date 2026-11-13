@@ -1,0 +1,24 @@
+/* Deliberate school-product language: one consistent prototype disclosure,
+   instead of repeating explanatory banners across every working surface. */
+#app footer.sitewide-product-footer{
+ display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px 15px;
+ padding:16px 20px;color:#698298;font-size:11px;
+}
+#app footer.sitewide-product-footer .sitewide-footer-identity{font-weight:750;color:#365970}
+#app footer.sitewide-product-footer .sitewide-footer-data{position:relative}
+#app footer.sitewide-product-footer .sitewide-footer-data>summary{
+ list-style:none;cursor:pointer;color:#315f7b;font-weight:750;
+ border:1px solid #d6e4ec;background:#f5f9fb;border-radius:7px;
+ padding:4px 9px;
+}
+#app footer.sitewide-product-footer .sitewide-footer-data>summary::-webkit-details-marker{display:none}
+#app footer.sitewide-product-footer .sitewide-footer-data>summary:focus-visible{
+ outline:3px solid #267fae;outline-offset:2px;
+}
+#app footer.sitewide-product-footer .sitewide-footer-data p{
+ max-width:620px;margin:7px 0 0;font-size:11px;color:#496d81;line-height:1.6;
+}
+#app .heading-meta .demo{
+ letter-spacing:.05em;
+}
+@media print{#app footer.sitewide-product-footer .sitewide-footer-data{display:none}}
