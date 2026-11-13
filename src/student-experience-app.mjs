@@ -471,7 +471,7 @@ function roster(ss,options={}){
   (supportStatusBadges(x.student,{compact:true,interactive:false})?'<span>'+supportStatusBadges(x.student,{compact:true,interactive:false})+'</span>':'')+
   '</span><span class="roster-arrow" aria-hidden="true">›</span></button></div>').join('')+'</div>';
  return '<section class="roster roster-daily" data-roster-layout="'+(everyday?'everyday':'focused')+
-  '" data-faculty-stage="'+(gradeNumber(grade)<=2?'early':'upper')+'" aria-label="'+(across?'Search across assigned students':'My class roster')+'">'+
+  '" data-faculty-stage="'+(gradeNumber(grade)<=5?'elementary':'secondary')+'" aria-label="'+(across?'Search across assigned students':'My class roster')+'">'+
   '<div class="sectionhead"><div><h2>'+heading+'</h2><span class="tiny">'+context+'</span></div>'+concernFilter+
   supportStatusFilterControl(state.facultySupportFilter)+
   (across?'<button type="button" class="roster-clear-search" data-clear-search>Clear search</button>':'')+'</div>'+

@@ -12,10 +12,10 @@ const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,c=>({
 }[c]));
 const gradeColours=['#a6373f','#e4a15f','#a6bd88','#246b4f'];
 const gradeRows=[
- {label:'1–3',range:'Developing priority',colour:gradeColours[0]},
- {label:'4',range:'Approaching expected range',colour:gradeColours[1]},
- {label:'5–6',range:'Secure / strong',colour:gradeColours[2]},
- {label:'7',range:'Highest MYP grade band',colour:gradeColours[3]}
+ {label:'1–3',range:'Lower grade band',colour:gradeColours[0]},
+ {label:'4',range:'Middle grade band',colour:gradeColours[1]},
+ {label:'5–6',range:'Upper grade band',colour:gradeColours[2]},
+ {label:'7',range:'Highest subject grade band',colour:gradeColours[3]}
 ];
 const experienceRows=[
  {label:'−2 to below −1',range:'Lower index',colour:gradeColours[0]},
@@ -84,13 +84,13 @@ export function classifyColumnGuide({label='',source='',family='',stage='',role=
    'WIDA proficiency uses a 1.0–6.0 scale. It is separate from academic grades and subject assessments.',
    [],'Interpret within the relevant language domain and testing date.');
  if(fam==='report'||/report.*(?:math|science|arts|language|individual)|\bsubject grade\b|grade band/.test(name)){
-  if(stage==='early'||/early literacy|early mathematics|inquiry|creative arts|physical development/.test(name))
+  if(stage==='early'||stage==='elementary'||/early literacy|early mathematics|inquiry|creative arts|physical development/.test(name))
    return spec(subject,'Developmental progress',
     'Elementary developmental descriptors are programme-specific and are not converted into MYP grades.',
     [],'Review the descriptor and its supporting learning evidence. No 1–7 colour scale applies.');
   return spec(subject,'Current subject result · 1–7',
    'The coloured number uses four fixed subject-grade groups. An asterisk on an MYP result indicates a provisional best fit from fewer than four assessed criteria.',
-   gradeRows,'In-progress results are not final issued school reports. Grade bands do not apply to screening, MAP or student experience.');
+   gradeRows,'In-progress results are not final issued school reports. Grade colours are categories, not a risk label; they do not apply to screening, MAP or student experience.');
  }
  if(/support|learning support|eal|sst|intervention|case manager/.test(name)||fam==='support')
   return spec(full||'Support information','Student support',

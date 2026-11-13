@@ -37,9 +37,13 @@ test('Subject grade legend uses exact AISG palette while Early Years uses descri
  assert.deepEqual(upper.rows.map(x=>x.label),['1–3','4','5–6','7']);
  assert.deepEqual(upper.rows.map(x=>x.colour),['#a6373f','#e4a15f','#a6bd88','#246b4f']);
  assert.match(upper.note,/not final issued/);
- const early=classifyColumnGuide({label:'Early Literacy',family:'report',stage:'early'});
+ const early=classifyColumnGuide({label:'Early Literacy',family:'report',stage:'elementary'});
  assert.equal(early.rows.length,0);
  assert.match(early.description,/not converted into MYP grades/);
+ for(const grade of ['G3','G4','G5']){
+  const pyp=classifyColumnGuide({label:'Arts',family:'report',stage:'elementary'});
+  assert.equal(pyp.rows.length,0,grade+' must not show MYP subject bands');
+ }
 });
 test('Engagement and Belonging get correct −2 to +2 bands, not report-card grades',()=>{
  for(const label of ['Engagement','Belonging']){
