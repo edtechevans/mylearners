@@ -73,7 +73,7 @@ test('MAP RIT and strand RIT sorting preserve numeric values and missing results
 });
 test('Rendered Explorer has controls, MAP percentile tiles, exact grade-aware columns and export',()=>{
  const html=renderLeaderStudentExplorer({data,academic,experience,maia,filters:{grade:'G7',mapTest:'Mathematics'}});
- for(const key of ['division','grade','classId','teacher','subject','eal','learning','mapTest','strand','band','strandBand'])
+ for(const key of ['division','grade','classId','teacher','subject','gradeFilter','eal','learning','mapTest','strand','band','strandBand'])
   assert.match(html,new RegExp('data-explorer-filter="'+key+'"'));
  assert.match(html,/data-explorer-student=/);
  assert.match(html,/data-export-dashboard/);
@@ -82,14 +82,22 @@ test('Rendered Explorer has controls, MAP percentile tiles, exact grade-aware co
  assert.match(html,/data-explorer-sort=/);
  assert.doesNotMatch(html,/>IEP<|>Medical<|>Behavioural</);
 });
-test('Schoolwide subject columns reflect every programme; G7 matches all eight MYP Faculty subjects',()=>{
+test('Schoolwide subjects use compact per-learner chips; G7 still has eight Faculty grade columns',()=>{
  const school=explorerColumns({grade:'All',division:'All',data});
- const all=school.filter(c=>c.kind==='report').map(c=>c.subject);
- for(const grade of ['PK3','K','G4','G7','G12']){
-  const expected=explorerColumns({grade,division:'All',data}).filter(c=>c.kind==='report');
-  assert.ok(expected.length>0,grade+' should have subject grade columns');
-  assert.ok(expected.every(c=>all.includes(c.subject)),grade+' subjects remain in the schoolwide view');
- }
+ assert.equal(school.filter(c=>c.kind==='report').length,0);
+ assert.ok(school.some(c=>c.kind==='schoolSubjects'));
+ assert.ok(school.some(c=>c.kind==='mapSummary'));
+ const allHtml=renderLeaderStudentExplorer({data,academic,experience,maia});
+ assert.match(allHtml,/explorer-subject-chip-list/);
+ assert.match(allHtml,/data-explorer-toggle-filters/);
+ assert.match(allHtml,/explorer-advanced-filter-grid/);
+ assert.match(allHtml,/id="explorer-advanced-filters" hidden/);
+ assert.doesNotMatch(allHtml,/data-source-heading=/);
+ const csv=leaderExplorerExportRows({data,academic,experience});
+ assert.ok(csv.headers.includes('Subject grade · Early Literacy'));
+ assert.ok(csv.headers.includes('Subject grade · Language & Literature'));
+ assert.ok(csv.headers.includes('Subject grade · Mathematics'));
+ assert.ok(csv.rows.length===data.students.length);
  const seven=explorerColumns({grade:'G7',division:'Secondary',data})
   .filter(c=>c.kind==='report').map(c=>c.subject);
  assert.deepEqual(seven,['Language & Literature','Mathematics','Sciences','Individuals & Societies',
@@ -130,6 +138,45 @@ test('Subject-grade sorting and CSV export preserve every grade in the correspon
   assert.equal(csv.rows[i][mathIndex],row.report.subjects.find(item=>item.subject==='Mathematics')?.value);
   assert.equal(csv.rows[i][sciencesIndex],row.report.subjects.find(item=>item.subject==='Sciences')?.value);
  });
+});
+test('Selecting a strand descriptor with no named strand finds matching MAP goal results',()=>{
+ for(const testName of ['Reading','Mathematics','Language Usage']){
+  const low=model({mapTest:testName,strandBand:'low'});
+  assert.ok(low.total>0,testName+' should find low goal results');
+  assert.ok(low.rows.every(r=>r.goalHits.length>0&&r.goalHits.every(hit=>hit.subject===testName&&hit.band==='low')));
+  const rendered=renderLeaderStudentExplorer({data,academic,experience,maia,filters:{mapTest:testName,strandBand:'low'}});
+  assert.match(rendered,/Matching MAP strand/);
+  assert.match(rendered,/explorer-strand-rit/);
+ }
+ const any=model({mapTest:'all',strandBand:'both'});
+ assert.ok(any.total>0);
+ assert.ok(any.rows.every(r=>r.goalHits.some(h=>['low','low-average'].includes(h.band))));
+});
+test('All MAP test low-band results show which MAP subject actually matched',()=>{
+ const low=model({mapTest:'all',band:'low'});
+ assert.ok(low.total>0);
+ assert.ok(low.rows.every(r=>r.bandHits.length>0&&r.bandHits.every(h=>h.band.key==='low')));
+ const html=renderLeaderStudentExplorer({data,academic,experience,maia,filters:{mapTest:'all',band:'low'}});
+ assert.match(html,/MAP band match/);
+ assert.match(html,/explorer-band map-rit-low/);
+ assert.match(html,/(Math|Reading|Language) · Low/);
+});
+test('Numeric subject thresholds and Elementary descriptors do not mix scales',()=>{
+ const two=model({grade:'G7',subject:'Mathematics',gradeFilter:'numeric-2'});
+ assert.ok(two.total>0);
+ assert.ok(two.rows.every(r=>r.report.scale==='1–7'&&Number(r.reportItem.value)<=2));
+ const any=model({grade:'G7',gradeFilter:'numeric-3'});
+ assert.ok(any.total>=two.total);
+ assert.ok(any.rows.every(r=>r.report?.subjects.some(item=>Number(item.value)<=3)));
+ const early=model({grade:'G2',gradeFilter:'emerging'});
+ assert.ok(early.total>0);
+ assert.ok(early.rows.every(r=>r.report?.scale!=='1–7'&&r.report.subjects.some(item=>item.value==='Emerging')));
+ assert.equal(model({grade:'G2',gradeFilter:'numeric-2'}).total,0);
+});
+test('Full-school roster exposes a single learner tab stop and retains all names',()=>{
+ const html=renderLeaderStudentExplorer({data,academic,experience,maia});
+ assert.equal((html.match(/class="student-link" data-explorer-student=/g)||[]).length,data.students.length);
+ assert.equal((html.match(/tabindex="0" class="student-link"/g)||[]).length,1);
 });
 test('App wires Explorer and colour-only headline indices without surfacing raw index numbers',()=>{
  const code=readFileSync(new URL('../src/student-experience-app.mjs',import.meta.url),'utf8');
