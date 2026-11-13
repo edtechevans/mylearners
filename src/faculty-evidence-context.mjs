@@ -3,7 +3,7 @@
  * Full source, purpose, snapshot and limitations are available on demand.
  */
 import {esc} from './v2-ui.mjs';
-import {UFLI_SOURCE_URL} from './ufli-demo.mjs';
+import {UFLI_SOURCE_URL,renderUfliLegend} from './ufli-demo.mjs';
 export function renderFacultyMeasureContext(columns=[],snapshot=''){
  const kinds=new Set((columns||[]).map(x=>x.kind));
  const screener=kinds.has('screener'),ufli=kinds.has('ufli');
@@ -29,5 +29,7 @@ export function renderFacultyMeasureContext(columns=[],snapshot=''){
   (screener&&ufli?' · ':'')+
   (ufli?'UFLI: demo lesson, not reading proficiency':'')+
   '</span><span class="faculty-context-expand">Source, date &amp; meaning</span></summary>'+
-  '<div class="faculty-context-cards">'+screenerCard+ufliCard+'</div></details>';
+  '<div class="faculty-context-cards">'+screenerCard+ufliCard+
+  (ufli?'<div class="faculty-context-lesson-key">'+renderUfliLegend()+'</div>':'')+
+  '</div></details>';
 }

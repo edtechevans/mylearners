@@ -9,7 +9,7 @@ import {MAP_RIT_SUBJECTS,mapRitCurrent,mapRitChange,mapRitChangeLabel,renderMapR
 import {leaderMapSummary,leaderAcademicCoverage,leaderCheckSnapshot,leaderReportBreakdown} from './leader-summary.mjs?v=20261111schemas1';
 import {renderLeaderVoiceReview} from './leader-review-signals.mjs?v=20261111mapbands1';
 import {universalScreenerFor,renderUniversalScreenerTile} from './universal-screener.mjs';
-import {ufliLessonFor,renderUfliLessonTile,renderUfliLegend} from './ufli-demo.mjs?v=20261113workflow1';
+import {ufliLessonFor,renderUfliLessonTile} from './ufli-demo.mjs?v=20261113workflow1';
 import {renderFacultyMeasureContext} from './faculty-evidence-context.mjs';
 import {renderLeaderUniversalScreener} from './universal-screener-leader.mjs';
 import {renderLeaderAcademicActions,LEADER_ACADEMIC_FOCUS} from './leader-academic-actions.mjs?v=20261111journeys1';
@@ -482,7 +482,6 @@ function roster(ss,options={}){
   '<span class="faculty-legend-caption">Reports use fixed grade bands. Other measures are colour-only. Hover or focus for exact data.</span>'+
   '<details><summary>Interpret colours</summary><p>Numeric report TEST grades: 1–3 red, 4 orange, 5–6 light green, 7 dark green. Elementary developmental descriptors are not converted to grades. IXL uses source-style diagnostic tiers with incomplete results shown as missing; MAP RIT uses five separate achievement percentile quintiles; other assessments use fictional same-grade comparisons; experience uses fixed −2 to +2 bands. Grey means missing. A colour is not a learner label.</p></details></div>':'')+
   (everyday&&everydayColumns.some(c=>c.kind==='mapRit')?renderMapRitLegend():'')+
-  (everyday&&everydayColumns.some(c=>c.kind==='ufli')?renderUfliLegend():'')+
   (everyday?renderFacultyMeasureContext(everydayColumns,DATA.asOf):'')+
   table+mobile+
   (rows.length?'':'<p class="empty-message">'+(filterLevel!==null?'No learners have a subject result of '+filterLevel+' or below in this selection.':'No matching students in your assigned classes. Try a different name.')+'</p>')+

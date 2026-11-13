@@ -39,6 +39,7 @@ test('All Faculty grades have concise but genuinely informative demo measure met
    assert.match(markup,/UFLI Foundations · demo lesson/,grade);
    assert.match(markup,/K–2 scope &amp; sequence/,grade);
    assert.match(markup,/lesson numbers 1–128/i,grade);
+   assert.match(markup,/ufli-roster-legend/,grade);
   }else assert.doesNotMatch(markup,/UFLI Foundations · demo lesson/,grade);
  }
 });

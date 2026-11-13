@@ -68,7 +68,8 @@ test('Every K-5 Faculty class gets the UFLI column; no PK or secondary columns',
  assert.match(app,/column.kind==='ufli'/);
  assert.match(app,/ufliLessonFor\(student\)\?\.lesson/);
  assert.match(app,/data-evidence-preview="ufli"/);
- assert.match(app,/renderUfliLegend\(\)/);
+ assert.match(app,/renderFacultyMeasureContext\(everydayColumns,DATA.asOf\)/);
+ assert.match(get('src/faculty-evidence-context.mjs'),/renderUfliLegend\(\)/);
  assert.match(app,/renderUfliLessonTile\(s,\{compact:true\}\)/);
  assert.match(app,/roster-col-ufli/);
  assert.match(html,/ufli-demo\.css\?v=20261113ufli1/);
