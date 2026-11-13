@@ -5,7 +5,8 @@ import {GRADES,gradeNumber,attendanceSummary} from './data.mjs';
 import {MAP_RIT_SUBJECTS,MAP_RIT_BANDS,mapRitCurrent,mapRitBand,renderMapRitCell,renderMapRitLegend} from './map-rit-achievement.mjs';
 import {strandBand,strandBandLabel} from './map-strand-explorer.mjs';
 import {everydayEvidenceForGrade} from './faculty-everyday-columns.mjs';
-import {academicFor,facultyDemoReport,latestAcademic} from './academic-journey-data.mjs';
+import {academicFor,facultyDemoReport,latestAcademic,reportSubjectsFor} from './academic-journey-data.mjs';
+import {facultyHeaderInfo} from './faculty-roster-headings.mjs';
 import {evidenceValue} from './class-evidence.mjs';
 import {reportGradeBand,mypBestFitMarker} from './report-card-signals.mjs';
 import {supportStatusForStudent} from './learner-support-status.mjs';
@@ -20,7 +21,7 @@ import {esc} from './v2-ui.mjs';
 export const EXPLORER_DEFAULTS=Object.freeze({
  division:'All',grade:'All',classId:'',teacher:'all',subject:'all',
  eal:'all',learning:'all',mapTest:'Mathematics',strand:'',band:'all',
- strandBand:'all',query:'',sort:'name',direction:'asc',limit:80
+ strandBand:'all',query:'',sort:'name',direction:'asc'
 });
 export const EXPLORER_PAGE_SIZE=80;
 const BANDS=['low','low-average','average','high-average','high'];
@@ -34,8 +35,9 @@ const teacherFor=(data,c)=>data.teachers.find(t=>t.id===c?.teacherId);
 const isActiveEal=x=>['e1','e2','i3','i4','a5'].includes(x);
 const isMonitoredEal=x=>x==='monitor-y1'||x==='monitor-y2';
 const cleanFilter=(filters={})=>({...EXPLORER_DEFAULTS,...filters});
-const validSort=value=>['name','grade','class','teacher','attendance','subject',
- 'map:Reading','map:Mathematics','map:Language Usage','mapBand','strandRit','strandBand'].includes(value);
+const validSort=(value,subjects)=>['name','grade','class','teacher','attendance','subject',
+ 'map:Reading','map:Mathematics','map:Language Usage','mapBand','strandRit','strandBand'].includes(value)||
+ (value.startsWith('report:')&&subjects.includes(value.slice(7)));
 const activeBand=(value,band)=>band==='both'?['low','low-average'].includes(value):band==='all'||value===band;
 const reportFor=(academic,id)=>facultyDemoReport(academicFor(academic,id));
 const gradeLabel=(g)=>g==='K'?'Kindergarten':g;
@@ -98,14 +100,18 @@ export function leaderExplorerModel({data,academic,experience,filters={}}){
    .some(test=>activeBand(mapRitBand(test?.percentile)?.key,f.band))))return false;
   return true;
  });
- const sort=validSort(f.sort)?f.sort:'name',direction=f.direction==='desc'?-1:1;
+ const sort=validSort(f.sort,availableSubjects)?f.sort:'name',direction=f.direction==='desc'?-1:1;
  const valueFor=(row,key)=>{
-  if(key==='name')return row.student.last+' '+row.student.first;
+  if(key==='name')return row.student.name||[row.student.first,row.student.last].filter(Boolean).join(' ');
   if(key==='grade')return gradeIndex(row.student.grade);
   if(key==='class')return row.student.classId;
   if(key==='teacher')return row.teacher?.name||null;
   if(key==='attendance')return row.attendance;
-  if(key==='subject')return row.report?.scale==='1–7'?Number(row.reportItem?.value):row.reportItem?.value??null;
+  if(key==='subject')return row.reportItem?.value==null?null:row.report?.scale==='1–7'?Number(row.reportItem.value):row.reportItem.value;
+  if(key.startsWith('report:')){
+   const item=row.report?.subjects.find(entry=>entry.subject===key.slice(7));
+   return item?.value==null?null:row.report?.scale==='1–7'?Number(item.value):item.value;
+  }
   if(key.startsWith('map:'))return row.map[key.slice(4)]?.rit??null;
   if(key==='mapBand')return bandOrder(mapRitBand(row.focus?.percentile)?.key);
   if(key==='strandRit')return row.goal?.rit??null;
@@ -124,7 +130,7 @@ export function leaderExplorerModel({data,academic,experience,filters={}}){
  });
  return {rows,scope:candidateStudents.length,total:rows.length,division,grade,classes,teachers,
   grades:availableGrades,subjects:availableSubjects,goalNames,mapTest,goalName,sort,direction,
-  shown:rows.slice(0,Math.max(EXPLORER_PAGE_SIZE,Number(f.limit)||EXPLORER_PAGE_SIZE))};
+  shown:rows};
 }
 function evidenceBand(value,name){
  const label=value==='band-low'?'Low':value==='band-mid-low'?'Lower':value==='band-mid-high'?'Higher':value==='band-high'?'High':'Not available';
@@ -134,8 +140,9 @@ function reportCell(row,subject){
  const item=row.report?.subjects.find(x=>x.subject===subject)||null;
  if(!item)return '<span class="explorer-empty">—</span>';
  const band=reportGradeBand(item.value,row.report?.scale);
- return '<span class="explorer-grade'+(band?' evidence-heat '+s(band):'')+
-  '" title="'+s(subject+' · '+item.value+' · '+row.report.year+' example report')+'">'+s(item.value)+mypBestFitMarker(item)+'</span>';
+ return '<span class="explorer-grade'+(band?' evidence-heat '+s(band):' explorer-descriptor')+
+  '" title="'+s(subject+' · '+item.value+' · '+row.report.year+(item.provisional?' · provisional best fit':'')+' example report')+'">'+
+  '<strong>'+s(item.value)+mypBestFitMarker(item)+'</strong></span>';
 }
 function evidenceCell(row,column,ctx){
  const student=row.student,kind=column.kind;
@@ -158,32 +165,40 @@ function evidenceCell(row,column,ctx){
   mapSubject:'Mathematics',window:'F26'});
  return '<span class="explorer-evidence-value" title="'+s(result.detail)+'">'+s(result.available?result.text:'—')+'</span>';
 }
-function currentColumns(grade){
- if(grade!=='All')return everydayEvidenceForGrade(grade);
- return [{kind:'attendance',id:'attendance',label:'Attendance'},
-  {kind:'report',id:'report-focus',label:'Subject result',subject:'@focus'},
-  ...MAP_RIT_SUBJECTS.map(subject=>({kind:'mapRit',id:'map-'+subject,subject,label:'MAP '+subject+' RIT'})),
-  {kind:'engagement',id:'engagement',label:'Engagement'},
-  {kind:'belonging',id:'belonging',label:'Belonging'}];
+/** Report columns use the identical 2026-27 subject definitions as Faculty.
+ * Filters narrow learners, never compress the report to one selected subject.
+ * When a specific grade is chosen, use its exact curriculum columns.
+ */
+export function explorerColumns({grade='All',division='All',data}){
+ const relevant=grade!=='All'?[grade]:GRADES.filter(g=>
+  data.students.some(student=>student.grade===g&&(division==='All'||student.division===division)));
+ const reportSubjects=[...new Set(relevant.flatMap(reportSubjectsFor))];
+ const subjectColumns=reportSubjects.map(subject=>({
+  kind:'report',id:'report:'+subject,label:subject,subject
+ }));
+ const base=grade==='All'?
+  [{kind:'attendance',id:'attendance',label:'Attendance'},
+   ...MAP_RIT_SUBJECTS.map(subject=>({kind:'mapRit',id:'map-'+subject,subject,label:'MAP '+subject+' RIT'})),
+   {kind:'engagement',id:'engagement',label:'Engagement'},
+   {kind:'belonging',id:'belonging',label:'Belonging'}]:
+  everydayEvidenceForGrade(grade);
+ return [base.find(c=>c.kind==='attendance'),...subjectColumns,
+  ...base.filter(c=>c.kind!=='attendance'&&c.kind!=='report')];
 }
 function labelFor(column){
  if(column.kind==='mapRit')return 'MAP '+(column.subject==='Mathematics'?'Math':column.subject==='Language Usage'?'Language':column.subject);
- if(column.kind==='report'&&column.subject!=='@focus')return column.subject;
+ if(column.kind==='report')return facultyHeaderInfo(column).display;
  return column.label;
 }
 export function renderLeaderStudentExplorer({data,academic,experience,maia,filters={}}){
  const f=cleanFilter(filters),model=leaderExplorerModel({data,academic,experience,filters:f});
- const columns=currentColumns(model.grade);
- const focusCols=columns.map(c=>c.subject==='@focus'?{...c,subject:null}:c);
+ const columns=explorerColumns({grade:model.grade,division:model.division,data});
  const sortButton=(key,label)=>'<button type="button" class="explorer-sort" data-explorer-sort="'+s(key)+
   '" aria-label="Sort by '+s(label)+'" aria-pressed="'+(model.sort===key)+'">'+s(label)+
   '<span aria-hidden="true">'+(model.sort===key?(model.direction===1?' ↑':' ↓'):' ↕')+'</span></button>';
  const rows=model.shown.map(row=>{
-  const subject=row.reportItem?.subject||null;
-  const cells=focusCols.map(c=>{
-   const value=c.id==='report-focus'?reportCell(row,subject):evidenceCell(row,c,{data,academic,experience,maia});
-   return '<td data-explorer-col="'+s(c.kind)+'">'+value+'</td>';
-  }).join('');
+  const cells=columns.map(c=>'<td data-explorer-col="'+s(c.kind)+'">'+
+   evidenceCell(row,c,{data,academic,experience,maia})+'</td>').join('');
   const focus=row.focus,band=mapRitBand(focus?.percentile),goalBand=strandBand(row.goal);
   return '<tr><th scope="row"><span class="faculty-learner-entry">'+renderStudentPhoto(row.student)+
    '<button type="button" class="student-link" data-explorer-student="'+s(row.student.id)+'">'+s(row.student.name)+'</button></span></th>'+
@@ -201,12 +216,13 @@ export function renderLeaderStudentExplorer({data,academic,experience,maia,filte
  const bandChoices=[['all','All percentile bands'],['both','Low + Low Average'],
   ...MAP_RIT_BANDS.map(b=>[b.key,b.label+' · P'+b.from+'–'+b.to])];
  const headerChoices=[['name','Learner'],['grade','Grade'],['class','Class'],['teacher','Teacher'],
-  ['attendance','Attendance'],['subject','Subject result'],
+  ['attendance','Attendance'],['subject','Selected subject'],
+  ...columns.filter(c=>c.kind==='report').map(c=>['report:'+c.subject,c.subject]),
   ...MAP_RIT_SUBJECTS.map(test=>['map:'+test,'MAP '+test+' RIT']),
   ['mapBand','MAP achievement band'],['strandRit','Strand RIT'],['strandBand','Strand descriptor']];
  return '<section id="leader-student-explorer" class="leader-student-explorer roster-daily" aria-label="Leaders Student Explorer">'+
   '<div class="explorer-head"><div><div class="eyebrow">LEARNERS AT A GLANCE</div><h2>Student Explorer</h2>'+
-  '<p>Faculty-style evidence across your selected learners. Filter the roster, then open a student for context.</p></div>'+
+  '<p>Every learner, A–Z. Each filter narrows the same roster, keeping subject grades visible alongside assessment evidence.</p></div>'+
   '<strong class="explorer-count">'+model.total+' <small>matching learners</small></strong></div>'+
   '<div class="explorer-filter-grid">'+
   select('Division','division',[['All','Whole school'],['Elementary','Elementary'],['Secondary','Secondary']],f.division)+
@@ -223,8 +239,8 @@ export function renderLeaderStudentExplorer({data,academic,experience,maia,filte
    ...MAP_RIT_BANDS.map(b=>[b.key,b.label])],f.strandBand)+
   '<label class="explorer-field explorer-search"><span>Find student</span><input type="search" data-explorer-search value="'+s(f.query)+'" placeholder="Name, ID or class…" aria-label="Find student"></label>'+
   '</div>'+
-  '<div class="explorer-actions"><p>'+model.total+' of '+model.scope+' learners match · '+
-   (model.grade==='All'?'Choose a grade for exact grade-specific Faculty columns.':'Same grade-level evidence columns as Faculty.')+
+  '<div class="explorer-actions"><p>Showing all '+model.total+' matching learners · '+
+   (model.grade==='All'?'Subject columns span the school’s programmes; unavailable results are blank.':'Subject columns follow this grade’s Faculty view.')+
    '</p><div><button type="button" class="explorer-secondary" data-explorer-reset>Reset filters</button>'+
    '<button type="button" class="explorer-primary" data-export-dashboard>Export filtered CSV</button></div></div>'+
   '<div class="explorer-table-actions"><span>Sort:</span>'+
@@ -235,21 +251,22 @@ export function renderLeaderStudentExplorer({data,academic,experience,maia,filte
   '<thead><tr><th scope="col">'+sortButton('name','Learner')+'</th>'+
   '<th scope="col">'+sortButton('grade','Grade')+'</th><th scope="col">'+sortButton('class','Class')+'</th>'+
   '<th scope="col">'+sortButton('teacher','Teacher')+'</th>'+
-  focusCols.map(c=>'<th scope="col"'+(c.kind==='mapRit'?' data-map-rit-subject="'+s(c.subject)+'"':'')+'>'+
+  columns.map(c=>'<th scope="col"'+(c.kind==='mapRit'?' data-map-rit-subject="'+s(c.subject)+'"':'')+
+   (c.kind==='report'?' title="'+s(c.subject)+'" data-source-heading="'+s(c.subject)+'"':'')+'>'+
     sortButton(c.kind==='mapRit'?'map:'+c.subject:c.kind==='attendance'?'attendance':
-    c.kind==='report'?'subject':c.kind,labelFor(c))+'</th>').join('')+
+    c.kind==='report'?'report:'+c.subject:c.kind,labelFor(c))+'</th>').join('')+
   '<th scope="col">'+sortButton('mapBand','MAP band')+'</th>'+
   '<th scope="col">'+sortButton('strandRit','Strand')+'</th><th scope="col">Support information</th></tr></thead>'+
   '<tbody>'+rows+'</tbody></table></div>'+
-  (model.total>model.shown.length?'<div class="explorer-more"><span>Showing '+model.shown.length+' of '+model.total+'</span>'+
-   '<button type="button" data-explorer-more>Show more learners</button></div>':'')+
   (!rows?'<p class="explorer-empty-state">No learners match these filters. Change or reset a filter to see students.</p>':'')+
-  '<p class="explorer-note">MAP RIT colours follow the achievement percentile of the selected grade and testing window. Strand labels use the MAP-provided goal descriptor, not a calculated strand percentile. Missing assessments stay blank. Subject results and teacher assignments in this preview are examples; only approved, permission-controlled sources should be connected in production.</p>'+
+  '<p class="explorer-note">Subject grade colours match Faculty (1–3 red, 4 orange, 5–6 light green, 7 dark green); asterisks indicate provisional MYP best fits. Elementary descriptive results retain their wording. MAP RIT colours follow the achievement percentile of the selected grade and testing window. Strand labels use the MAP-provided goal descriptor, not a calculated strand percentile. Missing assessments stay blank. Subject results and teacher assignments in this preview are examples; only approved, permission-controlled sources should be connected in production.</p>'+
   '</section>';
 }
 export function leaderExplorerExportRows({data,academic,experience,filters={}}){
  const model=leaderExplorerModel({data,academic,experience,filters});
+ const subjectCols=explorerColumns({grade:model.grade,division:model.division,data}).filter(c=>c.kind==='report');
  const cols=['Student','Demo ID','Division','Grade','Class','Teacher','Subject','Subject result','Attendance %',
+  ...subjectCols.map(c=>'Subject grade · '+c.subject),
   ...MAP_RIT_SUBJECTS.flatMap(test=>['MAP '+test+' RIT','MAP '+test+' percentile','MAP '+test+' band']),
   'Selected MAP test','MAP achievement band','MAP strand','Strand Goal RIT','Strand descriptor',
   'EAL status','Learning Support','Engagement band','Belonging band'];
@@ -257,6 +274,7 @@ export function leaderExplorerExportRows({data,academic,experience,filters={}}){
   const band=mapRitBand(row.focus?.percentile);
   return [row.student.name,row.student.id,row.student.division,row.student.grade,row.student.classId,
    row.teacher?.name||'',row.reportItem?.subject||'',row.reportItem?.value||'',row.attendance??'',
+   ...subjectCols.map(c=>row.report?.subjects.find(item=>item.subject===c.subject)?.value??''),
    ...MAP_RIT_SUBJECTS.flatMap(test=>{const r=row.map[test],b=mapRitBand(r?.percentile);
     return [r?.rit??'',r?.percentile??'',b?.label||'']}),
    model.mapTest,band?.label||'',model.goalName,row.goal?.rit??'',strandBandLabel(strandBand(row.goal)),
