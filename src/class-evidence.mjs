@@ -246,7 +246,7 @@ export function renderClassEvidencePanel(students,{
   const active=lowGradeFilter.active===2||lowGradeFilter.active==='2'?'2':
    lowGradeFilter.active===3||lowGradeFilter.active==='3'||lowGradeFilter.active===true?'3':'all';
   return '<div class="faculty-concern-filter" role="group" aria-label="Filter students by subject results">'+
-   '<span class="faculty-filter-label">Filter students</span>'+
+   '<span class="faculty-filter-label">Subject results (1–7)</span>'+
    '<button type="button" data-faculty-low-filter="all" aria-pressed="'+(active==='all')+
    '" aria-label="Show all '+total+' students">All students <b>'+total+'</b></button>'+
    '<button type="button" data-faculty-low-filter="3" aria-pressed="'+(active==='3')+
