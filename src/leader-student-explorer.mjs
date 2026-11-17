@@ -333,36 +333,28 @@ export function renderLeaderStudentExplorer({data,academic,experience,maia,filte
   return key;
  });
  const gradeChoices=[['All','All grades'],...model.grades.map(g=>[g,gradeLabel(g)])];
- const gradeShortcuts=model.division!=='Elementary'&&(model.grade==='All'||gradeNumber(model.grade)>=6)?
-  '<div class="explorer-grade-shortcuts" role="group" aria-label="Filter students by subject results on the 1–7 scale">'+
-  '<span class="explorer-grade-shortcuts-label">Subject results (1–7)</span>'+
-  [['all','All students'],['numeric-3','3 or below'],['numeric-2','2 or below']]
-   .map(([value,label])=>'<button type="button" data-explorer-grade-quick="'+value+
-    '" aria-pressed="'+(f.gradeFilter===value)+'"'+
-    (value==='all'?'':' title="At least one current MYP or DP subject result of '+(value==='numeric-3'?'3':'2')+' or below"')+
-    '>'+label+'</button>').join('')+
-  '<small>Any current MYP/DP subject, including provisional best-fit results. No grade averages.</small>'+
-  '</div>':'';
+ const isSecondary=model.division==='Secondary'||model.grade!=='All'&&gradeNumber(model.grade)>=6;
+ const isElementary=model.division==='Elementary'||model.grade!=='All'&&gradeNumber(model.grade)<=5;
+ const gradeFilterChoices=[['all','All subject results'],
+  ...(!isElementary?[['numeric-3','3 or below (MYP/DP)'],['numeric-2','2 or below (MYP/DP)']]:[]),
+  ...(!isSecondary?[['emerging','Emerging (Elementary)'],['developing','Developing (Elementary)']]:[]),
+  ['missing','Missing subject result']];
  return '<section id="leader-student-explorer" class="leader-student-explorer roster-daily" aria-label="Leaders Student Explorer">'+
   '<div class="explorer-toolbar" aria-label="Student Explorer search and filters">'+
    '<label class="explorer-field explorer-search"><span>Find student</span>'+
     '<input type="search" data-explorer-search value="'+s(f.query)+'" placeholder="Search name, ID or class" aria-label="Find student"></label>'+
    select('Division','division',[['All','Whole school'],['Elementary','Elementary'],['Secondary','Secondary']],f.division)+
    select('Grade','grade',gradeChoices,model.grade)+
+   select('Subject results','gradeFilter',gradeFilterChoices,f.gradeFilter)+
    '<button type="button" class="explorer-secondary explorer-filters-toggle" data-explorer-toggle-filters aria-expanded="'+
      (filtersOpen?'true':'false')+'" aria-controls="explorer-advanced-filters">Filters'+
      (active.length?' ('+active.length+')':'')+' <span aria-hidden="true">'+(filtersOpen?'▴':'▾')+'</span></button>'+
    '<strong class="explorer-count" aria-live="polite">'+model.total+' <small>learners</small></strong>'+
-  '</div>'+gradeShortcuts+
+  '</div>'+
   '<div class="explorer-advanced-filter-grid" id="explorer-advanced-filters"'+(filtersOpen?'':' hidden')+'>'+
    select('Class / homeroom','classId',[['','All classes'],...classes.map(c=>[c.id,c.name])],f.classId)+
    select('Teacher / advisor','teacher',teacherChoices,f.teacher)+
    select('Subject','subject',[['all','Any subject'],...model.subjects.map(subject=>[subject,subject])],f.subject)+
-   select('Subject grade / descriptor','gradeFilter',[['all','All results'],
-     ['numeric-3','Numeric grade 3 or below (MYP / DP)'],
-     ['numeric-2','Numeric grade 2 or below (MYP / DP)'],
-     ['emerging','Emerging (Elementary)'],['developing','Developing (Elementary)'],
-     ['missing','Missing subject result']],f.gradeFilter)+
    select('EAL','eal',[['all','All EAL statuses'],['active','Active EAL'],
      ['monitor','EAL monitoring'],['exited','Exited'],['none','No EAL']],f.eal)+
    select('Learning Support','learning',[['all','All learners'],['yes','With support'],['no','No support flag']],f.learning)+
