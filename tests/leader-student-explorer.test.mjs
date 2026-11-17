@@ -173,6 +173,22 @@ test('Numeric subject thresholds and Elementary descriptors do not mix scales',(
  assert.ok(early.rows.every(r=>r.report?.scale!=='1–7'&&r.report.subjects.some(item=>item.value==='Emerging')));
  assert.equal(model({grade:'G2',gradeFilter:'numeric-2'}).total,0);
 });
+
+test('Visible subject result shortcuts show 3-and-under and 2-and-under learners',()=>{
+ const html=renderLeaderStudentExplorer({data,academic,experience,maia,filters:{division:'Secondary',gradeFilter:'numeric-3'}});
+ for(const key of ['all','numeric-3','numeric-2'])assert.ok(html.includes('data-explorer-grade-quick="'+key+'"'));
+ assert.ok(html.includes('data-explorer-grade-quick="numeric-3" aria-pressed="true"'));
+ assert.ok(html.includes('Subject results (1–7)'));
+ const narrower=model({division:'Secondary',gradeFilter:'numeric-2'});
+ const broader=model({division:'Secondary',gradeFilter:'numeric-3'});
+ assert.ok(narrower.total<=broader.total);
+ assert.ok(narrower.rows.every(row=>row.report?.scale==='1–7'&&row.report.subjects.some(item=>Number(item.value)>=1&&Number(item.value)<=2)));
+ assert.ok(model({gradeFilter:'numeric-3'}).rows.every(row=>row.student.division==='Secondary'));
+ const elementary=renderLeaderStudentExplorer({data,academic,experience,maia,filters:{division:'Elementary'}});
+ assert.ok(!elementary.includes('explorer-grade-shortcuts'));
+ const app=readFileSync(new URL('../src/student-experience-app.mjs',import.meta.url),'utf8');
+ assert.ok(app.includes('gradeQuick.dataset.explorerGradeQuick'));
+});
 test('Full-school roster exposes a single learner tab stop and retains all names',()=>{
  const html=renderLeaderStudentExplorer({data,academic,experience,maia});
  assert.equal((html.match(/class="student-link" data-explorer-student=/g)||[]).length,data.students.length);
