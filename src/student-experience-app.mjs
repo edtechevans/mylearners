@@ -47,7 +47,7 @@ import {renderAcademicProfile,classAcademicCell} from './academic-journey-view.m
 import {renderSubjectGradeTiles} from './subject-grade-tiles.mjs?v=20261112subjects1';
 import {everydayEvidenceForGrade,EVERYDAY_VIEW,FOCUSED_VIEW} from './faculty-everyday-columns.mjs?v=20261111mapui3';
 import {facultyHeaderInfo,facultyHeaderWidth,facultyRosterTableWidth,facultyEvidenceFamily} from './faculty-roster-headings.mjs?v=20261113workflow1';
-import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261113workflow1';
+import {renderClassEvidencePanel,evidenceModesForGrade,normalizeEvidenceMode,normalizeComparison,evidenceLabel,evidenceValue,evidenceRosterColumn} from './class-evidence.mjs?v=20261117subjectgrade1';
 import {createMaiaDemoRecords,maiaDimension,maiaPeriod,renderMaiaFacultyProfile} from './maia-demo.mjs';
 import {renderStudentOverview} from './student-daily-overview.mjs?v=20261112subjects1';
 import {renderBoard} from './board-map-view.mjs?v=20261029dpaxis1';
@@ -57,7 +57,7 @@ import {renderDPSubjectPointDetails} from './board-dp-subjects.mjs';
 import {DP_RECORDS} from './board-dp-data.mjs?v=20261031dp-world1';
 import {boardWindowFor,BOARD_DATA} from './board-map-data.mjs';
 import {parseBoardHash} from './board-map-links.mjs?v=20261031dp-default1';
-import {EXPLORER_DEFAULTS,leaderExplorerModel,renderLeaderStudentExplorer,leaderExplorerExportRows} from './leader-student-explorer.mjs?v=20261113leaders3';
+import {EXPLORER_DEFAULTS,leaderExplorerModel,renderLeaderStudentExplorer,leaderExplorerExportRows} from './leader-student-explorer.mjs?v=20261117subjectgrade1';
 import {exportCsv,visibleDashboardCsv} from './dashboard-export.mjs?v=20261113export1';
 const DATA=applyFacultyDemo(generateDemoData()),RECORDS=createExperienceRecords(DATA.students),
  ACADEMIC_RECORDS=createAcademicDemoRecords(DATA.students),
@@ -1281,15 +1281,6 @@ root.addEventListener('click',e=>{
   const nav=e.target.closest('[data-leader-view]');
   if(nav){state.leaderExplorerOpen=nav.dataset.leaderView==='explorer';state.leaderStudentId='';render();globalThis.window?.scrollTo?.(0,0);return}
   if(state.leaderExplorerOpen){
-   const gradeQuick=e.target.closest('[data-explorer-grade-quick]');
-    if(gradeQuick){
-     const requested=gradeQuick.dataset.explorerGradeQuick;
-     if(!['all','numeric-3','numeric-2'].includes(requested))return;
-     explorerFilters().gradeFilter=requested;
-     render();
-     root.querySelector('[data-explorer-grade-quick="'+requested+'"]')?.focus?.({preventScroll:true});
-     return;
-    }
     if(e.target.closest('[data-explorer-toggle-filters]')){
     state.leaderExplorerFiltersOpen=!state.leaderExplorerFiltersOpen;render();
     root.querySelector('[data-explorer-toggle-filters]')?.focus?.({preventScroll:true});return;
@@ -1940,8 +1931,8 @@ root.addEventListener('change',e=>{
  if(ex&&state.role==='leader'&&state.leaderExplorerOpen){
   const field=ex.dataset.explorerFilter;if(!Object.hasOwn(EXPLORER_DEFAULTS,field))return;
   const f=explorerFilters();f[field]=ex.value;
-  if(field==='division'){f.grade='All';f.classId='';f.teacher='all';f.subject='all';f.strand='';if(f.division==='Elementary'&&f.gradeFilter.startsWith('numeric-'))f.gradeFilter='all'}
-  if(field==='grade'){f.classId='';f.teacher='all';f.subject='all';f.strand='';if(f.grade!=='All'&&gradeNumber(f.grade)<=5&&f.gradeFilter.startsWith('numeric-'))f.gradeFilter='all'}
+  if(field==='division'){f.grade='All';f.classId='';f.teacher='all';f.subject='all';f.strand='';if(f.division==='Elementary'&&f.gradeFilter.startsWith('numeric-')||f.division==='Secondary'&&['emerging','developing'].includes(f.gradeFilter))f.gradeFilter='all'}
+  if(field==='grade'){f.classId='';f.teacher='all';f.subject='all';f.strand='';if(f.grade!=='All'&&(gradeNumber(f.grade)<=5&&f.gradeFilter.startsWith('numeric-')||gradeNumber(f.grade)>=6&&['emerging','developing'].includes(f.gradeFilter)))f.gradeFilter='all'}
   if(field==='teacher'||field==='classId'||field==='mapTest')f.strand='';
     render();root.querySelector('[data-explorer-filter="'+field+'"]')?.focus?.({preventScroll:true});return;
  }
