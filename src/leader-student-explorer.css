@@ -393,3 +393,30 @@
 @media(prefers-reduced-motion:reduce){
  #app #leader-student-explorer .explorer-table button{transition:none!important}
 }
+
+/* Shared threshold selector: values are bound to the existing gradeFilter. */
+#app #leader-student-explorer .explorer-grade-shortcuts{
+ display:flex;align-items:center;flex-wrap:wrap;gap:7px;
+ padding:5px 0 9px;margin:0 0 4px;border-bottom:1px solid #e0e8ed
+}
+#app #leader-student-explorer .explorer-grade-shortcuts-label{
+ font-size:11px;font-weight:800;color:#29495e;margin-right:4px
+}
+#app #leader-student-explorer .explorer-grade-shortcuts button{
+ min-height:32px;padding:5px 11px;border:1px solid #c9d6e0;
+ border-radius:8px;background:#fff;color:#29495e;font:inherit;
+ font-size:11px;font-weight:750;cursor:pointer
+}
+#app #leader-student-explorer .explorer-grade-shortcuts button[aria-pressed="true"]{
+ background:#8a2638;border-color:#8a2638;color:#fff
+}
+#app #leader-student-explorer .explorer-grade-shortcuts button:focus-visible{
+ outline:3px solid #417fa3;outline-offset:2px
+}
+#app #leader-student-explorer .explorer-grade-shortcuts small{
+ color:#5b7080;font-size:10px;line-height:1.35
+}
+@media(max-width:640px){
+ #app #leader-student-explorer .explorer-grade-shortcuts{gap:6px}
+ #app #leader-student-explorer .explorer-grade-shortcuts small{flex-basis:100%}
+}
