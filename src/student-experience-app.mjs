@@ -380,7 +380,7 @@ function roster(ss,options={}){
   matchesSupportStatus(s,state.facultySupportFilter));
  const concernFilter=across&&numericEligible?
   '<div class="faculty-concern-filter" role="group" aria-label="Filter learners by subject results">'+
-  '<span>Show learners</span>'+
+  '<span>Subject results (1–7)</span>'+
   '<button type="button" data-faculty-low-filter="all" aria-pressed="'+(filterLevel===null)+
   '" class="'+(filterLevel===null?'active':'')+'">All learners</button>'+
   '<button type="button" data-faculty-low-filter="3" aria-pressed="'+(filterLevel===3)+
@@ -1281,7 +1281,16 @@ root.addEventListener('click',e=>{
   const nav=e.target.closest('[data-leader-view]');
   if(nav){state.leaderExplorerOpen=nav.dataset.leaderView==='explorer';state.leaderStudentId='';render();globalThis.window?.scrollTo?.(0,0);return}
   if(state.leaderExplorerOpen){
-   if(e.target.closest('[data-explorer-toggle-filters]')){
+   const gradeQuick=e.target.closest('[data-explorer-grade-quick]');
+    if(gradeQuick){
+     const requested=gradeQuick.dataset.explorerGradeQuick;
+     if(!['all','numeric-3','numeric-2'].includes(requested))return;
+     explorerFilters().gradeFilter=requested;
+     render();
+     root.querySelector('[data-explorer-grade-quick="'+requested+'"]')?.focus?.({preventScroll:true});
+     return;
+    }
+    if(e.target.closest('[data-explorer-toggle-filters]')){
     state.leaderExplorerFiltersOpen=!state.leaderExplorerFiltersOpen;render();
     root.querySelector('[data-explorer-toggle-filters]')?.focus?.({preventScroll:true});return;
    }
@@ -1931,11 +1940,10 @@ root.addEventListener('change',e=>{
  if(ex&&state.role==='leader'&&state.leaderExplorerOpen){
   const field=ex.dataset.explorerFilter;if(!Object.hasOwn(EXPLORER_DEFAULTS,field))return;
   const f=explorerFilters();f[field]=ex.value;
-  if(field==='division'){f.grade='All';f.classId='';f.teacher='all';f.subject='all';f.strand=''}
-  if(field==='grade'){f.classId='';f.teacher='all';f.subject='all';f.strand=''}
+  if(field==='division'){f.grade='All';f.classId='';f.teacher='all';f.subject='all';f.strand='';if(f.division==='Elementary'&&f.gradeFilter.startsWith('numeric-'))f.gradeFilter='all'}
+  if(field==='grade'){f.classId='';f.teacher='all';f.subject='all';f.strand='';if(f.grade!=='All'&&gradeNumber(f.grade)<=5&&f.gradeFilter.startsWith('numeric-'))f.gradeFilter='all'}
   if(field==='teacher'||field==='classId'||field==='mapTest')f.strand='';
-  if(field==='subject')f.gradeFilter='all';
-  render();root.querySelector('[data-explorer-filter="'+field+'"]')?.focus?.({preventScroll:true});return;
+    render();root.querySelector('[data-explorer-filter="'+field+'"]')?.focus?.({preventScroll:true});return;
  }
  const directoryChoice=e.target.closest?.('[data-leader-directory-filter]');
  if(directoryChoice&&state.role==='leader'){
